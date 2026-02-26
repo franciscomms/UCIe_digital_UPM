@@ -1,0 +1,272 @@
+package edu.berkeley.cs.ucie.digital
+
+import chisel3._
+import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
+
+class SidebandLinkSpec extends AnyFlatSpec with ChiselScalatestTester {
+
+  behavior of "SidebandLink (TX -> RX using forwarded tx_clk)"
+
+  it should "transmit 4 words end-to-end with correct RX valid/data and 32-cycle TX gaps" in {
+    test(new SidebandLink).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+
+      // Fixed test words
+      val w0 = BigInt("A123456789ABCDEF", 16)
+      val w1 = BigInt("A5A5A5A5A5A5A5A5", 16)
+      val w2 = BigInt("DEADBEEFCAFEBABE", 16)
+      val w3 = BigInt("F0E1D2C3B4A59687", 16)
+      val words = Seq(w0, w1, w2, w3)
+
+      // -----------------------
+      // Reset
+      // -----------------------
+      c.reset.poke(true.B)
+      c.io.rxReset.poke(true.B)  // optional; leave RX in reset during global reset
+      c.io.tx_valid.poke(false.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+      c.io.rxReset.poke(false.B)
+      c.clock.step()
+
+      // Helper: send one word and check RX result
+      def sendAndCheck(word: BigInt): Unit = {
+        // Must be in IDLE (ready=1) before accepting
+        c.io.tx_ready.expect(true.B)
+        c.io.tx_din.poke(word.U)
+        c.io.tx_valid.poke(true.B)
+        c.clock.step() // accept here
+        c.io.tx_valid.poke(false.B)
+
+        // While TX is BUSY (64 cycles), RX clock toggles and RX builds the word.
+        // We just wait until RX asserts valid once and check the word on that cycle.
+        var sawValid = false
+        var rxWord   = BigInt(0)
+
+        // Budget enough cycles to cover: BUSY(64) + GAP(32) + 1 transition
+        for (_ <- 0 until (64 + 32 + 2)) {
+          if (c.io.rx_valid.peekBoolean()) {
+            rxWord = c.io.rx_dout.peek().litValue
+            sawValid = true
+          }
+          c.clock.step()
+        }
+
+        assert(sawValid, "RX did not assert valid for a received word")
+        assert(rxWord == word, f"RX word mismatch: got 0x$rxWord%016X expected 0x$word%016X")
+
+        // After BUSY ends, TX enforces a 32-cycle gap where ready=0.
+        // Wait until TX is ready again before sending the next word.
+        // (If the above loop already included the whole gap, this may already be true.)
+        var guard = 64 // prevent infinite loops in case of a bug
+        while (!c.io.tx_ready.peekBoolean() && guard > 0) {
+          c.clock.step()
+          guard -= 1
+        }
+        assert(c.io.tx_ready.peekBoolean(), "TX did not return to ready after the enforced gap")
+      }
+
+      // Send the 4 words in sequence
+      sendAndCheck(w0)
+      sendAndCheck(w1)
+      sendAndCheck(w2)
+      sendAndCheck(w3)
+    }
+  }
+
+
+  // ---------------------------------------------------------------------------
+  // 1) Scripted "random" valid timing (no RNG): pulses during BUSY/GAP must
+  //    be ignored; only accepts at ready=1 should be delivered by RX in order.
+  // ---------------------------------------------------------------------------
+  it should "handle 'random' tx_valid timing and deliver only accepted words in order" in {
+    test(new SidebandLink).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+
+      // Offered words (deterministic)
+      val w0 = BigInt("A123456789ABCDEF", 16)
+      val w1 = BigInt("A5A5A5A5A5A5A5A5", 16)
+      val w2 = BigInt("DEADBEEFCAFEBABE", 16)
+      val w3 = BigInt("F0E1D2C3B4A59687", 16)
+      val w4 = BigInt("0F0F0F0F0F0F0F0F", 16)
+      val w5 = BigInt("3333333333333333", 16)
+      val offered = Seq(w0, w1, w2, w3, w4, w5)
+
+      // Deterministic "random-looking" pattern: (validHighCycles, idleCycles)
+      val pattern = Seq(
+        (1, 0),   // short pulse now
+        (3, 5),   // long pulse, then wait 5
+        (1, 1),
+        (2, 12),
+        (4, 0),
+        (1, 20)   // final idle to flush
+      )
+
+      // Reset
+      c.reset.poke(true.B)
+      c.io.rxReset.poke(true.B)
+      c.io.tx_valid.poke(false.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+      c.io.rxReset.poke(false.B)
+      c.clock.step()
+
+      // We'll track what was actually accepted (valid && ready).
+      var exp0 = BigInt(0)
+      var exp1 = BigInt(0)
+      var exp2 = BigInt(0)
+      var exp3 = BigInt(0)
+      var exp4 = BigInt(0)
+      var exp5 = BigInt(0)
+      var enqCount = 0
+      var deqCount = 0
+
+      // Drive each pattern entry in sequence against offered words.
+      for (entryIdx <- 0 until pattern.length) {
+        val word = offered(entryIdx)
+        val validCycles = pattern(entryIdx)._1
+        val idleCycles  = pattern(entryIdx)._2
+
+        // Assert tx_valid for 'validCycles' cycles with 'word' on tx_din
+        for (_ <- 0 until validCycles) {
+          c.io.tx_din.poke(word.U)
+          c.io.tx_valid.poke(true.B)
+
+          // Record accept if ready=1 at cycle start
+          if (c.io.tx_ready.peekBoolean()) {
+            if (enqCount == 0) exp0 = word
+            else if (enqCount == 1) exp1 = word
+            else if (enqCount == 2) exp2 = word
+            else if (enqCount == 3) exp3 = word
+            else if (enqCount == 4) exp4 = word
+            else if (enqCount == 5) exp5 = word
+            enqCount += 1
+          }
+
+          c.clock.step()
+
+          // If RX delivers, check against the next expected item in order.
+          if (c.io.rx_valid.peekBoolean()) {
+            val got = c.io.rx_dout.peek().litValue
+            val exp =
+              if (deqCount == 0) exp0
+              else if (deqCount == 1) exp1
+              else if (deqCount == 2) exp2
+              else if (deqCount == 3) exp3
+              else if (deqCount == 4) exp4
+              else exp5
+            assert(got == exp, f"RX word mismatch: got 0x$got%016X expected 0x$exp%016X")
+            deqCount += 1
+          }
+        }
+
+        // Drop valid and idle for 'idleCycles'
+        c.io.tx_valid.poke(false.B)
+        for (_ <- 0 until idleCycles) {
+          c.clock.step()
+          if (c.io.rx_valid.peekBoolean()) {
+            val got = c.io.rx_dout.peek().litValue
+            val exp =
+              if (deqCount == 0) exp0
+              else if (deqCount == 1) exp1
+              else if (deqCount == 2) exp2
+              else if (deqCount == 3) exp3
+              else if (deqCount == 4) exp4
+              else exp5
+            assert(got == exp, f"RX word mismatch during idle: got 0x$got%016X expected 0x$exp%016X")
+            deqCount += 1
+          }
+        }
+      }
+
+      // Drain tail (BUSY+GAP time for any pending accepts to complete)
+      for (_ <- 0 until (64 + 32 + 10)) {
+        c.clock.step()
+        if (c.io.rx_valid.peekBoolean()) {
+          val got = c.io.rx_dout.peek().litValue
+          val exp =
+            if (deqCount == 0) exp0
+            else if (deqCount == 1) exp1
+            else if (deqCount == 2) exp2
+            else if (deqCount == 3) exp3
+            else if (deqCount == 4) exp4
+            else exp5
+          assert(got == exp, f"RX tail mismatch: got 0x$got%016X expected 0x$exp%016X")
+          deqCount += 1
+        }
+      }
+
+      // Sanity: deqCount must equal enqCount (delivered == accepted)
+      assert(deqCount == enqCount, s"Accepted $enqCount words, but delivered $deqCount")
+      assert(enqCount > 0, "No words were accepted (pattern too aggressive?)")
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 2) RX "clock glitch" test (simulate via RX async reset mid-frame + recovery)
+  //    - Start frame A.
+  //    - While TX is BUSY on A, pulse RX reset (1 cycle) to drop RX's state.
+  //    - Ensure NO rx_valid for the rest of A.
+  //    - At the next boundary, send B and verify it is received correctly.
+  // ---------------------------------------------------------------------------
+  it should "recover after a mid-frame RX reset (glitch): no false valid in frame A, frame B received OK" in {
+    test(new SidebandLink).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+      val wA = BigInt("1111222233334444", 16)
+      val wB = BigInt("DEADBEEFCAFEBABE", 16)
+
+      // Reset
+      c.reset.poke(true.B)
+      c.io.rxReset.poke(true.B)
+      c.io.tx_valid.poke(false.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+      c.io.rxReset.poke(false.B)
+      c.clock.step()
+
+      // Start frame A
+      c.io.tx_ready.expect(true.B)
+      c.io.tx_din.poke(wA.U)
+      c.io.tx_valid.poke(true.B)
+      c.clock.step()    // accept A
+      c.io.tx_valid.poke(false.B)
+
+      // Wait some cycles into A, then glitch RX reset for 1 cycle
+      for (_ <- 0 until 10) { c.clock.step() }
+      c.io.rxReset.poke(true.B)
+      c.clock.step()
+      c.io.rxReset.poke(false.B)
+
+      // Ensure NO rx_valid until TX returns to ready (A finishes + GAP32)
+      var guard = 64 + 40 // enough to finish A and GAP32
+      while (!c.io.tx_ready.peekBoolean() && guard > 0) {
+        assert(!c.io.rx_valid.peekBoolean(), "Unexpected rx_valid after mid-frame RX reset")
+        c.clock.step()
+        guard -= 1
+      }
+      assert(c.io.tx_ready.peekBoolean(), "TX did not return to ready after A + GAP32")
+
+      // Optionally realign RX at boundary (1-cycle async reset)
+      c.io.rxReset.poke(true.B)
+      c.clock.step()
+      c.io.rxReset.poke(false.B)
+
+      // Send B
+      c.io.tx_din.poke(wB.U)
+      c.io.tx_valid.poke(true.B)
+      c.clock.step()   // accept B
+      c.io.tx_valid.poke(false.B)
+
+      // Wait for RX.valid and check B
+      var sawValid = false
+      var gotWord  = BigInt(0)
+      for (_ <- 0 until (64 + 32 + 10)) {
+        if (c.io.rx_valid.peekBoolean()) {
+          gotWord = c.io.rx_dout.peek().litValue
+          sawValid = true
+        }
+        c.clock.step()
+      }
+      assert(sawValid, "RX did not assert valid for frame B after recovery")
+      assert(gotWord == wB, f"RX word mismatch after recovery: got 0x$gotWord%016X expected 0x$wB%016X")
+    }
+  }
+}

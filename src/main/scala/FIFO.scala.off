@@ -1,0 +1,51 @@
+/**
+ * NOT WORKING
+ */
+
+package edu.berkeley.cs.ucie.digital
+
+import chisel3._
+
+class WriterIO(size: Int) extends Bundle {
+  val write = Input(Bool())
+  val full = Output(Bool())
+  val din = Input(UInt(size.W))
+}
+
+class ReaderIO(size: Int) extends Bundle {
+  val read = Input(Bool())
+  val empty = Output(Bool())
+  val dout = Output(UInt(size.W))
+}
+
+/**
+ * A single register (=stage) to build the FIFO.
+ */
+class FifoRegister(size: Int) extends Module {
+  val io = IO(new Bundle {
+    val enq = new WriterIO(size)
+    val deq = new ReaderIO(size)
+  })
+
+  val empty :: full :: Nil = Enum(2)
+  val stateReg = RegInit(empty)
+  val dataReg = RegInit(0.U(size.W))
+
+  when(stateReg === empty) {
+    when(io.enq.write) {
+      stateReg := full
+      dataReg := io.enq.din
+    }
+  }.elsewhen(stateReg === full) {
+    when(io.deq.read) {
+      stateReg := empty
+      dataReg := 0.U // just to better see empty slots in the waveform
+    }
+  }.otherwise {
+    // There should not be an otherwise state
+  }
+
+  io.enq.full := (stateReg === full)
+  io.deq.empty := (stateReg === empty)
+  io.deq.dout := dataReg
+}

@@ -1,0 +1,160 @@
+/*
+  TODO:
+    - add the LTSM status register (Spec Chap: 9.5.3.34)
+    - Optimize RESET wait if needed (large counter version implemented)
+*/
+
+package edu.berkeley.cs.ucie.digital
+
+import chisel3._
+import chisel3.util._
+
+class LinkTrainingFSM extends Module {
+  val io = IO(new Bundle {
+
+    // --------------------------
+    // System-side TX -> SBmodule
+    // --------------------------
+    val sb_tx_din   = Output(UInt(64.W))
+    val sb_tx_valid = Output(Bool())
+    val sb_tx_ready = Input(Bool())
+
+    // --------------------------
+    // System-side RX <- SBmodule
+    // --------------------------
+    val sb_rx_dout  = Input(UInt(64.W))
+    val sb_rx_valid = Input(Bool())
+
+    // --------------------------
+    // Link training control inputs
+    // --------------------------
+    val start          = Input(Bool())
+    val stable_clk     = Input(Bool())
+    val pll_locked     = Input(Bool())
+    val stable_supply  = Input(Bool())
+
+    val state = Output(UInt(3.W))
+  })
+
+  // ==========================================================
+  // LINK TRAINING FSM
+  // ==========================================================
+  object LTState extends ChiselEnum {
+    val RESET, SBINIT_pattern, SBINIT_OORmsg,
+        MBINIT, MBTRAIN, LINKINIT, ACTIVE = Value
+  }
+
+  val stateReg = RegInit(LTState.RESET)
+  io.state := stateReg.asUInt
+
+  // ==========================================================
+  // RESET dwell: direct 4 ms counter at system clock
+  // At 800 MHz: 4 ms = 3,200,000 cycles -> need 22 bits
+  // ==========================================================
+  val RESET_CYCLES = 10.U//3200000.U
+  val resetCnt = RegInit(0.U(23.W))
+
+  // ==========================================================
+  // SBINIT pattern detection state
+  // ==========================================================
+  val flagFirstPattern = RegInit(false.B)
+
+  // Pattern constant: 1010... (LSB-first is 0xAAAAAAAAAAAAAAAA)
+  val SBINIT_CLK_PATTERN = "hAAAAAAAAAAAAAAAA".U(64.W)
+
+  // ==========================================================
+  // Default TX outputs (idle)
+  // ==========================================================
+  io.sb_tx_din   := 0.U
+  io.sb_tx_valid := false.B
+
+  // ==========================================================
+  // FSM logic
+  // ==========================================================
+  switch(stateReg) {
+
+    // ========================================================
+    // RESET — wait 4ms using the big counter
+    // ========================================================
+    is (LTState.RESET) {
+
+      when (resetCnt =/= RESET_CYCLES) {
+        resetCnt := resetCnt + 1.U
+        stateReg := LTState.RESET
+      }
+      .otherwise {
+        // when counter is done, check stability
+        when (io.start && io.stable_clk && io.pll_locked && io.stable_supply) {
+          //resetCnt := 0.U
+          stateReg := LTState.SBINIT_pattern
+        }
+        .otherwise {
+          stateReg := LTState.RESET
+        }
+      }
+    }
+
+
+    // ========================================================
+    // SBINIT_pattern
+    // ========================================================
+    is (LTState.SBINIT_pattern) {
+
+      // TX pattern
+      when (io.sb_tx_ready) {
+        io.sb_tx_din   := SBINIT_CLK_PATTERN
+        io.sb_tx_valid := true.B
+      }
+
+      // RX detection
+      when (io.sb_rx_valid) {
+        when (io.sb_rx_dout === SBINIT_CLK_PATTERN) {
+
+          // First time we detect the pattern
+          when (flagFirstPattern === false.B) {
+            flagFirstPattern := true.B
+            stateReg := LTState.SBINIT_pattern  // need one more detection
+          }
+          // Second consecutive detection -> move on
+          .otherwise {
+            stateReg := LTState.SBINIT_OORmsg
+          }
+
+        }.otherwise {
+          // Wrong word received -> reset detection
+          flagFirstPattern := false.B
+          stateReg := LTState.SBINIT_pattern
+        }
+      }
+    }
+
+
+    // ========================================================
+    // SBINIT_OORmsg — simplified placeholder
+    // ========================================================
+    is (LTState.SBINIT_OORmsg) {
+      // For now, just advance
+      stateReg := LTState.MBINIT
+    }
+
+
+    // ========================================================
+    // MBINIT -> MBTRAIN -> LINKINIT -> ACTIVE
+    // ========================================================
+    is (LTState.MBINIT) {
+      stateReg := LTState.MBTRAIN
+    }
+
+    is (LTState.MBTRAIN) {
+      stateReg := LTState.LINKINIT
+    }
+
+    is (LTState.LINKINIT) {
+      stateReg := LTState.ACTIVE
+    }
+
+    is (LTState.ACTIVE) {
+      stateReg := LTState.ACTIVE
+    }
+  }
+}

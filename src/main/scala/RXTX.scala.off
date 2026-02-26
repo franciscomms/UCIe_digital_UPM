@@ -1,0 +1,56 @@
+/*
+
+TEST MODULE THAT CONNECTS RX TO TX FOR SIMULATION PURPOSES ONLY
+
+*/
+
+
+package edu.berkeley.cs.ucie.digital
+
+import chisel3._
+import chisel3.util._
+
+class SidebandLink extends Module {
+  val io = IO(new Bundle {
+    // TX inputs
+    val tx_din   = Input(UInt(64.W))
+    val tx_valid = Input(Bool())
+
+    // TX status outputs (needed for tests)
+    val tx_ready = Output(Bool())
+    val tx_dout  = Output(Bool())
+    val tx_clk   = Output(Bool())
+
+    // RX output interface
+    val rx_dout  = Output(UInt(64.W))
+    val rx_valid = Output(Bool())
+
+    // RX reset for alignment
+    val rxReset  = Input(Bool())
+  })
+
+  // --------------------------
+  // TX
+  // --------------------------
+  val tx = Module(new SidebandTx)
+  tx.io.din   := io.tx_din
+  tx.io.valid := io.tx_valid
+
+  io.tx_ready := tx.io.ready
+  io.tx_dout  := tx.io.dout
+  io.tx_clk   := tx.io.clk_out
+
+  // --------------------------
+  // RX
+  // --------------------------
+  val rx_clk = (!io.tx_clk).asClock
+  val rx = withClockAndReset(rx_clk, io.rxReset.asAsyncReset) {
+    Module(new SidebandRx)
+  }
+
+
+  rx.io.din := tx.io.dout
+
+  io.rx_dout  := rx.io.dout
+  io.rx_valid := rx.io.valid
+}

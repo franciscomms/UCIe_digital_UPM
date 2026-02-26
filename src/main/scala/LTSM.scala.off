@@ -1,0 +1,30 @@
+package edu.berkeley.cs.ucie.digital
+
+import chisel3._
+
+class ResetState extends Module {
+  val io = IO(new Bundle {
+    val vddStable = Input(Bool())
+    val pllLocked = Input(Bool())
+
+    val regOut = Output(UInt(8.W))
+    val stateOut = Output(LinkTrainingState())
+
+  })
+
+  //initialization
+  private val state = RegInit(LinkTrainingState.reset)
+  val cntReg = RegInit(0.U(8.W))
+
+  
+  //counter example, 0 to 255
+  cntReg := cntReg + 1.U
+  
+
+ 
+
+  //outputs
+  io.regOut := cntReg
+  io.stateOut := state
+
+}

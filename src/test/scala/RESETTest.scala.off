@@ -1,0 +1,31 @@
+package edu.berkeley.cs.ucie.digital
+
+import chisel3._
+import chiseltest._
+import org.scalatest.flatspec.AnyFlatSpec
+
+class ResetStateSpec extends AnyFlatSpec with ChiselScalatestTester {
+  behavior of "ResetState" 
+    it should "invert its input" in {
+      test(new ResetState()) { c =>
+        c.io.a.poke(true.B)
+        c.io.vddStable.poke(false.B)
+        c.io.pllLocked.poke(false.B)
+        c.io.b.expect(false.B)
+
+        for (_ <- 0 until 100) {
+          println(c.io.regOut.peek().litValue)
+          c.clock.step(1)
+
+          if (c.io.regOut.peek().litValue == 20) {
+            c.io.vddStable.poke(true.B)
+          }
+          if (c.io.regOut.peek().litValue == 60) {
+            c.io.pllLocked.poke(true.B)
+          }
+        }
+        c.io.b.expect(false.B)
+        c.io.stateOut.expect(LinkTrainingState.sbInit)
+      }
+    }
+}
