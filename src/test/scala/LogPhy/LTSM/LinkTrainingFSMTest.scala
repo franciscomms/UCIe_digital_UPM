@@ -148,4 +148,103 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
   
     }
   }
+
+  it should "advance through all stages using a while-driven clock loop" in {
+    test(new LinkTrainingFSM).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
+
+      val pattern     = BigInt("AAAAAAAAAAAAAAAA", 16)
+      val successMsg  = BigInt("0200010040244012", 16)
+      val doneReqMsg  = BigInt("4200000140254012", 16)
+      val doneRespMsg = BigInt("4200000140268012", 16)
+
+      val RESET          = 0
+      val SBINIT_pattern = 1
+      val SBINIT_OORmsg  = 3
+      val SBINIT_DONEmsg = 4
+      val ACTIVE         = 8
+
+      var cycle = 0
+      var firstPatternSent = false
+      var gapAfterFirst = 0
+      var secondPatternSent = false
+      var successSent = false
+      var doneReqSent = false
+      var doneRespObserved = false
+      var doneRespSent = false
+
+      while (cycle < 500) {
+        // default RX inputs each cycle
+        c.io.sb_rx_valid.poke(false.B)
+        c.io.sb_rx_dout.poke(0.U)
+
+        // reset phase for first three cycles
+        if (cycle < 3) {
+          c.reset.poke(true.B)
+          c.io.start.poke(false.B)
+          c.io.stable_clk.poke(false.B)
+          c.io.pll_locked.poke(false.B)
+          c.io.stable_supply.poke(false.B)
+          c.io.sb_tx_ready.poke(false.B)
+        } else {
+          c.reset.poke(false.B)
+          c.io.start.poke(true.B)
+          c.io.stable_clk.poke(true.B)
+          c.io.pll_locked.poke(true.B)
+          c.io.stable_supply.poke(true.B)
+          c.io.sb_tx_ready.poke(true.B)
+        }
+
+        val stateVal = c.io.state.peek().litValue.toInt
+
+        if (stateVal == SBINIT_pattern) {
+          if (!firstPatternSent) {
+            c.io.sb_rx_dout.poke(pattern.U)
+            c.io.sb_rx_valid.poke(true.B)
+            firstPatternSent = true
+            gapAfterFirst = 32
+          } else if (gapAfterFirst > 0) {
+            gapAfterFirst -= 1
+          } else if (!secondPatternSent) {
+            c.io.sb_rx_dout.poke(pattern.U)
+            c.io.sb_rx_valid.poke(true.B)
+            secondPatternSent = true
+          }
+        }
+
+        if (stateVal == SBINIT_OORmsg && !successSent) {
+          c.io.sb_rx_dout.poke(successMsg.U)
+          c.io.sb_rx_valid.poke(true.B)
+          successSent = true
+        }
+
+        if (stateVal == SBINIT_DONEmsg) {
+          //send req
+          if (!doneReqSent) {
+            c.io.sb_rx_dout.poke(doneReqMsg.U)
+            c.io.sb_rx_valid.poke(true.B)
+            doneReqSent = true
+          }
+
+          //wait for module to sent the req and response
+          
+          
+          if (c.io.sb_tx_valid.peek().litToBoolean && c.io.sb_tx_din.peek().litValue == doneRespMsg) {
+            doneRespObserved = true
+          }
+          //After seeing resp send our resp
+          if (doneRespObserved && !doneRespSent) {
+            c.io.sb_rx_dout.poke(doneRespMsg.U)
+            c.io.sb_rx_valid.poke(true.B)
+            doneRespSent = true
+          }
+        }
+
+        c.clock.step(1)
+        cycle += 1
+      }
+
+      c.io.state.expect(ACTIVE.U)
+      assert(firstPatternSent && secondPatternSent && successSent && doneReqSent && doneRespObserved && doneRespSent)
+    }
+  }
 }
