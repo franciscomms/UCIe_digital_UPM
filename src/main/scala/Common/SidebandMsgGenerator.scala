@@ -54,7 +54,7 @@ object SidebandMsgGenerator {
   private def msgWithPayloadBase(msgInfo: UInt, msgCode: UInt, msgSub: UInt, payload: UInt, src: String, dst: String): UInt = {
     val dp = payload.xorR // data parity over 64-bit payload
     val header = buildHeader(msgInfo, msgCode, msgSub, src, dst, OPCODE_MSG_WITH_DATA, dp)
-    Cat(payload, header) // 128-bit message
+    Cat(payload, header) // 128-bit message - header LSB
   }
 
 
@@ -139,6 +139,86 @@ def msgMbinitParamConfigResp(
     dst
   )
 }
+
+// MBINIT.CAL Done req (64-bit header only)
+def msgMbinitCalDoneReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W), // MsgInfo = 0000h
+    "hA5".U(8.W),                // MsgCode = A5h
+    "h02".U(8.W),                // MsgSub  = 02h
+    src,
+    dst
+  )
+
+// MBINIT.CAL Done resp (64-bit header only)
+def msgMbinitCalDoneResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W), // MsgInfo = 0000h
+    "hAA".U(8.W),                // MsgCode = AAh
+    "h02".U(8.W),                // MsgSub  = 02h
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRCLK init req (64-bit header only)
+def msgMbinitRepairClkInitReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W), // MsgInfo = 0000h
+    "hA5".U(8.W),                // MsgCode = A5h
+    "h03".U(8.W),                // MsgSub  = 03h
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRCLK init resp (64-bit header only)
+def msgMbinitRepairClkInitResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W), // MsgInfo = 0000h
+    "hAA".U(8.W),                // MsgCode = AAh
+    "h03".U(8.W),                // MsgSub  = 03h
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRCLK result req (64-bit header only)
+def msgMbinitRepairClkResultReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W), // MsgInfo = 0000h
+    "hA5".U(8.W),                // MsgCode = A5h
+    "h04".U(8.W),                // MsgSub  = 04h
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRCLK result resp (64-bit header only)
+def msgMbinitRepairClkResultResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W), // MsgInfo = 0000h
+    "hAA".U(8.W),                // MsgCode = AAh
+    "h04".U(8.W),                // MsgSub  = 04h
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRCLK done req (64-bit header only)
+def msgMbinitRepairClkDoneReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W), // MsgInfo = 0000h
+    "hA5".U(8.W),                // MsgCode = A5h
+    "h08".U(8.W),                // MsgSub  = 08h
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRCLK done resp (64-bit header only)
+def msgMbinitRepairClkDoneResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W), // MsgInfo = 0000h
+    "hAA".U(8.W),                // MsgCode = AAh
+    "h08".U(8.W),                // MsgSub  = 08h
+    src,
+    dst
+  )
 
 
   /**
