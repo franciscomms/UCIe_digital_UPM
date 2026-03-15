@@ -191,9 +191,15 @@ def msgMbinitRepairClkResultReq(src: String, dst: String): UInt =
   )
 
 // MBINIT.REPAIRCLK result resp (64-bit header only)
-def msgMbinitRepairClkResultResp(src: String, dst: String): UInt =
+def msgMbinitRepairClkResultResp(
+  src: String,
+  dst: String,
+  RTRK_L: UInt,
+  RCKN_L: UInt,
+  RCKP_L: UInt
+): UInt =
   msgWithoutDataBase(
-    "b0000000000000000".U(16.W), // MsgInfo = 0000h
+    Cat(0.U(13.W), RTRK_L(0), RCKN_L(0), RCKP_L(0)), // MsgInfo[2:0] = {RTRK_L,RCKN_L,RCKP_L}
     "hAA".U(8.W),                // MsgCode = AAh
     "h04".U(8.W),                // MsgSub  = 04h
     src,
@@ -211,7 +217,10 @@ def msgMbinitRepairClkDoneReq(src: String, dst: String): UInt =
   )
 
 // MBINIT.REPAIRCLK done resp (64-bit header only)
-def msgMbinitRepairClkDoneResp(src: String, dst: String): UInt =
+def msgMbinitRepairClkDoneResp(
+  src: String,
+  dst: String
+): UInt =
   msgWithoutDataBase(
     "b0000000000000000".U(16.W), // MsgInfo = 0000h
     "hAA".U(8.W),                // MsgCode = AAh

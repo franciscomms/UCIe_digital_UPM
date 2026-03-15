@@ -39,6 +39,13 @@ class LinkTrainingFSM(
     val stable_clk     = Input(Bool())
     val pll_locked     = Input(Bool())
     val stable_supply  = Input(Bool())
+    val flagFromAnalog_ReadyToExchangeClkPatterns = Input(Bool())
+    val flagFromAnalog_FinishedClkPatterns        = Input(Bool())
+    val flagFromAnalog_clkPatternReceivedRTRK_L   = Input(Bool())
+    val flagFromAnalog_clkPatternReceivedRCKN_L   = Input(Bool())
+    val flagFromAnalog_clkPatternReceivedRCKP_L   = Input(Bool())
+    val flagToAnalog_RepairClkState               = Output(Bool())
+    val flagToAnalog_SendClkPatterns              = Output(Bool()) //look where is reset being done
 
     // needs 4 bits because there are 12 enum states (0..11)
     val state = Output(UInt(4.W))
@@ -49,6 +56,7 @@ class LinkTrainingFSM(
     val dbg_sbinitSendCount = Output(UInt(3.W))
     val dbg_sbTxValid = Output(Bool()) 
     val dbg_sbTxDin = Output(UInt(64.W))
+    val dbg_flagTrainError = Output(Bool())
   })
 
   // ==========================================================
@@ -75,6 +83,29 @@ class LinkTrainingFSM(
       ACTIVE = Value
   }
 
+  object RepairClkSenderState extends ChiselEnum {
+    val initReq,
+      sendClkPatternsExchange,
+      waitingPatternsExchangeFinish,
+      sendResultReq,
+      receiveResultResp,
+      sendDoneReq,
+      receiveDoneResp,
+      receiveDoneReq,
+      finish = Value
+  }
+
+  object RepairClkReceiverState extends ChiselEnum {
+    val receiveInitReq,
+      sendInitResp,
+      waitingPatternsExchangeFinish,
+      receiveResultReq,
+      sendResultResp,
+      receiveDoneReq,
+      sendDoneResp,
+      finish = Value
+  }
+
   val stateReg = RegInit(LTState.RESET)
   io.state := stateReg.asUInt
 
@@ -84,6 +115,18 @@ class LinkTrainingFSM(
   // ==========================================================
   val RESET_CYCLES = 10.U//3200000.U
   val resetCnt = RegInit(0.U(23.W))
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ==========================================================
   // SBINIT pattern detection state
@@ -116,31 +159,25 @@ class LinkTrainingFSM(
   val flagMbinitCalReceivedDoneResp = RegInit(false.B)
   val flagMbinitCalSentDoneReq      = RegInit(false.B)
   val flagMbinitCalSentDoneResp     = RegInit(false.B)
-  // MBINIT.REPAIRCLK handshake flags
-  val flagMbinitRepairClkReceivedInitReq   = RegInit(false.B)
-  val flagMbinitRepairClkReceivedInitResp  = RegInit(false.B)
-  val flagMbinitRepairClkSentInitReq       = RegInit(false.B)
-  val flagMbinitRepairClkSentInitResp      = RegInit(false.B)
-  val flagMbinitRepairClkReceivedResultReq  = RegInit(false.B)
-  val flagMbinitRepairClkReceivedResultResp = RegInit(false.B)
-  val flagMbinitRepairClkSentResultReq      = RegInit(false.B)
-  val flagMbinitRepairClkSentResultResp     = RegInit(false.B)
-  val flagMbinitRepairClkReceivedDoneReq   = RegInit(false.B)
-  val flagMbinitRepairClkReceivedDoneResp  = RegInit(false.B)
-  val flagMbinitRepairClkSentDoneReq       = RegInit(false.B)
-  val flagMbinitRepairClkSentDoneResp      = RegInit(false.B)
-  val repairClkLaneIdx = RegInit(0.U(2.W)) // 0=RCKP_L, 1=RCKN_L, 2=RTRK_L
-  val flagRCKP_LSentPattern         = RegInit(false.B)
-  val flagRCKP_LDetectedCorrectly   = RegInit(false.B)
-  val flagRCKP_LDetectedIncorrectly = RegInit(false.B)
-  val flagRCKN_LSentPattern         = RegInit(false.B)
-  val flagRCKN_LDetectedCorrectly   = RegInit(false.B)
-  val flagRCKN_LDetectedIncorrectly = RegInit(false.B)
-  val flagRTRK_LSentPattern         = RegInit(false.B)
-  val flagRTRK_LDetectedCorrectly   = RegInit(false.B)
-  val flagRTRK_LDetectedIncorrectly = RegInit(false.B)
+  // MBINIT_REPAIRCLK sender flags (placeholder)
+  val flagMbinitRepairClk_SentInitReq      = RegInit(false.B)
+  val flagMbinitRepairClk_ReceivedInitResp = RegInit(false.B)
+  val flagMbinitRepairClk_ReceivedInitReq = RegInit(false.B)
+  val flagMbinitRepairClk_ReceivedResultResp = RegInit(false.B)
+  val flagMbinitRepairClk_ReceivedResultReq = RegInit(false.B)
+  val flagMbinitRepairClk_ReceivedDoneResp = RegInit(false.B)
+  val flagMbinitRepairClk_ReceivedDoneReq = RegInit(false.B)
+  val mbinitRepairClk_ReceivedResultBits = RegInit(0.U(3.W))
+  val flagMbinitRepairClk_SentClkPatterns  = RegInit(false.B)
+  val flagMbinitRepairClk_SentResultReq    = RegInit(false.B)
+  val repairClkSenderStateReg = RegInit(RepairClkSenderState.initReq)
+  val repairClkReceiverStateReg = RegInit(RepairClkReceiverState.sendInitResp)
   // TRAIN ERROR
   val flagTrainError = RegInit(false.B)
+  // MBINIT_REPAIRCLK receiver logs from analog
+  val mbinitRepairClk_logClkPatternReceivedRTRK_L = RegInit(false.B)
+  val mbinitRepairClk_logClkPatternReceivedRCKN_L = RegInit(false.B)
+  val mbinitRepairClk_logClkPatternReceivedRCKP_L = RegInit(false.B)
 
 
 
@@ -153,15 +190,20 @@ class LinkTrainingFSM(
   val rxValidRisingEdge = io.sb_rx_valid && (!prevRxValid)
   val prevState = RegNext(stateReg, LTState.RESET)
 
-  //CHECK this logic
-  val enteringMbinitRepairClk = stateReg === LTState.MBINIT_REPAIRCLK && prevState =/= LTState.MBINIT_REPAIRCLK
+  
 
-  val clearMbinitRepairClkReceivedInitReq    = WireDefault(false.B)
-  val clearMbinitRepairClkReceivedInitResp   = WireDefault(false.B)
-  val clearMbinitRepairClkReceivedResultReq  = WireDefault(false.B)
-  val clearMbinitRepairClkReceivedResultResp = WireDefault(false.B)
-  val clearMbinitRepairClkReceivedDoneReq    = WireDefault(false.B)
-  val clearMbinitRepairClkReceivedDoneResp   = WireDefault(false.B)
+
+
+
+
+
+
+
+
+
+
+
+
 
   
   // ==========================================================
@@ -195,12 +237,15 @@ class LinkTrainingFSM(
   )
   val MBINIT_CAL_DONE_REQ  = SidebandMsgGenerator.msgMbinitCalDoneReq("phy", "phy")
   val MBINIT_CAL_DONE_RESP = SidebandMsgGenerator.msgMbinitCalDoneResp("phy", "phy")
-  val MBINIT_REPAIRCLK_INIT_REQ   = SidebandMsgGenerator.msgMbinitRepairClkInitReq("phy", "phy")
-  val MBINIT_REPAIRCLK_INIT_RESP  = SidebandMsgGenerator.msgMbinitRepairClkInitResp("phy", "phy")
-  val MBINIT_REPAIRCLK_RESULT_REQ = SidebandMsgGenerator.msgMbinitRepairClkResultReq("phy", "phy")
-  val MBINIT_REPAIRCLK_RESULT_RESP = SidebandMsgGenerator.msgMbinitRepairClkResultResp("phy", "phy")
-  val MBINIT_REPAIRCLK_DONE_REQ   = SidebandMsgGenerator.msgMbinitRepairClkDoneReq("phy", "phy")
-  val MBINIT_REPAIRCLK_DONE_RESP  = SidebandMsgGenerator.msgMbinitRepairClkDoneResp("phy", "phy")
+  val MBINIT_REPAIRCLK_INIT_RESP = SidebandMsgGenerator.msgMbinitRepairClkInitResp("phy", "phy")
+  val MBINIT_REPAIRCLK_RESULT_RESP = SidebandMsgGenerator.msgMbinitRepairClkResultResp(
+    "phy",
+    "phy",
+    0.U(1.W),
+    0.U(1.W),
+    0.U(1.W)
+  )
+  val MBINIT_REPAIRCLK_DONE_RESP = SidebandMsgGenerator.msgMbinitRepairClkDoneResp("phy", "phy")
 
   // ==========================================================
   // Debug signals
@@ -210,6 +255,9 @@ class LinkTrainingFSM(
   io.dbg_sbinitSendCount := sbinitSendCount
   io.dbg_sbTxValid := sbTxValid
   io.dbg_sbTxDin := sbTxDin
+  io.dbg_flagTrainError := flagTrainError
+  io.flagToAnalog_RepairClkState := false.B
+  io.flagToAnalog_SendClkPatterns := false.B
 
   // ==========================================================
   // Messages reception
@@ -231,6 +279,14 @@ class LinkTrainingFSM(
       //mbinit Cal
       flagMbinitCalReceivedDoneReq  := false.B
       flagMbinitCalReceivedDoneResp := false.B
+      //mbinit RepairClk sender
+      flagMbinitRepairClk_ReceivedInitReq := false.B
+      flagMbinitRepairClk_ReceivedInitResp := false.B
+      flagMbinitRepairClk_ReceivedResultReq := false.B
+      flagMbinitRepairClk_ReceivedResultResp := false.B
+      flagMbinitRepairClk_ReceivedDoneReq := false.B
+      flagMbinitRepairClk_ReceivedDoneResp := false.B
+      mbinitRepairClk_ReceivedResultBits := 0.U
     }.otherwise {
       when (io.sb_rx_dout === SBINIT_CLK_PATTERN && !flagSbinitFirstClkPatternSeen) { //receiving two consecutive clk patterns
         flagSbinitFirstClkPatternSeen := true.B
@@ -285,77 +341,34 @@ class LinkTrainingFSM(
         flagMbinitCalReceivedDoneResp := true.B
       }
 
-      when (
-        stateReg === LTState.MBINIT_REPAIRCLK &&
-        flagMbinitRepairClkSentResultReq && !flagMbinitRepairClkReceivedResultResp &&
-        io.sb_rx_dout =/= MBINIT_REPAIRCLK_RESULT_RESP
+      when (io.sb_rx_dout === SidebandMsgGenerator.msgMbinitRepairClkInitReq("phy", "phy")) {
+        flagMbinitRepairClk_ReceivedInitReq := true.B
+      }
+
+      when (io.sb_rx_dout === MBINIT_REPAIRCLK_INIT_RESP) {
+        flagMbinitRepairClk_ReceivedInitResp := true.B
+      }
+
+      when (io.sb_rx_dout === SidebandMsgGenerator.msgMbinitRepairClkResultReq("phy", "phy")) {
+        flagMbinitRepairClk_ReceivedResultReq := true.B
+      }
+
+      when ( //apply mask to compare RESULT_RESP while ignoring msgInfo[2:0]
+        (io.sb_rx_dout & "hBFFFF8FFFFFFFFFF".U(64.W)) ===
+        (MBINIT_REPAIRCLK_RESULT_RESP & "hBFFFF8FFFFFFFFFF".U(64.W))
       ) {
-        switch(repairClkLaneIdx) {
-          is(0.U) { flagRCKP_LDetectedIncorrectly := true.B }
-          is(1.U) { flagRCKN_LDetectedIncorrectly := true.B }
-          is(2.U) { flagRTRK_LDetectedIncorrectly := true.B }
-        }
-        flagTrainError := true.B
+        flagMbinitRepairClk_ReceivedResultResp := true.B
+        mbinitRepairClk_ReceivedResultBits := io.sb_rx_dout(42,40)
+      }
+
+      when (io.sb_rx_dout === SidebandMsgGenerator.msgMbinitRepairClkDoneReq("phy", "phy")) {
+        flagMbinitRepairClk_ReceivedDoneReq := true.B
+      }
+
+      when (io.sb_rx_dout === MBINIT_REPAIRCLK_DONE_RESP) {
+        flagMbinitRepairClk_ReceivedDoneResp := true.B
       }
     }
-  }
-
-  // MBINIT.REPAIRCLK received flags ownership:
-  // 1) clear on state entry or explicit consume, 2) set on RX edge match
-  when (enteringMbinitRepairClk || clearMbinitRepairClkReceivedInitReq) {
-    flagMbinitRepairClkReceivedInitReq := false.B
-  }.elsewhen (rxValidRisingEdge && io.sb_rx_dout === MBINIT_REPAIRCLK_INIT_REQ) {
-    flagMbinitRepairClkReceivedInitReq := true.B
-  }
-
-  when (enteringMbinitRepairClk || clearMbinitRepairClkReceivedInitResp) {
-    flagMbinitRepairClkReceivedInitResp := false.B
-  }.elsewhen (rxValidRisingEdge && io.sb_rx_dout === MBINIT_REPAIRCLK_INIT_RESP) {
-    flagMbinitRepairClkReceivedInitResp := true.B
-  }
-
-  when (enteringMbinitRepairClk || clearMbinitRepairClkReceivedResultReq) {
-    flagMbinitRepairClkReceivedResultReq := false.B
-  }.elsewhen (rxValidRisingEdge && io.sb_rx_dout === MBINIT_REPAIRCLK_RESULT_REQ) {
-    flagMbinitRepairClkReceivedResultReq := true.B
-  }
-
-  when (enteringMbinitRepairClk || clearMbinitRepairClkReceivedResultResp) {
-    flagMbinitRepairClkReceivedResultResp := false.B
-  }.elsewhen (rxValidRisingEdge && io.sb_rx_dout === MBINIT_REPAIRCLK_RESULT_RESP) {
-    flagMbinitRepairClkReceivedResultResp := true.B
-  }
-
-  when (enteringMbinitRepairClk || clearMbinitRepairClkReceivedDoneReq) {
-    flagMbinitRepairClkReceivedDoneReq := false.B
-  }.elsewhen (rxValidRisingEdge && io.sb_rx_dout === MBINIT_REPAIRCLK_DONE_REQ) {
-    flagMbinitRepairClkReceivedDoneReq := true.B
-  }
-
-  when (enteringMbinitRepairClk || clearMbinitRepairClkReceivedDoneResp) {
-    flagMbinitRepairClkReceivedDoneResp := false.B
-  }.elsewhen (rxValidRisingEdge && io.sb_rx_dout === MBINIT_REPAIRCLK_DONE_RESP) {
-    flagMbinitRepairClkReceivedDoneResp := true.B
-  }
-
-  // Reset MBINIT.REPAIRCLK flags on state entry to avoid stale retrain state
-  when (enteringMbinitRepairClk) {
-    flagMbinitRepairClkSentInitReq := false.B
-    flagMbinitRepairClkSentInitResp := false.B
-    flagMbinitRepairClkSentResultReq := false.B
-    flagMbinitRepairClkSentResultResp := false.B
-    flagMbinitRepairClkSentDoneReq := false.B
-    flagMbinitRepairClkSentDoneResp := false.B
-    repairClkLaneIdx := 0.U
-    flagRCKP_LSentPattern := false.B
-    flagRCKP_LDetectedCorrectly := false.B
-    flagRCKP_LDetectedIncorrectly := false.B
-    flagRCKN_LSentPattern := false.B
-    flagRCKN_LDetectedCorrectly := false.B
-    flagRCKN_LDetectedIncorrectly := false.B
-    flagRTRK_LSentPattern := false.B
-    flagRTRK_LDetectedCorrectly := false.B
-    flagRTRK_LDetectedIncorrectly := false.B
   }
 
 
@@ -552,88 +565,129 @@ class LinkTrainingFSM(
     }
 
     is (LTState.MBINIT_REPAIRCLK) {
-      when (io.sb_tx_ready && !sbTxValid) {
-        // respond to partner requests first
-        when (flagMbinitRepairClkReceivedDoneReq && !flagMbinitRepairClkSentDoneResp) {
-          nextSbTxDin   := MBINIT_REPAIRCLK_DONE_RESP
-          nextSbTxValid := true.B
-          flagMbinitRepairClkSentDoneResp := true.B
-        }.elsewhen (flagMbinitRepairClkReceivedResultReq && !flagMbinitRepairClkSentResultResp) {
-          nextSbTxDin   := MBINIT_REPAIRCLK_RESULT_RESP
-          nextSbTxValid := true.B
-          flagMbinitRepairClkSentResultResp := true.B
-        }.elsewhen (flagMbinitRepairClkReceivedInitReq && !flagMbinitRepairClkSentInitResp) {
-          nextSbTxDin   := MBINIT_REPAIRCLK_INIT_RESP
-          nextSbTxValid := true.B
-          flagMbinitRepairClkSentInitResp := true.B
-        }
-        // active lane flow (RCKP_L, RCKN_L, RTRK_L)
-        .elsewhen (!flagTrainError && repairClkLaneIdx <= 2.U) {
-          when (!flagMbinitRepairClkSentInitReq) {
-            nextSbTxDin   := MBINIT_REPAIRCLK_INIT_REQ
-            nextSbTxValid := true.B
-            flagMbinitRepairClkSentInitReq := true.B
-          }.elsewhen (flagMbinitRepairClkReceivedInitResp) {
-            // Placeholder for 128 iterations clock repair pattern (not implemented here)
-            // TODO: real pattern generation (16 clocks + 8 low, pattern not scrambled)
-            switch(repairClkLaneIdx) {
-              is(0.U) { flagRCKP_LSentPattern := true.B }
-              is(1.U) { flagRCKN_LSentPattern := true.B }
-              is(2.U) { flagRTRK_LSentPattern := true.B }
-            }
 
-            when (!flagMbinitRepairClkSentResultReq) {
-              nextSbTxDin   := MBINIT_REPAIRCLK_RESULT_REQ
-              nextSbTxValid := true.B
-              flagMbinitRepairClkSentResultReq := true.B
+      io.flagToAnalog_RepairClkState := true.B
+      //sender
+      switch(repairClkSenderStateReg) {
+        is(RepairClkSenderState.initReq) {
+          when (io.sb_tx_ready && !sbTxValid) {
+            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairClkInitReq("phy", "phy")
+            nextSbTxValid := true.B
+            repairClkSenderStateReg := RepairClkSenderState.sendClkPatternsExchange
+          }
+        }
+        is(RepairClkSenderState.sendClkPatternsExchange) {
+          when (flagMbinitRepairClk_ReceivedInitResp && io.flagFromAnalog_ReadyToExchangeClkPatterns) {
+            io.flagToAnalog_SendClkPatterns := true.B
+            repairClkSenderStateReg := RepairClkSenderState.waitingPatternsExchangeFinish
+          }
+        }
+        is(RepairClkSenderState.waitingPatternsExchangeFinish) {
+          when (io.flagFromAnalog_FinishedClkPatterns) {
+            repairClkSenderStateReg := RepairClkSenderState.sendResultReq
+          }
+        }
+        is(RepairClkSenderState.sendResultReq) {
+          when (io.sb_tx_ready && !sbTxValid) {
+            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairClkResultReq("phy", "phy")
+            nextSbTxValid := true.B
+            repairClkSenderStateReg := RepairClkSenderState.receiveResultResp
+          }
+        }
+        is(RepairClkSenderState.receiveResultResp) {
+          when (flagMbinitRepairClk_ReceivedResultResp){
+            //check the result bits in the response and set train error if not successful
+            when (mbinitRepairClk_ReceivedResultBits === "b111".U) {
+              //successful exchange
+              repairClkSenderStateReg := RepairClkSenderState.sendDoneReq
+            }.otherwise {
+              //repair failed, set train error flag
+              flagTrainError := true.B
             }
           }
         }
-        // after 3 lanes, close with done req
-        .elsewhen (!flagTrainError && repairClkLaneIdx === 3.U && !flagMbinitRepairClkSentDoneReq) {
-          nextSbTxDin   := MBINIT_REPAIRCLK_DONE_REQ
-          nextSbTxValid := true.B
-          flagMbinitRepairClkSentDoneReq := true.B
+        is(RepairClkSenderState.sendDoneReq) {
+          when (io.sb_tx_ready && !sbTxValid) {
+            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairClkDoneReq("phy", "phy")
+            nextSbTxValid := true.B
+            repairClkSenderStateReg := RepairClkSenderState.receiveDoneResp
+          }
+        }
+        is(RepairClkSenderState.receiveDoneResp) {
+          when (flagMbinitRepairClk_ReceivedDoneResp) {
+            repairClkSenderStateReg := RepairClkSenderState.finish
+          }
         }
       }
 
-      // per-lane completion: advance lane only after RESULT_RESP for that lane
-      when (
-        !flagTrainError && repairClkLaneIdx <= 2.U &&
-        flagMbinitRepairClkSentResultReq && flagMbinitRepairClkReceivedResultResp
-      ) {
-        // TODO: real detection decode from result resp payload
-        switch(repairClkLaneIdx) {
-          is(0.U) { flagRCKP_LDetectedCorrectly := true.B }
-          is(1.U) { flagRCKN_LDetectedCorrectly := true.B }
-          is(2.U) { flagRTRK_LDetectedCorrectly := true.B }
+      //receiver
+      switch(repairClkReceiverStateReg) {
+        is(RepairClkReceiverState.sendInitResp) {
+          when (flagMbinitRepairClk_ReceivedInitReq
+                  && io.flagFromAnalog_ReadyToExchangeClkPatterns
+                  && io.sb_tx_ready && !sbTxValid){
+            nextSbTxDin   := MBINIT_REPAIRCLK_INIT_RESP
+            nextSbTxValid := true.B
+            repairClkReceiverStateReg := RepairClkReceiverState.waitingPatternsExchangeFinish
+          }
         }
+        //after receiving resp partner sends clk patterns and after that sends resultReq
+          //wait for msgResultReq and when arrives check AN signal for correct patterns
+        is(RepairClkReceiverState.waitingPatternsExchangeFinish) {
+          when (flagMbinitRepairClk_ReceivedResultReq) { //resultReq = partner finished sending patterns
+            //TODO: LOG the results
+            mbinitRepairClk_logClkPatternReceivedRTRK_L := io.flagFromAnalog_clkPatternReceivedRTRK_L
+            mbinitRepairClk_logClkPatternReceivedRCKN_L := io.flagFromAnalog_clkPatternReceivedRCKN_L
+            mbinitRepairClk_logClkPatternReceivedRCKP_L := io.flagFromAnalog_clkPatternReceivedRCKP_L
 
-        repairClkLaneIdx := repairClkLaneIdx + 1.U
-        clearMbinitRepairClkReceivedInitReq := true.B
-        clearMbinitRepairClkReceivedInitResp := true.B
-        flagMbinitRepairClkSentInitReq := false.B
-        flagMbinitRepairClkSentInitResp := false.B
-        clearMbinitRepairClkReceivedResultReq := true.B
-        clearMbinitRepairClkReceivedResultResp := true.B
-        flagMbinitRepairClkSentResultReq := false.B
-        flagMbinitRepairClkSentResultResp := false.B
+            //check the flags from analog to see if all lanes received the patterns correctly and send response accordingly
+            when(io.flagFromAnalog_clkPatternReceivedRTRK_L
+              && io.flagFromAnalog_clkPatternReceivedRCKN_L
+              && io.flagFromAnalog_clkPatternReceivedRCKP_L
+            ){//all clk lanes received correct patterns
+              repairClkReceiverStateReg := RepairClkReceiverState.sendResultResp
+            }.otherwise {
+              //if any lane didnt receive correct pattern send response with failure result bits
+              flagTrainError := true.B
+            }
+          }
+        }
+        is(RepairClkReceiverState.sendResultResp) {
+          when (io.sb_tx_ready && !sbTxValid){
+            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairClkResultResp(
+              "phy",
+              "phy",
+              mbinitRepairClk_logClkPatternReceivedRTRK_L,
+              mbinitRepairClk_logClkPatternReceivedRCKN_L,
+              mbinitRepairClk_logClkPatternReceivedRCKP_L
+            )
+            nextSbTxValid := true.B
+            repairClkReceiverStateReg := RepairClkReceiverState.receiveDoneReq
+          }
+        }
+        is(RepairClkReceiverState.receiveDoneReq) {
+          when (flagMbinitRepairClk_ReceivedDoneReq) {
+            repairClkReceiverStateReg := RepairClkReceiverState.sendDoneResp
+          }
+        }
+        is(RepairClkReceiverState.sendDoneResp) {
+          when (io.sb_tx_ready && !sbTxValid){
+            nextSbTxDin   := MBINIT_REPAIRCLK_DONE_RESP
+            nextSbTxValid := true.B
+            repairClkReceiverStateReg := RepairClkReceiverState.finish
+
+          }
+        }
       }
 
-      when (flagRCKP_LDetectedIncorrectly || flagRCKN_LDetectedIncorrectly || flagRTRK_LDetectedIncorrectly) {
-        flagTrainError := true.B
-        // TODO: TRAINERROR handling (perform TRAINERROR handshake and transition)
-      }
-
-      when (
-        !flagTrainError &&
-        flagRCKP_LDetectedCorrectly && flagRCKN_LDetectedCorrectly && flagRTRK_LDetectedCorrectly &&
-        flagMbinitRepairClkReceivedDoneReq && flagMbinitRepairClkReceivedDoneResp &&
-        flagMbinitRepairClkSentDoneReq && flagMbinitRepairClkSentDoneResp
-      ) {
+      when (repairClkReceiverStateReg === RepairClkReceiverState.finish 
+            && repairClkSenderStateReg === RepairClkSenderState.finish) {
         stateReg := LTState.MBINIT
       }
+
     }
+
+      
 
     is (LTState.MBINIT) {
       stateReg := LTState.MBTRAIN
