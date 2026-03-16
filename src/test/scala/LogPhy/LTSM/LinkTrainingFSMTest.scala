@@ -169,6 +169,12 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
       val mbinitRepairClkResultRespWord = BigInt("02000704402A8012", 16) // all clks patterns detected
       val mbinitRepairClkDoneReqWord = BigInt("4200000840294012", 16)
       val mbinitRepairClkDoneRespWord = BigInt("42000008402A8012", 16)
+      val mbinitRepairValInitReqWord = BigInt("0200000540294012", 16)
+      val mbinitRepairValInitRespWord = BigInt("02000005402A8012", 16)
+      val mbinitRepairValResultReqWord = BigInt("0200000640294012", 16)
+      val mbinitRepairValResultRespWord = BigInt("42000106402A8012", 16)
+      val mbinitRepairValDoneReqWord = BigInt("0200000940294012", 16)
+      val mbinitRepairValDoneRespWord = BigInt("02000009402A8012", 16)
 
       // state ids
       val RESET          = 0
@@ -178,7 +184,8 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
       val MBINIT_PARAM   = 5
       val MBINIT_Cal     = 6
       val MBINIT_REPAIRCLK = 7
-      val ACTIVE         = 11
+      val MBINIT_REPAIRVAL = 8
+      val ACTIVE         = 12
 
       // loop and progress flags
       var cycle = 0
@@ -225,6 +232,24 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
       var mbinitRepairClkPeerRTRKHigh = false
       var mbinitRepairClkPeerRCKNHigh = false
       var mbinitRepairClkPeerRCKPHigh = false
+      // MBINIT_REPAIRVAL sender path
+      var mbinitRepairValInitReqSeen = false
+      var mbinitRepairValInitRespSent = false
+      var mbinitRepairValSendPatternSeen = false
+      var mbinitRepairValPatternWaitCycles = -1
+      var mbinitRepairValFinishedHigh = false
+      var mbinitRepairValResultReqSeen = false
+      var mbinitRepairValResultRespSent = false
+      var mbinitRepairValDoneReqSeen = false
+      var mbinitRepairValDoneRespSent = false
+      // MBINIT_REPAIRVAL receiver path
+      var mbinitRepairValPeerInitReqSent = false
+      var mbinitRepairValPeerInitRespSeen = false
+      var mbinitRepairValPeerValTrainPatternReceivedHigh = false
+      var mbinitRepairValPeerResultReqSent = false
+      var mbinitRepairValPeerResultRespSeen = false
+      var mbinitRepairValPeerDoneReqSent = false
+      var mbinitRepairValPeerDoneRespSeen = false
       var prevRxValidWasHigh = false
 
       while (cycle < 300) {
@@ -233,15 +258,20 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
         c.io.sb_rx_dout.poke(0.U)
         c.io.flagFromAnalog_ReadyToExchangeClkPatterns.poke(false.B)
         c.io.flagFromAnalog_FinishedClkPatterns.poke(false.B)
+        c.io.flagFromAnalog_FinishedValTrainPattern.poke(false.B)
         c.io.flagFromAnalog_clkPatternReceivedRTRK_L.poke(mbinitRepairClkPeerRTRKHigh.B)
         c.io.flagFromAnalog_clkPatternReceivedRCKN_L.poke(mbinitRepairClkPeerRCKNHigh.B)
         c.io.flagFromAnalog_clkPatternReceivedRCKP_L.poke(mbinitRepairClkPeerRCKPHigh.B)
+        c.io.flagFromAnalog_ValTrainPatternReceived.poke(mbinitRepairValPeerValTrainPatternReceivedHigh.B)
 
         if (mbinitRepairClkReadyHigh) {
           c.io.flagFromAnalog_ReadyToExchangeClkPatterns.poke(true.B)
         }
         if (mbinitRepairClkFinishedHigh) {
           c.io.flagFromAnalog_FinishedClkPatterns.poke(true.B)
+        }
+        if (mbinitRepairValFinishedHigh) {
+          c.io.flagFromAnalog_FinishedValTrainPattern.poke(true.B)
         }
 
         val canSendRxThisCycle = !prevRxValidWasHigh
@@ -257,12 +287,15 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           c.io.sb_tx_ready.poke(false.B)
           c.io.flagFromAnalog_ReadyToExchangeClkPatterns.poke(false.B)
           c.io.flagFromAnalog_FinishedClkPatterns.poke(false.B)
+          c.io.flagFromAnalog_FinishedValTrainPattern.poke(false.B)
           c.io.flagFromAnalog_clkPatternReceivedRTRK_L.poke(false.B)
           c.io.flagFromAnalog_clkPatternReceivedRCKN_L.poke(false.B)
           c.io.flagFromAnalog_clkPatternReceivedRCKP_L.poke(false.B)
+          c.io.flagFromAnalog_ValTrainPatternReceived.poke(false.B)
           mbinitRepairClkPeerRTRKHigh = false
           mbinitRepairClkPeerRCKNHigh = false
           mbinitRepairClkPeerRCKPHigh = false
+          mbinitRepairValPeerValTrainPatternReceivedHigh = false
         } else {
           c.reset.poke(false.B)
           c.io.start.poke(true.B)
@@ -539,6 +572,96 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           }
         }
 
+        if (stateVal == MBINIT_REPAIRVAL) {
+          var rxWordValid = false
+          var rxWord = BigInt(0)
+
+          if (c.io.sb_tx_valid.peek().litToBoolean) {
+            val txWord = c.io.sb_tx_din.peek().litValue
+            if (!mbinitRepairValInitReqSeen && txWord == mbinitRepairValInitReqWord) {
+              mbinitRepairValInitReqSeen = true
+            }
+            if (!mbinitRepairValResultReqSeen && txWord == mbinitRepairValResultReqWord) {
+              mbinitRepairValResultReqSeen = true
+            }
+            if (!mbinitRepairValDoneReqSeen && txWord == mbinitRepairValDoneReqWord) {
+              mbinitRepairValDoneReqSeen = true
+            }
+
+            if (!mbinitRepairValPeerInitRespSeen && txWord == mbinitRepairValInitRespWord) {
+              mbinitRepairValPeerInitRespSeen = true
+            }
+            if (!mbinitRepairValPeerResultRespSeen && txWord == mbinitRepairValResultRespWord) {
+              mbinitRepairValPeerResultRespSeen = true
+            }
+            if (!mbinitRepairValPeerDoneRespSeen && txWord == mbinitRepairValDoneRespWord) {
+              mbinitRepairValPeerDoneRespSeen = true
+            }
+          }
+
+          // sender path responses (peer answers DUT requests)
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairValInitReqSeen && !mbinitRepairValInitRespSent) {
+            rxWord = mbinitRepairValInitRespWord
+            rxWordValid = true
+            mbinitRepairValInitRespSent = true
+          }
+
+          if (!mbinitRepairValSendPatternSeen && c.io.flagToAnalog_SendValTrainPattern.peek().litToBoolean) {
+            mbinitRepairValSendPatternSeen = true
+            mbinitRepairValPatternWaitCycles = 7
+          }
+
+          if (mbinitRepairValSendPatternSeen && !mbinitRepairValFinishedHigh) {
+            if (mbinitRepairValPatternWaitCycles > 0) {
+              mbinitRepairValPatternWaitCycles -= 1
+            } else {
+              mbinitRepairValFinishedHigh = true
+              mbinitRepairValPeerValTrainPatternReceivedHigh = true
+            }
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairValResultReqSeen && !mbinitRepairValResultRespSent) {
+            rxWord = mbinitRepairValResultRespWord
+            rxWordValid = true
+            mbinitRepairValResultRespSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairValDoneReqSeen && !mbinitRepairValDoneRespSent) {
+            rxWord = mbinitRepairValDoneRespWord
+            rxWordValid = true
+            mbinitRepairValDoneRespSent = true
+          }
+
+          // receiver path requests (peer initiates while sender path is also running)
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && !mbinitRepairValPeerInitReqSent) {
+            rxWord = mbinitRepairValInitReqWord
+            rxWordValid = true
+            mbinitRepairValPeerInitReqSent = true
+          }
+
+          if (mbinitRepairValPeerInitRespSeen) {
+            mbinitRepairValPeerValTrainPatternReceivedHigh = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairValPeerInitRespSeen && !mbinitRepairValPeerResultReqSent) {
+            rxWord = mbinitRepairValResultReqWord
+            rxWordValid = true
+            mbinitRepairValPeerResultReqSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairValPeerResultRespSeen && !mbinitRepairValPeerDoneReqSent) {
+            rxWord = mbinitRepairValDoneReqWord
+            rxWordValid = true
+            mbinitRepairValPeerDoneReqSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && rxWordValid) {
+            c.io.sb_rx_dout.poke(rxWord.U)
+            c.io.sb_rx_valid.poke(true.B)
+            rxSentThisCycle = true
+          }
+        }
+
         prevRxValidWasHigh = rxSentThisCycle
 
         // advance one cycle
@@ -561,7 +684,14 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
         mbinitRepairClkDoneReqSeen && mbinitRepairClkDoneRespSent &&
         mbinitRepairClkPeerInitReqSent && mbinitRepairClkPeerInitRespSeen &&
         mbinitRepairClkPeerResultReqSent && mbinitRepairClkPeerResultRespSeen &&
-        mbinitRepairClkPeerDoneReqSent && mbinitRepairClkPeerDoneRespSeen
+        mbinitRepairClkPeerDoneReqSent && mbinitRepairClkPeerDoneRespSeen &&
+        mbinitRepairValInitReqSeen && mbinitRepairValInitRespSent &&
+        mbinitRepairValSendPatternSeen && mbinitRepairValFinishedHigh &&
+        mbinitRepairValResultReqSeen && mbinitRepairValResultRespSent &&
+        mbinitRepairValDoneReqSeen && mbinitRepairValDoneRespSent &&
+        mbinitRepairValPeerInitReqSent && mbinitRepairValPeerInitRespSeen &&
+        mbinitRepairValPeerResultReqSent && mbinitRepairValPeerResultRespSeen &&
+        mbinitRepairValPeerDoneReqSent && mbinitRepairValPeerDoneRespSeen
       )
     }
   }

@@ -229,6 +229,70 @@ def msgMbinitRepairClkDoneResp(
     dst
   )
 
+// MBINIT.REPAIRVAL init req (64-bit header only)
+def msgMbinitRepairValInitReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h05".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRVAL init resp (64-bit header only)
+def msgMbinitRepairValInitResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h05".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRVAL result req (64-bit header only)
+def msgMbinitRepairValResultReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h06".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRVAL result resp (64-bit header only, msgInfo[0] carries RVLD_L detection)
+def msgMbinitRepairValResultResp(
+  src: String,
+  dst: String,
+  RVLD_L: UInt
+): UInt =
+  msgWithoutDataBase(
+    Cat(0.U(15.W), RVLD_L(0)),
+    "hAA".U(8.W),
+    "h06".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRVAL done req (64-bit header only)
+def msgMbinitRepairValDoneReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h09".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRVAL done resp (64-bit header only)
+def msgMbinitRepairValDoneResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h09".U(8.W),
+    src,
+    dst
+  )
+
 
   /**
    * Return the fixed SBINIT clock pattern (0xAAAAAAAAAAAAAAAA) as a 64-bit UInt.

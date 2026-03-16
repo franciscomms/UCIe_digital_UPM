@@ -41,11 +41,15 @@ class LinkTrainingFSM(
     val stable_supply  = Input(Bool())
     val flagFromAnalog_ReadyToExchangeClkPatterns = Input(Bool())
     val flagFromAnalog_FinishedClkPatterns        = Input(Bool())
+    val flagFromAnalog_FinishedValTrainPattern    = Input(Bool())
     val flagFromAnalog_clkPatternReceivedRTRK_L   = Input(Bool())
     val flagFromAnalog_clkPatternReceivedRCKN_L   = Input(Bool())
     val flagFromAnalog_clkPatternReceivedRCKP_L   = Input(Bool())
+    val flagFromAnalog_ValTrainPatternReceived    = Input(Bool())
     val flagToAnalog_RepairClkState               = Output(Bool())
     val flagToAnalog_SendClkPatterns              = Output(Bool()) //look where is reset being done
+    val flagToAnalog_RepairValState               = Output(Bool())
+    val flagToAnalog_SendValTrainPattern          = Output(Bool())
 
     // needs 4 bits because there are 12 enum states (0..11)
     val state = Output(UInt(4.W))
@@ -77,7 +81,7 @@ class LinkTrainingFSM(
   object LTState extends ChiselEnum {
     val RESET, 
       SBINIT_pattern,SBINIT_sendFour, SBINIT_OORmsg, SBINIT_DONEmsg,
-      MBINIT_PARAM, MBINIT_Cal, MBINIT_REPAIRCLK, MBINIT, 
+      MBINIT_PARAM, MBINIT_Cal, MBINIT_REPAIRCLK, MBINIT_REPAIRVAL, MBINIT, 
       MBTRAIN, 
       LINKINIT, 
       ACTIVE = Value
@@ -100,6 +104,26 @@ class LinkTrainingFSM(
       sendInitResp,
       waitingPatternsExchangeFinish,
       receiveResultReq,
+      sendResultResp,
+      receiveDoneReq,
+      sendDoneResp,
+      finish = Value
+  }
+
+  object RepairValSenderState extends ChiselEnum {
+    val initReq,
+      sendValTrainPattern,
+      waitingValTrainPatternFinish,
+      sendResultReq,
+      receiveResultResp,
+      sendDoneReq,
+      receiveDoneResp,
+      finish = Value
+  }
+
+  object RepairValReceiverState extends ChiselEnum {
+    val sendInitResp,
+      waitingValTrainPatternFinish,
       sendResultResp,
       receiveDoneReq,
       sendDoneResp,
@@ -172,6 +196,17 @@ class LinkTrainingFSM(
   val flagMbinitRepairClk_SentResultReq    = RegInit(false.B)
   val repairClkSenderStateReg = RegInit(RepairClkSenderState.initReq)
   val repairClkReceiverStateReg = RegInit(RepairClkReceiverState.sendInitResp)
+  // MBINIT_REPAIRVAL flags
+  val flagMbinitRepairVal_ReceivedInitResp = RegInit(false.B)
+  val flagMbinitRepairVal_ReceivedInitReq = RegInit(false.B)
+  val flagMbinitRepairVal_ReceivedResultResp = RegInit(false.B)
+  val flagMbinitRepairVal_ReceivedResultReq = RegInit(false.B)
+  val flagMbinitRepairVal_ReceivedDoneResp = RegInit(false.B)
+  val flagMbinitRepairVal_ReceivedDoneReq = RegInit(false.B)
+  val mbinitRepairVal_ReceivedResultBit = RegInit(false.B)
+  val mbinitRepairVal_logValTrainPatternReceived = RegInit(false.B)
+  val repairValSenderStateReg = RegInit(RepairValSenderState.initReq)
+  val repairValReceiverStateReg = RegInit(RepairValReceiverState.sendInitResp)
   // TRAIN ERROR
   val flagTrainError = RegInit(false.B)
   // MBINIT_REPAIRCLK receiver logs from analog
@@ -246,6 +281,13 @@ class LinkTrainingFSM(
     0.U(1.W)
   )
   val MBINIT_REPAIRCLK_DONE_RESP = SidebandMsgGenerator.msgMbinitRepairClkDoneResp("phy", "phy")
+  val MBINIT_REPAIRVAL_INIT_RESP = SidebandMsgGenerator.msgMbinitRepairValInitResp("phy", "phy")
+  val MBINIT_REPAIRVAL_RESULT_RESP = SidebandMsgGenerator.msgMbinitRepairValResultResp(
+    "phy",
+    "phy",
+    0.U(1.W)
+  )
+  val MBINIT_REPAIRVAL_DONE_RESP = SidebandMsgGenerator.msgMbinitRepairValDoneResp("phy", "phy")
 
   // ==========================================================
   // Debug signals
@@ -258,6 +300,8 @@ class LinkTrainingFSM(
   io.dbg_flagTrainError := flagTrainError
   io.flagToAnalog_RepairClkState := false.B
   io.flagToAnalog_SendClkPatterns := false.B
+  io.flagToAnalog_RepairValState := false.B
+  io.flagToAnalog_SendValTrainPattern := false.B
 
   // ==========================================================
   // Messages reception
@@ -287,6 +331,15 @@ class LinkTrainingFSM(
       flagMbinitRepairClk_ReceivedDoneReq := false.B
       flagMbinitRepairClk_ReceivedDoneResp := false.B
       mbinitRepairClk_ReceivedResultBits := 0.U
+      //mbinit RepairVal sender/receiver
+      flagMbinitRepairVal_ReceivedInitReq := false.B
+      flagMbinitRepairVal_ReceivedInitResp := false.B
+      flagMbinitRepairVal_ReceivedResultReq := false.B
+      flagMbinitRepairVal_ReceivedResultResp := false.B
+      flagMbinitRepairVal_ReceivedDoneReq := false.B
+      flagMbinitRepairVal_ReceivedDoneResp := false.B
+      mbinitRepairVal_ReceivedResultBit := false.B
+      mbinitRepairVal_logValTrainPatternReceived := false.B
     }.otherwise {
       when (io.sb_rx_dout === SBINIT_CLK_PATTERN && !flagSbinitFirstClkPatternSeen) { //receiving two consecutive clk patterns
         flagSbinitFirstClkPatternSeen := true.B
@@ -367,6 +420,34 @@ class LinkTrainingFSM(
 
       when (io.sb_rx_dout === MBINIT_REPAIRCLK_DONE_RESP) {
         flagMbinitRepairClk_ReceivedDoneResp := true.B
+      }
+
+      when (io.sb_rx_dout === SidebandMsgGenerator.msgMbinitRepairValInitReq("phy", "phy")) {
+        flagMbinitRepairVal_ReceivedInitReq := true.B
+      }
+
+      when (io.sb_rx_dout === MBINIT_REPAIRVAL_INIT_RESP) {
+        flagMbinitRepairVal_ReceivedInitResp := true.B
+      }
+
+      when (io.sb_rx_dout === SidebandMsgGenerator.msgMbinitRepairValResultReq("phy", "phy")) {
+        flagMbinitRepairVal_ReceivedResultReq := true.B
+      }
+
+      when (
+        (io.sb_rx_dout & "hBFFFFEFFFFFFFFFF".U(64.W)) ===
+        (MBINIT_REPAIRVAL_RESULT_RESP & "hBFFFFEFFFFFFFFFF".U(64.W))
+      ) {
+        flagMbinitRepairVal_ReceivedResultResp := true.B
+        mbinitRepairVal_ReceivedResultBit := io.sb_rx_dout(40)
+      }
+
+      when (io.sb_rx_dout === SidebandMsgGenerator.msgMbinitRepairValDoneReq("phy", "phy")) {
+        flagMbinitRepairVal_ReceivedDoneReq := true.B
+      }
+
+      when (io.sb_rx_dout === MBINIT_REPAIRVAL_DONE_RESP) {
+        flagMbinitRepairVal_ReceivedDoneResp := true.B
       }
     }
   }
@@ -682,9 +763,111 @@ class LinkTrainingFSM(
 
       when (repairClkReceiverStateReg === RepairClkReceiverState.finish 
             && repairClkSenderStateReg === RepairClkSenderState.finish) {
-        stateReg := LTState.MBINIT
+        stateReg := LTState.MBINIT_REPAIRVAL
       }
 
+    }
+
+    is (LTState.MBINIT_REPAIRVAL) {
+
+      io.flagToAnalog_RepairValState := true.B
+
+      // sender
+      switch(repairValSenderStateReg) {
+        is(RepairValSenderState.initReq) {
+          when (io.sb_tx_ready && !sbTxValid) {
+            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairValInitReq("phy", "phy")
+            nextSbTxValid := true.B
+            repairValSenderStateReg := RepairValSenderState.sendValTrainPattern
+          }
+        }
+        is(RepairValSenderState.sendValTrainPattern) {
+          when (flagMbinitRepairVal_ReceivedInitResp && io.flagFromAnalog_ReadyToExchangeClkPatterns) {
+            io.flagToAnalog_SendValTrainPattern := true.B
+            repairValSenderStateReg := RepairValSenderState.waitingValTrainPatternFinish
+          }
+        }
+        is(RepairValSenderState.waitingValTrainPatternFinish) {
+          when (io.flagFromAnalog_FinishedValTrainPattern) {
+            repairValSenderStateReg := RepairValSenderState.sendResultReq
+          }
+        }
+        is(RepairValSenderState.sendResultReq) {
+          when (io.sb_tx_ready && !sbTxValid) {
+            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairValResultReq("phy", "phy")
+            nextSbTxValid := true.B
+            repairValSenderStateReg := RepairValSenderState.receiveResultResp
+          }
+        }
+        is(RepairValSenderState.receiveResultResp) {
+          when (flagMbinitRepairVal_ReceivedResultResp) {
+            when (mbinitRepairVal_ReceivedResultBit) {
+              repairValSenderStateReg := RepairValSenderState.sendDoneReq
+            }.otherwise {
+              flagTrainError := true.B
+            }
+          }
+        }
+        is(RepairValSenderState.sendDoneReq) {
+          when (io.sb_tx_ready && !sbTxValid) {
+            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairValDoneReq("phy", "phy")
+            nextSbTxValid := true.B
+            repairValSenderStateReg := RepairValSenderState.receiveDoneResp
+          }
+        }
+        is(RepairValSenderState.receiveDoneResp) {
+          when (flagMbinitRepairVal_ReceivedDoneResp) {
+            repairValSenderStateReg := RepairValSenderState.finish
+          }
+        }
+      }
+
+      // receiver
+      switch(repairValReceiverStateReg) {
+        is(RepairValReceiverState.sendInitResp) {
+          when (flagMbinitRepairVal_ReceivedInitReq
+                  && io.flagFromAnalog_ReadyToExchangeClkPatterns
+                  && io.sb_tx_ready && !sbTxValid) {
+            nextSbTxDin   := MBINIT_REPAIRVAL_INIT_RESP
+            nextSbTxValid := true.B
+            repairValReceiverStateReg := RepairValReceiverState.waitingValTrainPatternFinish
+          }
+        }
+        is(RepairValReceiverState.waitingValTrainPatternFinish) {
+          when (flagMbinitRepairVal_ReceivedResultReq) {
+            mbinitRepairVal_logValTrainPatternReceived := io.flagFromAnalog_ValTrainPatternReceived
+            repairValReceiverStateReg := RepairValReceiverState.sendResultResp
+          }
+        }
+        is(RepairValReceiverState.sendResultResp) {
+          when (io.sb_tx_ready && !sbTxValid) {
+            nextSbTxDin := SidebandMsgGenerator.msgMbinitRepairValResultResp(
+              "phy",
+              "phy",
+              mbinitRepairVal_logValTrainPatternReceived
+            )
+            nextSbTxValid := true.B
+            repairValReceiverStateReg := RepairValReceiverState.receiveDoneReq
+          }
+        }
+        is(RepairValReceiverState.receiveDoneReq) {
+          when (flagMbinitRepairVal_ReceivedDoneReq) {
+            repairValReceiverStateReg := RepairValReceiverState.sendDoneResp
+          }
+        }
+        is(RepairValReceiverState.sendDoneResp) {
+          when (io.sb_tx_ready && !sbTxValid) {
+            nextSbTxDin   := MBINIT_REPAIRVAL_DONE_RESP
+            nextSbTxValid := true.B
+            repairValReceiverStateReg := RepairValReceiverState.finish
+          }
+        }
+      }
+
+      when (repairValReceiverStateReg === RepairValReceiverState.finish &&
+            repairValSenderStateReg === RepairValSenderState.finish) {
+        stateReg := LTState.MBINIT
+      }
     }
 
       
