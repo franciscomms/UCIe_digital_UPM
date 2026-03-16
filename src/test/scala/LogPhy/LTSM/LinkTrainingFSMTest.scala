@@ -152,7 +152,11 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
   it should "advance through all stages using a while-driven clock loop" in {
     test(new LinkTrainingFSM).withAnnotations(Seq(WriteVcdAnnotation)) { c =>
 
-      // fixed stimulus words
+      // ---------------------------------------------------------------------------------
+      // Fixed sideband words used by the peer model
+      // ---------------------------------------------------------------------------------
+      // These values represent the exact 64-bit headers/payloads expected by the DUT
+      // for each LT/SBINIT/MBINIT transaction.
       val pattern     = BigInt("AAAAAAAAAAAAAAAA", 16)
       val successMsg  = BigInt("0200010040244012", 16)
       val doneReqMsg  = BigInt("4200000140254012", 16)
@@ -176,18 +180,31 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
       val mbinitRepairValDoneReqWord = BigInt("0200000940294012", 16)
       val mbinitRepairValDoneRespWord = BigInt("02000009402A8012", 16)
 
-      // state ids
+      // ---------------------------------------------------------------------------------
+      // Top-level LT state IDs
+      // ---------------------------------------------------------------------------------
+      // The top FSM now enters MBINIT through a single super-state. Detailed MBINIT
+      // sequencing is driven by MBInitFSM substate debug output.
       val RESET          = 0
       val SBINIT_pattern = 1
       val SBINIT_OORmsg  = 3
       val SBINIT_DONEmsg = 4
-      val MBINIT_PARAM   = 5
-      val MBINIT_Cal     = 6
-      val MBINIT_REPAIRCLK = 7
-      val MBINIT_REPAIRVAL = 8
-      val ACTIVE         = 12
+      val MBINIT_SUPER   = 5
+      val ACTIVE         = 8
 
-      // loop and progress flags
+      // ---------------------------------------------------------------------------------
+      // MBInitFSM substate IDs (visible while LT state is MBINIT_SUPER)
+      // ---------------------------------------------------------------------------------
+      val MBINIT_PARAM   = 0
+      val MBINIT_Cal     = 1
+      val MBINIT_REPAIRCLK = 2
+      val MBINIT_REPAIRVAL = 3
+
+      // ---------------------------------------------------------------------------------
+      // Progress/bookkeeping flags
+      // ---------------------------------------------------------------------------------
+      // Each boolean tracks that a specific handshake milestone was observed/sent.
+      // Final assertions use these to guarantee complete protocol coverage.
       var cycle = 0
       var firstPatternSent = false
       var gapAfterFirst = 0
@@ -253,7 +270,11 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
       var prevRxValidWasHigh = false
 
       while (cycle < 300) {
-        // default RX inputs each cycle
+        // -----------------------------------------------------------------------------
+        // Per-cycle defaults (safe baseline)
+        // -----------------------------------------------------------------------------
+        // Start every cycle with no RX traffic, then selectively drive one RX word
+        // depending on current state/substate and handshake progress.
         c.io.sb_rx_valid.poke(false.B)
         c.io.sb_rx_dout.poke(0.U)
         c.io.flagFromAnalog_ReadyToExchangeClkPatterns.poke(false.B)
@@ -264,6 +285,8 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
         c.io.flagFromAnalog_clkPatternReceivedRCKP_L.poke(mbinitRepairClkPeerRCKPHigh.B)
         c.io.flagFromAnalog_ValTrainPatternReceived.poke(mbinitRepairValPeerValTrainPatternReceivedHigh.B)
 
+        // Keep analog status pins high once their corresponding internal conditions
+        // have been reached in the software peer model.
         if (mbinitRepairClkReadyHigh) {
           c.io.flagFromAnalog_ReadyToExchangeClkPatterns.poke(true.B)
         }
@@ -274,10 +297,17 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           c.io.flagFromAnalog_FinishedValTrainPattern.poke(true.B)
         }
 
+        // Global anti-back-to-back policy:
+        // do not drive sb_rx_valid high in two consecutive cycles.
+        // This mimics spacing constraints and avoids edge-detection races.
         val canSendRxThisCycle = !prevRxValidWasHigh
         var rxSentThisCycle = false
 
-        // reset phase for first three cycles
+        // -----------------------------------------------------------------------------
+        // Reset / bring-up window
+        // -----------------------------------------------------------------------------
+        // Hold reset and all controls low for first 3 cycles, then release reset and
+        // drive static prerequisites to allow LT progression out of RESET.
         if (cycle < 3) {
           c.reset.poke(true.B)
           c.io.start.poke(false.B)
@@ -305,9 +335,15 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           c.io.sb_tx_ready.poke(true.B)
         }
 
+        // Snapshot current LT state and MBINIT substate for this cycle's decisions.
         val stateVal = c.io.state.peek().litValue.toInt
+        val mbinitSubstateVal = c.io.dbg_mbinitSubstate.peek().litValue.toInt
 
-        // SBINIT pattern handshake
+        // -----------------------------------------------------------------------------
+        // SBINIT_pattern
+        // -----------------------------------------------------------------------------
+        // Drive two valid clock patterns separated by a programmed gap.
+        // This reproduces expected detection behavior in the DUT.
         if (stateVal == SBINIT_pattern) {
           if (!firstPatternSent) {
             if (canSendRxThisCycle) {
@@ -329,7 +365,10 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           }
         }
 
-        // SBINIT OOR ack
+        // -----------------------------------------------------------------------------
+        // SBINIT_OORmsg
+        // -----------------------------------------------------------------------------
+        // Echo the out-of-reset success message once.
         if (stateVal == SBINIT_OORmsg && !successSent) {
           if (canSendRxThisCycle) {
             c.io.sb_rx_dout.poke(successMsg.U)
@@ -339,7 +378,10 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           }
         }
 
-        // SBINIT DONE req/resp exchange
+        // -----------------------------------------------------------------------------
+        // SBINIT_DONEmsg
+        // -----------------------------------------------------------------------------
+        // Peer sends DONE_REQ, waits for DUT DONE_RESP visibility, then returns DONE_RESP.
         if (stateVal == SBINIT_DONEmsg) {
           //send req
           if (!doneReqSent) {
@@ -368,8 +410,12 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           }
         }
 
-        // MBINIT.PARAM req/resp with payloads
-        if (stateVal == MBINIT_PARAM) {
+        // -----------------------------------------------------------------------------
+        // MBINIT_SUPER + PARAM substate
+        // -----------------------------------------------------------------------------
+        // Full bi-directional req/resp exchange with explicit payload staging and
+        // inter-message spacing to avoid back-to-back valid pulses.
+        if (stateVal == MBINIT_SUPER && mbinitSubstateVal == MBINIT_PARAM) {
           //reception from DUT
           if (c.io.sb_tx_valid.peek().litToBoolean) {
             val txWord = c.io.sb_tx_din.peek().litValue
@@ -430,8 +476,11 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           }
         }
 
-        // MBINIT.CAL done req/resp exchange
-        if (stateVal == MBINIT_Cal) {
+        // -----------------------------------------------------------------------------
+        // MBINIT_SUPER + CAL substate
+        // -----------------------------------------------------------------------------
+        // DONE handshake with ordered req then resp behavior and gap control.
+        if (stateVal == MBINIT_SUPER && mbinitSubstateVal == MBINIT_Cal) {
           // capture DUT TX words
           if (c.io.sb_tx_valid.peek().litToBoolean) {
             val txWord = c.io.sb_tx_din.peek().litValue
@@ -470,7 +519,12 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           }
         }
 
-        if (stateVal == MBINIT_REPAIRCLK) {
+        // -----------------------------------------------------------------------------
+        // MBINIT_SUPER + REPAIRCLK substate
+        // -----------------------------------------------------------------------------
+        // Sender path (DUT initiates) and receiver path (peer initiates) run in parallel.
+        // The test tracks and services both, while driving analog pin progression.
+        if (stateVal == MBINIT_SUPER && mbinitSubstateVal == MBINIT_REPAIRCLK) {
           var rxWordValid = false
           var rxWord = BigInt(0)
 
@@ -497,10 +551,11 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
             }
           }
 
-          // keep analog ready high through MBINIT_REPAIRCLK so both paths can progress in parallel
+          // Keep ReadyToExchange high across the whole REPAIRCLK phase so both paths
+          // can make forward progress without artificial blocking.
           mbinitRepairClkReadyHigh = true
 
-          // sender path responses (peer answers DUT requests)
+          // Sender-path responses: peer answers DUT-generated INIT/RESULT/DONE requests.
           if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairClkInitReqSeen && !mbinitRepairClkInitRespSent) {
             rxWord = mbinitRepairClkInitRespWord
             rxWordValid = true
@@ -532,7 +587,8 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
             mbinitRepairClkDoneRespSent = true
           }
 
-          // receiver path requests (peer initiates while sender path is also running)
+          // Receiver-path requests: peer independently initiates INIT->RESULT->DONE while
+          // DUT sender path is active, validating true duplex behavior.
           if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && !mbinitRepairClkPeerInitReqSent) {
             rxWord = mbinitRepairClkInitReqWord
             rxWordValid = true
@@ -572,7 +628,12 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           }
         }
 
-        if (stateVal == MBINIT_REPAIRVAL) {
+        // -----------------------------------------------------------------------------
+        // MBINIT_SUPER + REPAIRVAL substate
+        // -----------------------------------------------------------------------------
+        // Similar parallel sender/receiver orchestration as REPAIRCLK, but using
+        // ValTrain-specific analog done and result semantics.
+        if (stateVal == MBINIT_SUPER && mbinitSubstateVal == MBINIT_REPAIRVAL) {
           var rxWordValid = false
           var rxWord = BigInt(0)
 
@@ -599,7 +660,7 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
             }
           }
 
-          // sender path responses (peer answers DUT requests)
+          // Sender-path responses: peer acknowledges DUT's INIT/RESULT/DONE sequence.
           if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairValInitReqSeen && !mbinitRepairValInitRespSent) {
             rxWord = mbinitRepairValInitRespWord
             rxWordValid = true
@@ -632,7 +693,7 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
             mbinitRepairValDoneRespSent = true
           }
 
-          // receiver path requests (peer initiates while sender path is also running)
+          // Receiver-path requests: peer starts its own REPAIRVAL flow in parallel.
           if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && !mbinitRepairValPeerInitReqSent) {
             rxWord = mbinitRepairValInitReqWord
             rxWordValid = true
@@ -662,6 +723,8 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           }
         }
 
+        // Remember whether we drove rx_valid this cycle to enforce one-cycle low spacing
+        // on the next iteration.
         prevRxValidWasHigh = rxSentThisCycle
 
         // advance one cycle
@@ -669,7 +732,11 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
         cycle += 1
       }
 
-      // final state check
+      // ---------------------------------------------------------------------------------
+      // End-of-test checks
+      // ---------------------------------------------------------------------------------
+      // 1) Top FSM reached ACTIVE.
+      // 2) All expected handshake milestones across SBINIT + MBINIT substates occurred.
       c.io.state.expect(ACTIVE.U)
       // handshake completion checks
       assert(
