@@ -7,6 +7,7 @@
     - implement MBINIT_PARAM negotiation and retries
     - check rising edge when sending in stages
     - DO training error
+    - confirm messages with payload are not interrupted
 */
 
 package edu.berkeley.cs.ucie.digital
@@ -42,14 +43,52 @@ class LinkTrainingFSM(
     val flagFromAnalog_ReadyToExchangeClkPatterns = Input(Bool())
     val flagFromAnalog_FinishedClkPatterns        = Input(Bool())
     val flagFromAnalog_FinishedValTrainPattern    = Input(Bool())
+    val flagFromAnalog_ReversalMbFinishedLaneIDPattern = Input(Bool())
+    val flagFromAnalog_RepairMbFinishedLaneIDPattern   = Input(Bool())
     val flagFromAnalog_clkPatternReceivedRTRK_L   = Input(Bool())
     val flagFromAnalog_clkPatternReceivedRCKN_L   = Input(Bool())
     val flagFromAnalog_clkPatternReceivedRCKP_L   = Input(Bool())
     val flagFromAnalog_ValTrainPatternReceived    = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived0   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived1   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived2   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived3   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived4   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived5   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived6   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived7   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived8   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived9   = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived10  = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived11  = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived12  = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived13  = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived14  = Input(Bool())
+    val flagFromAnalog_ReversalMbTrainPatternReceived15  = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern0    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern1    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern2    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern3    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern4    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern5    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern6    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern7    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern8    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern9    = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern10   = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern11   = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern12   = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern13   = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern14   = Input(Bool())
+    val flagFromAnalog_RepairMbDetectedLaneIDPattern15   = Input(Bool())
     val flagToAnalog_RepairClkState               = Output(Bool())
     val flagToAnalog_SendClkPatterns              = Output(Bool()) //look where is reset being done
     val flagToAnalog_RepairValState               = Output(Bool())
     val flagToAnalog_SendValTrainPattern          = Output(Bool())
+    val flagToAnalog_ReversalMbSendLaneIDPattern  = Output(Bool())
+    val flagToAnalog_RepairMbSendLaneIDPattern    = Output(Bool())
+    val flagToAnalog_RepairMbSetReceiver          = Output(Bool())
+    val flagToAnalog_LaneReversalApplied          = Output(Bool())
 
     // needs 4 bits because there are 12 enum states (0..11)
     val state = Output(UInt(4.W))
@@ -61,7 +100,18 @@ class LinkTrainingFSM(
     val dbg_sbTxValid = Output(Bool()) 
     val dbg_sbTxDin = Output(UInt(64.W))
     val dbg_flagTrainError = Output(Bool())
+    val dbg_mbinitSubstate = Output(UInt(3.W))
+    val dbg_mbinitReversalMbReceivedSuccessCount = Output(UInt(5.W))
   })
+
+
+
+
+
+
+
+
+
 
   // ==========================================================
   // Outputs registers to avoid combinational loops in the FSM logic
@@ -72,16 +122,14 @@ class LinkTrainingFSM(
   val nextSbTxDin   = WireDefault(0.U(64.W))
   sbTxValid := nextSbTxValid
   sbTxDin   := nextSbTxDin
-  io.sb_tx_valid := sbTxValid
-  io.sb_tx_din   := sbTxDin
 
   // ==========================================================
-  // LINK TRAINING FSM
+  // FSM
   // ==========================================================
   object LTState extends ChiselEnum {
     val RESET, 
       SBINIT_pattern,SBINIT_sendFour, SBINIT_OORmsg, SBINIT_DONEmsg,
-      MBINIT_PARAM, MBINIT_Cal, MBINIT_REPAIRCLK, MBINIT_REPAIRVAL, MBINIT, 
+      MBINIT_SUPER,
       MBTRAIN, 
       LINKINIT, 
       ACTIVE = Value
@@ -225,6 +273,79 @@ class LinkTrainingFSM(
   val rxValidRisingEdge = io.sb_rx_valid && (!prevRxValid)
   val prevState = RegNext(stateReg, LTState.RESET)
 
+
+
+
+
+
+
+
+
+
+
+
+  // ==========================================================
+  // FSMs Instatiations
+  // ==========================================================
+
+  val mbInitFsm = Module(new MBInitFSM(designParams))
+  mbInitFsm.io.start := (stateReg === LTState.MBINIT_SUPER)
+  mbInitFsm.io.sb_tx_ready := io.sb_tx_ready
+  mbInitFsm.io.sb_rx_dout := io.sb_rx_dout
+  mbInitFsm.io.sb_rx_valid := io.sb_rx_valid
+  mbInitFsm.io.flagFromAnalog_ReadyToExchangeClkPatterns := io.flagFromAnalog_ReadyToExchangeClkPatterns
+  mbInitFsm.io.flagFromAnalog_FinishedClkPatterns := io.flagFromAnalog_FinishedClkPatterns
+  mbInitFsm.io.flagFromAnalog_FinishedValTrainPattern := io.flagFromAnalog_FinishedValTrainPattern
+  mbInitFsm.io.flagFromAnalog_ReversalMbFinishedLaneIDPattern := io.flagFromAnalog_ReversalMbFinishedLaneIDPattern
+  mbInitFsm.io.flagFromAnalog_RepairMbFinishedLaneIDPattern := io.flagFromAnalog_RepairMbFinishedLaneIDPattern
+  mbInitFsm.io.flagFromAnalog_clkPatternReceivedRTRK_L := io.flagFromAnalog_clkPatternReceivedRTRK_L
+  mbInitFsm.io.flagFromAnalog_clkPatternReceivedRCKN_L := io.flagFromAnalog_clkPatternReceivedRCKN_L
+  mbInitFsm.io.flagFromAnalog_clkPatternReceivedRCKP_L := io.flagFromAnalog_clkPatternReceivedRCKP_L
+  mbInitFsm.io.flagFromAnalog_ValTrainPatternReceived := io.flagFromAnalog_ValTrainPatternReceived
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived0 := io.flagFromAnalog_ReversalMbTrainPatternReceived0
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived1 := io.flagFromAnalog_ReversalMbTrainPatternReceived1
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived2 := io.flagFromAnalog_ReversalMbTrainPatternReceived2
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived3 := io.flagFromAnalog_ReversalMbTrainPatternReceived3
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived4 := io.flagFromAnalog_ReversalMbTrainPatternReceived4
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived5 := io.flagFromAnalog_ReversalMbTrainPatternReceived5
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived6 := io.flagFromAnalog_ReversalMbTrainPatternReceived6
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived7 := io.flagFromAnalog_ReversalMbTrainPatternReceived7
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived8 := io.flagFromAnalog_ReversalMbTrainPatternReceived8
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived9 := io.flagFromAnalog_ReversalMbTrainPatternReceived9
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived10 := io.flagFromAnalog_ReversalMbTrainPatternReceived10
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived11 := io.flagFromAnalog_ReversalMbTrainPatternReceived11
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived12 := io.flagFromAnalog_ReversalMbTrainPatternReceived12
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived13 := io.flagFromAnalog_ReversalMbTrainPatternReceived13
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived14 := io.flagFromAnalog_ReversalMbTrainPatternReceived14
+  mbInitFsm.io.flagFromAnalog_ReversalMbTrainPatternReceived15 := io.flagFromAnalog_ReversalMbTrainPatternReceived15
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern0 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern0
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern1 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern1
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern2 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern2
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern3 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern3
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern4 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern4
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern5 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern5
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern6 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern6
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern7 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern7
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern8 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern8
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern9 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern9
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern10 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern10
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern11 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern11
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern12 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern12
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern13 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern13
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern14 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern14
+  mbInitFsm.io.flagFromAnalog_RepairMbDetectedLaneIDPattern15 := io.flagFromAnalog_RepairMbDetectedLaneIDPattern15
+    
+  io.flagToAnalog_RepairClkState := mbInitFsm.io.flagToAnalog_RepairClkState
+  io.flagToAnalog_SendClkPatterns := mbInitFsm.io.flagToAnalog_SendClkPatterns
+  io.flagToAnalog_RepairValState := mbInitFsm.io.flagToAnalog_RepairValState
+  io.flagToAnalog_SendValTrainPattern := mbInitFsm.io.flagToAnalog_SendValTrainPattern
+  io.flagToAnalog_ReversalMbSendLaneIDPattern := mbInitFsm.io.flagToAnalog_ReversalMbSendLaneIDPattern
+  io.flagToAnalog_RepairMbSendLaneIDPattern := mbInitFsm.io.flagToAnalog_RepairMbSendLaneIDPattern
+  io.flagToAnalog_RepairMbSetReceiver := mbInitFsm.io.flagToAnalog_RepairMbSetReceiver
+  io.flagToAnalog_LaneReversalApplied := mbInitFsm.io.flagToAnalog_LaneReversalApplied
+  io.sb_tx_valid := Mux(stateReg === LTState.MBINIT_SUPER, mbInitFsm.io.sb_tx_valid, sbTxValid)
+  io.sb_tx_din := Mux(stateReg === LTState.MBINIT_SUPER, mbInitFsm.io.sb_tx_din, sbTxDin)
+
   
 
 
@@ -289,20 +410,37 @@ class LinkTrainingFSM(
   )
   val MBINIT_REPAIRVAL_DONE_RESP = SidebandMsgGenerator.msgMbinitRepairValDoneResp("phy", "phy")
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
   // ==========================================================
   // Debug signals
   // ==========================================================
   io.dbg_flagSbinitFirstClkPatternSeen := flagSbinitFirstClkPatternSeen
   io.dbg_rxValidRisingEdge := rxValidRisingEdge
   io.dbg_sbinitSendCount := sbinitSendCount
-  io.dbg_sbTxValid := sbTxValid
-  io.dbg_sbTxDin := sbTxDin
-  io.dbg_flagTrainError := flagTrainError
-  io.flagToAnalog_RepairClkState := false.B
-  io.flagToAnalog_SendClkPatterns := false.B
-  io.flagToAnalog_RepairValState := false.B
-  io.flagToAnalog_SendValTrainPattern := false.B
+  io.dbg_sbTxValid := io.sb_tx_valid
+  io.dbg_sbTxDin := io.sb_tx_din
+  io.dbg_flagTrainError := flagTrainError || mbInitFsm.io.trainError
+  io.dbg_mbinitSubstate := mbInitFsm.io.substate
+  io.dbg_mbinitReversalMbReceivedSuccessCount := mbInitFsm.io.dbg_mbinitReversalMbReceivedSuccessCount
 
+
+
+  
+  
+
+
+
+  
+  
+  
   // ==========================================================
   // Messages reception
   // ==========================================================
@@ -555,325 +693,14 @@ class LinkTrainingFSM(
       // Completion check: both sides acknowledged and we sent our response
       when (flagSbinitReceivedDoneReq && flagSbinitReceivedDoneResp && 
             flagSbinitSentDoneReq && flagSbinitSentDoneResp) {
-        stateReg := LTState.MBINIT_PARAM
+        stateReg := LTState.MBINIT_SUPER
       }
     }
 
-
-    // ========================================================
-    // MBINIT 
-    // ========================================================
-
-    //MBINIT_PARAM STRICT MATCH (no negotiation)
-    //  implement negotiation and retries if needed
-    is (LTState.MBINIT_PARAM) {
-
-      when (io.sb_tx_ready && !sbTxValid) {
-        //SEND REQ
-        //Send req header
-        when (!flagMbinitParamSentReqHdr) {
-          nextSbTxDin   := MBINIT_PARAM_REQ(63,0)
-          nextSbTxValid := true.B
-          flagMbinitParamSentReqHdr := true.B
-        // send req payload
-        } .elsewhen (flagMbinitParamSentReqHdr && !flagMbinitParamSentReqPayload) {
-          nextSbTxDin   := MBINIT_PARAM_REQ(127,64)
-          nextSbTxValid := true.B
-          flagMbinitParamSentReqPayload := true.B
-        }
-        //SEND RESP
-        //done in a different block to avoid req conflic with resp payloads
-        when (
-            flagMbinitParamSentReqHdr && flagMbinitParamSentReqPayload &&
-            flagMbinitParamReceivedReqHeader && flagMbinitParamReceivedReqPayload &&
-            flagMbinitParamCorrectReqReceived && !flagMbinitParamSentRespHdr
-            ) {
-          nextSbTxDin   := MBINIT_PARAM_RESP(63,0)
-          nextSbTxValid := true.B
-          flagMbinitParamSentRespHdr := true.B
-        } .elsewhen (
-            flagMbinitParamSentRespHdr && !flagMbinitParamSentRespPayload
-            ) {
-          nextSbTxDin   := MBINIT_PARAM_RESP(127,64)
-          nextSbTxValid := true.B
-          flagMbinitParamSentRespPayload := true.B
-        }
+    is (LTState.MBINIT_SUPER) {
+      when (mbInitFsm.io.done) {
+        stateReg := LTState.MBTRAIN
       }
-
-      // Request payload reception logic
-      //update to add negotiation
-      when (flagMbinitParamReceivedReqPayload) {
-        //exact payload match check for now, add negotiation logic if not matching
-        when (remoteParamReqPayload === MBINIT_PARAM_REQ(127,64)) {
-          flagMbinitParamCorrectReqReceived := true.B
-        } .otherwise {
-          flagTrainError := true.B
-        }
-      } 
-
-
-      //next state logic
-      when (
-        flagMbinitParamSentReqHdr && flagMbinitParamSentReqPayload &&
-        flagMbinitParamReceivedReqHeader && flagMbinitParamReceivedReqPayload &&
-        flagMbinitParamSentRespHdr && flagMbinitParamSentRespPayload &&
-        flagMbinitParamReceivedRespHeader && flagMbinitParamReceivedRespPayload
-      ) {
-        stateReg := LTState.MBINIT_Cal
-      }
-    }
-
-    is (LTState.MBINIT_Cal) {
-      //will there be any calibration in this state?
-      when (io.sb_tx_ready && !sbTxValid) {
-        when (!flagMbinitCalSentDoneReq) {
-          nextSbTxDin   := MBINIT_CAL_DONE_REQ
-          nextSbTxValid := true.B
-          flagMbinitCalSentDoneReq := true.B
-        }.elsewhen (flagMbinitCalReceivedDoneReq && !flagMbinitCalSentDoneResp) {
-          nextSbTxDin   := MBINIT_CAL_DONE_RESP
-          nextSbTxValid := true.B
-          flagMbinitCalSentDoneResp := true.B
-        }
-      }
-
-      when (
-        flagMbinitCalReceivedDoneReq && flagMbinitCalReceivedDoneResp &&
-        flagMbinitCalSentDoneReq && flagMbinitCalSentDoneResp
-      ) {
-        stateReg := LTState.MBINIT_REPAIRCLK
-      }
-    }
-
-    is (LTState.MBINIT_REPAIRCLK) {
-
-      io.flagToAnalog_RepairClkState := true.B
-      //sender
-      switch(repairClkSenderStateReg) {
-        is(RepairClkSenderState.initReq) {
-          when (io.sb_tx_ready && !sbTxValid) {
-            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairClkInitReq("phy", "phy")
-            nextSbTxValid := true.B
-            repairClkSenderStateReg := RepairClkSenderState.sendClkPatternsExchange
-          }
-        }
-        is(RepairClkSenderState.sendClkPatternsExchange) {
-          when (flagMbinitRepairClk_ReceivedInitResp && io.flagFromAnalog_ReadyToExchangeClkPatterns) {
-            io.flagToAnalog_SendClkPatterns := true.B
-            repairClkSenderStateReg := RepairClkSenderState.waitingPatternsExchangeFinish
-          }
-        }
-        is(RepairClkSenderState.waitingPatternsExchangeFinish) {
-          when (io.flagFromAnalog_FinishedClkPatterns) {
-            repairClkSenderStateReg := RepairClkSenderState.sendResultReq
-          }
-        }
-        is(RepairClkSenderState.sendResultReq) {
-          when (io.sb_tx_ready && !sbTxValid) {
-            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairClkResultReq("phy", "phy")
-            nextSbTxValid := true.B
-            repairClkSenderStateReg := RepairClkSenderState.receiveResultResp
-          }
-        }
-        is(RepairClkSenderState.receiveResultResp) {
-          when (flagMbinitRepairClk_ReceivedResultResp){
-            //check the result bits in the response and set train error if not successful
-            when (mbinitRepairClk_ReceivedResultBits === "b111".U) {
-              //successful exchange
-              repairClkSenderStateReg := RepairClkSenderState.sendDoneReq
-            }.otherwise {
-              //repair failed, set train error flag
-              flagTrainError := true.B
-            }
-          }
-        }
-        is(RepairClkSenderState.sendDoneReq) {
-          when (io.sb_tx_ready && !sbTxValid) {
-            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairClkDoneReq("phy", "phy")
-            nextSbTxValid := true.B
-            repairClkSenderStateReg := RepairClkSenderState.receiveDoneResp
-          }
-        }
-        is(RepairClkSenderState.receiveDoneResp) {
-          when (flagMbinitRepairClk_ReceivedDoneResp) {
-            repairClkSenderStateReg := RepairClkSenderState.finish
-          }
-        }
-      }
-
-      //receiver
-      switch(repairClkReceiverStateReg) {
-        is(RepairClkReceiverState.sendInitResp) {
-          when (flagMbinitRepairClk_ReceivedInitReq
-                  && io.flagFromAnalog_ReadyToExchangeClkPatterns
-                  && io.sb_tx_ready && !sbTxValid){
-            nextSbTxDin   := MBINIT_REPAIRCLK_INIT_RESP
-            nextSbTxValid := true.B
-            repairClkReceiverStateReg := RepairClkReceiverState.waitingPatternsExchangeFinish
-          }
-        }
-        //after receiving resp partner sends clk patterns and after that sends resultReq
-          //wait for msgResultReq and when arrives check AN signal for correct patterns
-        is(RepairClkReceiverState.waitingPatternsExchangeFinish) {
-          when (flagMbinitRepairClk_ReceivedResultReq) { //resultReq = partner finished sending patterns
-            //TODO: LOG the results
-            mbinitRepairClk_logClkPatternReceivedRTRK_L := io.flagFromAnalog_clkPatternReceivedRTRK_L
-            mbinitRepairClk_logClkPatternReceivedRCKN_L := io.flagFromAnalog_clkPatternReceivedRCKN_L
-            mbinitRepairClk_logClkPatternReceivedRCKP_L := io.flagFromAnalog_clkPatternReceivedRCKP_L
-
-            //check the flags from analog to see if all lanes received the patterns correctly and send response accordingly
-            when(io.flagFromAnalog_clkPatternReceivedRTRK_L
-              && io.flagFromAnalog_clkPatternReceivedRCKN_L
-              && io.flagFromAnalog_clkPatternReceivedRCKP_L
-            ){//all clk lanes received correct patterns
-              repairClkReceiverStateReg := RepairClkReceiverState.sendResultResp
-            }.otherwise {
-              //if any lane didnt receive correct pattern send response with failure result bits
-              flagTrainError := true.B
-            }
-          }
-        }
-        is(RepairClkReceiverState.sendResultResp) {
-          when (io.sb_tx_ready && !sbTxValid){
-            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairClkResultResp(
-              "phy",
-              "phy",
-              mbinitRepairClk_logClkPatternReceivedRTRK_L,
-              mbinitRepairClk_logClkPatternReceivedRCKN_L,
-              mbinitRepairClk_logClkPatternReceivedRCKP_L
-            )
-            nextSbTxValid := true.B
-            repairClkReceiverStateReg := RepairClkReceiverState.receiveDoneReq
-          }
-        }
-        is(RepairClkReceiverState.receiveDoneReq) {
-          when (flagMbinitRepairClk_ReceivedDoneReq) {
-            repairClkReceiverStateReg := RepairClkReceiverState.sendDoneResp
-          }
-        }
-        is(RepairClkReceiverState.sendDoneResp) {
-          when (io.sb_tx_ready && !sbTxValid){
-            nextSbTxDin   := MBINIT_REPAIRCLK_DONE_RESP
-            nextSbTxValid := true.B
-            repairClkReceiverStateReg := RepairClkReceiverState.finish
-
-          }
-        }
-      }
-
-      when (repairClkReceiverStateReg === RepairClkReceiverState.finish 
-            && repairClkSenderStateReg === RepairClkSenderState.finish) {
-        stateReg := LTState.MBINIT_REPAIRVAL
-      }
-
-    }
-
-    is (LTState.MBINIT_REPAIRVAL) {
-
-      io.flagToAnalog_RepairValState := true.B
-
-      // sender
-      switch(repairValSenderStateReg) {
-        is(RepairValSenderState.initReq) {
-          when (io.sb_tx_ready && !sbTxValid) {
-            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairValInitReq("phy", "phy")
-            nextSbTxValid := true.B
-            repairValSenderStateReg := RepairValSenderState.sendValTrainPattern
-          }
-        }
-        is(RepairValSenderState.sendValTrainPattern) {
-          when (flagMbinitRepairVal_ReceivedInitResp && io.flagFromAnalog_ReadyToExchangeClkPatterns) {
-            io.flagToAnalog_SendValTrainPattern := true.B
-            repairValSenderStateReg := RepairValSenderState.waitingValTrainPatternFinish
-          }
-        }
-        is(RepairValSenderState.waitingValTrainPatternFinish) {
-          when (io.flagFromAnalog_FinishedValTrainPattern) {
-            repairValSenderStateReg := RepairValSenderState.sendResultReq
-          }
-        }
-        is(RepairValSenderState.sendResultReq) {
-          when (io.sb_tx_ready && !sbTxValid) {
-            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairValResultReq("phy", "phy")
-            nextSbTxValid := true.B
-            repairValSenderStateReg := RepairValSenderState.receiveResultResp
-          }
-        }
-        is(RepairValSenderState.receiveResultResp) {
-          when (flagMbinitRepairVal_ReceivedResultResp) {
-            when (mbinitRepairVal_ReceivedResultBit) {
-              repairValSenderStateReg := RepairValSenderState.sendDoneReq
-            }.otherwise {
-              flagTrainError := true.B
-            }
-          }
-        }
-        is(RepairValSenderState.sendDoneReq) {
-          when (io.sb_tx_ready && !sbTxValid) {
-            nextSbTxDin   := SidebandMsgGenerator.msgMbinitRepairValDoneReq("phy", "phy")
-            nextSbTxValid := true.B
-            repairValSenderStateReg := RepairValSenderState.receiveDoneResp
-          }
-        }
-        is(RepairValSenderState.receiveDoneResp) {
-          when (flagMbinitRepairVal_ReceivedDoneResp) {
-            repairValSenderStateReg := RepairValSenderState.finish
-          }
-        }
-      }
-
-      // receiver
-      switch(repairValReceiverStateReg) {
-        is(RepairValReceiverState.sendInitResp) {
-          when (flagMbinitRepairVal_ReceivedInitReq
-                  && io.flagFromAnalog_ReadyToExchangeClkPatterns
-                  && io.sb_tx_ready && !sbTxValid) {
-            nextSbTxDin   := MBINIT_REPAIRVAL_INIT_RESP
-            nextSbTxValid := true.B
-            repairValReceiverStateReg := RepairValReceiverState.waitingValTrainPatternFinish
-          }
-        }
-        is(RepairValReceiverState.waitingValTrainPatternFinish) {
-          when (flagMbinitRepairVal_ReceivedResultReq) {
-            mbinitRepairVal_logValTrainPatternReceived := io.flagFromAnalog_ValTrainPatternReceived
-            repairValReceiverStateReg := RepairValReceiverState.sendResultResp
-          }
-        }
-        is(RepairValReceiverState.sendResultResp) {
-          when (io.sb_tx_ready && !sbTxValid) {
-            nextSbTxDin := SidebandMsgGenerator.msgMbinitRepairValResultResp(
-              "phy",
-              "phy",
-              mbinitRepairVal_logValTrainPatternReceived
-            )
-            nextSbTxValid := true.B
-            repairValReceiverStateReg := RepairValReceiverState.receiveDoneReq
-          }
-        }
-        is(RepairValReceiverState.receiveDoneReq) {
-          when (flagMbinitRepairVal_ReceivedDoneReq) {
-            repairValReceiverStateReg := RepairValReceiverState.sendDoneResp
-          }
-        }
-        is(RepairValReceiverState.sendDoneResp) {
-          when (io.sb_tx_ready && !sbTxValid) {
-            nextSbTxDin   := MBINIT_REPAIRVAL_DONE_RESP
-            nextSbTxValid := true.B
-            repairValReceiverStateReg := RepairValReceiverState.finish
-          }
-        }
-      }
-
-      when (repairValReceiverStateReg === RepairValReceiverState.finish &&
-            repairValSenderStateReg === RepairValSenderState.finish) {
-        stateReg := LTState.MBINIT
-      }
-    }
-
-      
-
-    is (LTState.MBINIT) {
-      stateReg := LTState.MBTRAIN
     }
 
     // ========================================================

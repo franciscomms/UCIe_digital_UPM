@@ -161,24 +161,59 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
       val successMsg  = BigInt("0200010040244012", 16)
       val doneReqMsg  = BigInt("4200000140254012", 16)
       val doneRespMsg = BigInt("4200000140268012", 16)
+      
       val mbinitParamReqHeaderWord  = BigInt("820000004029401B", 16)
       val mbinitParamReqPayloadWord = BigInt("0000000000000073", 16)
       val mbinitParamRespHeaderWord = BigInt("02000000402A801B", 16)
       val mbinitParamRespPayloadWord = BigInt("0000000000000003", 16)
+
       val mbinitCalDoneReqWord = BigInt("4200000240294012", 16)
       val mbinitCalDoneRespWord = BigInt("42000002402A8012", 16)
+
       val mbinitRepairClkInitReqWord = BigInt("0200000340294012", 16)
       val mbinitRepairClkInitRespWord = BigInt("02000003402A8012", 16)
       val mbinitRepairClkResultReqWord  = BigInt("4200000440294012", 16)
       val mbinitRepairClkResultRespWord = BigInt("02000704402A8012", 16) // all clks patterns detected
       val mbinitRepairClkDoneReqWord = BigInt("4200000840294012", 16)
       val mbinitRepairClkDoneRespWord = BigInt("42000008402A8012", 16)
+
       val mbinitRepairValInitReqWord = BigInt("0200000540294012", 16)
       val mbinitRepairValInitRespWord = BigInt("02000005402A8012", 16)
       val mbinitRepairValResultReqWord = BigInt("0200000640294012", 16)
       val mbinitRepairValResultRespWord = BigInt("42000106402A8012", 16)
       val mbinitRepairValDoneReqWord = BigInt("0200000940294012", 16)
       val mbinitRepairValDoneRespWord = BigInt("02000009402A8012", 16)
+
+      // MBINIT.REVERSALMB fixed words (header-only and header+payload)
+      // Sender path and receiver path both use these constants.
+      val mbinitReversalMbInitReqWord = BigInt("4200000D40294012", 16)
+      val mbinitReversalMbInitRespWord = BigInt("4200000D402A8012", 16)
+      val mbinitReversalMbClearErrorReqWord = BigInt("4200000E40294012", 16)
+      val mbinitReversalMbClearErrorRespWord = BigInt("4200000E402A8012", 16)
+      val mbinitReversalMbResultReqWord = BigInt("0200000F40294012", 16)
+      val mbinitReversalMbResultRespHeaderWord = BigInt("0200000F402A801B", 16)
+      val mbinitReversalMbResultRespPayloadWord = BigInt("000000000000FFFF", 16)
+      val mbinitReversalMbDoneReqWord = BigInt("4200001040294012", 16)
+      val mbinitReversalMbDoneRespWord = BigInt("42000010402A8012", 16)
+
+      // MBINIT.REPAIRMB fixed words (header-only and header+payload)
+      val mbinitRepairMbStartReqWord = BigInt("0200001140294012", 16)
+      val mbinitRepairMbStartRespWord = BigInt("02000011402A8012", 16)
+      val mbinitRepairMbD2CPointTestReqHeaderWord = BigInt("020000124029401B", 16)
+      val mbinitRepairMbD2CPointTestReqPayloadWord = BigInt("0004000000000001", 16)
+      val mbinitRepairMbD2CPointTestRespWord = BigInt("02000012402A8012", 16)
+      val mbinitRepairMbLfsrClearErrorReqWord = BigInt("4200001340294012", 16)
+      val mbinitRepairMbLfsrClearErrorRespWord = BigInt("42000013402A8012", 16)
+      val mbinitRepairMbTxInitD2CResultsReqWord = BigInt("0200001440294012", 16)
+      val mbinitRepairMbTxInitD2CResultsRespHeaderWord = BigInt("02000014402A801B", 16)
+      val mbinitRepairMbTxInitD2CResultsRespPayloadWord = BigInt("000000000000FFFF", 16)
+      val mbinitRepairMbEndTxInitD2CPointTestReqWord = BigInt("4200001540294012", 16)
+      val mbinitRepairMbEndTxInitD2CPointTestRespWord = BigInt("42000015402A8012", 16)
+      val mbinitRepairMbApplyDegradeReq011Word = BigInt("4200031640294012", 16)
+      val mbinitRepairMbApplyDegradeReq000Word = BigInt("4200001640294012", 16)
+      val mbinitRepairMbApplyDegradeRespWord = BigInt("42000016402A8012", 16)
+      val mbinitRepairMbEndReqWord = BigInt("0200001740294012", 16)
+      val mbinitRepairMbEndRespWord = BigInt("02000017402A8012", 16)
 
       // ---------------------------------------------------------------------------------
       // Top-level LT state IDs
@@ -199,6 +234,8 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
       val MBINIT_Cal     = 1
       val MBINIT_REPAIRCLK = 2
       val MBINIT_REPAIRVAL = 3
+      val MBINIT_REVERSALMB = 4
+      val MBINIT_REPAIRMB = 5
 
       // ---------------------------------------------------------------------------------
       // Progress/bookkeeping flags
@@ -267,9 +304,83 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
       var mbinitRepairValPeerResultRespSeen = false
       var mbinitRepairValPeerDoneReqSent = false
       var mbinitRepairValPeerDoneRespSeen = false
+
+      // MBINIT_REVERSALMB sender path (DUT initiates, peer responds)
+      var mbinitReversalMbInitReqSeen = false
+      var mbinitReversalMbInitRespSent = false
+      var mbinitReversalMbClearErrorReqSeen = false
+      var mbinitReversalMbClearErrorRespSent = false
+      var mbinitReversalMbClearErrorRespPending = false
+      var mbinitReversalMbSendLaneIdPatternSeen = false
+      var mbinitReversalMbLaneIdPatternWaitCycles = -1
+      var mbinitReversalMbFinishedLaneIdPatternHigh = false
+      var mbinitReversalMbResultReqSeen = false
+      var mbinitReversalMbResultRespHeaderSent = false
+      var mbinitReversalMbResultRespPayloadSent = false
+      var mbinitReversalMbResultRespPayloadGap = 0
+      var mbinitReversalMbDoneReqSeen = false
+      var mbinitReversalMbDoneRespSent = false
+      var mbinitReversalMbDoneRespPending = false
+
+      // MBINIT_REVERSALMB receiver path (peer initiates, DUT responds)
+      var mbinitReversalMbPeerInitReqSent = false
+      var mbinitReversalMbPeerInitRespSeen = false
+      var mbinitReversalMbPeerClearErrorReqSent = false
+      var mbinitReversalMbPeerClearErrorRespSeen = false
+      var mbinitReversalMbPeerPostClearWaitCycles = -1
+      var mbinitReversalMbPeerAllLaneFlagsHigh = false
+      var mbinitReversalMbPeerPostLaneFlagsWaitCycles = -1
+      var mbinitReversalMbPeerResultReqSent = false
+      var mbinitReversalMbPeerResultRespHeaderSeen = false
+      var mbinitReversalMbPeerResultRespPayloadSeen = false
+      var mbinitReversalMbPeerResultRespPayloadAllOnes = false
+      var mbinitReversalMbPeerExpectResultPayload = false
+      var mbinitReversalMbPeerResultRespStrictOrderOk = true
+      var mbinitReversalMbPeerDoneReqSent = false
+      var mbinitReversalMbPeerDoneRespSeen = false
       var prevRxValidWasHigh = false
 
-      while (cycle < 300) {
+      // MBINIT_REPAIRMB sender path (DUT initiates, peer responds)
+      var mbinitRepairMbStartReqSeen = false
+      var mbinitRepairMbStartRespSent = false
+      var mbinitRepairMbD2CPointTestReqHeaderSeen = false
+      var mbinitRepairMbD2CPointTestReqPayloadSeen = false
+      var mbinitRepairMbD2CPointTestRespSent = false
+      var mbinitRepairMbLfsrClearErrorReqSeen = false
+      var mbinitRepairMbLfsrClearErrorRespSent = false
+      var mbinitRepairMbSendLaneIdPatternSeen = false
+      var mbinitRepairMbLaneIdPatternWaitCycles = -1
+      var mbinitRepairMbFinishedLaneIdPatternHigh = false
+      var mbinitRepairMbTxInitD2CResultsReqSeen = false
+      var mbinitRepairMbTxInitD2CResultsRespHeaderSent = false
+      var mbinitRepairMbTxInitD2CResultsRespPayloadSent = false
+      var mbinitRepairMbEndTxInitD2CPointTestReqSeen = false
+      var mbinitRepairMbEndTxInitD2CPointTestRespSent = false
+      var mbinitRepairMbApplyDegradeReqSeen = false
+      var mbinitRepairMbApplyDegradeRespSent = false
+      var mbinitRepairMbEndReqSeen = false
+      var mbinitRepairMbEndRespSent = false
+      // MBINIT_REPAIRMB receiver path (peer initiates, DUT responds)
+      var mbinitRepairMbPeerStartReqSent = false
+      var mbinitRepairMbPeerStartRespSeen = false
+      var mbinitRepairMbPeerD2CReqHeaderSent = false
+      var mbinitRepairMbPeerD2CReqPayloadSent = false
+      var mbinitRepairMbPeerSetReceiverSeen = false
+      var mbinitRepairMbPeerD2CRespSeen = false
+      var mbinitRepairMbPeerLfsrReqSent = false
+      var mbinitRepairMbPeerLfsrRespSeen = false
+      var mbinitRepairMbPeerPostLfsrWaitCycles = -1
+      var mbinitRepairMbPeerDetectedLaneBitsHigh = false
+      var mbinitRepairMbPeerPostDetectedWaitCycles = -1
+      var mbinitRepairMbPeerTxInitReqSent = false
+      var mbinitRepairMbPeerTxInitRespHeaderSeen = false
+      var mbinitRepairMbPeerTxInitRespPayloadSeen = false
+      var mbinitRepairMbPeerExpectTxInitRespPayload = false
+      var mbinitRepairMbPeerEndTxReqSent = false
+      var mbinitRepairMbPeerEndTxRespSeen = false
+      var mbinitRepairMbPeerApplyDegradeReqSent = false
+
+      while (cycle < 250) {//450
         // -----------------------------------------------------------------------------
         // Per-cycle defaults (safe baseline)
         // -----------------------------------------------------------------------------
@@ -280,10 +391,44 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
         c.io.flagFromAnalog_ReadyToExchangeClkPatterns.poke(false.B)
         c.io.flagFromAnalog_FinishedClkPatterns.poke(false.B)
         c.io.flagFromAnalog_FinishedValTrainPattern.poke(false.B)
+        c.io.flagFromAnalog_ReversalMbFinishedLaneIDPattern.poke(false.B)
+        c.io.flagFromAnalog_RepairMbFinishedLaneIDPattern.poke(false.B)
         c.io.flagFromAnalog_clkPatternReceivedRTRK_L.poke(mbinitRepairClkPeerRTRKHigh.B)
         c.io.flagFromAnalog_clkPatternReceivedRCKN_L.poke(mbinitRepairClkPeerRCKNHigh.B)
         c.io.flagFromAnalog_clkPatternReceivedRCKP_L.poke(mbinitRepairClkPeerRCKPHigh.B)
         c.io.flagFromAnalog_ValTrainPatternReceived.poke(mbinitRepairValPeerValTrainPatternReceivedHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived0.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived1.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived2.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived3.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived4.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived5.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived6.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived7.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived8.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived9.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived10.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived11.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived12.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived13.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived14.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_ReversalMbTrainPatternReceived15.poke(mbinitReversalMbPeerAllLaneFlagsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern0.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern1.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern2.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern3.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern4.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern5.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern6.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern7.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern8.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern9.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern10.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern11.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern12.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern13.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern14.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
+        c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern15.poke(mbinitRepairMbPeerDetectedLaneBitsHigh.B)
 
         // Keep analog status pins high once their corresponding internal conditions
         // have been reached in the software peer model.
@@ -295,6 +440,12 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
         }
         if (mbinitRepairValFinishedHigh) {
           c.io.flagFromAnalog_FinishedValTrainPattern.poke(true.B)
+        }
+        if (mbinitReversalMbFinishedLaneIdPatternHigh) {
+          c.io.flagFromAnalog_ReversalMbFinishedLaneIDPattern.poke(true.B)
+        }
+        if (mbinitRepairMbFinishedLaneIdPatternHigh) {
+          c.io.flagFromAnalog_RepairMbFinishedLaneIDPattern.poke(true.B)
         }
 
         // Global anti-back-to-back policy:
@@ -318,14 +469,49 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           c.io.flagFromAnalog_ReadyToExchangeClkPatterns.poke(false.B)
           c.io.flagFromAnalog_FinishedClkPatterns.poke(false.B)
           c.io.flagFromAnalog_FinishedValTrainPattern.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbFinishedLaneIDPattern.poke(false.B)
+          c.io.flagFromAnalog_RepairMbFinishedLaneIDPattern.poke(false.B)
           c.io.flagFromAnalog_clkPatternReceivedRTRK_L.poke(false.B)
           c.io.flagFromAnalog_clkPatternReceivedRCKN_L.poke(false.B)
           c.io.flagFromAnalog_clkPatternReceivedRCKP_L.poke(false.B)
           c.io.flagFromAnalog_ValTrainPatternReceived.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived0.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived1.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived2.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived3.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived4.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived5.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived6.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived7.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived8.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived9.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived10.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived11.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived12.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived13.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived14.poke(false.B)
+          c.io.flagFromAnalog_ReversalMbTrainPatternReceived15.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern0.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern1.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern2.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern3.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern4.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern5.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern6.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern7.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern8.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern9.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern10.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern11.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern12.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern13.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern14.poke(false.B)
+          c.io.flagFromAnalog_RepairMbDetectedLaneIDPattern15.poke(false.B)
           mbinitRepairClkPeerRTRKHigh = false
           mbinitRepairClkPeerRCKNHigh = false
           mbinitRepairClkPeerRCKPHigh = false
           mbinitRepairValPeerValTrainPatternReceivedHigh = false
+          mbinitReversalMbPeerAllLaneFlagsHigh = false
         } else {
           c.reset.poke(false.B)
           c.io.start.poke(true.B)
@@ -723,6 +909,444 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
           }
         }
 
+        // -----------------------------------------------------------------------------
+        // MBINIT_SUPER + REVERSALMB substate
+        // -----------------------------------------------------------------------------
+        // Full duplex REVERSALMB coverage:
+        // 1) Sender path: DUT initiates INIT/CLEAR_ERROR/RESULT/DONE and peer responds.
+        // 2) Receiver path: peer initiates exact requested sequence and validates payload.
+        if (stateVal == MBINIT_SUPER && mbinitSubstateVal == MBINIT_REVERSALMB) {
+          var rxWordValid = false
+          var rxWord = BigInt(0)
+
+          if (c.io.sb_tx_valid.peek().litToBoolean) {
+            val txWord = c.io.sb_tx_din.peek().litValue
+
+            // Sender path observation (DUT -> peer)
+            if (!mbinitReversalMbInitReqSeen && txWord == mbinitReversalMbInitReqWord) {
+              mbinitReversalMbInitReqSeen = true
+            }
+            if (!mbinitReversalMbClearErrorReqSeen && txWord == mbinitReversalMbClearErrorReqWord) {
+              mbinitReversalMbClearErrorReqSeen = true
+              mbinitReversalMbClearErrorRespPending = true
+            }
+            if (!mbinitReversalMbResultReqSeen && txWord == mbinitReversalMbResultReqWord) {
+              mbinitReversalMbResultReqSeen = true
+            }
+            if (!mbinitReversalMbDoneReqSeen && txWord == mbinitReversalMbDoneReqWord) {
+              mbinitReversalMbDoneReqSeen = true
+              mbinitReversalMbDoneRespPending = true
+            }
+
+            // Receiver path observation (DUT responses to peer-initiated requests)
+            if (!mbinitReversalMbPeerInitRespSeen && txWord == mbinitReversalMbInitRespWord) {
+              mbinitReversalMbPeerInitRespSeen = true
+            }
+            if (!mbinitReversalMbPeerClearErrorRespSeen && txWord == mbinitReversalMbClearErrorRespWord) {
+              mbinitReversalMbPeerClearErrorRespSeen = true
+            }
+            if (!mbinitReversalMbPeerResultRespHeaderSeen && txWord == mbinitReversalMbResultRespHeaderWord) {
+              mbinitReversalMbPeerResultRespHeaderSeen = true
+              mbinitReversalMbPeerExpectResultPayload = true
+            } else if (
+              mbinitReversalMbPeerExpectResultPayload &&
+              !mbinitReversalMbPeerResultRespPayloadSeen
+            ) {
+              if (txWord == mbinitReversalMbResultRespPayloadWord) {
+                mbinitReversalMbPeerResultRespPayloadSeen = true
+                mbinitReversalMbPeerResultRespPayloadAllOnes = true
+                mbinitReversalMbPeerExpectResultPayload = false
+              } else {
+                mbinitReversalMbPeerResultRespStrictOrderOk = false
+              }
+            }
+            if (!mbinitReversalMbPeerDoneRespSeen && txWord == mbinitReversalMbDoneRespWord) {
+              mbinitReversalMbPeerDoneRespSeen = true
+            }
+          }
+
+          // Sender path peer responses
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitReversalMbDoneRespPending && !mbinitReversalMbDoneRespSent) {
+            rxWord = mbinitReversalMbDoneRespWord
+            rxWordValid = true
+            mbinitReversalMbDoneRespSent = true
+            mbinitReversalMbDoneRespPending = false
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitReversalMbClearErrorRespPending && !mbinitReversalMbClearErrorRespSent) {
+            rxWord = mbinitReversalMbClearErrorRespWord
+            rxWordValid = true
+            mbinitReversalMbClearErrorRespSent = true
+            mbinitReversalMbClearErrorRespPending = false
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitReversalMbInitReqSeen && !mbinitReversalMbInitRespSent) {
+            rxWord = mbinitReversalMbInitRespWord
+            rxWordValid = true
+            mbinitReversalMbInitRespSent = true
+          }
+
+          if (!mbinitReversalMbSendLaneIdPatternSeen && c.io.flagToAnalog_ReversalMbSendLaneIDPattern.peek().litToBoolean) {
+            mbinitReversalMbSendLaneIdPatternSeen = true
+            mbinitReversalMbLaneIdPatternWaitCycles = 7
+          }
+
+          if (mbinitReversalMbSendLaneIdPatternSeen && !mbinitReversalMbFinishedLaneIdPatternHigh) {
+            if (mbinitReversalMbLaneIdPatternWaitCycles > 0) {
+              mbinitReversalMbLaneIdPatternWaitCycles -= 1
+            } else {
+              mbinitReversalMbFinishedLaneIdPatternHigh = true
+            }
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitReversalMbResultReqSeen && !mbinitReversalMbResultRespHeaderSent) {
+            rxWord = mbinitReversalMbResultRespHeaderWord
+            rxWordValid = true
+            mbinitReversalMbResultRespHeaderSent = true
+            mbinitReversalMbResultRespPayloadGap = 0
+          } else if (mbinitReversalMbResultRespHeaderSent && !mbinitReversalMbResultRespPayloadSent) {
+            if (mbinitReversalMbResultRespPayloadGap > 0) {
+              mbinitReversalMbResultRespPayloadGap -= 1
+            } else {
+              if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid) {
+                rxWord = mbinitReversalMbResultRespPayloadWord
+                rxWordValid = true
+                mbinitReversalMbResultRespPayloadSent = true
+              }
+            }
+          }
+
+          // Receiver path peer requests
+          // Requested sequence:
+          // init req -> wait init resp -> clear error req -> wait clear error resp
+          // -> wait 5 cycles -> set 16 lane flags high -> wait 5 cycles
+          // -> result req -> wait result resp + payload all ones -> done req -> wait done resp.
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && !mbinitReversalMbPeerInitReqSent) {
+            rxWord = mbinitReversalMbInitReqWord
+            rxWordValid = true
+            mbinitReversalMbPeerInitReqSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitReversalMbPeerInitRespSeen && !mbinitReversalMbPeerClearErrorReqSent) {
+            rxWord = mbinitReversalMbClearErrorReqWord
+            rxWordValid = true
+            mbinitReversalMbPeerClearErrorReqSent = true
+          }
+
+          if (mbinitReversalMbPeerClearErrorRespSeen && !mbinitReversalMbPeerAllLaneFlagsHigh) {
+            if (mbinitReversalMbPeerPostClearWaitCycles < 0) {
+              mbinitReversalMbPeerPostClearWaitCycles = 5
+            } else if (mbinitReversalMbPeerPostClearWaitCycles > 0) {
+              mbinitReversalMbPeerPostClearWaitCycles -= 1
+            } else {
+              mbinitReversalMbPeerAllLaneFlagsHigh = true
+              mbinitReversalMbPeerPostLaneFlagsWaitCycles = 5
+            }
+          }
+
+          if (
+            mbinitReversalMbPeerAllLaneFlagsHigh &&
+            !mbinitReversalMbPeerResultReqSent &&
+            mbinitReversalMbPeerPostLaneFlagsWaitCycles >= 0
+          ) {
+            if (mbinitReversalMbPeerPostLaneFlagsWaitCycles > 0) {
+              mbinitReversalMbPeerPostLaneFlagsWaitCycles -= 1
+            } else if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid) {
+              rxWord = mbinitReversalMbResultReqWord
+              rxWordValid = true
+              mbinitReversalMbPeerResultReqSent = true
+            }
+          }
+
+          if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitReversalMbPeerResultRespHeaderSeen &&
+            mbinitReversalMbPeerResultRespPayloadSeen &&
+            mbinitReversalMbPeerResultRespPayloadAllOnes &&
+            !mbinitReversalMbPeerDoneReqSent
+          ) {
+            rxWord = mbinitReversalMbDoneReqWord
+            rxWordValid = true
+            mbinitReversalMbPeerDoneReqSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && rxWordValid) {
+            c.io.sb_rx_dout.poke(rxWord.U)
+            c.io.sb_rx_valid.poke(true.B)
+            rxSentThisCycle = true
+          }
+        }
+
+        // -----------------------------------------------------------------------------
+        // MBINIT_SUPER + REPAIRMB substate
+        // -----------------------------------------------------------------------------
+        // Sequence covered:
+        // start req/resp -> d2c req header+payload/resp -> lfsr clear req/resp
+        // -> lane ID pattern cmd + wait 10 cycles + finished high
+        // -> tx init d2c results req -> results resp (header + payload FFFF)
+        // -> end tx init d2c point test req/resp.
+        // Also responds to apply-degrade and end requests so LT can progress to ACTIVE.
+        if (stateVal == MBINIT_SUPER && mbinitSubstateVal == MBINIT_REPAIRMB) {
+          var rxWordValid = false
+          var rxWord = BigInt(0)
+
+          if (c.io.sb_tx_valid.peek().litToBoolean) {
+            val txWord = c.io.sb_tx_din.peek().litValue
+            if (!mbinitRepairMbStartReqSeen && txWord == mbinitRepairMbStartReqWord) {
+              mbinitRepairMbStartReqSeen = true
+            }
+            if (!mbinitRepairMbD2CPointTestReqHeaderSeen && txWord == mbinitRepairMbD2CPointTestReqHeaderWord) {
+              mbinitRepairMbD2CPointTestReqHeaderSeen = true
+            } else if (
+              mbinitRepairMbD2CPointTestReqHeaderSeen &&
+              !mbinitRepairMbD2CPointTestReqPayloadSeen &&
+              txWord == mbinitRepairMbD2CPointTestReqPayloadWord
+            ) {
+              mbinitRepairMbD2CPointTestReqPayloadSeen = true
+            }
+            if (!mbinitRepairMbLfsrClearErrorReqSeen && txWord == mbinitRepairMbLfsrClearErrorReqWord) {
+              mbinitRepairMbLfsrClearErrorReqSeen = true
+            }
+            if (!mbinitRepairMbTxInitD2CResultsReqSeen && txWord == mbinitRepairMbTxInitD2CResultsReqWord) {
+              mbinitRepairMbTxInitD2CResultsReqSeen = true
+            }
+            if (!mbinitRepairMbEndTxInitD2CPointTestReqSeen && txWord == mbinitRepairMbEndTxInitD2CPointTestReqWord) {
+              mbinitRepairMbEndTxInitD2CPointTestReqSeen = true
+            }
+            if (
+              !mbinitRepairMbApplyDegradeReqSeen &&
+              (txWord == mbinitRepairMbApplyDegradeReq011Word || txWord == mbinitRepairMbApplyDegradeReq000Word)
+            ) {
+              mbinitRepairMbApplyDegradeReqSeen = true
+            }
+            if (!mbinitRepairMbEndReqSeen && txWord == mbinitRepairMbEndReqWord) {
+              mbinitRepairMbEndReqSeen = true
+            }
+
+            if (
+              !mbinitRepairMbPeerStartRespSeen &&
+              mbinitRepairMbPeerStartReqSent &&
+              txWord == mbinitRepairMbStartRespWord
+            ) {
+              mbinitRepairMbPeerStartRespSeen = true
+            }
+            if (
+              !mbinitRepairMbPeerD2CRespSeen &&
+              mbinitRepairMbPeerD2CReqPayloadSent &&
+              txWord == mbinitRepairMbD2CPointTestRespWord
+            ) {
+              mbinitRepairMbPeerD2CRespSeen = true
+            }
+            if (
+              !mbinitRepairMbPeerLfsrRespSeen &&
+              mbinitRepairMbPeerLfsrReqSent &&
+              txWord == mbinitRepairMbLfsrClearErrorRespWord
+            ) {
+              mbinitRepairMbPeerLfsrRespSeen = true
+            }
+            if (
+              !mbinitRepairMbPeerTxInitRespHeaderSeen &&
+              mbinitRepairMbPeerTxInitReqSent &&
+              txWord == mbinitRepairMbTxInitD2CResultsRespHeaderWord
+            ) {
+              // the correct lane should be checked in the time diagram
+              mbinitRepairMbPeerTxInitRespHeaderSeen = true
+              mbinitRepairMbPeerExpectTxInitRespPayload = true
+            } else if (
+              mbinitRepairMbPeerExpectTxInitRespPayload &&
+              !mbinitRepairMbPeerTxInitRespPayloadSeen &&
+              txWord == mbinitRepairMbTxInitD2CResultsRespPayloadWord
+            ) {
+              mbinitRepairMbPeerTxInitRespPayloadSeen = true
+              mbinitRepairMbPeerExpectTxInitRespPayload = false
+            }
+            if (
+              !mbinitRepairMbPeerEndTxRespSeen &&
+              mbinitRepairMbPeerEndTxReqSent &&
+              txWord == mbinitRepairMbEndTxInitD2CPointTestRespWord
+            ) {
+              mbinitRepairMbPeerEndTxRespSeen = true
+            }
+          }
+
+          if (!mbinitRepairMbPeerSetReceiverSeen && c.io.flagToAnalog_RepairMbSetReceiver.peek().litToBoolean) {
+            mbinitRepairMbPeerSetReceiverSeen = true
+          }
+
+          if (mbinitRepairMbPeerLfsrRespSeen && !mbinitRepairMbPeerDetectedLaneBitsHigh) {
+            if (mbinitRepairMbPeerPostLfsrWaitCycles < 0) {
+              mbinitRepairMbPeerPostLfsrWaitCycles = 5
+            } else if (mbinitRepairMbPeerPostLfsrWaitCycles > 0) {
+              mbinitRepairMbPeerPostLfsrWaitCycles -= 1
+            } else {
+              mbinitRepairMbPeerDetectedLaneBitsHigh = true
+              mbinitRepairMbPeerPostDetectedWaitCycles = 5
+            }
+          }
+
+          if (
+            mbinitRepairMbPeerDetectedLaneBitsHigh &&
+            !mbinitRepairMbPeerTxInitReqSent &&
+            mbinitRepairMbPeerPostDetectedWaitCycles >= 0
+          ) {
+            if (mbinitRepairMbPeerPostDetectedWaitCycles > 0) {
+              mbinitRepairMbPeerPostDetectedWaitCycles -= 1
+            }
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairMbStartReqSeen && !mbinitRepairMbStartRespSent) {
+            rxWord = mbinitRepairMbStartRespWord
+            rxWordValid = true
+            mbinitRepairMbStartRespSent = true
+          }
+
+          if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitRepairMbD2CPointTestReqPayloadSeen && !mbinitRepairMbD2CPointTestRespSent
+          ) {
+            rxWord = mbinitRepairMbD2CPointTestRespWord
+            rxWordValid = true
+            mbinitRepairMbD2CPointTestRespSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairMbLfsrClearErrorReqSeen && !mbinitRepairMbLfsrClearErrorRespSent) {
+            rxWord = mbinitRepairMbLfsrClearErrorRespWord
+            rxWordValid = true
+            mbinitRepairMbLfsrClearErrorRespSent = true
+          }
+
+          if (!mbinitRepairMbSendLaneIdPatternSeen && c.io.flagToAnalog_RepairMbSendLaneIDPattern.peek().litToBoolean) {
+            mbinitRepairMbSendLaneIdPatternSeen = true
+            mbinitRepairMbLaneIdPatternWaitCycles = 10
+          }
+
+          if (mbinitRepairMbSendLaneIdPatternSeen && !mbinitRepairMbFinishedLaneIdPatternHigh) {
+            if (mbinitRepairMbLaneIdPatternWaitCycles > 0) {
+              mbinitRepairMbLaneIdPatternWaitCycles -= 1
+            } else {
+              mbinitRepairMbFinishedLaneIdPatternHigh = true
+            }
+          }
+
+          if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitRepairMbTxInitD2CResultsReqSeen && !mbinitRepairMbTxInitD2CResultsRespHeaderSent
+          ) {
+            rxWord = mbinitRepairMbTxInitD2CResultsRespHeaderWord
+            rxWordValid = true
+            mbinitRepairMbTxInitD2CResultsRespHeaderSent = true
+          } else if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitRepairMbTxInitD2CResultsRespHeaderSent && !mbinitRepairMbTxInitD2CResultsRespPayloadSent
+          ) {
+            rxWord = mbinitRepairMbTxInitD2CResultsRespPayloadWord
+            rxWordValid = true
+            mbinitRepairMbTxInitD2CResultsRespPayloadSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairMbEndTxInitD2CPointTestReqSeen && !mbinitRepairMbEndTxInitD2CPointTestRespSent) {
+            rxWord = mbinitRepairMbEndTxInitD2CPointTestRespWord
+            rxWordValid = true
+            mbinitRepairMbEndTxInitD2CPointTestRespSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairMbApplyDegradeReqSeen && !mbinitRepairMbApplyDegradeRespSent) {
+            rxWord = mbinitRepairMbApplyDegradeRespWord
+            rxWordValid = true
+            mbinitRepairMbApplyDegradeRespSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && mbinitRepairMbEndReqSeen && !mbinitRepairMbEndRespSent) {
+            rxWord = mbinitRepairMbEndRespWord
+            rxWordValid = true
+            mbinitRepairMbEndRespSent = true
+          }
+
+          // Receiver-path sequence:
+          // 1) send start req
+          // 2) wait start resp
+          // 3) send d2c point test req (header then payload)
+          // 4) check flagToAnalog_RepairMbSetReceiver
+          // 5) wait d2c point test resp
+          // 6) send lfsr clear error req
+          // 7) wait lfsr clear error resp
+          // 8) wait 5 cycles
+          // 9) set RepairMbDetectedLaneIDPattern[15:0] high
+          // 10) wait 5 cycles
+          // 11) send tx init d2c results req
+          // 12) wait tx init d2c results resp (header + payload)
+          // 13) send end tx init d2c point test req
+          // 14) wait end tx init d2c point test resp
+          if (canSendRxThisCycle && !rxSentThisCycle && !rxWordValid && !mbinitRepairMbPeerStartReqSent) {
+            rxWord = mbinitRepairMbStartReqWord
+            rxWordValid = true
+            mbinitRepairMbPeerStartReqSent = true
+          }
+
+          if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitRepairMbPeerStartRespSeen && !mbinitRepairMbPeerD2CReqHeaderSent
+          ) {
+            rxWord = mbinitRepairMbD2CPointTestReqHeaderWord
+            rxWordValid = true
+            mbinitRepairMbPeerD2CReqHeaderSent = true
+          } else if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitRepairMbPeerD2CReqHeaderSent && !mbinitRepairMbPeerD2CReqPayloadSent
+          ) {
+            rxWord = mbinitRepairMbD2CPointTestReqPayloadWord
+            rxWordValid = true
+            mbinitRepairMbPeerD2CReqPayloadSent = true
+          }
+
+          if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitRepairMbPeerD2CRespSeen && !mbinitRepairMbPeerLfsrReqSent
+          ) {
+            rxWord = mbinitRepairMbLfsrClearErrorReqWord
+            rxWordValid = true
+            mbinitRepairMbPeerLfsrReqSent = true
+          }
+
+          if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitRepairMbPeerDetectedLaneBitsHigh &&
+            mbinitRepairMbPeerPostDetectedWaitCycles == 0 &&
+            !mbinitRepairMbPeerTxInitReqSent
+          ) {
+            rxWord = mbinitRepairMbTxInitD2CResultsReqWord
+            rxWordValid = true
+            mbinitRepairMbPeerTxInitReqSent = true
+          }
+
+          if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitRepairMbPeerTxInitRespHeaderSeen &&
+            mbinitRepairMbPeerTxInitRespPayloadSeen &&
+            !mbinitRepairMbPeerEndTxReqSent
+          ) {
+            rxWord = mbinitRepairMbEndTxInitD2CPointTestReqWord
+            rxWordValid = true
+            mbinitRepairMbPeerEndTxReqSent = true
+          }
+
+          if (
+            canSendRxThisCycle && !rxSentThisCycle && !rxWordValid &&
+            mbinitRepairMbPeerEndTxRespSeen &&
+            !mbinitRepairMbPeerApplyDegradeReqSent
+          ) {
+            rxWord = mbinitRepairMbApplyDegradeReq011Word
+            rxWordValid = true
+            mbinitRepairMbPeerApplyDegradeReqSent = true
+          }
+
+          if (canSendRxThisCycle && !rxSentThisCycle && rxWordValid) {
+            c.io.sb_rx_dout.poke(rxWord.U)
+            c.io.sb_rx_valid.poke(true.B)
+            rxSentThisCycle = true
+          }
+        }
+
         // Remember whether we drove rx_valid this cycle to enforce one-cycle low spacing
         // on the next iteration.
         prevRxValidWasHigh = rxSentThisCycle
@@ -737,7 +1361,14 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
       // ---------------------------------------------------------------------------------
       // 1) Top FSM reached ACTIVE.
       // 2) All expected handshake milestones across SBINIT + MBINIT substates occurred.
-      c.io.state.expect(ACTIVE.U)
+      assert(
+        c.io.state.peek().litValue == ACTIVE,
+        s"Timeout after $cycle cycles: LT FSM did not reach ACTIVE (state=${c.io.state.peek().litValue}, substate=${c.io.dbg_mbinitSubstate.peek().litValue}) | " +
+          s"REV_S(sender): initReqSeen=$mbinitReversalMbInitReqSeen initRespSent=$mbinitReversalMbInitRespSent clearReqSeen=$mbinitReversalMbClearErrorReqSeen clearRespSent=$mbinitReversalMbClearErrorRespSent laneCmdSeen=$mbinitReversalMbSendLaneIdPatternSeen laneDoneHigh=$mbinitReversalMbFinishedLaneIdPatternHigh resultReqSeen=$mbinitReversalMbResultReqSeen resultHdrSent=$mbinitReversalMbResultRespHeaderSent resultPayloadSent=$mbinitReversalMbResultRespPayloadSent doneReqSeen=$mbinitReversalMbDoneReqSeen doneRespSent=$mbinitReversalMbDoneRespSent | " +
+            s"REPAIRMB: startReqSeen=$mbinitRepairMbStartReqSeen startRespSent=$mbinitRepairMbStartRespSent d2cHdrSeen=$mbinitRepairMbD2CPointTestReqHeaderSeen d2cPayloadSeen=$mbinitRepairMbD2CPointTestReqPayloadSeen d2cRespSent=$mbinitRepairMbD2CPointTestRespSent lfsrReqSeen=$mbinitRepairMbLfsrClearErrorReqSeen lfsrRespSent=$mbinitRepairMbLfsrClearErrorRespSent laneCmdSeen=$mbinitRepairMbSendLaneIdPatternSeen laneDoneHigh=$mbinitRepairMbFinishedLaneIdPatternHigh txInitReqSeen=$mbinitRepairMbTxInitD2CResultsReqSeen txInitRespHdrSent=$mbinitRepairMbTxInitD2CResultsRespHeaderSent txInitRespPayloadSent=$mbinitRepairMbTxInitD2CResultsRespPayloadSent endTxReqSeen=$mbinitRepairMbEndTxInitD2CPointTestReqSeen endTxRespSent=$mbinitRepairMbEndTxInitD2CPointTestRespSent applyReqSeen=$mbinitRepairMbApplyDegradeReqSeen applyRespSent=$mbinitRepairMbApplyDegradeRespSent endReqSeen=$mbinitRepairMbEndReqSeen endRespSent=$mbinitRepairMbEndRespSent | " +
+            s"REPAIRMB_R(receiver): startReqSent=$mbinitRepairMbPeerStartReqSent startRespSeen=$mbinitRepairMbPeerStartRespSeen d2cHdrSent=$mbinitRepairMbPeerD2CReqHeaderSent d2cPayloadSent=$mbinitRepairMbPeerD2CReqPayloadSent setReceiverSeen=$mbinitRepairMbPeerSetReceiverSeen d2cRespSeen=$mbinitRepairMbPeerD2CRespSeen lfsrReqSent=$mbinitRepairMbPeerLfsrReqSent lfsrRespSeen=$mbinitRepairMbPeerLfsrRespSeen laneBitsHigh=$mbinitRepairMbPeerDetectedLaneBitsHigh txInitReqSent=$mbinitRepairMbPeerTxInitReqSent txInitRespHdrSeen=$mbinitRepairMbPeerTxInitRespHeaderSeen txInitRespPayloadSeen=$mbinitRepairMbPeerTxInitRespPayloadSeen endTxReqSent=$mbinitRepairMbPeerEndTxReqSent endTxRespSeen=$mbinitRepairMbPeerEndTxRespSeen applyDegradeReqSent=$mbinitRepairMbPeerApplyDegradeReqSent | " +
+            s"REV_R(receiver): initReqSent=$mbinitReversalMbPeerInitReqSent initRespSeen=$mbinitReversalMbPeerInitRespSeen clearReqSent=$mbinitReversalMbPeerClearErrorReqSent clearRespSeen=$mbinitReversalMbPeerClearErrorRespSeen laneFlagsHigh=$mbinitReversalMbPeerAllLaneFlagsHigh resultReqSent=$mbinitReversalMbPeerResultReqSent resultHdrSeen=$mbinitReversalMbPeerResultRespHeaderSeen resultPayloadSeen=$mbinitReversalMbPeerResultRespPayloadSeen payloadAllOnes=$mbinitReversalMbPeerResultRespPayloadAllOnes strictOrderOk=$mbinitReversalMbPeerResultRespStrictOrderOk doneReqSent=$mbinitReversalMbPeerDoneReqSent doneRespSeen=$mbinitReversalMbPeerDoneRespSeen"
+      )
       // handshake completion checks
       assert(
         firstPatternSent && secondPatternSent && successSent && doneReqSent && doneRespObserved && doneRespSent &&
@@ -758,7 +1389,37 @@ class LinkTrainingFSMSpec extends AnyFlatSpec with ChiselScalatestTester {
         mbinitRepairValDoneReqSeen && mbinitRepairValDoneRespSent &&
         mbinitRepairValPeerInitReqSent && mbinitRepairValPeerInitRespSeen &&
         mbinitRepairValPeerResultReqSent && mbinitRepairValPeerResultRespSeen &&
-        mbinitRepairValPeerDoneReqSent && mbinitRepairValPeerDoneRespSeen
+        mbinitRepairValPeerDoneReqSent && mbinitRepairValPeerDoneRespSeen &&
+        mbinitReversalMbInitReqSeen && mbinitReversalMbInitRespSent &&
+        mbinitReversalMbClearErrorReqSeen && mbinitReversalMbClearErrorRespSent &&
+        mbinitReversalMbSendLaneIdPatternSeen && mbinitReversalMbFinishedLaneIdPatternHigh &&
+        mbinitReversalMbResultReqSeen && mbinitReversalMbResultRespHeaderSent && mbinitReversalMbResultRespPayloadSent &&
+        mbinitReversalMbDoneReqSeen && mbinitReversalMbDoneRespSent &&
+        mbinitReversalMbPeerInitReqSent && mbinitReversalMbPeerInitRespSeen &&
+        mbinitReversalMbPeerClearErrorReqSent && mbinitReversalMbPeerClearErrorRespSeen &&
+        mbinitReversalMbPeerAllLaneFlagsHigh && mbinitReversalMbPeerResultReqSent &&
+        mbinitReversalMbPeerResultRespHeaderSeen && mbinitReversalMbPeerResultRespPayloadSeen &&
+        mbinitReversalMbPeerResultRespStrictOrderOk &&
+        mbinitReversalMbPeerResultRespPayloadAllOnes &&
+        mbinitReversalMbPeerDoneReqSent && mbinitReversalMbPeerDoneRespSeen &&
+        mbinitRepairMbStartReqSeen && mbinitRepairMbStartRespSent &&
+        mbinitRepairMbD2CPointTestReqHeaderSeen && mbinitRepairMbD2CPointTestReqPayloadSeen &&
+        mbinitRepairMbD2CPointTestRespSent &&
+        mbinitRepairMbLfsrClearErrorReqSeen && mbinitRepairMbLfsrClearErrorRespSent &&
+        mbinitRepairMbSendLaneIdPatternSeen && mbinitRepairMbFinishedLaneIdPatternHigh &&
+        mbinitRepairMbTxInitD2CResultsReqSeen && mbinitRepairMbTxInitD2CResultsRespHeaderSent &&
+        mbinitRepairMbTxInitD2CResultsRespPayloadSent &&
+        mbinitRepairMbEndTxInitD2CPointTestReqSeen && mbinitRepairMbEndTxInitD2CPointTestRespSent &&
+        mbinitRepairMbApplyDegradeReqSeen && mbinitRepairMbApplyDegradeRespSent &&
+        mbinitRepairMbEndReqSeen && mbinitRepairMbEndRespSent &&
+        mbinitRepairMbPeerStartReqSent && mbinitRepairMbPeerStartRespSeen &&
+        mbinitRepairMbPeerD2CReqHeaderSent && mbinitRepairMbPeerD2CReqPayloadSent &&
+        mbinitRepairMbPeerSetReceiverSeen && mbinitRepairMbPeerD2CRespSeen &&
+        mbinitRepairMbPeerLfsrReqSent && mbinitRepairMbPeerLfsrRespSeen &&
+        mbinitRepairMbPeerDetectedLaneBitsHigh &&
+        mbinitRepairMbPeerTxInitReqSent &&
+        mbinitRepairMbPeerTxInitRespHeaderSeen && mbinitRepairMbPeerTxInitRespPayloadSeen &&
+        mbinitRepairMbPeerEndTxReqSent && mbinitRepairMbPeerEndTxRespSeen
       )
     }
   }

@@ -293,6 +293,266 @@ def msgMbinitRepairValDoneResp(src: String, dst: String): UInt =
     dst
   )
 
+// MBINIT.REVERSALMB init req (64-bit header only)
+def msgMbinitReversalMbInitReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h0D".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REVERSALMB init resp (64-bit header only)
+def msgMbinitReversalMbInitResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h0D".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REVERSALMB clear error req (64-bit header only)
+def msgMbinitReversalMbClearErrorReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h0E".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REVERSALMB clear error resp (64-bit header only)
+def msgMbinitReversalMbClearErrorResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h0E".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REVERSALMB result req (64-bit header only)
+def msgMbinitReversalMbResultReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h0F".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REVERSALMB result resp for UCIe-S (64-bit header + 64-bit payload)
+// MsgInfo[15:0] = reserved (0)
+// Payload[63:16] = 0, Payload[15:0] = RD_L[15:0]
+def msgMbinitReversalMbResultResp(
+  src: String,
+  dst: String,
+  RD_L_15to0: UInt
+): UInt =
+  msgWithPayloadBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h0F".U(8.W),
+    Cat(0.U(48.W), RD_L_15to0(15, 0)),
+    src,
+    dst
+  )
+
+// MBINIT.REVERSALMB done req (64-bit header only)
+def msgMbinitReversalMbDoneReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h10".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REVERSALMB done resp (64-bit header only)
+def msgMbinitReversalMbDoneResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h10".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB start req (64-bit header only)
+def msgMbinitRepairMbStartReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h11".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB start resp (64-bit header only)
+def msgMbinitRepairMbStartResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h11".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB Start Tx Init D to C point test req (64-bit header + 64-bit payload)
+def msgMbinitRepairMbStartTxInitD2CPointTestReq(
+  src: String,
+  dst: String,
+  msgInfo: UInt,
+  comparisonMode: UInt,
+  iterationCountSettings: UInt,
+  idleCountSettings: UInt,
+  burstCountSettings: UInt,
+  patternMode: UInt,
+  clockPhaseControl: UInt,
+  validPattern: UInt,
+  dataPattern: UInt
+): UInt = {
+  val payload = Cat(
+    0.U(4.W),                        // [63:60] reserved
+    comparisonMode(0),               // [59]
+    iterationCountSettings(15, 0),   // [58:43]
+    idleCountSettings(15, 0),        // [42:27]
+    burstCountSettings(15, 0),       // [26:11]
+    patternMode(0),                  // [10]
+    clockPhaseControl(3, 0),         // [9:6]
+    validPattern(2, 0),              // [5:3]
+    dataPattern(2, 0)                // [2:0]
+  )
+
+  msgWithPayloadBase(
+    msgInfo(15, 0),
+    "hA5".U(8.W),
+    "h12".U(8.W),
+    payload,
+    src,
+    dst
+  )
+}
+
+// MBINIT.REPAIRMB Start Tx Init D to C point test resp (64-bit header only)
+def msgMbinitRepairMbStartTxInitD2CPointTestResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h12".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB LFSR clear error req (64-bit header only)
+def msgMbinitRepairMbLfsrClearErrorReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h13".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB LFSR clear error resp (64-bit header only)
+def msgMbinitRepairMbLfsrClearErrorResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h13".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB Tx Init D to C results req (64-bit header only)
+def msgMbinitRepairMbTxInitD2CResultsReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h14".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB Tx Init D to C results resp (64-bit header + 64-bit payload)
+def msgMbinitRepairMbTxInitD2CResultsResp(
+  src: String,
+  dst: String,
+  msgInfo: UInt,
+  payload: UInt
+): UInt =
+  msgWithPayloadBase(
+    msgInfo(15, 0),
+    "hAA".U(8.W),
+    "h14".U(8.W),
+    payload(63, 0),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB End Tx Init D to C point test req (64-bit header only)
+def msgMbinitRepairMbEndTxInitD2CPointTestReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h15".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB End Tx Init D to C point test resp (64-bit header only)
+def msgMbinitRepairMbEndTxInitD2CPointTestResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h15".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB apply degrade req (64-bit header only)
+// MsgInfo[2:0] carries lane map (e.g. 011b or 000b)
+def msgMbinitRepairMbApplyDegradeReq(src: String, dst: String, laneMap: UInt): UInt =
+  msgWithoutDataBase(
+    Cat(0.U(13.W), laneMap(2, 0)),
+    "hA5".U(8.W),
+    "h16".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB apply degrade resp (64-bit header only)
+def msgMbinitRepairMbApplyDegradeResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h16".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB end req (64-bit header only)
+def msgMbinitRepairMbEndReq(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hA5".U(8.W),
+    "h17".U(8.W),
+    src,
+    dst
+  )
+
+// MBINIT.REPAIRMB end resp (64-bit header only)
+def msgMbinitRepairMbEndResp(src: String, dst: String): UInt =
+  msgWithoutDataBase(
+    "b0000000000000000".U(16.W),
+    "hAA".U(8.W),
+    "h17".U(8.W),
+    src,
+    dst
+  )
+
 
   /**
    * Return the fixed SBINIT clock pattern (0xAAAAAAAAAAAAAAAA) as a 64-bit UInt.
