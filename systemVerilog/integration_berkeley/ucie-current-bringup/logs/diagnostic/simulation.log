@@ -1,0 +1,16 @@
+CURRENT UPM controller/serial RTL + unpatched Berkeley full LogicalPhy/D2DAdapter
+SBINIT test; no state forcing or message rewriting. STOP_ON_ERROR=0
+STATE cycle=1 UPM=0 Berkeley=0/detail=0 mode=0
+STATE cycle=3200129 UPM=1 Berkeley=0/detail=0 mode=0
+STATE cycle=3200130 UPM=1 Berkeley=1/detail=1 mode=0
+CHECK_ERROR time=4000263.125 ns cycle=3200198 One physical UPM RX word was accepted by the controller more than once
+STATE cycle=3200201 UPM=2 Berkeley=1/detail=1 mode=0
+STATE cycle=3200524 UPM=3 Berkeley=1/detail=1 mode=0
+CHECK_ERROR time=4000979.375 ns cycle=3200771 UPM router dropped unknown word 00000000000000000000000000000000
+SBINIT result cycle=3220128 UPM LTSM=3 MBINIT=0 MBTRAIN=0 RDI=0 FDI=0; Berkeley LT=1 detail=1 RDI=0 FDI=0
+Wire UPM chunks=206 edges=13196 errors=0; Berkeley chunks=19 edges=1216 errors=0
+UPM physical RX completions=19 controller acceptances=6355 repeated acceptances=6336; drop=0 Berkeley fault=0 checker errors=2
+UPM expected OOR=00000000000000000200010040244012; Berkeley mode=1 parity=0 timeout=0 unhandled=0
+[4025174000] %Fatal: UcieSerialBringUp_tb.sv:208: Assertion failed in UcieSerialBringUp_tb.unnamedblk1: SBINIT watchdog: both controllers did not complete SBINIT
+%Error: tb/UcieSerialBringUp_tb.sv:208: Verilog $stop
+Aborting...

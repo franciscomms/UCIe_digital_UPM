@@ -1,0 +1,492 @@
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:206:41: ... Location of port declaration
+  206 |   output wire logic [PI_CODE_WIDTH-1:0] ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode,
+      |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                     ... For warning description see https://verilator.org/warn/PINMISSING?v=0.000
+                     ... Use "/* verilator lint_off PINMISSING */" and lint_on around source to disable this message.
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:207:41: ... Location of port declaration
+  207 |   output wire logic [PI_CODE_WIDTH-1:0] ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode,
+      |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:208:51: ... Location of port declaration
+  208 |   output wire logic [64*TX_DESKEW_CODE_WIDTH-1:0] ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes,
+      |                                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:209:41: ... Location of port declaration
+  209 |   output wire logic [PI_CODE_WIDTH-1:0] ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode,
+      |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'fdi_pl_rx_active_req'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:212:21: ... Location of port declaration
+  212 |   output wire logic fdi_pl_rx_active_req,
+      |                     ^~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'fdi_pl_inband_pres'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:213:21: ... Location of port declaration
+  213 |   output wire logic fdi_pl_inband_pres,
+      |                     ^~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'fdi_pl_wake_ack'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:214:21: ... Location of port declaration
+  214 |   output wire logic fdi_pl_wake_ack,
+      |                     ^~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'fdi_pl_clk_req'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:215:21: ... Location of port declaration
+  215 |   output wire logic fdi_pl_clk_req,
+      |                     ^~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'fdi_pl_stall_req'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:216:21: ... Location of port declaration
+  216 |   output wire logic fdi_pl_stall_req,
+      |                     ^~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'debug_arb_grant_ltsm'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:223:21: ... Location of port declaration
+  223 |   output wire logic debug_arb_grant_ltsm,
+      |                     ^~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'debug_arb_grant_fdi'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:224:21: ... Location of port declaration
+  224 |   output wire logic debug_arb_grant_fdi,
+      |                     ^~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'debug_arb_grant_rdi'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:225:21: ... Location of port declaration
+  225 |   output wire logic debug_arb_grant_rdi,
+      |                     ^~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'debug_arb_tx_locked'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:226:21: ... Location of port declaration
+  226 |   output wire logic debug_arb_tx_locked,
+      |                     ^~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'debug_arb_tx_fire'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:227:21: ... Location of port declaration
+  227 |   output wire logic debug_arb_tx_fire,
+      |                     ^~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:33:28: Instance has missing pin: 'debug_rx_fire'
+   33 |   UPMSerialDieBringUpModel upm_die (
+      |                            ^~~~~~~
+                     tb/UPMSerialBringUpModels.sv:229:21: ... Location of port declaration
+  229 |   output wire logic debug_rx_fire
+      |                     ^~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_valid'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:16:17: ... Location of port declaration
+   16 |   output        io_mainband_tx_valid,
+      |                 ^~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_0'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:17:17: ... Location of port declaration
+   17 |   output [31:0] io_mainband_tx_bits_data_0,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_1'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:18:17: ... Location of port declaration
+   18 |                 io_mainband_tx_bits_data_1,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_2'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:19:17: ... Location of port declaration
+   19 |                 io_mainband_tx_bits_data_2,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_3'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:20:17: ... Location of port declaration
+   20 |                 io_mainband_tx_bits_data_3,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_4'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:21:17: ... Location of port declaration
+   21 |                 io_mainband_tx_bits_data_4,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_5'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:22:17: ... Location of port declaration
+   22 |                 io_mainband_tx_bits_data_5,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_6'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:23:17: ... Location of port declaration
+   23 |                 io_mainband_tx_bits_data_6,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_7'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:24:17: ... Location of port declaration
+   24 |                 io_mainband_tx_bits_data_7,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_8'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:25:17: ... Location of port declaration
+   25 |                 io_mainband_tx_bits_data_8,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_9'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:26:17: ... Location of port declaration
+   26 |                 io_mainband_tx_bits_data_9,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_10'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:27:17: ... Location of port declaration
+   27 |                 io_mainband_tx_bits_data_10,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_11'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:28:17: ... Location of port declaration
+   28 |                 io_mainband_tx_bits_data_11,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_12'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:29:17: ... Location of port declaration
+   29 |                 io_mainband_tx_bits_data_12,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_13'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:30:17: ... Location of port declaration
+   30 |                 io_mainband_tx_bits_data_13,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_14'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:31:17: ... Location of port declaration
+   31 |                 io_mainband_tx_bits_data_14,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_data_15'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:32:17: ... Location of port declaration
+   32 |                 io_mainband_tx_bits_data_15,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_valid'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:33:17: ... Location of port declaration
+   33 |                 io_mainband_tx_bits_valid,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_clkP'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:34:17: ... Location of port declaration
+   34 |                 io_mainband_tx_bits_clkP,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_clkN'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:35:17: ... Location of port declaration
+   35 |                 io_mainband_tx_bits_clkN,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_tx_bits_trk'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:36:17: ... Location of port declaration
+   36 |                 io_mainband_tx_bits_trk,
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~
+%Warning-PINMISSING: tb/UcieSerialBringUp_tb.sv:53:21: Instance has missing pin: 'io_mainband_rx_ready'
+   53 |   BerkeleySerialDie berkeley_die (
+      |                     ^~~~~~~~~~~~
+                     berkeley/generated/BerkeleySerialDie.sv:37:17: ... Location of port declaration
+   37 |   output        io_mainband_rx_ready,
+      |                 ^~~~~~~~~~~~~~~~~~~~
+%Warning-WIDTHEXPAND: upm/MBTrain_DataVrefSweepEngine.sv:219:34: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'currentCodeReg' generates 4 bits.
+                                                               : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainVref.core.sweepEngine'
+  219 |               if (currentCodeReg == (VREF_VALUE_COUNT - 1)) begin
+      |                                  ^~
+                      ... For warning description see https://verilator.org/warn/WIDTHEXPAND?v=0.000
+                      ... Use "/* verilator lint_off WIDTHEXPAND */" and lint_on around source to disable this message.
+%Warning-WIDTHTRUNC: upm/MBTrain_DataVrefSweepEngine.sv:236:21: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                              : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainVref.core.sweepEngine'
+  236 |                   ] <= bestStartInt[select_lane] +
+      |                     ^~
+                     ... For warning description see https://verilator.org/warn/WIDTHTRUNC?v=0.000
+                     ... Use "/* verilator lint_off WIDTHTRUNC */" and lint_on around source to disable this message.
+%Warning-WIDTHTRUNC: upm/MBTrain_DataVrefSweepEngine.sv:240:21: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's ARRAYSEL generates 32 bits.
+                                                              : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainVref.core.sweepEngine'
+  240 |                   ] <= bestStartInt[select_lane];
+      |                     ^~
+%Warning-WIDTHTRUNC: upm/MBTrain_DataVrefSweepEngine.sv:243:21: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                              : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainVref.core.sweepEngine'
+  243 |                   ] <= bestStartInt[select_lane] +
+      |                     ^~
+%Warning-WIDTHEXPAND: upm/MBTrain_DataVrefSweepEngine.sv:258:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                               : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainVref.core.sweepEngine'
+  258 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/MBTrain_DataVrefSweepEngine.sv:284:42: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                               : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainVref.core.sweepEngine'
+  284 |               end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                          ^
+%Warning-WIDTHEXPAND: upm/MBTrain_ValidVrefSweepEngine.sv:161:34: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'currentCodeReg' generates 4 bits.
+                                                                : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainVref.core.sweepEngine'
+  161 |               if (currentCodeReg == (VREF_VALUE_COUNT - 1)) begin
+      |                                  ^~
+%Warning-WIDTHTRUNC: upm/MBTrain_ValidVrefSweepEngine.sv:173:28: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                               : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainVref.core.sweepEngine'
+  173 |               finalCodeReg <= bestStartInt + ((bestLengthInt - 1) / 2);
+      |                            ^~
+%Warning-WIDTHTRUNC: upm/MBTrain_ValidVrefSweepEngine.sv:174:28: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's VARREF 'bestStartInt' generates 32 bits.
+                                                               : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainVref.core.sweepEngine'
+  174 |               leftCodeReg  <= bestStartInt;
+      |                            ^~
+%Warning-WIDTHTRUNC: upm/MBTrain_ValidVrefSweepEngine.sv:175:28: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                               : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainVref.core.sweepEngine'
+  175 |               rightCodeReg <= bestStartInt + bestLengthInt - 1;
+      |                            ^~
+%Warning-WIDTHEXPAND: upm/MBTrain_ValidVrefSweepEngine.sv:177:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                                : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainVref.core.sweepEngine'
+  177 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/MBTrain_ValidVrefSweepEngine.sv:200:42: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                                : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainVref.core.sweepEngine'
+  200 |               end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                          ^
+%Warning-WIDTHEXPAND: upm/RxInitD2CPointTestReceiverFSM.sv:86:24: Operator ASSIGNDLY expects 16 bits on the Assign RHS, but Assign RHS's CONST '1'h0' generates 1 bits.
+                                                                : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainVref.core.pointInitiator'
+   86 |       pointTestPassReg <= 1'b0;
+      |                        ^~
+%Warning-WIDTHEXPAND: upm/RxInitD2CPointTestReceiverFSM.sv:96:26: Operator ASSIGNDLY expects 16 bits on the Assign RHS, but Assign RHS's CONST '1'h0' generates 1 bits.
+                                                                : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainVref.core.pointInitiator'
+   96 |         pointTestPassReg <= 1'b0;
+      |                          ^~
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter2SweepEngine.sv:104:30: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's VARREF 'count' generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter2.sweepEngine'
+  104 |       countFailedComparisons = count;
+      |                              ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter2SweepEngine.sv:146:27: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's VARREF 'bestStart' generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter2.sweepEngine'
+  146 |       globalLeftPhaseCalc = bestStart;
+      |                           ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter2SweepEngine.sv:147:28: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter2.sweepEngine'
+  147 |       globalRightPhaseCalc = bestStart + bestLength - 1;
+      |                            ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter2SweepEngine.sv:148:29: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter2.sweepEngine'
+  148 |       globalCenterPhaseCalc = bestStart + ((bestLength - 1) >> 1);
+      |                             ^
+%Warning-WIDTHEXPAND: upm/MBTrain_DataTrainCenter2SweepEngine.sv:242:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                                       : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter2.sweepEngine'
+  242 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/MBTrain_DataTrainCenter2SweepEngine.sv:279:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                                       : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter2.sweepEngine'
+  279 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/MBTrain_RxDeskewSweepEngine.sv:225:34: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'currentCodeReg' generates 4 bits.
+                                                               : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.rxDeskew.sweepEngine'
+  225 |               if (currentCodeReg == (RX_DESKEW_VALUE_COUNT - 1)) begin
+      |                                  ^~
+%Warning-WIDTHTRUNC: upm/MBTrain_RxDeskewSweepEngine.sv:243:21: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                              : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.rxDeskew.sweepEngine'
+  243 |                   ] <= bestStartInt[select_lane] +
+      |                     ^~
+%Warning-WIDTHTRUNC: upm/MBTrain_RxDeskewSweepEngine.sv:248:21: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's ARRAYSEL generates 32 bits.
+                                                              : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.rxDeskew.sweepEngine'
+  248 |                   ] <= bestStartInt[select_lane];
+      |                     ^~
+%Warning-WIDTHTRUNC: upm/MBTrain_RxDeskewSweepEngine.sv:252:21: Operator ASSIGNDLY expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                              : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.rxDeskew.sweepEngine'
+  252 |                   ] <= bestStartInt[select_lane] +
+      |                     ^~
+%Warning-WIDTHEXPAND: upm/MBTrain_RxDeskewSweepEngine.sv:270:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                               : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.rxDeskew.sweepEngine'
+  270 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/MBTrain_RxDeskewSweepEngine.sv:296:42: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                               : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.rxDeskew.sweepEngine'
+  296 |               end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                          ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter1SweepEngine.sv:145:30: Operator ASSIGN expects 16 bits on the Assign RHS, but Assign RHS's VARREF 'count' generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  145 |       countFailedComparisons = count;
+      |                              ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter1SweepEngine.sv:215:38: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's VARREF 'bestStart' generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  215 |           laneLeftPhaseCalc[laneIdx] = bestStart;
+      |                                      ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter1SweepEngine.sv:216:39: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  216 |           laneRightPhaseCalc[laneIdx] = bestStart + bestLength - 1;
+      |                                       ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter1SweepEngine.sv:217:40: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's VARREF 'laneCenterInt' generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  217 |           laneCenterPhaseCalc[laneIdx] = laneCenterInt;
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/MBTrain_DataTrainCenter1SweepEngine.sv:237:23: Operator ASSIGN expects 32 bits on the Assign RHS, but Assign RHS's ARRAYSEL generates 4 bits.
+                                                                       : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  237 |         laneCenterInt = laneCenterPhaseCalc[laneIdx];
+      |                       ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter1SweepEngine.sv:254:13: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's VARREF 'deskewCodeInt' generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  254 |           ] = deskewCodeInt;
+      |             ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter1SweepEngine.sv:299:27: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's VARREF 'globalBestStart' generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  299 |       globalLeftPhaseCalc = globalBestStart;
+      |                           ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter1SweepEngine.sv:300:28: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  300 |       globalRightPhaseCalc = globalBestStart + globalBestLength - 1;
+      |                            ^
+%Warning-WIDTHTRUNC: upm/MBTrain_DataTrainCenter1SweepEngine.sv:301:29: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                      : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  301 |       globalCenterPhaseCalc =
+      |                             ^
+%Warning-WIDTHEXPAND: upm/MBTrain_DataTrainCenter1SweepEngine.sv:430:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                                       : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  430 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/MBTrain_DataTrainCenter1SweepEngine.sv:487:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                                       : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  487 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/MBTrain_DataTrainCenter1SweepEngine.sv:520:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                                       : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.dataTrainCenter1.sweepEngine'
+  520 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHTRUNC: upm/MBTrain_ValTrainCenterSweepEngine.sv:113:26: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's VARREF 'bestStart' generates 32 bits.
+                                                                    : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainCenter.sweepEngine'
+  113 |       validLeftPhaseCalc = bestStart;
+      |                          ^
+%Warning-WIDTHTRUNC: upm/MBTrain_ValTrainCenterSweepEngine.sv:114:27: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's SUB generates 32 bits.
+                                                                    : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainCenter.sweepEngine'
+  114 |       validRightPhaseCalc = bestStart + bestLength - 1;
+      |                           ^
+%Warning-WIDTHTRUNC: upm/MBTrain_ValTrainCenterSweepEngine.sv:115:28: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's ADD generates 32 bits.
+                                                                    : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainCenter.sweepEngine'
+  115 |       validCenterPhaseCalc = bestStart + ((bestLength - 1) >> 1);
+      |                            ^
+%Warning-WIDTHEXPAND: upm/MBTrain_ValTrainCenterSweepEngine.sv:206:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                                     : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainCenter.sweepEngine'
+  206 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/MBTrain_ValTrainCenterSweepEngine.sv:242:40: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'retryCountReg' generates 16 bits.
+                                                                     : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsm.mbTrainFsm.valTrainCenter.sweepEngine'
+  242 |             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+      |                                        ^
+%Warning-WIDTHEXPAND: upm/LtsmSidebandTxCapture.sv:35:13: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'ptr' generates 2 bits.
+                                                        : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsmTxCapture'
+   35 |     if (ptr == ENTRIES - 1)
+      |             ^~
+%Warning-WIDTHEXPAND: upm/LtsmSidebandTxCapture.sv:44:30: Operator LTE expects 32 bits on the LHS, but LHS's VARREF 'count' generates 3 bits.
+                                                        : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsmTxCapture'
+   44 |     raw_ready       = (count <= (ENTRIES - 2));
+      |                              ^~
+%Warning-WIDTHEXPAND: upm/LtsmSidebandTxCapture.sv:45:30: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'count' generates 3 bits.
+                                                        : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.ltsmTxCapture'
+   45 |     queue_enq_ready = (count < ENTRIES);
+      |                              ^
+%Warning-WIDTHEXPAND: upm/SideBandModule.sv:30:36: Operator LT expects 32 bits on the LHS, but LHS's VARREF 'txCount' generates 3 bits.
+                                                 : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.sideband'
+   30 |   assign tx_ready       = (txCount < TX_FIFO_ENTRIES);
+      |                                    ^
+%Warning-WIDTHEXPAND: upm/SideBandModule.sv:43:35: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'txWritePtr' generates 2 bits.
+                                                 : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.sideband'
+   43 |         txWritePtr <= (txWritePtr == TX_FIFO_ENTRIES-1) ? '0 : txWritePtr + 1'b1;
+      |                                   ^~
+%Warning-WIDTHEXPAND: upm/SideBandModule.sv:46:33: Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'txReadPtr' generates 2 bits.
+                                                 : ... note: In instance 'UcieSerialBringUp_tb.upm_die.dut.sideband'
+   46 |         txReadPtr <= (txReadPtr == TX_FIFO_ENTRIES-1) ? '0 : txReadPtr + 1'b1;
+      |                                 ^~
+%Warning-WIDTHTRUNC: tb/OriginalSidebandWireMonitor.sv:23:8: Logical operator LOGNOT expects 1 bit on the LHS, but LHS's VARREF 'log_fd' generates 32 bits.
+                                                           : ... note: In instance 'UcieSerialBringUp_tb.monitor_ba'
+   23 |     if(!log_fd) $fatal(1,"Cannot open wire log for %s",NAME);
+      |        ^
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:604:45: Operator GTE expects 32 bits on the LHS, but LHS's VARREF 'ltsm_flagToAnalog_valVref_rxVrefCode' generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  604 |       (ltsm_flagToAnalog_valVref_rxVrefCode >= VAL_VREF_LEFT) &&
+      |                                             ^~
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:605:45: Operator LTE expects 32 bits on the LHS, but LHS's VARREF 'ltsm_flagToAnalog_valVref_rxVrefCode' generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  605 |       (ltsm_flagToAnalog_valVref_rxVrefCode <= VAL_VREF_RIGHT);
+      |                                             ^~
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:607:50: Operator GTE expects 32 bits on the LHS, but LHS's VARREF 'ltsm_flagToAnalog_valTrainVref_rxVrefCode' generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  607 |       (ltsm_flagToAnalog_valTrainVref_rxVrefCode >= VALTRAIN_VREF_LEFT) &&
+      |                                                  ^~
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:608:50: Operator LTE expects 32 bits on the LHS, but LHS's VARREF 'ltsm_flagToAnalog_valTrainVref_rxVrefCode' generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  608 |       (ltsm_flagToAnalog_valTrainVref_rxVrefCode <= VALTRAIN_VREF_RIGHT);
+      |                                                  ^~
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:617:53: Operator GTE expects 32 bits on the LHS, but LHS's SEL generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  617 |            lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] >= data_vref_left(lane)) &&
+      |                                                     ^~
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:619:53: Operator LT expects 32 bits on the LHS, but LHS's SEL generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  619 |            lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] <
+      |                                                     ^
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:624:53: Operator GTE expects 32 bits on the LHS, but LHS's SEL generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  624 |            lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] >= datatrain_vref_left(lane)) &&
+      |                                                     ^~
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:626:53: Operator LT expects 32 bits on the LHS, but LHS's SEL generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  626 |            lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] <
+      |                                                     ^
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:631:63: Operator GTE expects 32 bits on the LHS, but LHS's SEL generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  631 |            lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH] >=
+      |                                                               ^~
+%Warning-WIDTHEXPAND: tb/UPMSerialBringUpModels.sv:634:63: Operator LT expects 32 bits on the LHS, but LHS's SEL generates 4 bits.
+                                                         : ... note: In instance 'UcieSerialBringUp_tb.upm_die'
+  634 |            lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH] <
+      |                                                               ^
+%Warning-UNOPTFLAT: upm/LinkManagementController.sv:218:9: Signal unoptimizable: Circular combinational logic: 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.linkMgmt.fdi.stall_busy'
+  218 |   logic stall_busy;
+      |         ^~~~~~~~~~
+                    ... For warning description see https://verilator.org/warn/UNOPTFLAT?v=0.000
+                    ... Use "/* verilator lint_off UNOPTFLAT */" and lint_on around source to disable this message.
+                    upm/LinkManagementController.sv:218:9:      Example path: UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.linkMgmt.fdi.stall_busy
+                    upm/StallController.sv:30:3:      Example path: ALWAYS
+                    upm/LinkManagementController.sv:215:9:      Example path: UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.linkMgmt.fdi.stall_req
+                    upm/StallController.sv:30:3:      Example path: ALWAYS
+%Warning-UNOPTFLAT: upm/LinkManagementController.sv:215:9: Signal unoptimizable: Circular combinational logic: 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.linkMgmt.fdi.stall_req'
+  215 |   logic stall_req;
+      |         ^~~~~~~~~
+                    upm/LinkManagementController.sv:215:9:      Example path: UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.linkMgmt.fdi.stall_req
+                    upm/StallController.sv:30:3:      Example path: ALWAYS
+                    upm/LinkManagementController.sv:215:9:      Example path: UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.linkMgmt.fdi.stall_req
+%Warning-UNOPTFLAT: upm/RdiLinkManagementController.sv:148:29: Signal unoptimizable: Circular combinational logic: 'UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.linkMgmt.rdi.stall_busy'
+  148 |   (* keep = "true" *) logic stall_busy;
+      |                             ^~~~~~~~~~
+                    upm/RdiLinkManagementController.sv:148:29:      Example path: UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.linkMgmt.rdi.stall_busy
+                    upm/StallController.sv:30:3:      Example path: ALWAYS
+                    upm/RdiLinkManagementController.sv:148:29:      Example path: UcieSerialBringUp_tb.upm_die.dut.linkMgmtLtsm.linkMgmt.rdi.stall_busy
+- V e r i l a t i o n   R e p o r t:  rev vUNKNOWN-built20260516-4e853d8
+- Verilator: Built from 806.430 MB sources in 176 modules, into 13.066 MB in 31 C++ files needing 0.011 MB
+- Verilator: Walltime 11.198 s (elab=2.100, cvt=7.369, bld=0.000); cpu 11.188 s on 1 threads

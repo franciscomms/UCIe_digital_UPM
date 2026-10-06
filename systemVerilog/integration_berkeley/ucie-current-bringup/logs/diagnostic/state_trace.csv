@@ -1,0 +1,6 @@
+time_ns,upm_cycle,upm_ltsm,upm_mbinit,upm_mbtrain,berkeley_ltsm,berkeley_detail,berkeley_mode,upm_rdi,berkeley_rdi
+15.626,1,0,0,0,0,0,0,0,0
+4000175.626,3200129,1,0,0,0,0,0,0,0
+4000176.876,3200130,1,0,0,1,1,0,0,0
+4000265.626,3200201,2,0,0,1,1,0,0,0
+4000669.376,3200524,3,0,0,1,1,0,0,0

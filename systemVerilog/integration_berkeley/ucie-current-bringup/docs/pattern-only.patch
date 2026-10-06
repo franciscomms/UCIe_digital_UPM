@@ -1,0 +1,20 @@
+--- original/SidebandMsgGenerator_corregido.sv
++++ upm/SidebandMsgGenerator_corregido.sv
+@@ -874,7 +874,7 @@
+   endfunction
+ 
+   function automatic logic [127:0] msgSbinitClkPattern();
+-    msgSbinitClkPattern = {64'd0, 64'hAAAAAAAAAAAAAAAA};
++    msgSbinitClkPattern = {64'd0, 64'h5555555555555555};
+   endfunction
+ 
+   function automatic logic [127:0] msgMbtrainLinkSpeedStartReq(//correto
+@@ -1268,7 +1268,7 @@
+   endfunction
+   function automatic logic UCIe2_isSbinitClockPattern(input logic [127:0] message);
+     UCIe2_isSbinitClockPattern = (UCIe2_Field_payload(message) == 64'b0) &&
+-                                 (UCIe2_Field_header(message) == 64'hAAAAAAAAAAAAAAAA);
++                                 (UCIe2_Field_header(message) == 64'h5555555555555555);
+   endfunction
+   function automatic logic UCIe2_isLtsmMessage(input logic [127:0] message);
+     logic [7:0] code;

@@ -1,0 +1,13 @@
+CURRENT UPM controller/serial RTL + unpatched Berkeley full LogicalPhy/D2DAdapter
+SBINIT test; no state forcing or message rewriting. STOP_ON_ERROR=1
+STATE cycle=1 UPM=0 Berkeley=0/detail=0 mode=0
+STATE cycle=3200129 UPM=1 Berkeley=0/detail=0 mode=0
+STATE cycle=3200130 UPM=1 Berkeley=1/detail=1 mode=0
+CHECK_ERROR time=4000263.125 ns cycle=3200198 One physical UPM RX word was accepted by the controller more than once
+FAIL first error cycle=3200198 UPM LTSM=1 MBINIT=0 MBTRAIN=0 RDI=0 FDI=0; Berkeley LT=1 detail=1 RDI=0 FDI=0
+Wire UPM chunks=1 edges=64 errors=0; Berkeley chunks=1 edges=64 errors=0
+UPM physical RX completions=1 controller acceptances=2 repeated acceptances=1; drop=0 Berkeley fault=0 checker errors=1
+UPM expected OOR=00000000000000000200010040244012; Berkeley mode=0 parity=0 timeout=0 unhandled=0
+[4000263000] %Fatal: UcieSerialBringUp_tb.sv:113: Assertion failed in UcieSerialBringUp_tb.error_seen: One physical UPM RX word was accepted by the controller more than once
+%Error: tb/UcieSerialBringUp_tb.sv:113: Verilog $stop
+Aborting...

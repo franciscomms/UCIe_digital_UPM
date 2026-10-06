@@ -1,0 +1,1478 @@
+{
+  "berkeley_commit": "caf0daf1135f5b87225fa4903fcc3dfb87863de5",
+  "berkeley_source": "https://github.com/ucb-bar/ucie",
+  "berkeley_generated_variant": "upstream, raw names, no serializer/deserializer patch",
+  "files": [
+    {
+      "path": "upm/D2DAdapterConstants.sv",
+      "sha256": "a80a3bf7052db6d7c2e81cfc2af47618ea730a1965f57c67dead336dae9a0564",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/D2DAdapterLinkMgmtLtsmTop_corrected.sv",
+      "sha256": "be452c614bbdc68d2a8c7a0ffb1c6c7fde53228d9a03eba8aa051db338f92f8d",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/D2DAdapterLinkMgmtTop.sv",
+      "sha256": "83932c82c01058b39e9bc7097e4dbd488d7e11449e12f80a002a4add4a43c721",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/Fdi.sv",
+      "sha256": "55c868683f726633c672943447065266e79fca9e64a32860877c9f8024aca35c",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/LinkManagementController.sv",
+      "sha256": "31b5d4984be7c70924967c6b8005ee1e43f133f7d622198bd54251163d245870",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/LinkMgmtSidebandPacketArbiter.sv",
+      "sha256": "cc1cdbf6bfe6305d5196c7ed302dabb41b83afa5fcce70d1ae96379a28493620",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/LinkTrainingFSM.sv",
+      "sha256": "3bf32c643e88c8d020cecf2df1e63e163f59fcca0512a0c5a541efe1fdc82c03",
+      "source": "User upload: LinkTrainingFSM(20260916-131741).sv",
+      "unchanged": true
+    },
+    {
+      "path": "upm/LtsmSidebandRxPulseAdapter.sv",
+      "sha256": "8b69d2dc82860f9a019076c19f33c7bde63ad1aae4049be6a4ddc8ff7c1f0893",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/LtsmSidebandTxCapture.sv",
+      "sha256": "80b70dcdcd29570668faf5021f18a8017c391cdcb28f01b9f0a2ab6a1646e3d9",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBInitFSM.sv",
+      "sha256": "83c1160b71e86c5e2eb52bc2d8199f83bc3c9e2d4a91b1baf4bae06d587f2d5e",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrainFSM.sv",
+      "sha256": "354cabe7d940558464652c27038516c57907fe9958fa05258528472f66143311",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_DataTrainCenter1.sv",
+      "sha256": "82a9220480df6695eb13a2a846c1199c888c430678677794fab10750335e9bb0",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_DataTrainCenter1SweepEngine.sv",
+      "sha256": "56f79ac2eadefb7f66cbcd312448c51a84143c0fb5aadb450ed917fa492363a9",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_DataTrainCenter2.sv",
+      "sha256": "0190460ab3c32725bdd2102fc7f53272bd8db02de36aa00bc6201594530ab723",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_DataTrainCenter2SweepEngine.sv",
+      "sha256": "47d93c6d72643d8fae4393bb8b9d049e1819ad46755a78c547337462481908f9",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_DataTrainVrefFSM.sv",
+      "sha256": "967e886d7f115e214b15aad5ec90cb64e204c898a49b8d07907b859185fc7d60",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_DataVrefFSM.sv",
+      "sha256": "d0d07178452b44043ac7b0edb4c1087127c109fada583a96edb9acd03266b87b",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_DataVrefStateCore.sv",
+      "sha256": "f1dc36208ccb123692777f9ddcbb79a8978f8c014fa7322513b93a8c2e18d630",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_DataVrefSweepEngine.sv",
+      "sha256": "5c60ad2743d9c3b73d67821450474d85a5d8e3e94c0fc0a7bdad695b90935e78",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_LinkSpeed.sv",
+      "sha256": "9212a6fef43ec51a975bd549d12d283fb2a6fb55acd0274c4b92b9bb296f905b",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_RxClkCalFSM.sv",
+      "sha256": "b1e8ab0c784f4f48ad684fcf31af71514fd676b42424349f3affb36f7658b470",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_RxDeskewFSM.sv",
+      "sha256": "5600a39f39761f87ae765739ed9d68b601aa68f4d72756a4c2d6e65e2b415244",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_RxDeskewSweepEngine.sv",
+      "sha256": "8cce5cdf14310ea1102723fb2cfc3f87c2365724420ea16c95d6899f38be3ec2",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_SpeedIdleFSM.sv",
+      "sha256": "e6875d1684b4693d500d5fe8a3dc48d1c2e3c5509eb8ec238520ee2141d4d480",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_TxSelfCalFSM.sv",
+      "sha256": "f6e7c4162dcfcb4b2c622ef32d2f6ff763a93ed2c60df34a3200b6c414758fd2",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_ValTrainCenterFSM.sv",
+      "sha256": "5528ec0854a8b548b2f68c28198ccc423db3d0fd1333818eeacb6b7a8f24a66c",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_ValTrainCenterSweepEngine.sv",
+      "sha256": "be2f78ac3a9d09e65197e1fdcd3a0f1d2a389b1446d5a142e23bd288c9b4d85a",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_ValTrainVrefFSM.sv",
+      "sha256": "0d972754ee14332247c5e5da9d2f8478178feb288955bc7aee58a366b4c7ac8b",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_ValVrefFSM.sv",
+      "sha256": "9225d9336b1a2e0b5d3bb8dd72cbe2dd077f4d20f8ba40d4ded931d0c6ff0b5a",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_ValidVrefStateCore.sv",
+      "sha256": "e29b2be4244acc312a61184a5fd83a97f8988e7342bf1b2e036568be8a3f2e7f",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/MBTrain_ValidVrefSweepEngine.sv",
+      "sha256": "d7025c2442bae15dd948037d60e18695d80428caca03fac3a6d40a55fa387dda",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/Parameters.sv",
+      "sha256": "69832212bf473a36a3bf12fa6811061eb15c89e56319e2b734e808c0f9721c1a",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/Rdi.sv",
+      "sha256": "853a17dcb9a7b959ae8d111759c81d3b607bf099413564abb41910d17d30c317",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/RdiLinkManagementConstants.sv",
+      "sha256": "5ceb99094772bae859495aee5b0d9eb5e5badc9993c374064ad671112837d0a5",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/RdiLinkManagementController.sv",
+      "sha256": "6821eb0f56bbf9d2cbbf360c0e255d3a72142ac4fa173468b5d2c0534e39d094",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/RdiTimeoutController.sv",
+      "sha256": "05c7835027285864254469113ff4a57e9d1c34fc0c43aac2631198e256fab8ff",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/RxInitD2CPointTestReceiverFSM.sv",
+      "sha256": "ac1c43f25344fc884e5df7196cdfb45737fbe06c6f18f868b35622fccea8b8ce",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/RxInitD2CPointTestSenderFSM.sv",
+      "sha256": "0f282e8b51ea55e6e9ba22da0882892dde01ef597e00a6af8b94b0c92da65524",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/SideBandModule.sv",
+      "sha256": "9d70f4998f26e3dfe3fcb677274daf784647fe531f4f5d2ef45301fe63404bdf",
+      "source": "User upload: SideBandModule(2).sv",
+      "unchanged": true
+    },
+    {
+      "path": "upm/SidebandMsgGenerator_corregido.sv",
+      "sha256": "c4232260e54ac46c824107a3dfca4d8b4702f382f7752ac21d7b9f9ca50de596",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": false,
+      "changes": "Two SBINIT pattern literals; see docs/pattern-only.patch"
+    },
+    {
+      "path": "upm/SidebandRx.sv",
+      "sha256": "357552dc13a1003a42a9a0d79d8d791707da79b5e0eeaff15c360b7967b94e41",
+      "source": "User upload: SidebandRx(2).sv",
+      "unchanged": true
+    },
+    {
+      "path": "upm/SidebandTx.sv",
+      "sha256": "85abd987e0a4c68712afc2d061f236f94d192ce53a169450b72cf20c756ed234",
+      "source": "User upload: SidebandTx 1 (1).sv",
+      "unchanged": true
+    },
+    {
+      "path": "upm/StallController.sv",
+      "sha256": "82c541c0a61c7f29cd60a73f135cf678dc1e6eabda149f062adaeff076c5272b",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/States.sv",
+      "sha256": "2670b284ebdb15ebbcebcef0342dc13a2c98e233451057379f439fe9464c96b5",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/TxInitD2CPointTestReceiverFSM.sv",
+      "sha256": "9f19e73b9bc0e6bdeac03913c69249327ed17ac17db9b9bb4f6f575f12739757",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/TxInitD2CPointTestSenderFSM.sv",
+      "sha256": "41cbda8e8f848247152af0d2b5a55d54c1b85d4c0db92bf77bcf9331d1be87c6",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/Types.sv",
+      "sha256": "5afd607ced0100890fe552f67cc65c89cd459c04da11cb41c70959b5b3eb7edc",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "upm/sidebandNode.sv",
+      "sha256": "422b62462e9abb9739ef0107d93d3d87ec9a74371296c469554711525606abc0",
+      "source": "Original ucie_dig_src(2).zip",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/AdapterSM.sv",
+      "sha256": "20be84ca00982ae902a2d6741483d1d24a8d8793a7e9d9bff3df08c9f59b1219",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/Arbiter4_UInt128.sv",
+      "sha256": "6baae9e876813d4a0ba23e54f81fd1d6054570d530dfa87a9a433930dde1535b",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/AsyncQueue.sv",
+      "sha256": "9f15c6bbf44e3c8868d52fc81b2d692c65654b07c9172dc47f6d19b27f67f74c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/AsyncQueueSink_UInt128.sv",
+      "sha256": "66c6191d056b56c7e3b6786c7c81ce4dac4d2dee08c0d405e3075dbf4296019b",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/AsyncQueueSource_UInt128.sv",
+      "sha256": "c3bfeaea335d15ccf4471b89b1892f2381da935563c0cd4baa34398497226d8c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv",
+      "sha256": "c6f652cefe676ae4a341976003e6e1d5b30303a37451f8171d53c4dee366e66b",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv",
+      "sha256": "4c2b09ba084b684f209d71ad7f2129610a834d2a4c467380cb5699d2abfb28a5",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/AsyncResetSynchronizerShiftReg_w2_d3_i0.sv",
+      "sha256": "664215f7d12df07cbf07c1f7fd40dd228a29ceed0ad127c12ca2149e35edb48e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/AsyncValidSync.sv",
+      "sha256": "f78f21510d86dfad5058173fbbc0c1c82efb5490370de1ea4f51815e78dbdc3e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/BerkeleySerialDie.sv",
+      "sha256": "c1f79510bfc91b14d41f6990f4907022a5f2bafe5d2e94ec9bc06137af2ba948",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ClockCrossingReg_w128.sv",
+      "sha256": "0074952376e78f3d7984de1008d5b36c885761fc0a62f9e08b1267d48f35a33e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/D2DAdapter.sv",
+      "sha256": "33563a0dfc9a75cdcf83d4eb3e557a1a38a46b65ba50fb2ce213e30f529e3199",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/D2DMainbandModule.sv",
+      "sha256": "5b992a9d689da10665a92011442fbf9808ce4a736789cde1754717aab877ec70",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/D2DSidebandChannel.sv",
+      "sha256": "dcfab056661ef2c3e491ea3e349daaa208477c0507f8bee54584775fa753bc77",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/D2DSidebandModule.sv",
+      "sha256": "498ffb21fdfa74d8e587552563b0fb7c9fb619490e6183cfbfc50d04650ac525",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/EnqueueArbiter.sv",
+      "sha256": "98e1bfa19e7048b62ebeacfb90ec6666bba3c083fab10e39721e0d620561c306",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/FDIStallHandler.sv",
+      "sha256": "c02cce9c29a489ab0e488a0c6dbcce44affbd9f45c0819360c7818797c361b16",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/LinkTrainingSM.sv",
+      "sha256": "b6b7933e99aa3573b0d97a8a125f64fad1247f6212a49fe95b67b90138036637",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/LogPhySidebandChannel.sv",
+      "sha256": "3946956552a051387f5eb5151d8cb528ad0f9342c4ea771775c9e32933e57117",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/LogicalPhy.sv",
+      "sha256": "756e56c7d87eb4247bbd351a9ea2c587d00af8268236a8eacc9fc9071e711633",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/MBInitRequester.sv",
+      "sha256": "452be1dd28fa3f607c95d3681b936b77f4c85a910739898a3e29a46cd2159dbb",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/MBInitResponder.sv",
+      "sha256": "3d480a5d3fa4b204328725304311d4245ea842932787f2ff36c4a12513d27fd8",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/MBInitSM.sv",
+      "sha256": "0f7331e2208174eed6c8bd271412b29b54bb168b504dcfbf70a603ca806e191d",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/MBTrainRequester.sv",
+      "sha256": "a79840aa071460ed3e8530d0a1124f62dd8d1531279bc8eaf43d026bf7069076",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/MBTrainResponder.sv",
+      "sha256": "aad20357349ce03ecce0f8926096e403283d9dd41c25b6f423230a852cb96d54",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/MBTrainSM.sv",
+      "sha256": "dc1ab3c1bc80a5161c75bb47e6ddeff06ca26db5172b2564ba99552e4bfc13ba",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/MainbandLaneController.sv",
+      "sha256": "6d7abe804fb92f3e8d7b83d2ca911e7a16310df6746bf26b944bf07896473fc1",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ParallelGaloisLFSR.sv",
+      "sha256": "658aec6989f6f978f379e39bf092702e82a6a8948b9f526d8b0f455d087621ac",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ParallelGaloisLFSR_1.sv",
+      "sha256": "752df63af8ff1bc981a0a315ac182328c89e0de48c86f99fb643ac75710dcc14",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ParallelGaloisLFSR_2.sv",
+      "sha256": "0c9689a8b56c4fa016ab8027699d3370365efbb8f0ef975995e6ab538c1163ad",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ParallelGaloisLFSR_3.sv",
+      "sha256": "0a82bd5d6fac140e3c84c68bfef57ae5efd4a7c2ec548a106403e864b6aafbec",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ParallelGaloisLFSR_4.sv",
+      "sha256": "3abe032d567ffd6e18111e12dbb517f48ba572bc60bf8314996d5daa424ce23e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ParallelGaloisLFSR_5.sv",
+      "sha256": "59505e6e56a1def916291d01b09d69e2f55cf41d291ae24acc163cd9a79645b2",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ParallelGaloisLFSR_6.sv",
+      "sha256": "1235680b5648ef0a0e3c70fcba79c7f604fa69235f266134d56ae6954cf77c2e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ParallelGaloisLFSR_7.sv",
+      "sha256": "468e0cd99bea9f418486e77c2cf4e8cf754d811e813a1f921af57cdb708b5f61",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/PatternReader.sv",
+      "sha256": "2a4926e4caf7d257c15222cd21975a56de0e3e8506cd6a5de7fedd840649895f",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/PatternWriter.sv",
+      "sha256": "16c5e165051ab35f955c3e5ca7b83cfe1963ed5cc11c29fe6e68ce5dcd1c0e68",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/PhyControlSignalTranslator.sv",
+      "sha256": "d62979acc0360899c9ae5c89325add23bec81728f284fcd3d9b28dec9b46ce76",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/PhyLaneTrainer.sv",
+      "sha256": "e316f984a9142883d1e048def5de4f5f1238ad75284ce46ef8b3ad93591f2e74",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/PhyRetrainRequester.sv",
+      "sha256": "4befe96fa672f093e840b6a51f7182ddcfff5afae287743a6d69acead4325207",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/PhyRetrainResponder.sv",
+      "sha256": "99dec5dcd59410dd4bd62554e4ae0e2595b4ec45642421dc39a5ff9d8f9a8131",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/PhyRetrainSidebandHandshake.sv",
+      "sha256": "fa2f4fe4140ceb1d539c89f205641830374d894777620987ef595ae551429199",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/Queue1_UInt128.sv",
+      "sha256": "0491c4675f6cb11f98c43864ed12bbb467bee25c9410f34a57f6fb82625a6087",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/Queue32_UInt128.sv",
+      "sha256": "de5329fe86ed3405073aad48c0c47745045e4c7865d322d3dc346fd70588c2ab",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RDIClockHandshakeRequester.sv",
+      "sha256": "bb149024bbef02f454895c344150eac03bd2f71e8c0fffb519b2dcc0ed2ffc89",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RDIController.sv",
+      "sha256": "a5fe16e274486481ed433025fd48c2b3df28a8d4a53beb52cc8667a801583646",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RDIStallHandler.sv",
+      "sha256": "a4f8f130c468f796e62e7d11830d82c6e7c464ea1ee66b28f003cdd95f0766d2",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RDIStallRequester.sv",
+      "sha256": "c48cafeb1d551b31b8a468ee6e95920eb61ee30853f7cde12b3dc9e77c6172bc",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RDIStateMachine.sv",
+      "sha256": "834f5dca46538c2695c6efe30efe25722257321779905a3ce91421524f21089e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RDIStateMachineRequester.sv",
+      "sha256": "c520a5c51bb4af1ed70a3faac5dd0f7661d69adb8f9ad107d487dc9f5f73535d",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RDIStateMachineResponder.sv",
+      "sha256": "520808ad52d4b124d908df923c2d0cd2ebfc84987d18c23bfe7fba17e1dfbc92",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RDIWakeHandshakeResponder.sv",
+      "sha256": "bc9744b5678de815516eba0eb4d8009830a5efbfa2def9e6bb13de2a3342162a",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RRArbiter12_SidebandLanes.sv",
+      "sha256": "7c4e1215d310fc8c53698905bfbfc12dd363ee9d98ba142ca217fafc12ab2afb",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RRArbiter2_SidebandLanes.sv",
+      "sha256": "08326b31f6e7ebfa88f0437a2c6cbf5a6af062fb44de79770abf727a42b7eaf4",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RRArbiter2_UInt128.sv",
+      "sha256": "03f35293cbdb82885963e4ed640482fe4afd6c0d728ebcbd54483d70403f845d",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RxD2CEyeWidthSweepRequester.sv",
+      "sha256": "76c9d0a1ba0ab2bd583aeb877db525ef64bc51f4eaa5b9e6aaa6c19029eab7ca",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RxD2CEyeWidthSweepResponder.sv",
+      "sha256": "5f85bd6e87083777fa74c4cc31cd7af3e6c4d5cc4a1084296eae16fa216229a7",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RxD2CPointTestRequester.sv",
+      "sha256": "4f625cdc4a3b16903f6d11f46647be3e5d10cd43c68a6fbbfab18a51a5f76db8",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/RxD2CPointTestResponder.sv",
+      "sha256": "0d45cbd71f28352a3a601f0da76a5f29a86e93bcecb53b7420baf85b75aa141b",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SBInitRequester.sv",
+      "sha256": "f3d5c8343a071da9504cebc8a59678e2b080a98505581f1f781d5fce112ec016",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SBInitResponder.sv",
+      "sha256": "b9f2b5ff45f9349b4fcb3cccedd5f744bc58e49c740a35634ab728dd5d2cb0d5",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SBInitSM.sv",
+      "sha256": "2dc985b4cf4e63355ca7d0e900303a642f7ea4f8ad99c3942668f4552c67bb8c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandInterfaceDeserializer.sv",
+      "sha256": "cddcec762f0f23a1e22c6a9ea1470fde68edfbc11372bfcbef6b6487de0a3f17",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandInterfaceNode.sv",
+      "sha256": "88d02f231bcd7ed958227dd54aa864c4f4882ec82865efe2e98eeb99d9ba205f",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandInterfaceSerializer.sv",
+      "sha256": "f72e715192868e6d3b218b73f9aed5406fec5854ed8525b03b1e3d5670514914",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandLinkDeserializer.sv",
+      "sha256": "6dc4933064a564052f0b075979233f6e690a03a939206b53dbd61641ce8fc646",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandLinkNode.sv",
+      "sha256": "ef9d6343ab780c24003ac6b5ee1b638991271627c949029356b585ffaf10f84d",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandLinkSerializer.sv",
+      "sha256": "e9ce5965620d863202123723ce1819b903d4c70b892178a66526fe021c95c064",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandMessageExchanger.sv",
+      "sha256": "5121f130a2c4fb0173c86a350e0c90260c5234cdb1ca0a5047d2d2d7ac9d0b87",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandMessageExchanger_4.sv",
+      "sha256": "2d719752d1a75bbb79319e6eb98caf42dd6a62cd05b3835ad2cdffd017617579",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandPriorityQueue.sv",
+      "sha256": "9396bd2f6e3535303589957eb7f8c9df1080e263b7fd8507996abb0520c9da3d",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandSwitch.sv",
+      "sha256": "19e4ae9411dce43ca0347fa41123602d3a8a9a1bfeecb6f4be730d99254f502c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SidebandSwitch_1.sv",
+      "sha256": "659430135df580b271c63284b6e3cecec29b5effc0bcad883f54651b6cc75371",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/SkidBuffer.sv",
+      "sha256": "8099dc616a96bd9708f534a6c35de740e183ad11cce530150d5d5f4f31ee3609",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/TrainErrorRequester.sv",
+      "sha256": "ca52754172b257d8f80e8048e24c3eec0e8ce9eb211c6011ff303071a46ef76e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/TrainErrorResponder.sv",
+      "sha256": "1e990d81f87c9347a0e24951b6637c05ab2021a308f9787f4a9097d70b9a7d5a",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/TxD2CEyeWidthSweepRequester.sv",
+      "sha256": "94b67d455864c9f9c79ec89f41bfd84dff0493744312e56a766ea5a26fff12ad",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/TxD2CEyeWidthSweepResponder.sv",
+      "sha256": "8b47b1103b4f13c7c870f4dbba24418597ff346ddee19bba088c6d46fde5b7ae",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/TxD2CPointTestRequester.sv",
+      "sha256": "d6de53d33773ccd8f38889bdacb24468b3a80d81532828ce264bc1655216f265",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/TxD2CPointTestResponder.sv",
+      "sha256": "57d3c93e57c49d4dd2d3e27337718b9af612b3bb76a5f91cabe3b832f905f224",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/UcieLFSR.sv",
+      "sha256": "5af918695b6ed1befea9b4d06d5376b1fbc6066fb621a3fb446c7bc1c4a99356",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/ram_32x128.sv",
+      "sha256": "2d60cae01870676770122d437861cea574efe8f273b0664b6e77a184043f6cbf",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/EnqueueArbiter_Verification_Assert.sv",
+      "sha256": "0ea87bf4db8c4e9d5dfd5f8eac38c654620e412aa47129e2f8b74cf0f096dc68",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/LinkTrainingSM_Verification_Assert.sv",
+      "sha256": "26ecc2a52fb1227601870f906be9fd3c1b14331b24ef3cc9433ef0398dfc6c1a",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/LogicalPhy_Verification_Assert.sv",
+      "sha256": "6307669b61f7751e8f04922e1e43dbb5c67af22889b9c778a30973a6948407e2",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/MBInitResponder_Verification_Assert.sv",
+      "sha256": "401c42b131699d420bc10bad58c921bb0c1b09710f396650212d7f83fbc66a24",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/PatternReader_Verification_Assert.sv",
+      "sha256": "d88522f0fe799cd17aa4f30bd75c03d2dc038ba2050dc618dca5a59c23376659",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/PatternWriter_Verification_Assert.sv",
+      "sha256": "8f478afb86e1401bf9c1cc4c3ca9f18496f4a11fd2885e032bcf407f2984278e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/RDIClockHandshakeRequester_Verification_Assert.sv",
+      "sha256": "ecf376164abbeb724f2d8a9eab570845660e93f54bf754b098e7d0a250029c24",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/RDIController_Verification_Assert.sv",
+      "sha256": "45bf8088990444a9f3ad483f1c0904d19c3f3cb760048271b92a105e16d3035e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/RDIStateMachine_Verification_Assert.sv",
+      "sha256": "c9b6646da0f050a1847832ac0decd02abde952bb3803aca14e9cb72bb49ade35",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/RxD2CEyeWidthSweepRequester_Verification_Assert.sv",
+      "sha256": "a4bc170358f6e4ec3fe236c1c2bd1e351b1a412ab182a54c8015ecb9e7054c50",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/RxD2CEyeWidthSweepResponder_Verification_Assert.sv",
+      "sha256": "b6ff468a3c51aef43f1e5e85fc73cc9d87dd71d96a1913c15ce5d94498c91e01",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/RxD2CPointTestRequester_Verification_Assert.sv",
+      "sha256": "ae2c640cfb1c82fc2888a35f9826403dbb4e84208bac7ab580f9f012283e707c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/RxD2CPointTestResponder_Verification_Assert.sv",
+      "sha256": "94c99640bf404b2fb1b172637ed598af69c1c9d518e2bb3b44bbce92c0ef7368",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/SidebandInterfaceDeserializer_Verification_Assert.sv",
+      "sha256": "edaca7ca76c1ebc47797e58f538e2c154327338e62f04f5583649240261f34c2",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/SidebandInterfaceNode_Verification_Assert.sv",
+      "sha256": "64ee15b397314da1e4098d4df43e6643219b89d2c22f004938d7fa26c3044d48",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/SidebandInterfaceSerializer_Verification_Assert.sv",
+      "sha256": "f5cce74caf7bf00290da513274176ea2ba4185c741a2f3df27a2697e071c3b81",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/SidebandLinkDeserializer_Verification_Assert.sv",
+      "sha256": "7cdc02558ab01ebe9604d36299940067697b71e0f598ea14d9061fbcf7542f2c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/SidebandLinkNode_Verification_Assert.sv",
+      "sha256": "84f0b093c122fa940d17cf04d587cb1c028febeffdf05fdb662bf2803c93d9ba",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/SidebandLinkSerializer_Verification_Assert.sv",
+      "sha256": "cf3e3e442f9cb9583d2e6e32e2c84b04571c8ba107fa6cb986c2b054c9c707b5",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/SidebandSwitch_1_Verification_Assert.sv",
+      "sha256": "8314a55016d6e7af25939a6505d312f681e9b40ebc31cd3b1e5ebdab44d2f0d8",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/SidebandSwitch_Verification_Assert.sv",
+      "sha256": "d96d7d8d68a83263d7cf224f620432d1ce93f7c5a00984157214551d3817845e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/TxD2CEyeWidthSweepResponder_Verification_Assert.sv",
+      "sha256": "c35bddedf8893b66ed758f867ba8fad5e161bdbcb7278ab9bb5a7be4da6700e0",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/TxD2CPointTestRequester_Verification_Assert.sv",
+      "sha256": "08f967a4cf37418b935b06dbeffb1b00cca414ed7d05681118bd6643594174b2",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/TxD2CPointTestResponder_Verification_Assert.sv",
+      "sha256": "633bc128c66d045f95e29d0906de1c42f709be45858821fb8389770fd01e8062",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-BerkeleySerialDie-Verification-Assert.sv",
+      "sha256": "f1c1c16df5baa34ab8b26fe4575da12480e873e36e8e007e4ea4337ca56ea93e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-D2DAdapter-Verification-Assert.sv",
+      "sha256": "f76608d6cd222e78d79196a37fc33b25d9257378f0fd82320c04987121f90e0d",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-D2DSidebandChannel-Verification-Assert.sv",
+      "sha256": "202d5e1a769dbd46eba1929149732c8a8b03f9e45733f7ac8fbb46283ff69ea6",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-D2DSidebandModule-Verification-Assert.sv",
+      "sha256": "96a7ffc63df6d3c4d65617d47b007c0f067da094c8c9fe8d41dfbef42a6c3d58",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-EnqueueArbiter-Verification-Assert.sv",
+      "sha256": "933e6df092444d2df546e738aa6489e1714be7709b59e50fb2c73a4efb461334",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-LinkTrainingSM-Verification-Assert.sv",
+      "sha256": "668efed72a39bc80f25aa0c3f1e9427c8aae065a2105afb43074235482b8293f",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-LogPhySidebandChannel-Verification-Assert.sv",
+      "sha256": "0a3950242871343143c7c97cdf15fe7dd9770df734b550ecdc971e901e0f1920",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-LogicalPhy-Verification-Assert.sv",
+      "sha256": "9eef8858d1f02318e9291a5a027ba54d0ec84b843a3dbc02452540d517c50fa0",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-MBInitResponder-Verification-Assert.sv",
+      "sha256": "96364a61c87c134499c577c53d1755c2f23c098c0320ebfb6298f1032ae3828c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-MBInitSM-Verification-Assert.sv",
+      "sha256": "f54329ec3038f05d7768571c96fa420b110a57e7e8d8b4dce1d3fb57b337b6d5",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-PatternReader-Verification-Assert.sv",
+      "sha256": "4dd531c3b39ba11639525f97484f40525b64f6a786a5a29c2fa283a1e5903a47",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-PatternWriter-Verification-Assert.sv",
+      "sha256": "7a67eb42bedd783d8c4c76cca0158cca118a12e4d8b0dd4979a28f99d0630a77",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-RDIClockHandshakeRequester-Verification-Assert.sv",
+      "sha256": "b72e072696e565c4264780bdb2a59e82f4a10d2b98cc282a1a7e692051175ce9",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-RDIController-Verification-Assert.sv",
+      "sha256": "8c10d997d4d4805e27e41e15ecf27cf225da7299332f047b61fcb7b2b07d8cbf",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-RDIStateMachine-Verification-Assert.sv",
+      "sha256": "0cfe93765f2bf138ec56cfe4056ce379d2666c682f01717c21b6358d9a8e43a1",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-RxD2CEyeWidthSweepRequester-Verification-Assert.sv",
+      "sha256": "14011eb3e5381b4b2d3c8b6be37d8a570adf8bb218790f9fb1bfe2d7c88e8826",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-RxD2CEyeWidthSweepResponder-Verification-Assert.sv",
+      "sha256": "56f4af773916c9835b43333ddd2d4001aac918c67eb6f1977e6da09202530124",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-RxD2CPointTestRequester-Verification-Assert.sv",
+      "sha256": "7a5bc62dbb7ab23b5cd09cad149a9bbc86fbe3706aeac71d6fd749bbbb29787e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-RxD2CPointTestResponder-Verification-Assert.sv",
+      "sha256": "a33e0d705a3bb03df1e8a4128cdc19cec2d3f745d50972c93af98b779bfa1a13",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-SidebandInterfaceDeserializer-Verification-Assert.sv",
+      "sha256": "faebe04a001e8d2df18ba4f39715b4d987f772c2f37e6d8295c1c60c13168359",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-SidebandInterfaceNode-Verification-Assert.sv",
+      "sha256": "cf7344d705f11b928bcb674a32d8a140ebbc17372df061419765340ba8673c8b",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-SidebandInterfaceSerializer-Verification-Assert.sv",
+      "sha256": "b33a24e95da4af04c76e6e0e88f05da26d5011a5a5556620a9115b73b3279398",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-SidebandLinkDeserializer-Verification-Assert.sv",
+      "sha256": "6213d178a444420967aa410b3c57aba7d79a07628c0dba7370d30a6637a50ba7",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-SidebandLinkNode-Verification-Assert.sv",
+      "sha256": "803e42eba56db2cbab1a225a7705b66b5b4ca0014942c5da03931c0cd5580cc6",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-SidebandLinkSerializer-Verification-Assert.sv",
+      "sha256": "7fd4d5a44842261a942edff25cf28b4e10d7952423a9273304cf8e52fe99227a",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-SidebandPriorityQueue-Verification-Assert.sv",
+      "sha256": "0f2585ce2479229fc14bb13bc3e173917b4e95ea6d2640dc9193394333316e3a",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-SidebandSwitch-Verification-Assert.sv",
+      "sha256": "4fe2b39f1a1d6763c2378a49a58b95cc6415aeee65452a7592e5bbcf793b340d",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-SidebandSwitch_1-Verification-Assert.sv",
+      "sha256": "c0d88a2a13460e11f742ee6cc5b3a5d17cce0dd55121939a115088aff4daf20d",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-TxD2CEyeWidthSweepResponder-Verification-Assert.sv",
+      "sha256": "5250f57a0ac4f8c247b74d96442105e80a761829525e2d799db7d3f1f1a0a3da",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-TxD2CPointTestRequester-Verification-Assert.sv",
+      "sha256": "28cb0f6c6900a9b861d955b1452066963fabe7d96674da6768a10d42b02ffb0b",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assert/layers-TxD2CPointTestResponder-Verification-Assert.sv",
+      "sha256": "b0e95814dcff3717d0ffa1a6f75b21dfea0157f8afc3ea5718bdebc6bb3aa2c7",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/assume/layers-BerkeleySerialDie-Verification-Assume.sv",
+      "sha256": "0223ce9ba8570a025905ae1a2922dad6e993b24857dd420ad67b5c819e98d2e9",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/EnqueueArbiter_Verification_Cover.sv",
+      "sha256": "6069550f8edefaea8779c8238714c9f76bebe0be3cb8fd86075164962ed2e2bc",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/LogicalPhy_Verification_Cover.sv",
+      "sha256": "2158037fad6f0dc8d977baeff219be0e1f9a4cf636d060287ba98e80b8ccce2b",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/SidebandInterfaceDeserializer_Verification_Cover.sv",
+      "sha256": "7a597480f292830b8035e5a94ff0df59366569e64ef56403e3b5b5e61aa160a6",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/SidebandInterfaceNode_Verification_Cover.sv",
+      "sha256": "b301b5055de8cddebbf8fe7686ce748ce67f35a08e232f8ec4d226dfc21c11c9",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/SidebandInterfaceSerializer_Verification_Cover.sv",
+      "sha256": "437e12e027f989a7d072b167e7c8011d9da371efec16f5488af1cda31268b39e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/SidebandLinkDeserializer_Verification_Cover.sv",
+      "sha256": "57fef4fbc904243eb86e4df2aeb7d3c4b5a2dfb8e1009a2eb62e5b62b4bb2164",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/SidebandLinkNode_Verification_Cover.sv",
+      "sha256": "67e59bc64da0e8e00cbf7016cc85378c5a47853f2d16ab79d257147080e0f6c7",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/SidebandLinkSerializer_Verification_Cover.sv",
+      "sha256": "7eb72ac4643f9fce0eff6a33ca124c6a61bb93ef60095cfc14d45a86dc97dd8f",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/SidebandPriorityQueue_Verification_Cover.sv",
+      "sha256": "80b7c9a4a4a13c4c4827a8e5b20cbfdc954100470dcb06092376f148e7c2f146",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/SidebandSwitch_1_Verification_Cover.sv",
+      "sha256": "73314bf42e8cf28ee21477d8756d4a349db8f62a13b577fbf28438364c742845",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/SidebandSwitch_Verification_Cover.sv",
+      "sha256": "a39d8f43e8d7b3804662ad20c068e59d639a8d8ecfd0901ca2044740937d1e3f",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-BerkeleySerialDie-Verification-Cover.sv",
+      "sha256": "cc08be3c0332c1ff82cbff3d608536f59dacdae8825dfb81dead032d3f742b93",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-D2DAdapter-Verification-Cover.sv",
+      "sha256": "f6d94f5e20f7bf4a81d3a7b2e7234f362f3b6594c3c07412b869612b8bcb8d94",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-D2DSidebandChannel-Verification-Cover.sv",
+      "sha256": "549722532d3072996fc5568a391acb2b9c35a7edf8ec886f6f265ccf98edf0c3",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-D2DSidebandModule-Verification-Cover.sv",
+      "sha256": "5dcd5b7c5693811519a1c756b0fa12b5c3cea1c8ccc0bcd8b3c1dc8d5ee29a78",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-EnqueueArbiter-Verification-Cover.sv",
+      "sha256": "07b489333ddb183eff5cb86ccde19a016ff7866f30a66942243a29aa6575ad16",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-LogPhySidebandChannel-Verification-Cover.sv",
+      "sha256": "32f292c57c3136f8941085364c164a67c48ff5429c81d9a97010ef7b0cd3197c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-LogicalPhy-Verification-Cover.sv",
+      "sha256": "a6c56c9cd2e58dd1437c307c2ab6df7385d022ab99a286d6e1d7eaf33b9a7a75",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-SidebandInterfaceDeserializer-Verification-Cover.sv",
+      "sha256": "152ab5c8c2e83e51df52496d84a653e6513d507a07937e9378751ba5a9d9cb39",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-SidebandInterfaceNode-Verification-Cover.sv",
+      "sha256": "9ae06931054f105b50949a79cd984b47d15eda5b24a004e88ac1cc9632ac5fea",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-SidebandInterfaceSerializer-Verification-Cover.sv",
+      "sha256": "c355cd587c734f3031787ecef5ffa52892c1ea1937c4b064170a858c1b280bce",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-SidebandLinkDeserializer-Verification-Cover.sv",
+      "sha256": "adfd0d89b1b7de733d355f30925fe183817d770ad0ef190e0a0311b896463502",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-SidebandLinkNode-Verification-Cover.sv",
+      "sha256": "af4ccd5ff3c3b3b8a686cf3e492072e5633e67b97728122dc9f279de2cf844e2",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-SidebandLinkSerializer-Verification-Cover.sv",
+      "sha256": "710254b48cfd01b7340c385bd70d4656e0013a19294d365ae970f70f3c760c0e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-SidebandPriorityQueue-Verification-Cover.sv",
+      "sha256": "143b9cb031eba6a8de05913442fca67f61bf3ab2321a4c223d7820c277d4a602",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-SidebandSwitch-Verification-Cover.sv",
+      "sha256": "58ae059fb626ec092b43b68873eab77d65d3844769fe04f6f704a76b1ff6355c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/cover/layers-SidebandSwitch_1-Verification-Cover.sv",
+      "sha256": "61a68ddbf3fbebafc40bf12e0e4ee6946a9414e0ddf73b7fbe1651fac5e90bb4",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-BerkeleySerialDie-Verification.sv",
+      "sha256": "ea202504378d1b11c1b4f478639c7b4f0d2416862a8681a9ada56e1fd249815b",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-D2DAdapter-Verification.sv",
+      "sha256": "2595af392c2103cfaf411bf20b915b3ddd33dbedef60de44a583e6b4b2d5d535",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-D2DSidebandChannel-Verification.sv",
+      "sha256": "bbae445df8b9444e1ea2db170b03a29742814f1b194e679d2cce690d7bff1d89",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-D2DSidebandModule-Verification.sv",
+      "sha256": "de85f13c9b23f512dad33a7ae0c4e6048bee2e78f39a7dec9caa04c159f2d9e6",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-EnqueueArbiter-Verification.sv",
+      "sha256": "bb64e00b107c1e71b1617f93ec9db6c0e850c31c37aa3875c297560ee4ead66c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-LinkTrainingSM-Verification.sv",
+      "sha256": "1a40a39807fc1cc2c70763b28829b892d6b3d846ea0bf4237a95ed1c10e23e29",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-LogPhySidebandChannel-Verification.sv",
+      "sha256": "cd2469e520012cfc2f3d2358c8d4a0f6e64480463db0f7cabf2dfd8a2a6bc058",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-LogicalPhy-Verification.sv",
+      "sha256": "c4a71456fe0b7d94c0f5dcd0e4be2a63133b2bc11a2997494420e17ab7bcd9cb",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-MBInitResponder-Verification.sv",
+      "sha256": "1c9d3183f4b8d6e79ade0be391de87d21f7b819beec2d858dbef1432035278f6",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-MBInitSM-Verification.sv",
+      "sha256": "a3175fe9d3193eaaf878ecb1d36ff6a5b92ab1e0b8ad945c580c8ef5bd7a74a0",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-PatternReader-Verification.sv",
+      "sha256": "a2059c078d21b33816339f399383e2e5ce418c5edd9068a034a0bb045584723c",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-PatternWriter-Verification.sv",
+      "sha256": "6a15059d5a73ea13346342f119181f6c4045954444e38cb8ced76329fd42f9f8",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-RDIClockHandshakeRequester-Verification.sv",
+      "sha256": "dbe9f4c480b6a50ff484aba0ea28826f87b68f40394ea2aa19aeaee7dfe0c424",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-RDIController-Verification.sv",
+      "sha256": "8462df8d84f382fcc5de3dd937e5bb85a04d3d02b636c5a88c1a3574cad9453a",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-RDIStateMachine-Verification.sv",
+      "sha256": "a444f2fc1d7699ab407ce94406a4a36c0587a69bd17ff50ad96f0d607c4f159d",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-RxD2CEyeWidthSweepRequester-Verification.sv",
+      "sha256": "8fda9943ef26536b75b164ade4ada8bccf58683281053611583b3a90c20886ad",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-RxD2CEyeWidthSweepResponder-Verification.sv",
+      "sha256": "0770d2317873966c51e054f2cebfe28f2f0a7e784250f592972acf61d35f62df",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-RxD2CPointTestRequester-Verification.sv",
+      "sha256": "ce3ea69812aac639d34429653c7010c677285eb998bb4d222c8d3ccc5a7dd64b",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-RxD2CPointTestResponder-Verification.sv",
+      "sha256": "c5a7673cd7c7b58081eaf407ade08c80ccf1010edba32b53300499aea8173f07",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-SidebandInterfaceDeserializer-Verification.sv",
+      "sha256": "edb2cfe742bb1b6e9e59bd41284743313d6f00b353290e24236c265068d9cde2",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-SidebandInterfaceNode-Verification.sv",
+      "sha256": "e63cc3816341cabc1ce5dbabea2d7682724ff059df6ee12c308536939c3b96eb",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-SidebandInterfaceSerializer-Verification.sv",
+      "sha256": "555c68bff0a7ca8f3b79269845f861c07da0159284d6eeb2ebb1183152092715",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-SidebandLinkDeserializer-Verification.sv",
+      "sha256": "8b3efc32fb0f7c21b2aad6ede5d2d3367a2a6d99f6d92f6c525a68127e197111",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-SidebandLinkNode-Verification.sv",
+      "sha256": "111040dd3b8204c25ea222d068280258a14b67d13d324682da5f62368cb1f13e",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-SidebandLinkSerializer-Verification.sv",
+      "sha256": "05f37b48615e9c38633960a8afce0e897c1df21175755d70761a23f4d9a8a38f",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-SidebandPriorityQueue-Verification.sv",
+      "sha256": "a99deda32a93086ade4aa8dd411874f85e8c1f0364577d9a78c9abd3775bf788",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-SidebandSwitch-Verification.sv",
+      "sha256": "db3956b1375b1212979b22f32168e1ebd85c04525752b749d83faa50924c54f9",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-SidebandSwitch_1-Verification.sv",
+      "sha256": "76e3660133d27a9562804c1604be4a46c370ac257960cd3f47ec7289b67f13fe",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-TxD2CEyeWidthSweepResponder-Verification.sv",
+      "sha256": "a4e9555800882a9e35a56dd0e11368823086dda0034c78c74715b6e7efea4d8f",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-TxD2CPointTestRequester-Verification.sv",
+      "sha256": "413586405454a36e694d9016917b84ae2f714241a8f73694eca74c61449744c8",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/generated/verification/layers-TxD2CPointTestResponder-Verification.sv",
+      "sha256": "244def8afb0585fae46f7b5901a9ea7ba972a17f6868dcc7be612036137812d9",
+      "source": "Previously emitted unpatched Berkeley full die",
+      "unchanged": true
+    },
+    {
+      "path": "berkeley/sb_driver.v",
+      "sha256": "cd200128ed3a8297923213ad39dd3ef29d632ab89b8a6585b68b5e98cd4f2e66",
+      "source": "Original Berkeley bump driver",
+      "unchanged": true
+    }
+  ]
+}
