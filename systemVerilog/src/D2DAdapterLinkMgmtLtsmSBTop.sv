@@ -56,9 +56,16 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES,
   parameter int unsigned SB_TX_FIFO_ENTRIES = 4
 ) (
+  // ==========================================================================
+  // COMMON CLOCK AND RESET
+  // ==========================================================================
   input wire logic clock,
   input wire logic reset_n,
-  // Protocol-facing FDI interface.
+
+  // ==========================================================================
+  // FDI INTERFACE
+  // Protocol layer <-> D2D adapter link-management interface.
+  // ==========================================================================
   input wire UcieUPM_interfaces_pkg::PhyStateReq_t fdi_lp_state_req,
   input wire logic                                  fdi_lp_linkerror,
   input wire logic                                  fdi_lp_rx_active_sts,
@@ -71,8 +78,19 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic                               fdi_pl_wake_ack,
   output var logic                               fdi_pl_clk_req,
   output var logic                               fdi_pl_stall_req,
+
+  // ==========================================================================
+  // LINK-MANAGEMENT TIMING REFERENCE
+  // Used by the FDI and RDI link-management timeout counters.
+  // ==========================================================================
   input wire logic [31:0] cycles_1us,
-  // Flattened initial-LTSM analog/training interface.
+
+  // ==========================================================================
+  // LTSM INTERFACE
+  // Flattened LinkTrainingFSM interface toward the analog/PHY control logic.
+  // ==========================================================================
+
+  // LTSM startup and analog readiness inputs.
   input wire logic           ltsm_start,
   input wire logic           ltsm_stable_clk,
   input wire logic           ltsm_pll_locked,
@@ -136,6 +154,8 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic           ltsm_dbg_flagTrainError,
   output var logic [2:0]     ltsm_dbg_mbinitSubstate,
   output var logic [4:0]     ltsm_dbg_mbinitReversalMbReceivedSuccessCount,
+
+  // LTSM MBTRAIN.VALVREF interface.
   output var logic           ltsm_flagToAnalog_valVref_sendPattern,
   input wire logic           ltsm_flagFromAnalog_valVref_detectedValPattern,
   input wire logic           ltsm_flagFromAnalog_valVref_finishedPattern,
@@ -154,6 +174,8 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic [2:0]     ltsm_flagToAnalog_valVref_dataPattern,
   output var logic           ltsm_flagToAnalog_valVref_clearComparisonErrors,
   output var logic           ltsm_flagToAnalog_valVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.DATAVREF interface.
   output var logic           ltsm_flagToAnalog_dataVref_sendPattern,
   input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_dataVref_detectedDataPattern,
   input wire logic           ltsm_flagFromAnalog_dataVref_finishedPattern,
@@ -172,9 +194,13 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic [2:0]     ltsm_flagToAnalog_dataVref_dataPattern,
   output var logic           ltsm_flagToAnalog_dataVref_clearComparisonErrors,
   output var logic           ltsm_flagToAnalog_dataVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.RXCLKCAL interface.
   output var logic           ltsm_flagToAnalog_rxClkCal_doCalibration,
   input wire logic           ltsm_flagFromAnalog_rxClkCal_done,
   output var logic           ltsm_flagToAnalog_rxClkCal_sendClockTrack,
+
+  // LTSM MBTRAIN.VALTRAINCENTER interface.
   output var logic           ltsm_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern,
   input wire logic           ltsm_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent,
   output var logic           ltsm_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler,
@@ -194,6 +220,8 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic           ltsm_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler,
   input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo,
   input wire logic [63:0]    ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload,
+
+  // LTSM MBTRAIN.VALTRAINVREF interface.
   output var logic           ltsm_flagToAnalog_valTrainVref_sendPattern,
   input wire logic           ltsm_flagFromAnalog_valTrainVref_detectedValPattern,
   input wire logic           ltsm_flagFromAnalog_valTrainVref_finishedPattern,
@@ -212,6 +240,8 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic [2:0]     ltsm_flagToAnalog_valTrainVref_dataPattern,
   output var logic           ltsm_flagToAnalog_valTrainVref_clearComparisonErrors,
   output var logic           ltsm_flagToAnalog_valTrainVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.DATATRAINCENTER1 interface.
   output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern,
   input wire logic           ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent,
   output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler,
@@ -234,6 +264,8 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler,
   input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo,
   input wire logic [63:0]    ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload,
+
+  // LTSM MBTRAIN.DATATRAINVREF interface.
   output var logic           ltsm_flagToAnalog_dataTrainVref_sendPattern,
   input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_dataTrainVref_detectedDataPattern,
   input wire logic           ltsm_flagFromAnalog_dataTrainVref_finishedPattern,
@@ -252,6 +284,8 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic [2:0]     ltsm_flagToAnalog_dataTrainVref_dataPattern,
   output var logic           ltsm_flagToAnalog_dataTrainVref_clearComparisonErrors,
   output var logic           ltsm_flagToAnalog_dataTrainVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.RXDESKEW interface.
   output var logic           ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
   input wire logic           ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
   output var logic           ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler,
@@ -270,6 +304,8 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic [2:0]     ltsm_flagToAnalog_rxDeskew_dataPattern,
   output var logic           ltsm_flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_rxDeskew_detectedDataPattern,
+
+  // LTSM MBTRAIN.DATATRAINCENTER2 interface.
   output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern,
   input wire logic           ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent,
   output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler,
@@ -289,6 +325,8 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler,
   input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo,
   input wire logic [63:0]    ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload,
+
+  // LTSM MBTRAIN.LINKSPEED interface.
   output var logic           ltsm_flagToLtsm_linkSpeed_phyInRetrain,
   output var logic           ltsm_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern,
   input wire logic           ltsm_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent,
@@ -309,7 +347,24 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic [11:0]    ltsm_dbg_mbtrainActiveSubstate,
   output var logic [15:0]    ltsm_dbg_mbtrainLastErrorCount,
   output var logic [15:0]    ltsm_dbg_mbtrainRetryCount,
-  // Integration-level state/debug visibility.
+
+  // ==========================================================================
+  // SIDEBAND PHY INTERFACE
+  // Serialized pins connected to the remote die.
+  // ==========================================================================
+  output var logic sb_tx_dout,
+  output var logic sb_tx_clk,
+  input wire logic sb_rx_din,
+  input wire logic sb_rx_clk,
+
+  // Sideband receive-buffer status. Sticky until reset.
+  output var logic debug_sb_rx_overflow
+
+  // ==========================================================================
+  // FDI / RDI / LTSM / SIDEBAND INTEGRATION DEBUG
+  // RDI is internal to D2DAdapterLinkMgmtLtsmTop, so its externally visible
+  // signals are debug/status outputs rather than a separate functional port.
+  // ==========================================================================
   output var logic [3:0] debug_ltsm_state,
   output var logic       debug_ltsm_inband_pres,
   output var UcieUPM_d2dadapter_pkg::LinkInitState_t debug_fdi_link_init_state,
@@ -325,13 +380,6 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic debug_rx_route_rdi,
   output var logic debug_rx_drop_unknown,
   output var logic debug_rx_fire,
-  // Serialized sideband pins.
-  output var logic sb_tx_dout,
-  output var logic sb_tx_clk,
-  input wire logic sb_rx_din,
-  input wire logic sb_rx_clk,
-  // Sticky indication that a new physical RX word arrived while the holding register was full.
-  output var logic debug_sb_rx_overflow
 );
 
   logic         sb_msg_tx_valid;
