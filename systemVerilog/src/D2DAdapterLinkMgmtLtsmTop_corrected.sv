@@ -151,6 +151,7 @@ module D2DAdapterLinkMgmtLtsmTop #(
   output var logic           ltsm_dbg_sbTxValid,
   output var logic [127:0]   ltsm_dbg_sbTxDin,
   output var logic           ltsm_dbg_flagTrainError,
+  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   output var logic [2:0]     ltsm_dbg_mbinitSubstate,
   output var logic [4:0]     ltsm_dbg_mbinitReversalMbReceivedSuccessCount,
   output var logic           ltsm_flagToAnalog_valVref_sendPattern,
@@ -323,6 +324,7 @@ module D2DAdapterLinkMgmtLtsmTop #(
   output var logic           ltsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler,
   input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful,
   output var logic [3:0]     ltsm_dbg_mbtrainState,
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    ltsm_dbg_mbtrainActiveSubstate,
   output var logic [15:0]    ltsm_dbg_mbtrainLastErrorCount,
   output var logic [15:0]    ltsm_dbg_mbtrainRetryCount,
@@ -556,6 +558,7 @@ module D2DAdapterLinkMgmtLtsmTop #(
     .dbg_sbTxValid                                                             (ltsm_dbg_sbTxValid),
     .dbg_sbTxDin                                                               (ltsm_dbg_sbTxDin),
     .dbg_flagTrainError                                                        (ltsm_dbg_flagTrainError),
+    // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
     .dbg_mbinitSubstate                                                        (ltsm_dbg_mbinitSubstate),
     .dbg_mbinitReversalMbReceivedSuccessCount                                  (ltsm_dbg_mbinitReversalMbReceivedSuccessCount),
     .flagToAnalog_valVref_sendPattern                                          (ltsm_flagToAnalog_valVref_sendPattern),
@@ -728,6 +731,7 @@ module D2DAdapterLinkMgmtLtsmTop #(
     .flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler                  (ltsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler),
     .flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful             (ltsm_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful),
     .dbg_mbtrainState                                                          (ltsm_dbg_mbtrainState),
+    // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     .dbg_mbtrainActiveSubstate                                                 (ltsm_dbg_mbtrainActiveSubstate),
     .dbg_mbtrainLastErrorCount                                                 (ltsm_dbg_mbtrainLastErrorCount),
     .dbg_mbtrainRetryCount                                                     (ltsm_dbg_mbtrainRetryCount)

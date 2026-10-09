@@ -21,7 +21,8 @@ module MBTrainSpeedIdleFSM #(
   output var logic [127:0] sb_tx_din,
   input wire logic         sb_rx_valid,
   input wire logic [127:0] sb_rx_dout,
-  output var logic [7:0]   substate
+  output var logic [1:0]   dbg_senderState,
+  output var logic [1:0]   dbg_receiverState
 );
   import SidebandMsgGenerator_pkg::*;
 
@@ -79,7 +80,8 @@ module MBTrainSpeedIdleFSM #(
     busy        = running && !doneReg;
     done        = doneReg;
     trainError  = trainErrorReg;
-    substate    = {4'b0, speedIdleReceiverStateReg, speedIdleSenderStateReg};
+    dbg_senderState = speedIdleSenderStateReg;
+    dbg_receiverState = speedIdleReceiverStateReg;
   end
 
   always_ff @(posedge clock or negedge reset_n) begin

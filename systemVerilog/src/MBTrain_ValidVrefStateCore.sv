@@ -60,7 +60,11 @@ module MBTrain_ValidVrefStateCore #(
   input  wire logic                         flagFromAnalog_valTrainPatternSent,
   output      logic                         flagToAnalog_resetLocalTxScrambler,
 
-  output      logic [11:0]                  substate,
+  output      logic [3:0]                   dbg_localState,
+  output      logic [2:0]                   dbg_remoteState,
+  output      logic [3:0]                   dbg_sweepState,
+  output      logic [3:0]                   dbg_pointInitiatorState,
+  output      logic [3:0]                   dbg_pointResponderState,
   output      logic [15:0]                  lastErrorCount,
   output      logic [15:0]                  retryCount,
   output      logic [VREF_CODE_WIDTH-1:0]   selectedVrefCode,
@@ -375,7 +379,11 @@ module MBTrain_ValidVrefStateCore #(
     flagToAnalog_resetLocalTxScrambler = runningReg &&
                                          responderResetTxScrambler;
 
-    substate = {localStateReg, initiatorState, responderState};
+    dbg_localState = localStateReg;
+    dbg_remoteState = remoteStateReg;
+    dbg_sweepState = sweepState;
+    dbg_pointInitiatorState = initiatorState;
+    dbg_pointResponderState = responderState;
     lastErrorCount = sweepFailedPointCount;
     retryCount = sweepRetryCount;
     selectedVrefCode = sweepFinalCode;

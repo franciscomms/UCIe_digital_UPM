@@ -238,7 +238,58 @@ module MBTrainFSM #(
   output var logic           flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler,
   input wire logic [15:0]    flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful,
   output var logic [3:0]     state,
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    activeSubstate,
+  output var logic [3:0]     dbg_mbtrainValVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainValVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainValVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainValVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainValVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainDataVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainDataVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainDataVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainDataVrefPointResponderState,
+  output var logic [1:0]     dbg_mbtrainSpeedIdleSenderState,
+  output var logic [1:0]     dbg_mbtrainSpeedIdleReceiverState,
+  output var logic [1:0]     dbg_mbtrainTxSelfCalSenderState,
+  output var logic [1:0]     dbg_mbtrainTxSelfCalReceiverState,
+  output var logic [2:0]     dbg_mbtrainRxClkCalSenderState,
+  output var logic [2:0]     dbg_mbtrainRxClkCalReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterSenderState,
+  output var logic [2:0]     dbg_mbtrainValTrainCenterReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterD2cSenderState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterD2cReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterSweepState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainValTrainVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1SenderState,
+  output var logic [2:0]     dbg_mbtrainDataTrainCenter1ReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1D2cSenderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1D2cReceiverState,
+  output var logic [4:0]     dbg_mbtrainDataTrainCenter1SweepState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainDataTrainVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewLocalState,
+  output var logic [2:0]     dbg_mbtrainRxDeskewRemoteState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewSweepState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2SenderState,
+  output var logic [2:0]     dbg_mbtrainDataTrainCenter2ReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2D2cSenderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2D2cReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2SweepState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedSenderState,
+  output var logic [2:0]     dbg_mbtrainLinkSpeedReceiverState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedD2cSenderState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedD2cReceiverState,
   output var logic [15:0]    lastErrorCount,
   output var logic [15:0]    retryCount
 );
@@ -269,7 +320,11 @@ module MBTrainFSM #(
   logic valVref_trainError;
   logic valVref_sb_tx_valid;
   logic [127:0] valVref_sb_tx_din;
-  logic [11:0] valVref_substate;
+  logic [3:0] valVref_dbg_localState;
+  logic [2:0] valVref_dbg_remoteState;
+  logic [3:0] valVref_dbg_sweepState;
+  logic [3:0] valVref_dbg_pointInitiatorState;
+  logic [3:0] valVref_dbg_pointResponderState;
   logic [15:0] valVref_lastErrorCount;
   logic [15:0] valVref_retryCount;
   logic [validVrefCodeWidth-1:0] valVref_selectedCode;
@@ -280,7 +335,11 @@ module MBTrainFSM #(
   logic dataVref_trainError;
   logic dataVref_sb_tx_valid;
   logic [127:0] dataVref_sb_tx_din;
-  logic [11:0] dataVref_substate;
+  logic [3:0] dataVref_dbg_localState;
+  logic [2:0] dataVref_dbg_remoteState;
+  logic [3:0] dataVref_dbg_sweepState;
+  logic [3:0] dataVref_dbg_pointInitiatorState;
+  logic [3:0] dataVref_dbg_pointResponderState;
   logic [15:0] dataVref_lastErrorCount;
   logic [15:0] dataVref_retryCount;
   logic [dataLaneCount*dataVrefCodeWidth-1:0] dataVref_selectedCodes;
@@ -291,25 +350,32 @@ module MBTrainFSM #(
   logic speedIdle_trainError;
   logic speedIdle_sb_tx_valid;
   logic [127:0] speedIdle_sb_tx_din;
-  logic [7:0] speedIdle_substate;
+  logic [1:0] speedIdle_dbg_senderState;
+  logic [1:0] speedIdle_dbg_receiverState;
   logic txSelfCal_busy;
   logic txSelfCal_done;
   logic txSelfCal_trainError;
   logic txSelfCal_sb_tx_valid;
   logic [127:0] txSelfCal_sb_tx_din;
-  logic [7:0] txSelfCal_substate;
+  logic [1:0] txSelfCal_dbg_senderState;
+  logic [1:0] txSelfCal_dbg_receiverState;
   logic rxClkCal_busy;
   logic rxClkCal_done;
   logic rxClkCal_trainError;
   logic rxClkCal_sb_tx_valid;
   logic [127:0] rxClkCal_sb_tx_din;
-  logic [7:0] rxClkCal_substate;
+  logic [2:0] rxClkCal_dbg_senderState;
+  logic [2:0] rxClkCal_dbg_receiverState;
   logic valTrainCenter_busy;
   logic valTrainCenter_done;
   logic valTrainCenter_trainError;
   logic valTrainCenter_sb_tx_valid;
   logic [127:0] valTrainCenter_sb_tx_din;
-  logic [11:0] valTrainCenter_substate;
+  logic [3:0] valTrainCenter_dbg_senderState;
+  logic [2:0] valTrainCenter_dbg_receiverState;
+  logic [3:0] valTrainCenter_dbg_d2cSenderState;
+  logic [3:0] valTrainCenter_dbg_d2cReceiverState;
+  logic [3:0] valTrainCenter_dbg_sweepState;
   logic [15:0] valTrainCenter_lastErrorCount;
   logic [15:0] valTrainCenter_retryCount;
   logic valTrainVref_busy;
@@ -317,7 +383,11 @@ module MBTrainFSM #(
   logic valTrainVref_trainError;
   logic valTrainVref_sb_tx_valid;
   logic [127:0] valTrainVref_sb_tx_din;
-  logic [11:0] valTrainVref_substate;
+  logic [3:0] valTrainVref_dbg_localState;
+  logic [2:0] valTrainVref_dbg_remoteState;
+  logic [3:0] valTrainVref_dbg_sweepState;
+  logic [3:0] valTrainVref_dbg_pointInitiatorState;
+  logic [3:0] valTrainVref_dbg_pointResponderState;
   logic [15:0] valTrainVref_lastErrorCount;
   logic [15:0] valTrainVref_retryCount;
   logic [validVrefCodeWidth-1:0] valTrainVref_selectedCode;
@@ -328,7 +398,11 @@ module MBTrainFSM #(
   logic dataTrainCenter1_trainError;
   logic dataTrainCenter1_sb_tx_valid;
   logic [127:0] dataTrainCenter1_sb_tx_din;
-  logic [11:0] dataTrainCenter1_substate;
+  logic [3:0] dataTrainCenter1_dbg_senderState;
+  logic [2:0] dataTrainCenter1_dbg_receiverState;
+  logic [3:0] dataTrainCenter1_dbg_d2cSenderState;
+  logic [3:0] dataTrainCenter1_dbg_d2cReceiverState;
+  logic [4:0] dataTrainCenter1_dbg_sweepState;
   logic [15:0] dataTrainCenter1_lastErrorCount;
   logic [15:0] dataTrainCenter1_retryCount;
   logic dataTrainVref_busy;
@@ -336,7 +410,11 @@ module MBTrainFSM #(
   logic dataTrainVref_trainError;
   logic dataTrainVref_sb_tx_valid;
   logic [127:0] dataTrainVref_sb_tx_din;
-  logic [11:0] dataTrainVref_substate;
+  logic [3:0] dataTrainVref_dbg_localState;
+  logic [2:0] dataTrainVref_dbg_remoteState;
+  logic [3:0] dataTrainVref_dbg_sweepState;
+  logic [3:0] dataTrainVref_dbg_pointInitiatorState;
+  logic [3:0] dataTrainVref_dbg_pointResponderState;
   logic [15:0] dataTrainVref_lastErrorCount;
   logic [15:0] dataTrainVref_retryCount;
   logic [dataLaneCount*dataVrefCodeWidth-1:0] dataTrainVref_selectedCodes;
@@ -347,7 +425,11 @@ module MBTrainFSM #(
   logic rxDeskew_trainError;
   logic rxDeskew_sb_tx_valid;
   logic [127:0] rxDeskew_sb_tx_din;
-  logic [11:0] rxDeskew_substate;
+  logic [3:0] rxDeskew_dbg_localState;
+  logic [2:0] rxDeskew_dbg_remoteState;
+  logic [3:0] rxDeskew_dbg_sweepState;
+  logic [3:0] rxDeskew_dbg_pointInitiatorState;
+  logic [3:0] rxDeskew_dbg_pointResponderState;
   logic [15:0] rxDeskew_lastErrorCount;
   logic [15:0] rxDeskew_retryCount;
   logic [dataLaneCount*rxDeskewCodeWidth-1:0] rxDeskew_selectedCodes;
@@ -358,7 +440,11 @@ module MBTrainFSM #(
   logic dataTrainCenter2_trainError;
   logic dataTrainCenter2_sb_tx_valid;
   logic [127:0] dataTrainCenter2_sb_tx_din;
-  logic [11:0] dataTrainCenter2_substate;
+  logic [3:0] dataTrainCenter2_dbg_senderState;
+  logic [2:0] dataTrainCenter2_dbg_receiverState;
+  logic [3:0] dataTrainCenter2_dbg_d2cSenderState;
+  logic [3:0] dataTrainCenter2_dbg_d2cReceiverState;
+  logic [3:0] dataTrainCenter2_dbg_sweepState;
   logic [15:0] dataTrainCenter2_lastErrorCount;
   logic [15:0] dataTrainCenter2_retryCount;
   logic linkSpeed_busy;
@@ -366,7 +452,10 @@ module MBTrainFSM #(
   logic linkSpeed_trainError;
   logic linkSpeed_sb_tx_valid;
   logic [127:0] linkSpeed_sb_tx_din;
-  logic [11:0] linkSpeed_substate;
+  logic [3:0] linkSpeed_dbg_senderState;
+  logic [2:0] linkSpeed_dbg_receiverState;
+  logic [3:0] linkSpeed_dbg_d2cSenderState;
+  logic [3:0] linkSpeed_dbg_d2cReceiverState;
   logic [15:0] linkSpeed_lastErrorCount;
   logic [15:0] linkSpeed_retryCount;
 
@@ -415,7 +504,11 @@ module MBTrainFSM #(
     .flagToAnalog_valRefSendPattern(flagToAnalog_valVref_sendPattern),
     .flagFromAnalog_valRefFinishedPattern(flagFromAnalog_valVref_finishedPattern),
     .flagToAnalog_valRefResetLocalTxScrambler(flagToAnalog_valVref_resetLocalTxScrambler),
-    .substate(valVref_substate),
+    .dbg_localState(valVref_dbg_localState),
+    .dbg_remoteState(valVref_dbg_remoteState),
+    .dbg_sweepState(valVref_dbg_sweepState),
+    .dbg_pointInitiatorState(valVref_dbg_pointInitiatorState),
+    .dbg_pointResponderState(valVref_dbg_pointResponderState),
     .lastErrorCount(valVref_lastErrorCount),
     .retryCount(valVref_retryCount),
     .selectedVrefCode(valVref_selectedCode),
@@ -491,7 +584,11 @@ module MBTrainFSM #(
     .flagToAnalog_dataVrefResetLocalTxScrambler(
       flagToAnalog_dataVref_resetLocalTxScrambler
     ),
-    .substate(dataVref_substate),
+    .dbg_localState(dataVref_dbg_localState),
+    .dbg_remoteState(dataVref_dbg_remoteState),
+    .dbg_sweepState(dataVref_dbg_sweepState),
+    .dbg_pointInitiatorState(dataVref_dbg_pointInitiatorState),
+    .dbg_pointResponderState(dataVref_dbg_pointResponderState),
     .lastErrorCount(dataVref_lastErrorCount),
     .retryCount(dataVref_retryCount),
     .selectedVrefCodes(dataVref_selectedCodes),
@@ -518,7 +615,8 @@ module MBTrainFSM #(
     .sb_tx_din(speedIdle_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_SPEEDIDLE)),
     .sb_rx_dout(sb_rx_dout),
-    .substate(speedIdle_substate)
+    .dbg_senderState(speedIdle_dbg_senderState),
+    .dbg_receiverState(speedIdle_dbg_receiverState)
   );
   MBTrainTxSelfCalFSM #(
     .sbFeatureExtension(sbFeatureExtension),
@@ -540,7 +638,8 @@ module MBTrainFSM #(
     .sb_tx_din(txSelfCal_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_TXSELFCAL)),
     .sb_rx_dout(sb_rx_dout),
-    .substate(txSelfCal_substate)
+    .dbg_senderState(txSelfCal_dbg_senderState),
+    .dbg_receiverState(txSelfCal_dbg_receiverState)
   );
   MBTrainRxClkCalFSM #(
     .sbFeatureExtension(sbFeatureExtension),
@@ -565,7 +664,8 @@ module MBTrainFSM #(
     .flagToAnalog_rxClkCalDoCalibration(flagToAnalog_rxClkCal_doCalibration),
     .flagFromAnalog_rxClkCalDone(flagFromAnalog_rxClkCal_done),
     .flagToAnalog_rxClkCalSendClockTrack(flagToAnalog_rxClkCal_sendClockTrack),
-    .substate(rxClkCal_substate)
+    .dbg_senderState(rxClkCal_dbg_senderState),
+    .dbg_receiverState(rxClkCal_dbg_receiverState)
   );
   MBTrain_ValTrainCenter #(
     .sbFeatureExtension(sbFeatureExtension),
@@ -610,7 +710,11 @@ module MBTrainFSM #(
     .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler),
     .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo),
     .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload),
-    .substate(valTrainCenter_substate),
+    .dbg_senderState(valTrainCenter_dbg_senderState),
+    .dbg_receiverState(valTrainCenter_dbg_receiverState),
+    .dbg_d2cSenderState(valTrainCenter_dbg_d2cSenderState),
+    .dbg_d2cReceiverState(valTrainCenter_dbg_d2cReceiverState),
+    .dbg_sweepState(valTrainCenter_dbg_sweepState),
     .lastErrorCount(valTrainCenter_lastErrorCount),
     .retryCount(valTrainCenter_retryCount)
   );
@@ -660,7 +764,11 @@ module MBTrainFSM #(
     .flagToAnalog_valTrainVrefSendPattern(flagToAnalog_valTrainVref_sendPattern),
     .flagFromAnalog_valTrainVrefFinishedPattern(flagFromAnalog_valTrainVref_finishedPattern),
     .flagToAnalog_valTrainVrefResetLocalTxScrambler(flagToAnalog_valTrainVref_resetLocalTxScrambler),
-    .substate(valTrainVref_substate),
+    .dbg_localState(valTrainVref_dbg_localState),
+    .dbg_remoteState(valTrainVref_dbg_remoteState),
+    .dbg_sweepState(valTrainVref_dbg_sweepState),
+    .dbg_pointInitiatorState(valTrainVref_dbg_pointInitiatorState),
+    .dbg_pointResponderState(valTrainVref_dbg_pointResponderState),
     .lastErrorCount(valTrainVref_lastErrorCount),
     .retryCount(valTrainVref_retryCount),
     .selectedVrefCode(valTrainVref_selectedCode),
@@ -717,7 +825,11 @@ module MBTrainFSM #(
     .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler),
     .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo),
     .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload),
-    .substate(dataTrainCenter1_substate),
+    .dbg_senderState(dataTrainCenter1_dbg_senderState),
+    .dbg_receiverState(dataTrainCenter1_dbg_receiverState),
+    .dbg_d2cSenderState(dataTrainCenter1_dbg_d2cSenderState),
+    .dbg_d2cReceiverState(dataTrainCenter1_dbg_d2cReceiverState),
+    .dbg_sweepState(dataTrainCenter1_dbg_sweepState),
     .lastErrorCount(dataTrainCenter1_lastErrorCount),
     .retryCount(dataTrainCenter1_retryCount)
   );
@@ -807,7 +919,11 @@ module MBTrainFSM #(
     .flagToAnalog_dataTrainVrefResetLocalTxScrambler(
       flagToAnalog_dataTrainVref_resetLocalTxScrambler
     ),
-    .substate(dataTrainVref_substate),
+    .dbg_localState(dataTrainVref_dbg_localState),
+    .dbg_remoteState(dataTrainVref_dbg_remoteState),
+    .dbg_sweepState(dataTrainVref_dbg_sweepState),
+    .dbg_pointInitiatorState(dataTrainVref_dbg_pointInitiatorState),
+    .dbg_pointResponderState(dataTrainVref_dbg_pointResponderState),
     .lastErrorCount(dataTrainVref_lastErrorCount),
     .retryCount(dataTrainVref_retryCount),
     .selectedVrefCodes(dataTrainVref_selectedCodes),
@@ -879,7 +995,11 @@ module MBTrainFSM #(
       flagFromAnalog_rxDeskew_lfsrPatternSent),
     .flagToAnalog_rxDeskewResetLocalTxScrambler(
       flagToAnalog_rxDeskew_resetLocalTxScrambler),
-    .substate(rxDeskew_substate),
+    .dbg_localState(rxDeskew_dbg_localState),
+    .dbg_remoteState(rxDeskew_dbg_remoteState),
+    .dbg_sweepState(rxDeskew_dbg_sweepState),
+    .dbg_pointInitiatorState(rxDeskew_dbg_pointInitiatorState),
+    .dbg_pointResponderState(rxDeskew_dbg_pointResponderState),
     .lastErrorCount(rxDeskew_lastErrorCount),
     .retryCount(rxDeskew_retryCount),
     .selectedRxDeskewCodes(rxDeskew_selectedCodes),
@@ -929,7 +1049,11 @@ module MBTrainFSM #(
     .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler),
     .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo),
     .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload),
-    .substate(dataTrainCenter2_substate),
+    .dbg_senderState(dataTrainCenter2_dbg_senderState),
+    .dbg_receiverState(dataTrainCenter2_dbg_receiverState),
+    .dbg_d2cSenderState(dataTrainCenter2_dbg_d2cSenderState),
+    .dbg_d2cReceiverState(dataTrainCenter2_dbg_d2cReceiverState),
+    .dbg_sweepState(dataTrainCenter2_dbg_sweepState),
     .lastErrorCount(dataTrainCenter2_lastErrorCount),
     .retryCount(dataTrainCenter2_retryCount)
   );
@@ -969,7 +1093,10 @@ module MBTrainFSM #(
     .flagToAnalog_d2cReceiver_dataPattern(flagToAnalog_d2cReceiver_linkSpeed_dataPattern),
     .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler),
     .flagFromAnalog_d2cReceiver_laneComparisonSuccessful(flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful),
-    .substate(linkSpeed_substate),
+    .dbg_senderState(linkSpeed_dbg_senderState),
+    .dbg_receiverState(linkSpeed_dbg_receiverState),
+    .dbg_d2cSenderState(linkSpeed_dbg_d2cSenderState),
+    .dbg_d2cReceiverState(linkSpeed_dbg_d2cReceiverState),
     .lastErrorCount(linkSpeed_lastErrorCount),
     .retryCount(linkSpeed_retryCount)
   );
@@ -1039,67 +1166,118 @@ module MBTrainFSM #(
 
   always_comb begin
     state = stateReg;
+    dbg_mbtrainValVrefLocalState = valVref_dbg_localState;
+    dbg_mbtrainValVrefRemoteState = valVref_dbg_remoteState;
+    dbg_mbtrainValVrefSweepState = valVref_dbg_sweepState;
+    dbg_mbtrainValVrefPointInitiatorState = valVref_dbg_pointInitiatorState;
+    dbg_mbtrainValVrefPointResponderState = valVref_dbg_pointResponderState;
+    dbg_mbtrainDataVrefLocalState = dataVref_dbg_localState;
+    dbg_mbtrainDataVrefRemoteState = dataVref_dbg_remoteState;
+    dbg_mbtrainDataVrefSweepState = dataVref_dbg_sweepState;
+    dbg_mbtrainDataVrefPointInitiatorState = dataVref_dbg_pointInitiatorState;
+    dbg_mbtrainDataVrefPointResponderState = dataVref_dbg_pointResponderState;
+    dbg_mbtrainSpeedIdleSenderState = speedIdle_dbg_senderState;
+    dbg_mbtrainSpeedIdleReceiverState = speedIdle_dbg_receiverState;
+    dbg_mbtrainTxSelfCalSenderState = txSelfCal_dbg_senderState;
+    dbg_mbtrainTxSelfCalReceiverState = txSelfCal_dbg_receiverState;
+    dbg_mbtrainRxClkCalSenderState = rxClkCal_dbg_senderState;
+    dbg_mbtrainRxClkCalReceiverState = rxClkCal_dbg_receiverState;
+    dbg_mbtrainValTrainCenterSenderState = valTrainCenter_dbg_senderState;
+    dbg_mbtrainValTrainCenterReceiverState = valTrainCenter_dbg_receiverState;
+    dbg_mbtrainValTrainCenterD2cSenderState = valTrainCenter_dbg_d2cSenderState;
+    dbg_mbtrainValTrainCenterD2cReceiverState = valTrainCenter_dbg_d2cReceiverState;
+    dbg_mbtrainValTrainCenterSweepState = valTrainCenter_dbg_sweepState;
+    dbg_mbtrainValTrainVrefLocalState = valTrainVref_dbg_localState;
+    dbg_mbtrainValTrainVrefRemoteState = valTrainVref_dbg_remoteState;
+    dbg_mbtrainValTrainVrefSweepState = valTrainVref_dbg_sweepState;
+    dbg_mbtrainValTrainVrefPointInitiatorState = valTrainVref_dbg_pointInitiatorState;
+    dbg_mbtrainValTrainVrefPointResponderState = valTrainVref_dbg_pointResponderState;
+    dbg_mbtrainDataTrainCenter1SenderState = dataTrainCenter1_dbg_senderState;
+    dbg_mbtrainDataTrainCenter1ReceiverState = dataTrainCenter1_dbg_receiverState;
+    dbg_mbtrainDataTrainCenter1D2cSenderState = dataTrainCenter1_dbg_d2cSenderState;
+    dbg_mbtrainDataTrainCenter1D2cReceiverState = dataTrainCenter1_dbg_d2cReceiverState;
+    dbg_mbtrainDataTrainCenter1SweepState = dataTrainCenter1_dbg_sweepState;
+    dbg_mbtrainDataTrainVrefLocalState = dataTrainVref_dbg_localState;
+    dbg_mbtrainDataTrainVrefRemoteState = dataTrainVref_dbg_remoteState;
+    dbg_mbtrainDataTrainVrefSweepState = dataTrainVref_dbg_sweepState;
+    dbg_mbtrainDataTrainVrefPointInitiatorState = dataTrainVref_dbg_pointInitiatorState;
+    dbg_mbtrainDataTrainVrefPointResponderState = dataTrainVref_dbg_pointResponderState;
+    dbg_mbtrainRxDeskewLocalState = rxDeskew_dbg_localState;
+    dbg_mbtrainRxDeskewRemoteState = rxDeskew_dbg_remoteState;
+    dbg_mbtrainRxDeskewSweepState = rxDeskew_dbg_sweepState;
+    dbg_mbtrainRxDeskewPointInitiatorState = rxDeskew_dbg_pointInitiatorState;
+    dbg_mbtrainRxDeskewPointResponderState = rxDeskew_dbg_pointResponderState;
+    dbg_mbtrainDataTrainCenter2SenderState = dataTrainCenter2_dbg_senderState;
+    dbg_mbtrainDataTrainCenter2ReceiverState = dataTrainCenter2_dbg_receiverState;
+    dbg_mbtrainDataTrainCenter2D2cSenderState = dataTrainCenter2_dbg_d2cSenderState;
+    dbg_mbtrainDataTrainCenter2D2cReceiverState = dataTrainCenter2_dbg_d2cReceiverState;
+    dbg_mbtrainDataTrainCenter2SweepState = dataTrainCenter2_dbg_sweepState;
+    dbg_mbtrainLinkSpeedSenderState = linkSpeed_dbg_senderState;
+    dbg_mbtrainLinkSpeedReceiverState = linkSpeed_dbg_receiverState;
+    dbg_mbtrainLinkSpeedD2cSenderState = linkSpeed_dbg_d2cSenderState;
+    dbg_mbtrainLinkSpeedD2cReceiverState = linkSpeed_dbg_d2cReceiverState;
     busy = (stateReg != State_IDLE) &&
            (stateReg != State_COMPLETE) &&
            (stateReg != State_ERROR);
     done = (stateReg == State_COMPLETE);
     trainError = errorReg || (stateReg == State_ERROR);
 
+    // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     activeSubstate = 12'b0;
     lastErrorCount = 16'b0;
     retryCount = 16'b0;
     unique case (stateReg)
       State_VALVREF: begin
-        activeSubstate = valVref_substate;
+        activeSubstate = {valVref_dbg_localState, valVref_dbg_pointInitiatorState, valVref_dbg_pointResponderState};
         lastErrorCount = valVref_lastErrorCount;
         retryCount = valVref_retryCount;
       end
       State_DATAVREF: begin
-        activeSubstate = dataVref_substate;
+        activeSubstate = {dataVref_dbg_localState, dataVref_dbg_pointInitiatorState, dataVref_dbg_pointResponderState};
         lastErrorCount = dataVref_lastErrorCount;
         retryCount = dataVref_retryCount;
       end
       State_SPEEDIDLE: begin
-        activeSubstate = {4'b0, speedIdle_substate};
+        activeSubstate = {8'b0, speedIdle_dbg_receiverState, speedIdle_dbg_senderState};
       end
       State_TXSELFCAL: begin
-        activeSubstate = {4'b0, txSelfCal_substate};
+        activeSubstate = {8'b0, txSelfCal_dbg_receiverState, txSelfCal_dbg_senderState};
       end
       State_RXCLKCAL: begin
-        activeSubstate = {4'b0, rxClkCal_substate};
+        activeSubstate = {6'b0, rxClkCal_dbg_receiverState, rxClkCal_dbg_senderState};
       end
       State_VALTRAINCENTER: begin
-        activeSubstate = valTrainCenter_substate;
+        activeSubstate = {valTrainCenter_dbg_senderState, valTrainCenter_dbg_d2cSenderState, valTrainCenter_dbg_d2cReceiverState};
         lastErrorCount = valTrainCenter_lastErrorCount;
         retryCount = valTrainCenter_retryCount;
       end
       State_VALTRAINVREF: begin
-        activeSubstate = valTrainVref_substate;
+        activeSubstate = {valTrainVref_dbg_localState, valTrainVref_dbg_pointInitiatorState, valTrainVref_dbg_pointResponderState};
         lastErrorCount = valTrainVref_lastErrorCount;
         retryCount = valTrainVref_retryCount;
       end
       State_DATATRAINCENTER1: begin
-        activeSubstate = dataTrainCenter1_substate;
+        activeSubstate = {dataTrainCenter1_dbg_senderState, dataTrainCenter1_dbg_d2cSenderState, dataTrainCenter1_dbg_d2cReceiverState};
         lastErrorCount = dataTrainCenter1_lastErrorCount;
         retryCount = dataTrainCenter1_retryCount;
       end
       State_DATATRAINVREF: begin
-        activeSubstate = dataTrainVref_substate;
+        activeSubstate = {dataTrainVref_dbg_localState, dataTrainVref_dbg_pointInitiatorState, dataTrainVref_dbg_pointResponderState};
         lastErrorCount = dataTrainVref_lastErrorCount;
         retryCount = dataTrainVref_retryCount;
       end
       State_RXDESKEW: begin
-        activeSubstate = rxDeskew_substate;
+        activeSubstate = {rxDeskew_dbg_localState, rxDeskew_dbg_pointInitiatorState, rxDeskew_dbg_pointResponderState};
         lastErrorCount = rxDeskew_lastErrorCount;
         retryCount = rxDeskew_retryCount;
       end
       State_DATATRAINCENTER2: begin
-        activeSubstate = dataTrainCenter2_substate;
+        activeSubstate = {dataTrainCenter2_dbg_senderState, dataTrainCenter2_dbg_d2cSenderState, dataTrainCenter2_dbg_d2cReceiverState};
         lastErrorCount = dataTrainCenter2_lastErrorCount;
         retryCount = dataTrainCenter2_retryCount;
       end
       State_LINKSPEED: begin
-        activeSubstate = linkSpeed_substate;
+        activeSubstate = {linkSpeed_dbg_senderState, linkSpeed_dbg_d2cSenderState, linkSpeed_dbg_d2cReceiverState};
         lastErrorCount = linkSpeed_lastErrorCount;
         retryCount = linkSpeed_retryCount;
       end
