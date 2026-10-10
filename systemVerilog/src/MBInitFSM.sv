@@ -70,21 +70,11 @@ module MBInitFSM #(
   output var logic           flagToAnalog_RepairMbSetReceiver,
   output var logic           flagToAnalog_ReversalMbSendLaneIDPattern,
   output var logic           flagToAnalog_LaneReversalApplied,
-  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   output var logic [2:0]     substate,
-  // Debug: state of every MBINIT sub-FSM (encodings match the *_t enums below).
-  output var logic [1:0]     dbg_mbinitParamSenderState,
-  output var logic [1:0]     dbg_mbinitParamReceiverState,
-  output var logic [1:0]     dbg_mbinitCalSenderState,
-  output var logic [1:0]     dbg_mbinitCalReceiverState,
   output var logic [2:0]     dbg_mbinitRepairClkSenderState,
   output var logic [2:0]     dbg_mbinitRepairClkReceiverState,
   output var logic [2:0]     dbg_mbinitRepairValSenderState,
   output var logic [2:0]     dbg_mbinitRepairValReceiverState,
-  output var logic [3:0]     dbg_mbinitReversalMbSenderState,
-  output var logic [2:0]     dbg_mbinitReversalMbReceiverState,
-  output var logic [4:0]     dbg_mbinitRepairMbSenderState,
-  output var logic [3:0]     dbg_mbinitRepairMbReceiverState,
   output var logic [4:0]     dbg_mbinitReversalMbReceivedSuccessCount
 );
   import SidebandMsgGenerator_pkg::*;
@@ -476,20 +466,11 @@ module MBInitFSM #(
       (repairMbReceiverStateReg == RepairMbReceiverState_setReceiver);
     flagToAnalog_LaneReversalApplied = reversalMb_LaneReversalApplied;
 
-    // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
     substate = stateReg;
-    dbg_mbinitParamSenderState = paramSenderStateReg;
-    dbg_mbinitParamReceiverState = paramReceiverStateReg;
-    dbg_mbinitCalSenderState = calSenderStateReg;
-    dbg_mbinitCalReceiverState = calReceiverStateReg;
     dbg_mbinitRepairClkSenderState = repairClkSenderStateReg;
     dbg_mbinitRepairClkReceiverState = repairClkReceiverStateReg;
     dbg_mbinitRepairValSenderState = repairValSenderStateReg;
     dbg_mbinitRepairValReceiverState = repairValReceiverStateReg;
-    dbg_mbinitReversalMbSenderState = reversalMbSenderStateReg;
-    dbg_mbinitReversalMbReceiverState = reversalMbReceiverStateReg;
-    dbg_mbinitRepairMbSenderState = repairMbSenderStateReg;
-    dbg_mbinitRepairMbReceiverState = repairMbReceiverStateReg;
     dbg_mbinitReversalMbReceivedSuccessCount = reversalMb_ReceivedSuccessCount;
   end
 

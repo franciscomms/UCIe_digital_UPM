@@ -42,7 +42,6 @@ module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
   logic [2:0] peer_mbinit_substate;
   logic [3:0] local_mbtrain_state;
   logic [3:0] peer_mbtrain_state;
-  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   logic [11:0] local_mbtrain_active_substate;
   logic [11:0] peer_mbtrain_active_substate;
   logic local_ltsm_train_error;

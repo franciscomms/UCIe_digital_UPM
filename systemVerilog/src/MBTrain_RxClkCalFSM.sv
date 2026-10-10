@@ -24,8 +24,7 @@ module MBTrainRxClkCalFSM #(
   output var logic         flagToAnalog_rxClkCalDoCalibration,
   input wire logic         flagFromAnalog_rxClkCalDone,
   output var logic         flagToAnalog_rxClkCalSendClockTrack,
-  output var logic [2:0]   dbg_senderState,
-  output var logic [2:0]   dbg_receiverState
+  output var logic [7:0]   substate
 );
   import SidebandMsgGenerator_pkg::*;
 
@@ -106,8 +105,7 @@ module MBTrainRxClkCalFSM #(
     trainError  = trainErrorReg;
 
     // Chisel assigned a 10-bit Cat into an 8-bit output. Preserve the low 8 bits.
-    dbg_senderState = rxClkCalSenderStateReg;
-    dbg_receiverState = rxClkCalReceiverStateReg;
+    substate = {2'b0, rxClkCalReceiverStateReg, rxClkCalSenderStateReg};
 
     flagToAnalog_rxClkCalDoCalibration = running &&
       ((rxClkCalSenderStateReg == RxClkCalSenderState_startAnalogCal) ||

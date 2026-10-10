@@ -45,11 +45,7 @@ module MBTrain_DataTrainCenter2 #(
   output var logic         flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
   input wire logic [63:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
-  output var logic [3:0]   dbg_senderState,
-  output var logic [2:0]   dbg_receiverState,
-  output var logic [3:0]   dbg_d2cSenderState,
-  output var logic [3:0]   dbg_d2cReceiverState,
-  output var logic [3:0]   dbg_sweepState,
+  output var logic [11:0]  substate,
   output var logic [15:0]  lastErrorCount,
   output var logic [15:0]  retryCount
 );
@@ -320,11 +316,7 @@ module MBTrain_DataTrainCenter2 #(
     trainError = trainErrorReg || sweepEngine_trainError;
     sb_tx_valid = sbTxValid;
     sb_tx_din = sbTxDin;
-    dbg_senderState = senderStateReg;
-    dbg_receiverState = receiverStateReg;
-    dbg_d2cSenderState = d2cSender_state;
-    dbg_d2cReceiverState = d2cReceiver_state;
-    dbg_sweepState = sweepEngine_state;
+    substate = {senderStateReg[3:0], d2cSender_state, d2cReceiver_state};
     lastErrorCount = sweepEngine_lastFailedComparisons;
     retryCount = sweepEngine_retryCount;
 

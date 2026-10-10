@@ -37,7 +37,6 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
   output var logic [3:0] die1_ltsm_state,
   output var logic [3:0] die0_mbtrain_state,
   output var logic [3:0] die1_mbtrain_state,
-  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0] die0_mbtrain_active_substate,
   output var logic [11:0] die1_mbtrain_active_substate,
   output var logic [15:0] die0_ltsm_visited_mask,
