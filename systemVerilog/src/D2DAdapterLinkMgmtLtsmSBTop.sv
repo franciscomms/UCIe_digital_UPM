@@ -360,7 +360,7 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   input wire logic sb_rx_clk,
 
   // Sideband receive-buffer status. Sticky until reset.
-  output var logic debug_sb_rx_overflow
+  output var logic debug_sb_rx_overflow,
 
   // ==========================================================================
   // FDI / RDI / LTSM / SIDEBAND INTEGRATION DEBUG
