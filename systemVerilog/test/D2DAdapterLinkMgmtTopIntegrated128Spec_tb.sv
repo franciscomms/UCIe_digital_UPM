@@ -1,7 +1,10 @@
 // SystemVerilog translation of D2DAdapterLinkMgmtTopIntegrated128Spec(1).scala.
 // Revised to run the complete UCIe 2.0 LTSM training sequence and every
 // directed message through production one-bit sideband serializers.
-// The 128-bit task arguments are BFM transactions, not DUT packet ports.
+// Each die model instantiates D2DAdapterLinkMgmtLtsmSBTop, including its
+// serializer, clock-domain crossing, and controller receive mailbox.
+// The bfm_send_* / bfm_received_* API carries 128-bit test transactions.
+// Both die instances expose only one-bit sideband data and forwarded clocks.
 // Reset convention: asynchronous active-low reset_n; there is no reset signal.
 // Run one scenario with +SCENARIO=<name>, or omit it to run all scenarios.
 
@@ -53,12 +56,15 @@ module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
   logic serial_idle;
   bit serial_failure_seen = 1'b0;
 
-  logic sb_tx_valid;
-  logic [127:0] sb_tx_msg;
-  logic sb_tx_ready;
-  logic sb_rx_valid;
-  logic [127:0] sb_rx_msg;
-  logic sb_rx_ready;
+  // Logical BFM transactions; the harness connects to the dies with scalar
+  // sideband data/clock signals and serializes/deserializes these messages.
+  logic bfm_received_valid;
+  logic [127:0] bfm_received_msg;
+  logic bfm_received_ready;
+  logic bfm_send_valid;
+  logic [127:0] bfm_send_msg;
+  logic bfm_send_ready;
+  logic bfm_send_idle;
   logic [31:0] cycles_1us;
 
   LinkInitState_t debug_fdi_link_init_state;
@@ -202,12 +208,13 @@ module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
     .fdi_pl_wake_ack(fdi_pl_wake_ack),
     .fdi_pl_clk_req(fdi_pl_clk_req),
     .fdi_pl_stall_req(fdi_pl_stall_req),
-    .sb_tx_valid(sb_tx_valid),
-    .sb_tx_msg(sb_tx_msg),
-    .sb_tx_ready(sb_tx_ready),
-    .sb_rx_valid(sb_rx_valid),
-    .sb_rx_msg(sb_rx_msg),
-    .sb_rx_ready(sb_rx_ready),
+    .bfm_received_valid(bfm_received_valid),
+    .bfm_received_msg(bfm_received_msg),
+    .bfm_received_ready(bfm_received_ready),
+    .bfm_send_valid(bfm_send_valid),
+    .bfm_send_msg(bfm_send_msg),
+    .bfm_send_ready(bfm_send_ready),
+    .bfm_send_idle(bfm_send_idle),
     .cycles_1us(cycles_1us),
     .local_ltsm_state(local_ltsm_state),
     .peer_ltsm_state(peer_ltsm_state),
@@ -263,9 +270,9 @@ module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
       ltsm_stable_supply = 1'b0;
       manual_sideband_mode = 1'b0;
       cycles_1us = run_ltsm_training ? 32'd1000 : 32'd1;
-      sb_tx_ready = 1'b0;
-      sb_rx_valid = 1'b0;
-      sb_rx_msg = 128'b0;
+      bfm_received_ready = 1'b0;
+      bfm_send_valid = 1'b0;
+      bfm_send_msg = 128'b0;
 
       reset_n = 1'b0;
       step(3);
@@ -368,22 +375,22 @@ module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
   );
     int unsigned wait_message;
     begin
-      sb_tx_ready = 1'b0;
+      bfm_received_ready = 1'b0;
       wait_message = 0;
-      while (!sb_tx_valid && wait_message < max_cycles) begin
+      while (!bfm_received_valid && wait_message < max_cycles) begin
         step(1);
         wait_message++;
       end
       if (wait_message >= max_cycles)
         $fatal(1, "No TX message within %0d cycles", max_cycles);
 
-      header = sb_tx_msg[63:0];
-      payload = sb_tx_msg[127:64];
+      header = bfm_received_msg[63:0];
+      payload = bfm_received_msg[127:64];
       has_payload = (header[4:0] == MSG_WITH_64B_DATA);
 
-      sb_tx_ready = 1'b1;
+      bfm_received_ready = 1'b1;
       step(1);
-      sb_tx_ready = 1'b0;
+      bfm_received_ready = 1'b0;
     end
   endtask
 
@@ -395,29 +402,30 @@ module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
   );
     int unsigned wait_ready;
     begin
-      sb_rx_valid = 1'b0;
+      bfm_send_valid = 1'b0;
       wait_ready = 0;
-      while (!sb_rx_ready && wait_ready < max_cycles) begin
+      while (!bfm_send_ready && wait_ready < max_cycles) begin
         step(1);
         wait_ready++;
       end
       if (wait_ready >= max_cycles)
         $fatal(1, "RX not ready for header 0x%016h", header);
 
-      sb_rx_msg = build_message(header, has_payload ? payload : 64'b0);
-      sb_rx_valid = 1'b1;
+      bfm_send_msg = build_message(header, has_payload ? payload : 64'b0);
+      bfm_send_valid = 1'b1;
       step(1);
-      sb_rx_valid = 1'b0;
-      sb_rx_msg = 128'b0;
-      // Input ready belongs to the BFM serializer.  Wait through the entire
-      // frame and final 32-bit idle gap before declaring stimulus complete.
+      bfm_send_valid = 1'b0;
+      bfm_send_msg = 128'b0;
+      // Input ready belongs to the BFM serializer. Wait through the entire
+      // frame and final 32-bit idle gap, then require the passive checker to
+      // have observed acceptance by the integrated top's receive mailbox.
       wait_ready = 0;
-      while (!sb_rx_ready && wait_ready < max_cycles) begin
+      while ((!bfm_send_ready || !bfm_send_idle) && wait_ready < max_cycles) begin
         step(1);
         wait_ready++;
       end
       if (wait_ready >= max_cycles)
-        $fatal(1, "Serial TX did not finish injected header 0x%016h", header);
+        $fatal(1, "Injected header 0x%016h did not finish serial TX and mailbox acceptance", header);
       step(2);
     end
   endtask
@@ -433,7 +441,7 @@ module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
       // Checkers include accepted-but-not-yet-sent and not-yet-consumed
       // frames.  The idle condition also covers the serializer's final gap.
       while (quiet_cycles < 16 && waited < 2000) begin
-        if (sb_tx_valid) begin
+        if (bfm_received_valid) begin
           take_tx_message(header, payload, has_payload, 1000);
           // Disabled/LinkReset -> Reset leaves LP Req.Active asserted.
           // An autonomous new RDI Req.Active is therefore an expected
@@ -446,7 +454,7 @@ module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
         end
         step(1);
         waited++;
-        if (serial_idle && !sb_tx_valid) quiet_cycles++;
+        if (serial_idle && !bfm_received_valid) quiet_cycles++;
         else quiet_cycles = 0;
       end
       if (quiet_cycles < 16)
@@ -942,9 +950,9 @@ module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
     ltsm_pll_locked = 1'b0;
     ltsm_stable_supply = 1'b0;
     manual_sideband_mode = 1'b0;
-    sb_tx_ready = 1'b0;
-    sb_rx_valid = 1'b0;
-    sb_rx_msg = 128'b0;
+    bfm_received_ready = 1'b0;
+    bfm_send_valid = 1'b0;
+    bfm_send_msg = 128'b0;
     cycles_1us = 32'd1;
     reset_n = 1'b0;
 

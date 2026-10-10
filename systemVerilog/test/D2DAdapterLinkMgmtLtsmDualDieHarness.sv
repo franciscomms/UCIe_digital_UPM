@@ -1,16 +1,17 @@
-// Dual-die integration harness for D2DAdapterLinkMgmtLtsmTop + SideBandModule.
-// link_*_enable stalls serializer enqueue; it never gates a clock on the wire.
+// Dual-die integration harness for D2DAdapterLinkMgmtLtsmSBTop.
+// link_*_enable is a simulation-only serializer admission stall; it never
+// gates a forwarded clock or bypasses the integrated sideband PHY.
 //
 // The analog models are derived from the supplied full LinkTrainingFSM
 // sideband tests.  They acknowledge every new PHY-control handshake, model
 // passing Vref/RX-deskew windows, and return cross-die Tx Init D2C point-test
-// results through the real sideband path.  No internal DUT state is forced.
+// results through the real sideband path. No internal FSM state is forced.
 
 `timescale 1ns/1ps
 `default_nettype none
 
-// Each die below instantiates the supplied SideBandModule. Only one data bit
-// and its forwarded clock cross each direction of the dual-die link.
+// Each die instantiates the production top with its integrated SideBandModule
+// and RX mailbox. Only one data bit and its forwarded clock cross each link.
 
 // Valid-lane phase-eye model used by VALTRAINCENTER.
 module D2DAdapterLinkMgmtTbValTrainResultModel #(
@@ -147,7 +148,7 @@ module D2DAdapterLinkMgmtTbDataTrainCenter2ResultModel #(
     local_result_payload    = aggregate_pass ? ACTIVE_LANE_MASK : 64'b0;
   end
 endmodule
-module D2DAdapterLinkMgmtLtsmDieBringUpModel #(
+module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   // FDI, RDI, and sideband widths are not part of this PHY-training model's
   // interface.  The integrated DUT therefore uses its own package defaults.
   parameter bit          UCIE_A                           = 1'b0,
@@ -197,19 +198,15 @@ module D2DAdapterLinkMgmtLtsmDieBringUpModel #(
   input wire logic external_fdi_lp_clk_ack,
   input wire logic external_fdi_lp_stall_ack,
   input wire logic [31:0] cycles_1us,
-  output wire logic sb_tx_valid,
-  output wire logic [127:0] sb_tx_msg,
-  output wire logic sb_tx_ready,
-  output wire logic sb_rx_valid,
-  output wire logic [127:0] sb_rx_msg,
-  output wire logic sb_rx_ready,
-  // Physical sideband pins. The packet ports above are observation taps only.
+  // Physical sideband interface: one data bit and forwarded clock each way.
+  // Packet-level monitors live outside this die model and read hierarchy only.
   input  wire logic sb_tx_enable,
   output wire logic sb_tx_dout,
   output wire logic sb_tx_clk,
   input  wire logic sb_rx_din,
   input  wire logic sb_rx_clk,
   output wire logic sb_tx_idle,
+  output wire logic sb_rx_overflow,
   input wire logic [15:0] ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo,
   input wire logic [63:0] ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload,
   input wire logic [15:0] ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo,
@@ -649,24 +646,23 @@ module D2DAdapterLinkMgmtLtsmDieBringUpModel #(
     end
   end
 
-  // Match the supplied serial integration: raw serial RX data/valid feed the
-  // controller directly. RX ready cannot throttle the physical wire. The
-  // testbench deliberately does not insert an edge filter or repair the DUT.
-  wire serial_tx_ready;
-  assign sb_tx_ready = sb_tx_enable && serial_tx_ready;
-  assign sb_tx_idle = (serial_sideband.txCount == 0) &&
-                      serial_sideband.txInternalReady;
-  SideBandModule serial_sideband (
-    .clock(clock), .reset_n(reset_n),
-    .tx_din(sb_tx_msg),
-    .tx_valid(sb_tx_valid && sb_tx_enable),
-    .tx_ready(serial_tx_ready),
-    .tx_dout(sb_tx_dout), .tx_clk(sb_tx_clk),
-    .rx_dout(sb_rx_msg), .rx_valid(sb_rx_valid),
-    .rxReset(!reset_n), .rx_din(sb_rx_din), .rx_clk(sb_rx_clk)
-  );
+  // Scalar status for the integrated serial transmitter.
+  assign sb_tx_idle  = (dut.u_sideband_phy.txCount == 0) &&
+                       dut.u_sideband_phy.txInternalReady;
 
-  D2DAdapterLinkMgmtLtsmTop #(
+  // The physical pins provide no packet ready input. Directed tests can
+  // pause only the integrated FIFO's admission handshake. Forcing the FIFO's
+  // ready output also stalls the arbiter, so neither side counts an enqueue.
+  // Already accepted packets keep draining through the unmodified serial PHY.
+  // Normal bring-up keeps sb_tx_enable high and applies no override.
+  always @(sb_tx_enable) begin
+    if (!sb_tx_enable)
+      force dut.u_sideband_phy.tx_ready = 1'b0;
+    else
+      release dut.u_sideband_phy.tx_ready;
+  end
+
+  D2DAdapterLinkMgmtLtsmSBTop #(
     // The link-management widths are intentionally left at the DUT defaults;
     // this testbench only drives link-management control and sideband traffic.
     .sbFeatureExtension                       (1'b0),
@@ -723,12 +719,11 @@ module D2DAdapterLinkMgmtLtsmDieBringUpModel #(
     .fdi_pl_wake_ack                                                                (fdi_pl_wake_ack),
     .fdi_pl_clk_req                                                                 (fdi_pl_clk_req),
     .fdi_pl_stall_req                                                               (fdi_pl_stall_req),
-    .sb_tx_valid                                                                    (sb_tx_valid),
-    .sb_tx_msg                                                                      (sb_tx_msg),
-    .sb_tx_ready                                                                    (sb_tx_ready),
-    .sb_rx_valid                                                                    (sb_rx_valid),
-    .sb_rx_msg                                                                      (sb_rx_msg),
-    .sb_rx_ready                                                                    (sb_rx_ready),
+    .sb_tx_dout                                                                     (sb_tx_dout),
+    .sb_tx_clk                                                                      (sb_tx_clk),
+    .sb_rx_din                                                                      (sb_rx_din),
+    .sb_rx_clk                                                                      (sb_rx_clk),
+    .debug_sb_rx_overflow                                                           (sb_rx_overflow),
     .cycles_1us                                                                     (cycles_1us),
     .ltsm_start                                                                     (ltsm_start),
     .ltsm_stable_clk                                                                (ltsm_stable_clk),
@@ -1018,12 +1013,6 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
   output wire logic die1_grant_ltsm,
   output wire logic die1_grant_rdi,
   output wire logic die1_grant_fdi,
-  output wire logic die0_tx_valid,
-  output wire logic [127:0] die0_tx_msg,
-  output wire logic die0_tx_ready,
-  output wire logic die1_tx_valid,
-  output wire logic [127:0] die1_tx_msg,
-  output wire logic die1_tx_ready,
   output wire logic die0_tx_fire,
   output wire logic die1_tx_fire,
   output wire logic die0_rx_fire,
@@ -1047,6 +1036,7 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
   output wire logic serial_wire_activity,
   output wire logic serial_idle,
   output wire logic serial_error,
+  output wire logic any_sb_rx_overflow,
   output wire logic [31:0] wire_completed_0_to_1,
   output wire logic [31:0] wire_completed_1_to_0
 );
@@ -1059,12 +1049,33 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
   localparam int unsigned VREF_CODE_WIDTH                  = 4;
   localparam int unsigned RX_DESKEW_CODE_WIDTH             = 4;
 
-  logic         die0_rx_valid;
-  logic [127:0] die0_rx_msg;
-  logic         die0_rx_ready;
-  logic         die1_rx_valid;
-  logic [127:0] die1_rx_msg;
-  logic         die1_rx_ready;
+  // Read-only verification taps. These are local to the harness; the die
+  // instances below expose only scalar serial pins for sideband traffic.
+  wire logic         mon_die0_tx_valid;
+  wire logic [127:0] mon_die0_tx_msg;
+  wire logic         mon_die0_tx_ready;
+  wire logic         mon_die0_rx_valid;
+  wire logic [127:0] mon_die0_rx_msg;
+  wire logic         mon_die0_rx_ready;
+  wire logic         mon_die1_tx_valid;
+  wire logic [127:0] mon_die1_tx_msg;
+  wire logic         mon_die1_tx_ready;
+  wire logic         mon_die1_rx_valid;
+  wire logic [127:0] mon_die1_rx_msg;
+  wire logic         mon_die1_rx_ready;
+
+  assign mon_die0_tx_valid = die0.dut.sb_msg_tx_valid;
+  assign mon_die0_tx_msg = die0.dut.sb_msg_tx_msg;
+  assign mon_die0_tx_ready = die0.dut.sb_msg_tx_ready;
+  assign mon_die0_rx_valid = die0.dut.sb_msg_rx_valid;
+  assign mon_die0_rx_msg = die0.dut.sb_msg_rx_msg;
+  assign mon_die0_rx_ready = die0.dut.sb_msg_rx_ready;
+  assign mon_die1_tx_valid = die1.dut.sb_msg_tx_valid;
+  assign mon_die1_tx_msg = die1.dut.sb_msg_tx_msg;
+  assign mon_die1_tx_ready = die1.dut.sb_msg_tx_ready;
+  assign mon_die1_rx_valid = die1.dut.sb_msg_rx_valid;
+  assign mon_die1_rx_msg = die1.dut.sb_msg_rx_msg;
+  assign mon_die1_rx_ready = die1.dut.sb_msg_rx_ready;
 
   logic [PI_CODE_WIDTH-1:0] die0_valtrain_phase;
   logic [PI_CODE_WIDTH-1:0] die1_valtrain_phase;
@@ -1089,26 +1100,28 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
   logic [63:0] die1_train2_result_payload;
 
   logic die0_serial_idle, die1_serial_idle;
+  logic die0_sb_rx_overflow, die1_sb_rx_overflow;
   logic check01_idle, check10_idle, check01_error, check10_error;
   assign serial_wire_activity = sb_0_to_1_clk || sb_1_to_0_clk;
   assign serial_idle = die0_serial_idle && die1_serial_idle &&
                        check01_idle && check10_idle;
-  assign serial_error = check01_error || check10_error;
+  assign any_sb_rx_overflow = die0_sb_rx_overflow || die1_sb_rx_overflow;
+  assign serial_error = check01_error || check10_error || any_sb_rx_overflow;
 
   // These are passive checks. They neither drive nor repair received packets.
   D2DAdapterLinkMgmtTbSerialLinkChecker check_0_to_1 (
     .clock(clock), .reset_n(reset_n),
-    .tx_valid(die0_tx_valid), .tx_msg(die0_tx_msg), .tx_ready(die0_tx_ready),
+    .tx_valid(mon_die0_tx_valid), .tx_msg(mon_die0_tx_msg), .tx_ready(mon_die0_tx_ready),
     .serial_data(sb_0_to_1_data), .serial_clock(sb_0_to_1_clk),
-    .rx_valid(die1_rx_valid), .rx_msg(die1_rx_msg), .rx_ready(die1_rx_ready),
+    .rx_valid(mon_die1_rx_valid), .rx_msg(mon_die1_rx_msg), .rx_ready(mon_die1_rx_ready),
     .wire_completed(wire_completed_0_to_1),
     .idle(check01_idle), .error(check01_error)
   );
   D2DAdapterLinkMgmtTbSerialLinkChecker check_1_to_0 (
     .clock(clock), .reset_n(reset_n),
-    .tx_valid(die1_tx_valid), .tx_msg(die1_tx_msg), .tx_ready(die1_tx_ready),
+    .tx_valid(mon_die1_tx_valid), .tx_msg(mon_die1_tx_msg), .tx_ready(mon_die1_tx_ready),
     .serial_data(sb_1_to_0_data), .serial_clock(sb_1_to_0_clk),
-    .rx_valid(die0_rx_valid), .rx_msg(die0_rx_msg), .rx_ready(die0_rx_ready),
+    .rx_valid(mon_die0_rx_valid), .rx_msg(mon_die0_rx_msg), .rx_ready(mon_die0_rx_ready),
     .wire_completed(wire_completed_1_to_0),
     .idle(check10_idle), .error(check10_error)
   );
@@ -1187,7 +1200,7 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
     .local_result_payload (die0_train2_result_payload)
   );
 
-  D2DAdapterLinkMgmtLtsmDieBringUpModel #(
+  D2DAdapterLinkMgmtLtsmSerialDieModel #(
     .UCIE_A                           (UCIE_A),
     .PI_CODE_WIDTH                    (PI_CODE_WIDTH),
     .TX_DESKEW_CODE_WIDTH             (TX_DESKEW_CODE_WIDTH),
@@ -1222,18 +1235,13 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
     .external_fdi_lp_clk_ack   (1'b0),
     .external_fdi_lp_stall_ack (1'b0),
     .cycles_1us               (cycles_1us),
-    .sb_tx_valid              (die0_tx_valid),
-    .sb_tx_msg                (die0_tx_msg),
-    .sb_tx_ready              (die0_tx_ready),
-    .sb_rx_valid              (die0_rx_valid),
-    .sb_rx_msg                (die0_rx_msg),
-    .sb_rx_ready              (die0_rx_ready),
     .sb_tx_enable             (link_0_to_1_enable),
     .sb_tx_dout               (sb_0_to_1_data),
     .sb_tx_clk                (sb_0_to_1_clk),
     .sb_rx_din                (sb_1_to_0_data),
     .sb_rx_clk                (sb_1_to_0_clk),
     .sb_tx_idle               (die0_serial_idle),
+    .sb_rx_overflow           (die0_sb_rx_overflow),
     .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo
                               (die0_valtrain_result_info),
     .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload
@@ -1276,7 +1284,7 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
     .debug_rx_fire            (die0_rx_fire)
   );
 
-  D2DAdapterLinkMgmtLtsmDieBringUpModel #(
+  D2DAdapterLinkMgmtLtsmSerialDieModel #(
     .UCIE_A                           (UCIE_A),
     .PI_CODE_WIDTH                    (PI_CODE_WIDTH),
     .TX_DESKEW_CODE_WIDTH             (TX_DESKEW_CODE_WIDTH),
@@ -1311,18 +1319,13 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
     .external_fdi_lp_clk_ack   (1'b0),
     .external_fdi_lp_stall_ack (1'b0),
     .cycles_1us               (cycles_1us),
-    .sb_tx_valid              (die1_tx_valid),
-    .sb_tx_msg                (die1_tx_msg),
-    .sb_tx_ready              (die1_tx_ready),
-    .sb_rx_valid              (die1_rx_valid),
-    .sb_rx_msg                (die1_rx_msg),
-    .sb_rx_ready              (die1_rx_ready),
     .sb_tx_enable             (link_1_to_0_enable),
     .sb_tx_dout               (sb_1_to_0_data),
     .sb_tx_clk                (sb_1_to_0_clk),
     .sb_rx_din                (sb_0_to_1_data),
     .sb_rx_clk                (sb_0_to_1_clk),
     .sb_tx_idle               (die1_serial_idle),
+    .sb_rx_overflow           (die1_sb_rx_overflow),
     .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo
                               (die1_valtrain_result_info),
     .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload
@@ -1367,7 +1370,7 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
 
   assign progress_signature = {
     4'b0,
-    die1_tx_msg[27:0], die0_tx_msg[27:0],
+    mon_die1_tx_msg[27:0], mon_die0_tx_msg[27:0],
     die1_mbtrain_active_substate, die0_mbtrain_active_substate,
     die1_mbtrain_state, die0_mbtrain_state,
     die1_mbinit_substate, die0_mbinit_substate,

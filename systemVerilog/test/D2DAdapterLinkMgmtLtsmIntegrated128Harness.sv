@@ -1,4 +1,4 @@
-// Directed single-DUT scenarios with real one-bit sideband at both dies.
+// Directed single-DUT scenarios using D2DAdapterLinkMgmtLtsmSBTop at both dies.
 // Training uses an external store-and-forward serial BFM: complete LTSM wire
 // frames are decoded and reserialized to the other die; local management
 // frames are retained for directed stimulus, and peer management is drained.
@@ -32,12 +32,18 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
   output wire logic                                  fdi_pl_clk_req,
   output wire logic                                  fdi_pl_stall_req,
 
-  output wire logic         sb_tx_valid,
-  output wire logic [127:0] sb_tx_msg,
-  input  wire logic         sb_tx_ready,
-  input  wire logic         sb_rx_valid,
-  input  wire logic [127:0] sb_rx_msg,
-  output wire logic         sb_rx_ready,
+  // Testbench-only transaction API. The BFM serializes send messages onto
+  // the local die's one-bit RX pins and decodes received messages from its
+  // one-bit TX pins. These ports are not connected to either die as packets.
+  output wire logic         bfm_received_valid,
+  output wire logic [127:0] bfm_received_msg,
+  input  wire logic         bfm_received_ready,
+  input  wire logic         bfm_send_valid,
+  input  wire logic [127:0] bfm_send_msg,
+  output wire logic         bfm_send_ready,
+  // Completes only after the injected wire frame has been accepted through
+  // the integrated top's receive mailbox and the serializer is idle.
+  output wire logic         bfm_send_idle,
   input  wire logic [31:0]  cycles_1us,
 
   output wire logic [3:0] local_ltsm_state,
@@ -74,20 +80,6 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
   localparam int unsigned DESKEW_STEPS_PER_PI              = 1;
   localparam bit          DESKEW_ADD_DELAY_INCREASES_PHASE = 1'b1;
 
-  logic local_raw_tx_valid;
-  logic [127:0] local_raw_tx_msg;
-  logic local_raw_tx_ready;
-  logic local_raw_rx_valid;
-  logic [127:0] local_raw_rx_msg;
-  logic local_raw_rx_ready;
-
-  logic peer_raw_tx_valid;
-  logic [127:0] peer_raw_tx_msg;
-  logic peer_raw_tx_ready;
-  logic peer_raw_rx_valid;
-  logic [127:0] peer_raw_rx_msg;
-  logic peer_raw_rx_ready;
-
   logic local_serial_data, local_serial_clock, local_serial_idle;
   logic peer_serial_data, peer_serial_clock, peer_serial_idle;
   logic local_in_data, local_in_clock, peer_in_data, peer_in_clock;
@@ -100,6 +92,7 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
   logic local_out_check_idle, peer_out_check_idle;
   logic local_in_check_idle, peer_in_check_idle;
   logic local_out_error, peer_out_error, local_in_error, peer_in_error;
+  logic local_rx_overflow, peer_rx_overflow;
   logic [31:0] local_out_completed, peer_out_completed;
   logic [31:0] local_in_completed, peer_in_completed;
   logic physical_training_complete;
@@ -173,9 +166,9 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
 
   // Only complete decoded training frames cross the relay.  The production
   // SidebandTx sends every relayed/injected message through the DUT RX pins.
-  assign local_bfm_send_valid = manual_sideband_mode ? sb_rx_valid
+  assign local_bfm_send_valid = manual_sideband_mode ? bfm_send_valid
     : (peer_dec_valid && peer_dec_ltsm);
-  assign local_bfm_send_msg = manual_sideband_mode ? sb_rx_msg : peer_dec_msg;
+  assign local_bfm_send_msg = manual_sideband_mode ? bfm_send_msg : peer_dec_msg;
   assign peer_bfm_send_valid = !manual_sideband_mode && local_dec_valid && local_dec_ltsm;
   assign peer_bfm_send_msg = local_dec_msg;
   assign peer_dec_ready = manual_sideband_mode || !peer_dec_ltsm || local_bfm_send_ready;
@@ -184,11 +177,12 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
 
   assign capture_manual_tx = local_dec_valid && local_dec_ready &&
     (manual_sideband_mode || !local_dec_ltsm);
-  assign consume_manual_tx = sb_tx_valid && sb_tx_ready;
-  assign sb_tx_valid = manual_sideband_mode && (manual_write_count != manual_read_count);
-  assign sb_tx_msg = (manual_write_count != manual_read_count)
+  assign consume_manual_tx = bfm_received_valid && bfm_received_ready;
+  assign bfm_received_valid = manual_sideband_mode && (manual_write_count != manual_read_count);
+  assign bfm_received_msg = (manual_write_count != manual_read_count)
     ? manual_queue[manual_read_count % MANUAL_QUEUE_DEPTH] : 128'b0;
-  assign sb_rx_ready = manual_sideband_mode && local_bfm_send_ready;
+  assign bfm_send_ready = manual_sideband_mode && local_bfm_send_ready;
+  assign bfm_send_idle = local_bfm_send_ready && local_in_check_idle;
 
   always @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
@@ -224,7 +218,8 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
         training_unknown_drop <= 1'b1;
     end
   end
-  assign serial_error = local_out_error || peer_out_error || local_in_error || peer_in_error;
+  assign serial_error = local_out_error || peer_out_error || local_in_error || peer_in_error ||
+    local_rx_overflow || peer_rx_overflow;
 
   // Optional transaction/state log for diagnosing directed controller tests.
   // These observations have no influence on the wire or controller inputs.
@@ -234,9 +229,9 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
       trace_previous_rdi <= UcieUPM_interfaces_pkg::PhyState_reset;
     end else begin
       if ($test$plusargs("SERIAL_TRACE") && manual_sideband_mode) begin
-        if (local_raw_tx_valid && local_raw_tx_ready)
+        if (local_die.dut.sb_msg_tx_valid && local_die.dut.sb_msg_tx_ready)
           $display("[SERIAL TRACE] t=%0t TX enqueue header=%016h FDI=%0h RDI=%0h LP.req=%0h",
-            $time, local_raw_tx_msg[63:0], fdi_pl_state_sts, debug_rdi_state, fdi_lp_state_req);
+            $time, local_die.dut.sb_msg_tx_msg[63:0], fdi_pl_state_sts, debug_rdi_state, fdi_lp_state_req);
         if (fdi_pl_state_sts != trace_previous_fdi || debug_rdi_state != trace_previous_rdi)
           $display("[SERIAL TRACE] t=%0t state FDI=%0h RDI=%0h LP.req=%0h",
             $time, fdi_pl_state_sts, debug_rdi_state, fdi_lp_state_req);
@@ -271,18 +266,23 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
   );
 
   // Check complete wire frames against their enqueue transaction and check
-  // each DUT's unmodified raw RX acceptance exactly once.  BFM observations
-  // never qualify or repair the valid signal delivered to the controller.
+  // each integrated receive mailbox's acceptance exactly once. Hierarchical
+  // reads below are passive observations of DUT internals; each die exposes
+  // only one-bit sideband data and clock ports to this harness.
   D2DAdapterLinkMgmtTbSerialLinkChecker #(.CHECK_RX_ACCEPT(0)) local_output_check (
     .clock(clock), .reset_n(reset_n),
-    .tx_valid(local_raw_tx_valid), .tx_msg(local_raw_tx_msg), .tx_ready(local_raw_tx_ready),
+    .tx_valid(local_die.dut.sb_msg_tx_valid),
+    .tx_msg(local_die.dut.sb_msg_tx_msg),
+    .tx_ready(local_die.dut.sb_msg_tx_ready),
     .serial_data(local_serial_data), .serial_clock(local_serial_clock),
     .rx_valid(1'b0), .rx_msg(128'b0), .rx_ready(1'b0),
     .wire_completed(local_out_completed), .idle(local_out_check_idle), .error(local_out_error)
   );
   D2DAdapterLinkMgmtTbSerialLinkChecker #(.CHECK_RX_ACCEPT(0)) peer_output_check (
     .clock(clock), .reset_n(reset_n),
-    .tx_valid(peer_raw_tx_valid), .tx_msg(peer_raw_tx_msg), .tx_ready(peer_raw_tx_ready),
+    .tx_valid(peer_die.dut.sb_msg_tx_valid),
+    .tx_msg(peer_die.dut.sb_msg_tx_msg),
+    .tx_ready(peer_die.dut.sb_msg_tx_ready),
     .serial_data(peer_serial_data), .serial_clock(peer_serial_clock),
     .rx_valid(1'b0), .rx_msg(128'b0), .rx_ready(1'b0),
     .wire_completed(peer_out_completed), .idle(peer_out_check_idle), .error(peer_out_error)
@@ -291,14 +291,18 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
     .clock(clock), .reset_n(reset_n),
     .tx_valid(local_bfm_send_valid), .tx_msg(local_bfm_send_msg), .tx_ready(local_bfm_send_ready),
     .serial_data(local_in_data), .serial_clock(local_in_clock),
-    .rx_valid(local_raw_rx_valid), .rx_msg(local_raw_rx_msg), .rx_ready(local_raw_rx_ready),
+    .rx_valid(local_die.dut.sb_msg_rx_valid),
+    .rx_msg(local_die.dut.sb_msg_rx_msg),
+    .rx_ready(local_die.dut.sb_msg_rx_ready),
     .wire_completed(local_in_completed), .idle(local_in_check_idle), .error(local_in_error)
   );
   D2DAdapterLinkMgmtTbSerialLinkChecker peer_input_check (
     .clock(clock), .reset_n(reset_n),
     .tx_valid(peer_bfm_send_valid), .tx_msg(peer_bfm_send_msg), .tx_ready(peer_bfm_send_ready),
     .serial_data(peer_in_data), .serial_clock(peer_in_clock),
-    .rx_valid(peer_raw_rx_valid), .rx_msg(peer_raw_rx_msg), .rx_ready(peer_raw_rx_ready),
+    .rx_valid(peer_die.dut.sb_msg_rx_valid),
+    .rx_msg(peer_die.dut.sb_msg_rx_msg),
+    .rx_ready(peer_die.dut.sb_msg_rx_ready),
     .wire_completed(peer_in_completed), .idle(peer_in_check_idle), .error(peer_in_error)
   );
 
@@ -376,7 +380,7 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
     .local_result_payload (local_train2_result_payload)
   );
 
-  D2DAdapterLinkMgmtLtsmDieBringUpModel #(
+  D2DAdapterLinkMgmtLtsmSerialDieModel #(
     .UCIE_A                           (UCIE_A),
     .PI_CODE_WIDTH                    (PI_CODE_WIDTH),
     .TX_DESKEW_CODE_WIDTH             (TX_DESKEW_CODE_WIDTH),
@@ -415,14 +419,9 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
     .sb_tx_dout               (local_serial_data),
     .sb_tx_clk                (local_serial_clock),
     .sb_tx_idle               (local_serial_idle),
+    .sb_rx_overflow           (local_rx_overflow),
     .sb_rx_din                (local_in_data),
     .sb_rx_clk                (local_in_clock),
-    .sb_tx_valid              (local_raw_tx_valid),
-    .sb_tx_msg                (local_raw_tx_msg),
-    .sb_tx_ready              (local_raw_tx_ready),
-    .sb_rx_valid              (local_raw_rx_valid),
-    .sb_rx_msg                (local_raw_rx_msg),
-    .sb_rx_ready              (local_raw_rx_ready),
     .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo(local_valtrain_result_info),
     .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload(local_valtrain_result_payload),
     .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo(local_train1_result_info),
@@ -455,7 +454,7 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
     .debug_rx_fire            (local_rx_fire)
   );
 
-  D2DAdapterLinkMgmtLtsmDieBringUpModel #(
+  D2DAdapterLinkMgmtLtsmSerialDieModel #(
     .UCIE_A                           (UCIE_A),
     .PI_CODE_WIDTH                    (PI_CODE_WIDTH),
     .TX_DESKEW_CODE_WIDTH             (TX_DESKEW_CODE_WIDTH),
@@ -494,14 +493,9 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
     .sb_tx_dout               (peer_serial_data),
     .sb_tx_clk                (peer_serial_clock),
     .sb_tx_idle               (peer_serial_idle),
+    .sb_rx_overflow           (peer_rx_overflow),
     .sb_rx_din                (peer_in_data),
     .sb_rx_clk                (peer_in_clock),
-    .sb_tx_valid              (peer_raw_tx_valid),
-    .sb_tx_msg                (peer_raw_tx_msg),
-    .sb_tx_ready              (peer_raw_tx_ready),
-    .sb_rx_valid              (peer_raw_rx_valid),
-    .sb_rx_msg                (peer_raw_rx_msg),
-    .sb_rx_ready              (peer_raw_rx_ready),
     .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo(peer_valtrain_result_info),
     .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload(peer_valtrain_result_payload),
     .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo(peer_train1_result_info),

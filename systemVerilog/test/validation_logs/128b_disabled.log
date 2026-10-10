@@ -1,0 +1,19 @@
+[scenario] Active -> Disabled -> Reset
+[ltsm] PASS: cycles=224330 LTSM masks=(0x01ff,0x01ff) MBTRAIN masks=(0x5fff,0x5fff)
+[SERIAL TRACE] t=2244095000 TX enqueue header=4600000140008012 FDI=0 RDI=0 LP.req=0
+[SERIAL TRACE] t=2245515000 state FDI=0 RDI=1 LP.req=0
+[SERIAL TRACE] t=2245535000 TX enqueue header=850000002000401b FDI=0 RDI=1 LP.req=0
+[SERIAL TRACE] t=2249175000 TX enqueue header=050000012000c012 FDI=0 RDI=1 LP.req=1
+[SERIAL TRACE] t=2250575000 TX enqueue header=4500000120010012 FDI=0 RDI=1 LP.req=1
+[SERIAL TRACE] t=2251985000 state FDI=1 RDI=1 LP.req=1
+[SERIAL TRACE] t=2252305000 TX enqueue header=4500000c2000c012 FDI=1 RDI=1 LP.req=c
+[SERIAL TRACE] t=2252345000 TX enqueue header=0600000c40004012 FDI=1 RDI=1 LP.req=c
+[SERIAL TRACE] t=2254675000 state FDI=1 RDI=c LP.req=c
+[SERIAL TRACE] t=2255945000 state FDI=c RDI=c LP.req=c
+[SERIAL TRACE] t=2256005000 state FDI=0 RDI=c LP.req=1
+[SERIAL TRACE] t=2256015000 TX enqueue header=4500000c2000c012 FDI=0 RDI=0 LP.req=1
+[SERIAL TRACE] t=2256015000 state FDI=0 RDI=0 LP.req=1
+[SERIAL TRACE] t=2256075000 TX enqueue header=4600000140004012 FDI=0 RDI=0 LP.req=1
+[2256685000] %Fatal: D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv:451: Assertion failed in D2DAdapterLinkMgmtTopIntegrated128Spec_tb.finish_serial_exchange: Unexpected trailing serialized message 0x4500000c2000c012
+%Error: D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv:451: Verilog $stop
+Aborting...

@@ -867,7 +867,10 @@ module MBInitFSM #(
         if (sb_rx_dout == MBINIT_REVERSALMB_RESULT_REQ) begin
           flagMbinitReversalMb_ReceivedResultReq <= 1'b1;
         end
-        if (sb_rx_dout[63:0] == MBINIT_REVERSALMB_RESULT_RESP[63:0]) begin
+        // Payload parity varies with the received lane bitmap; validate it
+        // separately instead of comparing it to the zero-payload template.
+        if ((sb_rx_dout[62:0] == MBINIT_REVERSALMB_RESULT_RESP[62:0]) &&
+            UCIe2_dataParityOk(sb_rx_dout)) begin
           flagMbinitReversalMb_ReceivedResultRespHeader <= 1'b1;
           flagMbinitReversalMb_ReceivedResultRespPayload <= 1'b1;
           reversalMb_ReceivedSuccessCount <= countOnes16(sb_rx_dout[79:64]);

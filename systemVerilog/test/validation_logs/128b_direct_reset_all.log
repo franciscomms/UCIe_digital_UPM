@@ -1,0 +1,4 @@
+[scenario] Direct Reset exits case=all
+[4425000] %Fatal: D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv:451: Assertion failed in D2DAdapterLinkMgmtTopIntegrated128Spec_tb.finish_serial_exchange: Unexpected trailing serialized message 0x4500000c2000c012
+%Error: D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv:451: Verilog $stop
+Aborting...

@@ -1,0 +1,7 @@
+PASS: D2DAdapterLinkMgmtLtsmDualDieBringUpSpec
+PASS: revised MBTRAIN states visited: die0=0x5fff die1=0x5fff
+PASS: one-bit wire packets 0->1=1334 1->0=1334; serial paths drained
+- D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb.sv:428: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.49
+- Verilator: $finish at 2ms; walltime 0.951 s; speed 1.593 ms/s
+- Verilator: cpu 0.950 s on 1 threads; allocated 0 MB

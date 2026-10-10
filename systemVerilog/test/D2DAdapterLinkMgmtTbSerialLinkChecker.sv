@@ -31,6 +31,8 @@ module D2DAdapterLinkMgmtTbSerialLinkChecker #(
   logic tx_error, rx_error, wire_error;
   logic holding_tx;
   logic [127:0] held_tx;
+  logic holding_rx;
+  logic [127:0] held_rx;
   bit diagnostic;
 
   // Diagnostic mode continues collecting evidence, but leaves error asserted
@@ -67,6 +69,8 @@ module D2DAdapterLinkMgmtTbSerialLinkChecker #(
       rx_error <= 1'b0;
       holding_tx <= 1'b0;
       held_tx <= '0;
+      holding_rx <= 1'b0;
+      held_rx <= '0;
     end else begin
       if (holding_tx && ((tx_valid !== 1'b1) || (tx_msg !== held_tx))) begin
         tx_error <= 1'b1;
@@ -74,6 +78,16 @@ module D2DAdapterLinkMgmtTbSerialLinkChecker #(
       end
       holding_tx <= tx_valid && !tx_ready;
       if (tx_valid && !tx_ready) held_tx <= tx_msg;
+
+      // The integrated top holds a decoded packet until the controller can
+      // consume it. Check that mailbox contract as well as exactly-once RX.
+      if (CHECK_RX_ACCEPT && holding_rx &&
+          ((rx_valid !== 1'b1) || (rx_msg !== held_rx))) begin
+        rx_error <= 1'b1;
+        if (!rx_error) report_error("receiver changed or withdrew a stalled packet");
+      end
+      holding_rx <= CHECK_RX_ACCEPT && rx_valid && !rx_ready;
+      if (CHECK_RX_ACCEPT && rx_valid && !rx_ready) held_rx <= rx_msg;
 
       if (tx_valid && tx_ready) begin
         if ((tx_accepted - wire_completed) >= QUEUE_DEPTH) begin

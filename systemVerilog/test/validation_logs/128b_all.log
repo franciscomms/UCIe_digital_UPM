@@ -1,0 +1,8 @@
+[scenario] Reset -> Active -> Retrain -> Active
+[ltsm] PASS: cycles=224330 LTSM masks=(0x01ff,0x01ff) MBTRAIN masks=(0x5fff,0x5fff)
+PASS: scenario_retrain
+[scenario] Active -> Disabled -> Reset
+[ltsm] PASS: cycles=224330 LTSM masks=(0x01ff,0x01ff) MBTRAIN masks=(0x5fff,0x5fff)
+[4517025000] %Fatal: D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv:451: Assertion failed in D2DAdapterLinkMgmtTopIntegrated128Spec_tb.finish_serial_exchange: Unexpected trailing serialized message 0x4500000c2000c012
+%Error: D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv:451: Verilog $stop
+Aborting...

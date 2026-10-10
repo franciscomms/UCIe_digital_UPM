@@ -1,6 +1,7 @@
-// Complete UCIe LTSM/RDI/FDI bring-up through two production SideBandModules.
-// Directed stalls apply to the parallel serializer FIFO inputs. Die-to-die
-// transport remains one serial data wire and one forwarded clock per direction.
+// Complete UCIe LTSM/RDI/FDI bring-up through two D2DAdapterLinkMgmtLtsmSBTops.
+// Directed stalls apply inside each integrated serializer at FIFO admission;
+// passive hierarchical monitors check packet stability and stall recovery.
+// Die ports carry one serial data wire and one forwarded clock per direction.
 // Reset convention: asynchronous active-low reset_n; there is no reset signal.
 
 `timescale 1ns/1ps
@@ -27,6 +28,8 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
   logic done;
   logic protocol_active_issued;
   logic [5:0] stalled_source_mask;
+  logic [5:0] resumed_source_mask;
+  logic backpressure_injection_error;
   logic message_stability_error;
   logic train_error;
   logic no_progress_timeout;
@@ -34,6 +37,7 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
   logic [CYCLE_WIDTH-1:0] cycle_count;
   logic serial_idle;
   logic serial_error;
+  logic sb_rx_overflow_error;
   logic [31:0] wire_completed_0_to_1;
   logic [31:0] wire_completed_1_to_0;
   logic [3:0] die0_ltsm_state;
@@ -75,6 +79,8 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
     .done(done),
     .protocol_active_issued(protocol_active_issued),
     .stalled_source_mask(stalled_source_mask),
+    .resumed_source_mask(resumed_source_mask),
+    .backpressure_injection_error(backpressure_injection_error),
     .message_stability_error(message_stability_error),
     .train_error(train_error),
     .no_progress_timeout(no_progress_timeout),
@@ -82,6 +88,7 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
     .cycle_count(cycle_count),
     .serial_idle(serial_idle),
     .serial_error(serial_error),
+    .sb_rx_overflow_error(sb_rx_overflow_error),
     .wire_completed_0_to_1(wire_completed_0_to_1),
     .wire_completed_1_to_0(wire_completed_1_to_0),
     .die0_ltsm_state(die0_ltsm_state),
@@ -143,9 +150,13 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
       finished = (done === 1'b1);
       fatal_monitor = message_stability_error || train_error ||
                       unknown_drop_error || no_progress_timeout ||
-                      cycle_timeout || serial_error;
+                      cycle_timeout || serial_error ||
+                      sb_rx_overflow_error || backpressure_injection_error;
     end
 
+    if (backpressure_injection_error)
+      $fatal(1, "Directed FIFO-input stall did not hold valid high and ready low: cycle=%0d stalledMask=%06b resumedMask=%06b",
+             cycle_count, stalled_source_mask, resumed_source_mask);
     if (message_stability_error)
       $fatal(1, "A 128-bit message changed or valid dropped while backpressured: cycle=%0d LTSM=(%0d,%0d) RDI=(%0d,%0d) FDI=(%0d,%0d) FDI_INIT=(%0d,%0d) stalledMask=%06b",
              cycle_count, die0_ltsm_state, die1_ltsm_state, die0_rdi_state,
@@ -156,6 +167,9 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
              cycle_count, die0_ltsm_state, die1_ltsm_state,
              die0_mbtrain_state, die1_mbtrain_state,
              die0_mbtrain_active_substate, die1_mbtrain_active_substate);
+    if (sb_rx_overflow_error)
+      $fatal(1, "D2DAdapterLinkMgmtLtsmSBTop receive holding register overflowed during backpressure: cycle=%0d",
+             cycle_count);
     if (serial_error)
       $fatal(1, "Serial packet scoreboard failed: completed 0->1=%0d 1->0=%0d",
              wire_completed_0_to_1, wire_completed_1_to_0);
@@ -182,6 +196,9 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
     if (stalled_source_mask !== 6'b111111)
       $fatal(1, "Did not backpressure LTSM, RDI and FDI in both directions: mask=%06b",
              stalled_source_mask);
+    if (resumed_source_mask !== 6'b111111)
+      $fatal(1, "Not every stalled LTSM/RDI/FDI packet was accepted after release: mask=%06b",
+             resumed_source_mask);
     if (done !== 1'b1)
       $fatal(1, "Both dies did not reach Active and drain their serial links by cycle %0d", cycle_count);
     if ((serial_idle !== 1'b1) ||
@@ -189,10 +206,11 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
       $fatal(1, "Serial completion coverage failed: idle=%b completed 0->1=%0d 1->0=%0d",
              serial_idle, wire_completed_0_to_1, wire_completed_1_to_0);
 
-    $display("[backpressure] PASS: cycle=%0d LTSM=(%0d,%0d) RDI=(%0d,%0d) FDI=(%0d,%0d) FDI_INIT=(%0d,%0d) stalledMask=%06b",
+    $display("[backpressure] PASS: cycle=%0d LTSM=(%0d,%0d) RDI=(%0d,%0d) FDI=(%0d,%0d) FDI_INIT=(%0d,%0d) stalledMask=%06b resumedMask=%06b",
              cycle_count, die0_ltsm_state, die1_ltsm_state, die0_rdi_state,
              die1_rdi_state, die0_fdi_state, die1_fdi_state,
-             die0_fdi_init_state, die1_fdi_init_state, stalled_source_mask);
+             die0_fdi_init_state, die1_fdi_init_state, stalled_source_mask,
+             resumed_source_mask);
     $display("[backpressure] PASS: LTSM masks=(0x%04h,0x%04h) MBTRAIN masks=(0x%04h,0x%04h)",
              die0_ltsm_visited_mask, die1_ltsm_visited_mask,
              die0_mbtrain_visited_mask, die1_mbtrain_visited_mask);

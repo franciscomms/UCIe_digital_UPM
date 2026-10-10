@@ -1,0 +1,7 @@
+[backpressure] PASS: cycle=152103 LTSM=(8,8) RDI=(1,1) FDI=(1,1) FDI_INIT=(5,5) stalledMask=111111 resumedMask=111111
+[backpressure] PASS: LTSM masks=(0x01ff,0x01ff) MBTRAIN masks=(0x5fff,0x5fff)
+[backpressure] PASS: one-bit wire packets 0->1=1334 1->0=1334; serial paths drained
+- D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb.sv:219: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.49
+- Verilator: $finish at 2ms; walltime 1.125 s; speed 1.376 ms/s
+- Verilator: cpu 1.106 s on 1 threads; allocated 0 MB

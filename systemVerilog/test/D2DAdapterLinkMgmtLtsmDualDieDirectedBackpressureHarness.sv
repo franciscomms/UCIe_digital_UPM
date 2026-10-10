@@ -1,4 +1,4 @@
-// Directed two-die bring-up over the production one-bit sideband serializers.
+// Directed two-die bring-up through D2DAdapterLinkMgmtLtsmSBTop on each die.
 // Stall packet acceptance at the serializer FIFO input; the forwarded serial
 // clocks and data wires are never gated by the testbench.
 // Reset convention: asynchronous active-low reset_n.
@@ -23,6 +23,8 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
   output var logic done,
   output var logic protocol_active_issued,
   output var logic [5:0] stalled_source_mask,
+  output var logic [5:0] resumed_source_mask,
+  output var logic backpressure_injection_error,
   output var logic message_stability_error,
   output var logic train_error,
   output var logic no_progress_timeout,
@@ -30,6 +32,7 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
   output var logic [CYCLE_WIDTH-1:0] cycle_count,
   output var logic serial_idle,
   output var logic serial_error,
+  output var logic sb_rx_overflow_error,
   output var logic [31:0] wire_completed_0_to_1,
   output var logic [31:0] wire_completed_1_to_0,
 
@@ -95,18 +98,22 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
   logic core_die1_grant_rdi;
   logic core_die1_grant_fdi;
 
-  logic core_die0_tx_valid;
-  logic [127:0] core_die0_tx_msg;
-  logic core_die0_tx_ready;
-  logic core_die1_tx_valid;
-  logic [127:0] core_die1_tx_msg;
-  logic core_die1_tx_ready;
+  // Passive observations of each integrated serializer's packet input.
+  // These are checker-only hierarchical taps, never die-interface signals:
+  // both dies communicate exclusively through one-bit data/clock pins.
+  wire logic mon_die0_tx_valid = core.mon_die0_tx_valid;
+  wire logic [127:0] mon_die0_tx_msg = core.mon_die0_tx_msg;
+  wire logic mon_die0_tx_ready = core.mon_die0_tx_ready;
+  wire logic mon_die1_tx_valid = core.mon_die1_tx_valid;
+  wire logic [127:0] mon_die1_tx_msg = core.mon_die1_tx_msg;
+  wire logic mon_die1_tx_ready = core.mon_die1_tx_ready;
 
   logic core_die0_ltsm_train_error;
   logic core_die1_ltsm_train_error;
   logic core_all_active;
   logic core_serial_idle;
   logic core_serial_error;
+  logic core_any_sb_rx_overflow;
   logic core_serial_wire_activity;
   logic [31:0] core_wire_completed_0_to_1;
   logic [31:0] core_wire_completed_1_to_0;
@@ -120,6 +127,9 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
   logic [2:0] source10;
   logic [2:0] stalled01Seen;
   logic [2:0] stalled10Seen;
+  logic [2:0] resumed01Seen;
+  logic [2:0] resumed10Seen;
+  logic backpressureInjectionError;
   logic [STALL_COUNT_WIDTH-1:0] stall01Remaining;
   logic [STALL_COUNT_WIDTH-1:0] stall10Remaining;
   logic [2:0] untested01;
@@ -131,8 +141,10 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
 
   logic holding0;
   logic [127:0] heldMessage0;
+  logic [2:0] heldSource0;
   logic holding1;
   logic [127:0] heldMessage1;
+  logic [2:0] heldSource1;
   logic messageStabilityError;
 
   logic [CYCLE_WIDTH-1:0] cycleCount;
@@ -167,8 +179,8 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
     untested01 = source01 & ~stalled01Seen;
     untested10 = source10 & ~stalled10Seen;
 
-    startStall01 = (stall01Remaining == '0) && core_die0_tx_valid && (|untested01);
-    startStall10 = (stall10Remaining == '0) && core_die1_tx_valid && (|untested10);
+    startStall01 = (stall01Remaining == '0) && mon_die0_tx_valid && (|untested01);
+    startStall10 = (stall10Remaining == '0) && mon_die1_tx_valid && (|untested10);
 
     block01 = startStall01 || (stall01Remaining != '0);
     block10 = startStall10 || (stall10Remaining != '0);
@@ -190,8 +202,8 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
     };
 
     acceptedMessage =
-      (core_die0_tx_valid && core_die0_tx_ready) ||
-      (core_die1_tx_valid && core_die1_tx_ready);
+      (mon_die0_tx_valid && mon_die0_tx_ready) ||
+      (mon_die1_tx_valid && mon_die1_tx_ready);
 
     forwardProgress =
       (progressSignature != previousProgressSignature) ||
@@ -210,12 +222,17 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
       protocolActiveIssued <= 1'b0;
       stalled01Seen <= 3'b000;
       stalled10Seen <= 3'b000;
+      resumed01Seen <= 3'b000;
+      resumed10Seen <= 3'b000;
+      backpressureInjectionError <= 1'b0;
       stall01Remaining <= '0;
       stall10Remaining <= '0;
       holding0 <= 1'b0;
       heldMessage0 <= 128'b0;
+      heldSource0 <= 3'b000;
       holding1 <= 1'b0;
       heldMessage1 <= 128'b0;
+      heldSource1 <= 3'b000;
       messageStabilityError <= 1'b0;
       cycleCount <= '0;
       previousProgressSignature <= '0;
@@ -233,43 +250,61 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
         protocolActiveIssued <= 1'b1;
 
       if (startStall01) begin
-        stalled01Seen <= stalled01Seen | source01;
+        if (mon_die0_tx_ready === 1'b0)
+          stalled01Seen <= stalled01Seen | source01;
         stall01Remaining <= STALL_CYCLES - 1;
       end else if (stall01Remaining != '0) begin
         stall01Remaining <= stall01Remaining - 1'b1;
       end
 
       if (startStall10) begin
-        stalled10Seen <= stalled10Seen | source10;
+        if (mon_die1_tx_ready === 1'b0)
+          stalled10Seen <= stalled10Seen | source10;
         stall10Remaining <= STALL_CYCLES - 1;
       end else if (stall10Remaining != '0) begin
         stall10Remaining <= stall10Remaining - 1'b1;
       end
 
+      // Coverage must reflect real FIFO-input backpressure, not just the
+      // requested enable value. Every directed blocked cycle must retain
+      // the packet, and the integrated PHY must not acknowledge it.
+      if (block01 && ((mon_die0_tx_valid !== 1'b1) ||
+                      (mon_die0_tx_ready !== 1'b0)))
+        backpressureInjectionError <= 1'b1;
+      if (block10 && ((mon_die1_tx_valid !== 1'b1) ||
+                      (mon_die1_tx_ready !== 1'b0)))
+        backpressureInjectionError <= 1'b1;
+
       if (!holding0) begin
-        if (core_die0_tx_valid && !core_die0_tx_ready) begin
+        if (mon_die0_tx_valid && !mon_die0_tx_ready) begin
           holding0 <= 1'b1;
-          heldMessage0 <= core_die0_tx_msg;
+          heldMessage0 <= mon_die0_tx_msg;
+          heldSource0 <= source01;
         end
       end else begin
         // Check the acceptance edge too: the message remains the pending
         // message until valid AND ready are sampled high together.
-        if ((core_die0_tx_valid !== 1'b1) || (core_die0_tx_msg !== heldMessage0))
+        if ((mon_die0_tx_valid !== 1'b1) || (mon_die0_tx_msg !== heldMessage0))
           messageStabilityError <= 1'b1;
-        if (core_die0_tx_valid && core_die0_tx_ready)
+        if (mon_die0_tx_valid && mon_die0_tx_ready) begin
           holding0 <= 1'b0;
+          resumed01Seen <= resumed01Seen | (heldSource0 & stalled01Seen);
+        end
       end
 
       if (!holding1) begin
-        if (core_die1_tx_valid && !core_die1_tx_ready) begin
+        if (mon_die1_tx_valid && !mon_die1_tx_ready) begin
           holding1 <= 1'b1;
-          heldMessage1 <= core_die1_tx_msg;
+          heldMessage1 <= mon_die1_tx_msg;
+          heldSource1 <= source10;
         end
       end else begin
-        if ((core_die1_tx_valid !== 1'b1) || (core_die1_tx_msg !== heldMessage1))
+        if ((mon_die1_tx_valid !== 1'b1) || (mon_die1_tx_msg !== heldMessage1))
           messageStabilityError <= 1'b1;
-        if (core_die1_tx_valid && core_die1_tx_ready)
+        if (mon_die1_tx_valid && mon_die1_tx_ready) begin
           holding1 <= 1'b0;
+          resumed10Seen <= resumed10Seen | (heldSource1 & stalled10Seen);
+        end
       end
 
       if (!done && cycleCount < MAX_CYCLES)
@@ -288,6 +323,7 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
       // Active can precede delivery of the last queued response. Wait for
       // actual serial completion and a quiet interval before reporting done.
       if (core_all_active && core_serial_idle && !core_serial_error &&
+          !core_any_sb_rx_overflow &&
           (core_wire_completed_0_to_1 != 0) &&
           (core_wire_completed_1_to_0 != 0)) begin
         if (serialDrainCount < SERIAL_DRAIN_CYCLES)
@@ -342,13 +378,6 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
     .die1_grant_rdi(core_die1_grant_rdi),
     .die1_grant_fdi(core_die1_grant_fdi),
 
-    .die0_tx_valid(core_die0_tx_valid),
-    .die0_tx_msg(core_die0_tx_msg),
-    .die0_tx_ready(core_die0_tx_ready),
-    .die1_tx_valid(core_die1_tx_valid),
-    .die1_tx_msg(core_die1_tx_msg),
-    .die1_tx_ready(core_die1_tx_ready),
-
     .die0_tx_fire(),
     .die1_tx_fire(),
     .die0_rx_fire(),
@@ -368,15 +397,19 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
     .serial_wire_activity(core_serial_wire_activity),
     .serial_idle(core_serial_idle),
     .serial_error(core_serial_error),
+    .any_sb_rx_overflow(core_any_sb_rx_overflow),
     .wire_completed_0_to_1(core_wire_completed_0_to_1),
     .wire_completed_1_to_0(core_wire_completed_1_to_0)
   );
 
   always_comb begin
     done = core_all_active && core_serial_idle && !core_serial_error &&
+           !core_any_sb_rx_overflow &&
            (serialDrainCount >= SERIAL_DRAIN_CYCLES);
     protocol_active_issued = protocolActiveIssued;
     stalled_source_mask = {stalled10Seen, stalled01Seen};
+    resumed_source_mask = {resumed10Seen, resumed01Seen};
+    backpressure_injection_error = backpressureInjectionError;
     message_stability_error = messageStabilityError;
     train_error = core_die0_ltsm_train_error || core_die1_ltsm_train_error;
     no_progress_timeout = noProgressCount >= NO_PROGRESS_CYCLES;
@@ -384,6 +417,7 @@ module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
     cycle_count = cycleCount;
     serial_idle = core_serial_idle;
     serial_error = core_serial_error;
+    sb_rx_overflow_error = core_any_sb_rx_overflow;
     wire_completed_0_to_1 = core_wire_completed_0_to_1;
     wire_completed_1_to_0 = core_wire_completed_1_to_0;
 
