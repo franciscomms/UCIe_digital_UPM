@@ -229,10 +229,8 @@ module D2DAdapterLinkMgmtLtsmDieBringUpModel #(
   output wire logic fdi_pl_stall_req,
   output wire UcieUPM_d2dadapter_pkg::LinkInitState_t debug_fdi_link_init_state,
   output wire UcieUPM_interfaces_pkg::PhyState_t debug_rdi_state,
-  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   output wire logic [2:0] ltsm_dbg_mbinitSubstate,
   output wire logic [3:0] ltsm_dbg_mbtrainState,
-  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output wire logic [11:0] ltsm_dbg_mbtrainActiveSubstate,
   output wire logic ltsm_dbg_flagTrainError,
   output wire logic debug_arb_grant_ltsm,

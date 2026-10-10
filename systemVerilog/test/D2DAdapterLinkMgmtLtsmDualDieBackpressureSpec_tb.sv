@@ -40,7 +40,6 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
   logic [3:0] die1_ltsm_state;
   logic [3:0] die0_mbtrain_state;
   logic [3:0] die1_mbtrain_state;
-  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   logic [11:0] die0_mbtrain_active_substate;
   logic [11:0] die1_mbtrain_active_substate;
   logic [15:0] die0_ltsm_visited_mask;
