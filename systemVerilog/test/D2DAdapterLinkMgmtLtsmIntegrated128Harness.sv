@@ -42,10 +42,12 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
 
   output wire logic [3:0] local_ltsm_state,
   output wire logic [3:0] peer_ltsm_state,
+  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   output wire logic [2:0] local_mbinit_substate,
   output wire logic [2:0] peer_mbinit_substate,
   output wire logic [3:0] local_mbtrain_state,
   output wire logic [3:0] peer_mbtrain_state,
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output wire logic [11:0] local_mbtrain_active_substate,
   output wire logic [11:0] peer_mbtrain_active_substate,
   output wire logic local_ltsm_train_error,

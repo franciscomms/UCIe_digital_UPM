@@ -117,7 +117,20 @@ module LinkTrainingFSM #(
   output var logic           dbg_sbTxValid,
   output var logic [127:0]   dbg_sbTxDin,
   output var logic           dbg_flagTrainError,
+  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   output var logic [2:0]     dbg_mbinitSubstate,
+  output var logic [1:0]     dbg_mbinitParamSenderState,
+  output var logic [1:0]     dbg_mbinitParamReceiverState,
+  output var logic [1:0]     dbg_mbinitCalSenderState,
+  output var logic [1:0]     dbg_mbinitCalReceiverState,
+  output var logic [2:0]     dbg_mbinitRepairClkSenderState,
+  output var logic [2:0]     dbg_mbinitRepairClkReceiverState,
+  output var logic [2:0]     dbg_mbinitRepairValSenderState,
+  output var logic [2:0]     dbg_mbinitRepairValReceiverState,
+  output var logic [3:0]     dbg_mbinitReversalMbSenderState,
+  output var logic [2:0]     dbg_mbinitReversalMbReceiverState,
+  output var logic [4:0]     dbg_mbinitRepairMbSenderState,
+  output var logic [3:0]     dbg_mbinitRepairMbReceiverState,
   output var logic [4:0]     dbg_mbinitReversalMbReceivedSuccessCount,
   output var logic           flagToAnalog_valVref_sendPattern,
   input wire logic           flagFromAnalog_valVref_detectedValPattern,
@@ -289,7 +302,58 @@ module LinkTrainingFSM #(
   output var logic           flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler,
   input wire logic [15:0]    flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful,
   output var logic [3:0]     dbg_mbtrainState,
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    dbg_mbtrainActiveSubstate,
+  output var logic [3:0]     dbg_mbtrainValVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainValVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainValVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainValVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainValVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainDataVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainDataVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainDataVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainDataVrefPointResponderState,
+  output var logic [1:0]     dbg_mbtrainSpeedIdleSenderState,
+  output var logic [1:0]     dbg_mbtrainSpeedIdleReceiverState,
+  output var logic [1:0]     dbg_mbtrainTxSelfCalSenderState,
+  output var logic [1:0]     dbg_mbtrainTxSelfCalReceiverState,
+  output var logic [2:0]     dbg_mbtrainRxClkCalSenderState,
+  output var logic [2:0]     dbg_mbtrainRxClkCalReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterSenderState,
+  output var logic [2:0]     dbg_mbtrainValTrainCenterReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterD2cSenderState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterD2cReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterSweepState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainValTrainVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1SenderState,
+  output var logic [2:0]     dbg_mbtrainDataTrainCenter1ReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1D2cSenderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1D2cReceiverState,
+  output var logic [4:0]     dbg_mbtrainDataTrainCenter1SweepState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainDataTrainVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewLocalState,
+  output var logic [2:0]     dbg_mbtrainRxDeskewRemoteState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewSweepState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2SenderState,
+  output var logic [2:0]     dbg_mbtrainDataTrainCenter2ReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2D2cSenderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2D2cReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2SweepState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedSenderState,
+  output var logic [2:0]     dbg_mbtrainLinkSpeedReceiverState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedD2cSenderState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedD2cReceiverState,
   output var logic [15:0]    dbg_mbtrainLastErrorCount,
   output var logic [15:0]    dbg_mbtrainRetryCount
 );
@@ -347,11 +411,20 @@ module LinkTrainingFSM #(
   logic mbInitFsm_flagToAnalog_RepairMbSetReceiver;
   logic mbInitFsm_flagToAnalog_ReversalMbSendLaneIDPattern;
   logic mbInitFsm_flagToAnalog_LaneReversalApplied;
+  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   logic [2:0] mbInitFsm_substate;
+  logic [1:0] mbInitFsm_dbg_mbinitParamSenderState;
+  logic [1:0] mbInitFsm_dbg_mbinitParamReceiverState;
+  logic [1:0] mbInitFsm_dbg_mbinitCalSenderState;
+  logic [1:0] mbInitFsm_dbg_mbinitCalReceiverState;
   logic [2:0] mbInitFsm_dbg_mbinitRepairClkSenderState;
   logic [2:0] mbInitFsm_dbg_mbinitRepairClkReceiverState;
   logic [2:0] mbInitFsm_dbg_mbinitRepairValSenderState;
   logic [2:0] mbInitFsm_dbg_mbinitRepairValReceiverState;
+  logic [3:0] mbInitFsm_dbg_mbinitReversalMbSenderState;
+  logic [2:0] mbInitFsm_dbg_mbinitReversalMbReceiverState;
+  logic [4:0] mbInitFsm_dbg_mbinitRepairMbSenderState;
+  logic [3:0] mbInitFsm_dbg_mbinitRepairMbReceiverState;
   logic [4:0] mbInitFsm_dbg_mbinitReversalMbReceivedSuccessCount;
   logic mbTrainFsm_busy;
   logic mbTrainFsm_done;
@@ -498,7 +571,58 @@ module LinkTrainingFSM #(
   logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_dataPattern;
   logic mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler;
   logic [3:0] mbTrainFsm_state;
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   logic [11:0] mbTrainFsm_activeSubstate;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValVrefLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainValVrefRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValVrefSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValVrefPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValVrefPointResponderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataVrefLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainDataVrefRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataVrefSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataVrefPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataVrefPointResponderState;
+  logic [1:0] mbTrainFsm_dbg_mbtrainSpeedIdleSenderState;
+  logic [1:0] mbTrainFsm_dbg_mbtrainSpeedIdleReceiverState;
+  logic [1:0] mbTrainFsm_dbg_mbtrainTxSelfCalSenderState;
+  logic [1:0] mbTrainFsm_dbg_mbtrainTxSelfCalReceiverState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainRxClkCalSenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainRxClkCalReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainCenterSenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainValTrainCenterReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainCenterD2cSenderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainCenterD2cReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainCenterSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainVrefLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainValTrainVrefRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainVrefSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainVrefPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainVrefPointResponderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1SenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1ReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cSenderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cReceiverState;
+  logic [4:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1SweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainVrefLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainDataTrainVrefRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainVrefSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainVrefPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainVrefPointResponderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainRxDeskewLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainRxDeskewRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainRxDeskewSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainRxDeskewPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainRxDeskewPointResponderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2SenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2ReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cSenderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2SweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainLinkSpeedSenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainLinkSpeedReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainLinkSpeedD2cSenderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainLinkSpeedD2cReceiverState;
   logic [15:0] mbTrainFsm_lastErrorCount;
   logic [15:0] mbTrainFsm_retryCount;
 
@@ -571,11 +695,20 @@ module LinkTrainingFSM #(
     .flagToAnalog_RepairMbSetReceiver                                         (mbInitFsm_flagToAnalog_RepairMbSetReceiver),
     .flagToAnalog_ReversalMbSendLaneIDPattern                                 (mbInitFsm_flagToAnalog_ReversalMbSendLaneIDPattern),
     .flagToAnalog_LaneReversalApplied                                         (mbInitFsm_flagToAnalog_LaneReversalApplied),
+    // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
     .substate                                                                 (mbInitFsm_substate),
+    .dbg_mbinitParamSenderState                                               (mbInitFsm_dbg_mbinitParamSenderState),
+    .dbg_mbinitParamReceiverState                                             (mbInitFsm_dbg_mbinitParamReceiverState),
+    .dbg_mbinitCalSenderState                                                 (mbInitFsm_dbg_mbinitCalSenderState),
+    .dbg_mbinitCalReceiverState                                               (mbInitFsm_dbg_mbinitCalReceiverState),
     .dbg_mbinitRepairClkSenderState                                           (mbInitFsm_dbg_mbinitRepairClkSenderState),
     .dbg_mbinitRepairClkReceiverState                                         (mbInitFsm_dbg_mbinitRepairClkReceiverState),
     .dbg_mbinitRepairValSenderState                                           (mbInitFsm_dbg_mbinitRepairValSenderState),
     .dbg_mbinitRepairValReceiverState                                         (mbInitFsm_dbg_mbinitRepairValReceiverState),
+    .dbg_mbinitReversalMbSenderState                                          (mbInitFsm_dbg_mbinitReversalMbSenderState),
+    .dbg_mbinitReversalMbReceiverState                                        (mbInitFsm_dbg_mbinitReversalMbReceiverState),
+    .dbg_mbinitRepairMbSenderState                                            (mbInitFsm_dbg_mbinitRepairMbSenderState),
+    .dbg_mbinitRepairMbReceiverState                                          (mbInitFsm_dbg_mbinitRepairMbReceiverState),
     .dbg_mbinitReversalMbReceivedSuccessCount                                 (mbInitFsm_dbg_mbinitReversalMbReceivedSuccessCount)
   );
 
@@ -802,7 +935,58 @@ module LinkTrainingFSM #(
     .flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler                 (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler),
     .flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful            (flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful),
     .state                                                                    (mbTrainFsm_state),
+    // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     .activeSubstate                                                           (mbTrainFsm_activeSubstate),
+    .dbg_mbtrainValVrefLocalState                                             (mbTrainFsm_dbg_mbtrainValVrefLocalState),
+    .dbg_mbtrainValVrefRemoteState                                            (mbTrainFsm_dbg_mbtrainValVrefRemoteState),
+    .dbg_mbtrainValVrefSweepState                                             (mbTrainFsm_dbg_mbtrainValVrefSweepState),
+    .dbg_mbtrainValVrefPointInitiatorState                                    (mbTrainFsm_dbg_mbtrainValVrefPointInitiatorState),
+    .dbg_mbtrainValVrefPointResponderState                                    (mbTrainFsm_dbg_mbtrainValVrefPointResponderState),
+    .dbg_mbtrainDataVrefLocalState                                            (mbTrainFsm_dbg_mbtrainDataVrefLocalState),
+    .dbg_mbtrainDataVrefRemoteState                                           (mbTrainFsm_dbg_mbtrainDataVrefRemoteState),
+    .dbg_mbtrainDataVrefSweepState                                            (mbTrainFsm_dbg_mbtrainDataVrefSweepState),
+    .dbg_mbtrainDataVrefPointInitiatorState                                   (mbTrainFsm_dbg_mbtrainDataVrefPointInitiatorState),
+    .dbg_mbtrainDataVrefPointResponderState                                   (mbTrainFsm_dbg_mbtrainDataVrefPointResponderState),
+    .dbg_mbtrainSpeedIdleSenderState                                          (mbTrainFsm_dbg_mbtrainSpeedIdleSenderState),
+    .dbg_mbtrainSpeedIdleReceiverState                                        (mbTrainFsm_dbg_mbtrainSpeedIdleReceiverState),
+    .dbg_mbtrainTxSelfCalSenderState                                          (mbTrainFsm_dbg_mbtrainTxSelfCalSenderState),
+    .dbg_mbtrainTxSelfCalReceiverState                                        (mbTrainFsm_dbg_mbtrainTxSelfCalReceiverState),
+    .dbg_mbtrainRxClkCalSenderState                                           (mbTrainFsm_dbg_mbtrainRxClkCalSenderState),
+    .dbg_mbtrainRxClkCalReceiverState                                         (mbTrainFsm_dbg_mbtrainRxClkCalReceiverState),
+    .dbg_mbtrainValTrainCenterSenderState                                     (mbTrainFsm_dbg_mbtrainValTrainCenterSenderState),
+    .dbg_mbtrainValTrainCenterReceiverState                                   (mbTrainFsm_dbg_mbtrainValTrainCenterReceiverState),
+    .dbg_mbtrainValTrainCenterD2cSenderState                                  (mbTrainFsm_dbg_mbtrainValTrainCenterD2cSenderState),
+    .dbg_mbtrainValTrainCenterD2cReceiverState                                (mbTrainFsm_dbg_mbtrainValTrainCenterD2cReceiverState),
+    .dbg_mbtrainValTrainCenterSweepState                                      (mbTrainFsm_dbg_mbtrainValTrainCenterSweepState),
+    .dbg_mbtrainValTrainVrefLocalState                                        (mbTrainFsm_dbg_mbtrainValTrainVrefLocalState),
+    .dbg_mbtrainValTrainVrefRemoteState                                       (mbTrainFsm_dbg_mbtrainValTrainVrefRemoteState),
+    .dbg_mbtrainValTrainVrefSweepState                                        (mbTrainFsm_dbg_mbtrainValTrainVrefSweepState),
+    .dbg_mbtrainValTrainVrefPointInitiatorState                               (mbTrainFsm_dbg_mbtrainValTrainVrefPointInitiatorState),
+    .dbg_mbtrainValTrainVrefPointResponderState                               (mbTrainFsm_dbg_mbtrainValTrainVrefPointResponderState),
+    .dbg_mbtrainDataTrainCenter1SenderState                                   (mbTrainFsm_dbg_mbtrainDataTrainCenter1SenderState),
+    .dbg_mbtrainDataTrainCenter1ReceiverState                                 (mbTrainFsm_dbg_mbtrainDataTrainCenter1ReceiverState),
+    .dbg_mbtrainDataTrainCenter1D2cSenderState                                (mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cSenderState),
+    .dbg_mbtrainDataTrainCenter1D2cReceiverState                              (mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cReceiverState),
+    .dbg_mbtrainDataTrainCenter1SweepState                                    (mbTrainFsm_dbg_mbtrainDataTrainCenter1SweepState),
+    .dbg_mbtrainDataTrainVrefLocalState                                       (mbTrainFsm_dbg_mbtrainDataTrainVrefLocalState),
+    .dbg_mbtrainDataTrainVrefRemoteState                                      (mbTrainFsm_dbg_mbtrainDataTrainVrefRemoteState),
+    .dbg_mbtrainDataTrainVrefSweepState                                       (mbTrainFsm_dbg_mbtrainDataTrainVrefSweepState),
+    .dbg_mbtrainDataTrainVrefPointInitiatorState                              (mbTrainFsm_dbg_mbtrainDataTrainVrefPointInitiatorState),
+    .dbg_mbtrainDataTrainVrefPointResponderState                              (mbTrainFsm_dbg_mbtrainDataTrainVrefPointResponderState),
+    .dbg_mbtrainRxDeskewLocalState                                            (mbTrainFsm_dbg_mbtrainRxDeskewLocalState),
+    .dbg_mbtrainRxDeskewRemoteState                                           (mbTrainFsm_dbg_mbtrainRxDeskewRemoteState),
+    .dbg_mbtrainRxDeskewSweepState                                            (mbTrainFsm_dbg_mbtrainRxDeskewSweepState),
+    .dbg_mbtrainRxDeskewPointInitiatorState                                   (mbTrainFsm_dbg_mbtrainRxDeskewPointInitiatorState),
+    .dbg_mbtrainRxDeskewPointResponderState                                   (mbTrainFsm_dbg_mbtrainRxDeskewPointResponderState),
+    .dbg_mbtrainDataTrainCenter2SenderState                                   (mbTrainFsm_dbg_mbtrainDataTrainCenter2SenderState),
+    .dbg_mbtrainDataTrainCenter2ReceiverState                                 (mbTrainFsm_dbg_mbtrainDataTrainCenter2ReceiverState),
+    .dbg_mbtrainDataTrainCenter2D2cSenderState                                (mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cSenderState),
+    .dbg_mbtrainDataTrainCenter2D2cReceiverState                              (mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cReceiverState),
+    .dbg_mbtrainDataTrainCenter2SweepState                                    (mbTrainFsm_dbg_mbtrainDataTrainCenter2SweepState),
+    .dbg_mbtrainLinkSpeedSenderState                                          (mbTrainFsm_dbg_mbtrainLinkSpeedSenderState),
+    .dbg_mbtrainLinkSpeedReceiverState                                        (mbTrainFsm_dbg_mbtrainLinkSpeedReceiverState),
+    .dbg_mbtrainLinkSpeedD2cSenderState                                       (mbTrainFsm_dbg_mbtrainLinkSpeedD2cSenderState),
+    .dbg_mbtrainLinkSpeedD2cReceiverState                                     (mbTrainFsm_dbg_mbtrainLinkSpeedD2cReceiverState),
     .lastErrorCount                                                           (mbTrainFsm_lastErrorCount),
     .retryCount                                                               (mbTrainFsm_retryCount)
   );
@@ -832,10 +1016,74 @@ module LinkTrainingFSM #(
     dbg_sbTxValid = sb_tx_valid;
     dbg_sbTxDin = sb_tx_din;
     dbg_flagTrainError = parentTrainError || mbInitFsm_trainError || mbTrainFsm_trainError;
+    // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
     dbg_mbinitSubstate = mbInitFsm_substate;
+    dbg_mbinitParamSenderState = mbInitFsm_dbg_mbinitParamSenderState;
+    dbg_mbinitParamReceiverState = mbInitFsm_dbg_mbinitParamReceiverState;
+    dbg_mbinitCalSenderState = mbInitFsm_dbg_mbinitCalSenderState;
+    dbg_mbinitCalReceiverState = mbInitFsm_dbg_mbinitCalReceiverState;
+    dbg_mbinitRepairClkSenderState = mbInitFsm_dbg_mbinitRepairClkSenderState;
+    dbg_mbinitRepairClkReceiverState = mbInitFsm_dbg_mbinitRepairClkReceiverState;
+    dbg_mbinitRepairValSenderState = mbInitFsm_dbg_mbinitRepairValSenderState;
+    dbg_mbinitRepairValReceiverState = mbInitFsm_dbg_mbinitRepairValReceiverState;
+    dbg_mbinitReversalMbSenderState = mbInitFsm_dbg_mbinitReversalMbSenderState;
+    dbg_mbinitReversalMbReceiverState = mbInitFsm_dbg_mbinitReversalMbReceiverState;
+    dbg_mbinitRepairMbSenderState = mbInitFsm_dbg_mbinitRepairMbSenderState;
+    dbg_mbinitRepairMbReceiverState = mbInitFsm_dbg_mbinitRepairMbReceiverState;
     dbg_mbinitReversalMbReceivedSuccessCount = mbInitFsm_dbg_mbinitReversalMbReceivedSuccessCount;
     dbg_mbtrainState = mbTrainFsm_state;
+    // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     dbg_mbtrainActiveSubstate = mbTrainFsm_activeSubstate;
+    dbg_mbtrainValVrefLocalState = mbTrainFsm_dbg_mbtrainValVrefLocalState;
+    dbg_mbtrainValVrefRemoteState = mbTrainFsm_dbg_mbtrainValVrefRemoteState;
+    dbg_mbtrainValVrefSweepState = mbTrainFsm_dbg_mbtrainValVrefSweepState;
+    dbg_mbtrainValVrefPointInitiatorState = mbTrainFsm_dbg_mbtrainValVrefPointInitiatorState;
+    dbg_mbtrainValVrefPointResponderState = mbTrainFsm_dbg_mbtrainValVrefPointResponderState;
+    dbg_mbtrainDataVrefLocalState = mbTrainFsm_dbg_mbtrainDataVrefLocalState;
+    dbg_mbtrainDataVrefRemoteState = mbTrainFsm_dbg_mbtrainDataVrefRemoteState;
+    dbg_mbtrainDataVrefSweepState = mbTrainFsm_dbg_mbtrainDataVrefSweepState;
+    dbg_mbtrainDataVrefPointInitiatorState = mbTrainFsm_dbg_mbtrainDataVrefPointInitiatorState;
+    dbg_mbtrainDataVrefPointResponderState = mbTrainFsm_dbg_mbtrainDataVrefPointResponderState;
+    dbg_mbtrainSpeedIdleSenderState = mbTrainFsm_dbg_mbtrainSpeedIdleSenderState;
+    dbg_mbtrainSpeedIdleReceiverState = mbTrainFsm_dbg_mbtrainSpeedIdleReceiverState;
+    dbg_mbtrainTxSelfCalSenderState = mbTrainFsm_dbg_mbtrainTxSelfCalSenderState;
+    dbg_mbtrainTxSelfCalReceiverState = mbTrainFsm_dbg_mbtrainTxSelfCalReceiverState;
+    dbg_mbtrainRxClkCalSenderState = mbTrainFsm_dbg_mbtrainRxClkCalSenderState;
+    dbg_mbtrainRxClkCalReceiverState = mbTrainFsm_dbg_mbtrainRxClkCalReceiverState;
+    dbg_mbtrainValTrainCenterSenderState = mbTrainFsm_dbg_mbtrainValTrainCenterSenderState;
+    dbg_mbtrainValTrainCenterReceiverState = mbTrainFsm_dbg_mbtrainValTrainCenterReceiverState;
+    dbg_mbtrainValTrainCenterD2cSenderState = mbTrainFsm_dbg_mbtrainValTrainCenterD2cSenderState;
+    dbg_mbtrainValTrainCenterD2cReceiverState = mbTrainFsm_dbg_mbtrainValTrainCenterD2cReceiverState;
+    dbg_mbtrainValTrainCenterSweepState = mbTrainFsm_dbg_mbtrainValTrainCenterSweepState;
+    dbg_mbtrainValTrainVrefLocalState = mbTrainFsm_dbg_mbtrainValTrainVrefLocalState;
+    dbg_mbtrainValTrainVrefRemoteState = mbTrainFsm_dbg_mbtrainValTrainVrefRemoteState;
+    dbg_mbtrainValTrainVrefSweepState = mbTrainFsm_dbg_mbtrainValTrainVrefSweepState;
+    dbg_mbtrainValTrainVrefPointInitiatorState = mbTrainFsm_dbg_mbtrainValTrainVrefPointInitiatorState;
+    dbg_mbtrainValTrainVrefPointResponderState = mbTrainFsm_dbg_mbtrainValTrainVrefPointResponderState;
+    dbg_mbtrainDataTrainCenter1SenderState = mbTrainFsm_dbg_mbtrainDataTrainCenter1SenderState;
+    dbg_mbtrainDataTrainCenter1ReceiverState = mbTrainFsm_dbg_mbtrainDataTrainCenter1ReceiverState;
+    dbg_mbtrainDataTrainCenter1D2cSenderState = mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cSenderState;
+    dbg_mbtrainDataTrainCenter1D2cReceiverState = mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cReceiverState;
+    dbg_mbtrainDataTrainCenter1SweepState = mbTrainFsm_dbg_mbtrainDataTrainCenter1SweepState;
+    dbg_mbtrainDataTrainVrefLocalState = mbTrainFsm_dbg_mbtrainDataTrainVrefLocalState;
+    dbg_mbtrainDataTrainVrefRemoteState = mbTrainFsm_dbg_mbtrainDataTrainVrefRemoteState;
+    dbg_mbtrainDataTrainVrefSweepState = mbTrainFsm_dbg_mbtrainDataTrainVrefSweepState;
+    dbg_mbtrainDataTrainVrefPointInitiatorState = mbTrainFsm_dbg_mbtrainDataTrainVrefPointInitiatorState;
+    dbg_mbtrainDataTrainVrefPointResponderState = mbTrainFsm_dbg_mbtrainDataTrainVrefPointResponderState;
+    dbg_mbtrainRxDeskewLocalState = mbTrainFsm_dbg_mbtrainRxDeskewLocalState;
+    dbg_mbtrainRxDeskewRemoteState = mbTrainFsm_dbg_mbtrainRxDeskewRemoteState;
+    dbg_mbtrainRxDeskewSweepState = mbTrainFsm_dbg_mbtrainRxDeskewSweepState;
+    dbg_mbtrainRxDeskewPointInitiatorState = mbTrainFsm_dbg_mbtrainRxDeskewPointInitiatorState;
+    dbg_mbtrainRxDeskewPointResponderState = mbTrainFsm_dbg_mbtrainRxDeskewPointResponderState;
+    dbg_mbtrainDataTrainCenter2SenderState = mbTrainFsm_dbg_mbtrainDataTrainCenter2SenderState;
+    dbg_mbtrainDataTrainCenter2ReceiverState = mbTrainFsm_dbg_mbtrainDataTrainCenter2ReceiverState;
+    dbg_mbtrainDataTrainCenter2D2cSenderState = mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cSenderState;
+    dbg_mbtrainDataTrainCenter2D2cReceiverState = mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cReceiverState;
+    dbg_mbtrainDataTrainCenter2SweepState = mbTrainFsm_dbg_mbtrainDataTrainCenter2SweepState;
+    dbg_mbtrainLinkSpeedSenderState = mbTrainFsm_dbg_mbtrainLinkSpeedSenderState;
+    dbg_mbtrainLinkSpeedReceiverState = mbTrainFsm_dbg_mbtrainLinkSpeedReceiverState;
+    dbg_mbtrainLinkSpeedD2cSenderState = mbTrainFsm_dbg_mbtrainLinkSpeedD2cSenderState;
+    dbg_mbtrainLinkSpeedD2cReceiverState = mbTrainFsm_dbg_mbtrainLinkSpeedD2cReceiverState;
     dbg_mbtrainLastErrorCount = mbTrainFsm_lastErrorCount;
     dbg_mbtrainRetryCount = mbTrainFsm_retryCount;
     flagToAnalog_RepairClkState = mbInitFsm_flagToAnalog_RepairClkState;

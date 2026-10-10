@@ -37,7 +37,10 @@ module MBTrain_LinkSpeed #(
   output var logic [2:0]   flagToAnalog_d2cReceiver_dataPattern,
   output var logic         flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]  flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
-  output var logic [11:0]  substate,
+  output var logic [3:0]   dbg_senderState,
+  output var logic [2:0]   dbg_receiverState,
+  output var logic [3:0]   dbg_d2cSenderState,
+  output var logic [3:0]   dbg_d2cReceiverState,
   output var logic [15:0]  lastErrorCount,
   output var logic [15:0]  retryCount
 );
@@ -273,7 +276,10 @@ module MBTrain_LinkSpeed #(
     trainError = trainErrorReg;
     sb_tx_valid = sbTxValid;
     sb_tx_din = sbTxDin;
-    substate = {senderStateReg[3:0], d2cSender_state, d2cReceiver_state};
+    dbg_senderState = senderStateReg;
+    dbg_receiverState = receiverStateReg;
+    dbg_d2cSenderState = d2cSender_state;
+    dbg_d2cReceiverState = d2cReceiver_state;
     lastErrorCount = logErrorCountReg;
     retryCount = retryCountReg;
     flagToLtsm_phyInRetrain = phyInRetrainReg;

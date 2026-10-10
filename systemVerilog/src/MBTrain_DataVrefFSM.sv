@@ -68,7 +68,11 @@ module MBTrainDataVrefFSM #(
   input  wire logic flagFromAnalog_dataVrefFinishedPattern,
   output      logic flagToAnalog_dataVrefResetLocalTxScrambler,
 
-  output      logic [11:0] substate,
+  output      logic [3:0]  dbg_localState,
+  output      logic [2:0]  dbg_remoteState,
+  output      logic [3:0]  dbg_sweepState,
+  output      logic [3:0]  dbg_pointInitiatorState,
+  output      logic [3:0]  dbg_pointResponderState,
   output      logic [15:0] lastErrorCount,
   output      logic [15:0] retryCount,
   output      logic [dataLaneCount*dataVrefCodeWidth-1:0]
@@ -142,7 +146,11 @@ module MBTrainDataVrefFSM #(
     .flagToAnalog_resetLocalTxScrambler(
       flagToAnalog_dataVrefResetLocalTxScrambler
     ),
-    .substate(substate),
+    .dbg_localState(dbg_localState),
+    .dbg_remoteState(dbg_remoteState),
+    .dbg_sweepState(dbg_sweepState),
+    .dbg_pointInitiatorState(dbg_pointInitiatorState),
+    .dbg_pointResponderState(dbg_pointResponderState),
     .lastErrorCount(lastErrorCount),
     .retryCount(retryCount),
     .selectedVrefCodes(selectedVrefCodes),
