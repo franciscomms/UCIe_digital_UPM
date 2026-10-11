@@ -18,20 +18,13 @@
 //   ltsm           LinkTrainingFSM                Link training. Analog/training flags on
 //                                                 the ltsm_* ports; its state is mapped
 //                                                 to a PHY state that feeds rdi.
-//   ltsmTxCapture  LtsmSidebandTxCapture          4-entry queue: ltsm pulse TX -> arb.
-//   ltsmRxPulse    LtsmSidebandRxPulseAdapter     arb valid/ready RX -> ltsm pulse RX.
-//   arb            LinkMgmtSidebandPacketArbiter  Merges ltsm/fdi/rdi TX messages into
-//                                                 one stream; routes RX messages back.
-//   (always_ff)    RX holding register            u_sideband_phy pulse RX -> arb
-//                                                 valid/ready; sticky debug_sb_rx_overflow.
-//   u_sideband_phy SideBandModule                 128-bit messages <-> serial sb_* pins.
+//   u_sideband     SidebandWrapper                Whole sideband path: LTSM TX/RX
+//                                                 adapters, packet arbiter, RX holding
+//                                                 register and SideBandModule PHY.
+//                                                 See SidebandWrapper.sv for details.
 //
 // Sideband message path:
-//   TX: ltsm -> ltsmTxCapture -+
-//       fdi -------------------+-> arb -> u_sideband_phy -> sb_tx_dout / sb_tx_clk
-//       rdi -------------------+
-//   RX: sb_rx_din / sb_rx_clk -> u_sideband_phy -> RX holding reg -> arb
-//       arb -> ltsmRxPulse -> ltsm,  arb -> fdi,  arb -> rdi
+//   ltsm / fdi / rdi <-> u_sideband <-> sb_tx_dout / sb_tx_clk, sb_rx_din / sb_rx_clk
 // ============================================================================
 
 module D2DAdapterLinkMgmtLtsmSBTop #(
@@ -408,6 +401,8 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic debug_arb_grant_fdi,
   output var logic debug_arb_grant_rdi,
   output var logic debug_arb_tx_locked,
+  output var logic [1:0] debug_arb_rr_last_source,
+  output var logic debug_arb_rr_last_granted_rdi,
   output var logic debug_arb_tx_fire,
   output var logic debug_rx_route_ltsm,
   output var logic debug_rx_route_fdi,
@@ -449,33 +444,17 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   logic [127:0] rdi_sb_rcv_msg;
   logic         rdi_sb_rcv_ready;
 
-  // LTSM state and sideband adapters.
+  // LTSM state.
   wire logic [3:0] ltsm_state_int;
   UcieUPM_interfaces_pkg::PhyState_t ltsmPhyState;
   wire logic       ltsmInbandPresent;
 
+  // LTSM sideband client (pulse interface).
   wire logic         ltsm_raw_tx_valid;
   wire logic [127:0] ltsm_raw_tx_msg;
   wire logic         ltsm_raw_tx_ready;
-  wire logic         ltsm_queue_tx_valid;
-  wire logic [127:0] ltsm_queue_tx_msg;
-  wire logic         ltsm_queue_tx_ready;
-
-  wire logic         ltsm_stream_rx_valid;
-  wire logic [127:0] ltsm_stream_rx_msg;
-  wire logic         ltsm_stream_rx_ready;
   wire logic         ltsm_pulse_rx_valid;
   wire logic [127:0] ltsm_pulse_rx_msg;
-
-  // Arbiter <-> sideband PHY (message level).
-  logic         sb_msg_tx_valid;
-  logic [127:0] sb_msg_tx_msg;
-  logic         sb_msg_tx_ready;
-  logic         sb_phy_rx_valid;
-  logic [127:0] sb_phy_rx_msg;
-  logic         sb_msg_rx_valid;
-  logic [127:0] sb_msg_rx_msg;
-  logic         sb_msg_rx_ready;
 
   // --------------------------------------------------------------------------
   // FDI link management
@@ -567,85 +546,58 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   );
 
   // --------------------------------------------------------------------------
-  // Sideband packet arbiter (ltsm / fdi / rdi <-> one message stream)
+  // Sideband path (ltsm / fdi / rdi <-> serial sideband pins)
   // --------------------------------------------------------------------------
-  LinkMgmtSidebandPacketArbiter arb (
-    .clock                 (clock),
-    .reset_n               (reset_n),
+  SidebandWrapper #(
+    .SB_TX_FIFO_ENTRIES      (SB_TX_FIFO_ENTRIES),
+    .LTSM_TX_CAPTURE_ENTRIES (4)
+  ) u_sideband (
+    .clock                         (clock),
+    .reset_n                       (reset_n),
 
-    .ltsm_tx_valid         (ltsm_queue_tx_valid),
-    .ltsm_tx_msg           (ltsm_queue_tx_msg),
-    .ltsm_tx_ready         (ltsm_queue_tx_ready),
+    .ltsm_tx_valid                 (ltsm_raw_tx_valid),
+    .ltsm_tx_msg                   (ltsm_raw_tx_msg),
+    .ltsm_tx_ready                 (ltsm_raw_tx_ready),
+    .ltsm_rx_valid                 (ltsm_pulse_rx_valid),
+    .ltsm_rx_msg                   (ltsm_pulse_rx_msg),
 
-    .fdi_tx_valid          (fdi_sb_snd_valid),
-    .fdi_tx_msg            (fdi_sb_snd_msg),
-    .fdi_tx_ready          (fdi_sb_snd_ready),
+    .fdi_tx_valid                  (fdi_sb_snd_valid),
+    .fdi_tx_msg                    (fdi_sb_snd_msg),
+    .fdi_tx_ready                  (fdi_sb_snd_ready),
+    .fdi_rx_valid                  (fdi_sb_rcv_valid),
+    .fdi_rx_msg                    (fdi_sb_rcv_msg),
+    .fdi_rx_ready                  (fdi_sb_rcv_ready),
 
-    .rdi_tx_valid          (rdi_sb_snd_valid),
-    .rdi_tx_msg            (rdi_sb_snd_msg),
-    .rdi_tx_ready          (rdi_sb_snd_ready),
+    .rdi_tx_valid                  (rdi_sb_snd_valid),
+    .rdi_tx_msg                    (rdi_sb_snd_msg),
+    .rdi_tx_ready                  (rdi_sb_snd_ready),
+    .rdi_rx_valid                  (rdi_sb_rcv_valid),
+    .rdi_rx_msg                    (rdi_sb_rcv_msg),
+    .rdi_rx_ready                  (rdi_sb_rcv_ready),
 
-    .tx_out_valid          (sb_msg_tx_valid),
-    .tx_out_msg            (sb_msg_tx_msg),
-    .tx_out_ready          (sb_msg_tx_ready),
+    .sb_tx_dout                    (sb_tx_dout),
+    .sb_tx_clk                     (sb_tx_clk),
+    .sb_rx_din                     (sb_rx_din),
+    .sb_rx_clk                     (sb_rx_clk),
 
-    .rx_in_valid           (sb_msg_rx_valid),
-    .rx_in_msg             (sb_msg_rx_msg),
-    .rx_in_ready           (sb_msg_rx_ready),
-
-    .ltsm_rx_valid         (ltsm_stream_rx_valid),
-    .ltsm_rx_msg           (ltsm_stream_rx_msg),
-    .ltsm_rx_ready         (ltsm_stream_rx_ready),
-
-    .fdi_rx_valid          (fdi_sb_rcv_valid),
-    .fdi_rx_msg            (fdi_sb_rcv_msg),
-    .fdi_rx_ready          (fdi_sb_rcv_ready),
-
-    .rdi_rx_valid          (rdi_sb_rcv_valid),
-    .rdi_rx_msg            (rdi_sb_rcv_msg),
-    .rdi_rx_ready          (rdi_sb_rcv_ready),
-
-    .grant_ltsm            (debug_arb_grant_ltsm),
-    .grant_fdi             (debug_arb_grant_fdi),
-    .grant_rdi             (debug_arb_grant_rdi),
-    .tx_locked             (debug_arb_tx_locked),
-    .rr_last_source        (),
-    .rr_last_granted_rdi   (),
-    .tx_fire               (debug_arb_tx_fire),
-
-    .rx_route_ltsm         (debug_rx_route_ltsm),
-    .rx_route_fdi          (debug_rx_route_fdi),
-    .rx_route_rdi          (debug_rx_route_rdi),
-    .rx_drop_unknown       (debug_rx_drop_unknown),
-    .rx_fire               (debug_rx_fire)
+    .debug_arb_grant_ltsm          (debug_arb_grant_ltsm),
+    .debug_arb_grant_fdi           (debug_arb_grant_fdi),
+    .debug_arb_grant_rdi           (debug_arb_grant_rdi),
+    .debug_arb_tx_locked           (debug_arb_tx_locked),
+    .debug_arb_rr_last_source      (debug_arb_rr_last_source),
+    .debug_arb_rr_last_granted_rdi (debug_arb_rr_last_granted_rdi),
+    .debug_arb_tx_fire             (debug_arb_tx_fire),
+    .debug_rx_route_ltsm           (debug_rx_route_ltsm),
+    .debug_rx_route_fdi            (debug_rx_route_fdi),
+    .debug_rx_route_rdi            (debug_rx_route_rdi),
+    .debug_rx_drop_unknown         (debug_rx_drop_unknown),
+    .debug_rx_fire                 (debug_rx_fire),
+    .debug_sb_rx_overflow          (debug_sb_rx_overflow)
   );
 
   // --------------------------------------------------------------------------
-  // Link training (LTSM) and its sideband adapters
+  // Link training (LTSM)
   // --------------------------------------------------------------------------
-  LtsmSidebandTxCapture #(
-    .ENTRIES (4)
-  ) ltsmTxCapture (
-    .clock     (clock),
-    .reset_n   (reset_n),
-    .raw_valid (ltsm_raw_tx_valid),
-    .raw_msg   (ltsm_raw_tx_msg),
-    .raw_ready (ltsm_raw_tx_ready),
-    .out_valid (ltsm_queue_tx_valid),
-    .out_msg   (ltsm_queue_tx_msg),
-    .out_ready (ltsm_queue_tx_ready)
-  );
-
-  LtsmSidebandRxPulseAdapter ltsmRxPulse (
-    .clock     (clock),
-    .reset_n   (reset_n),
-    .in_valid  (ltsm_stream_rx_valid),
-    .in_msg    (ltsm_stream_rx_msg),
-    .in_ready  (ltsm_stream_rx_ready),
-    .out_valid (ltsm_pulse_rx_valid),
-    .out_msg   (ltsm_pulse_rx_msg)
-  );
-
   // Port names below preserve the names used by the Chisel instance.
   LinkTrainingFSM #(
     .sbFeatureExtension                       (sbFeatureExtension),
@@ -964,47 +916,6 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
 
   assign debug_rdi_state            = rdi_pl_state_sts_int;
   assign debug_fdi_to_rdi_state_req = fdi_rdi_lp_state_req;
-
-  // --------------------------------------------------------------------------
-  // Sideband PHY
-  // --------------------------------------------------------------------------
-  // One-entry holding register converts the pulse-only PHY RX interface into
-  // a valid/ready interface. This prevents loss when the integrated top stalls.
-  always_ff @(posedge clock or negedge reset_n) begin
-    if (!reset_n) begin
-      sb_msg_rx_valid      <= 1'b0;
-      sb_msg_rx_msg        <= 128'b0;
-      debug_sb_rx_overflow <= 1'b0;
-    end else begin
-      if (sb_phy_rx_valid) begin
-        if (!sb_msg_rx_valid || sb_msg_rx_ready) begin
-          sb_msg_rx_msg   <= sb_phy_rx_msg;
-          sb_msg_rx_valid <= 1'b1;
-        end else begin
-          debug_sb_rx_overflow <= 1'b1;
-        end
-      end else if (sb_msg_rx_valid && sb_msg_rx_ready) begin
-        sb_msg_rx_valid <= 1'b0;
-      end
-    end
-  end
-
-  SideBandModule #(
-    .TX_FIFO_ENTRIES (SB_TX_FIFO_ENTRIES)
-  ) u_sideband_phy (
-    .clock    (clock),
-    .reset_n  (reset_n),
-    .tx_din   (sb_msg_tx_msg),
-    .tx_valid (sb_msg_tx_valid),
-    .tx_ready (sb_msg_tx_ready),
-    .tx_dout  (sb_tx_dout),
-    .tx_clk   (sb_tx_clk),
-    .rx_dout  (sb_phy_rx_msg),
-    .rx_valid (sb_phy_rx_valid),
-    .rxReset  (!reset_n),
-    .rx_din   (sb_rx_din),
-    .rx_clk   (sb_rx_clk)
-  );
 
 endmodule
 
