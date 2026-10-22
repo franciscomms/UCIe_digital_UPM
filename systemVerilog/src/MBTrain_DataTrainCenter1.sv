@@ -36,6 +36,7 @@ module MBTrain_DataTrainCenter1 #(
   output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_txClockPhaseCode,
   input wire logic         flagFromAnalog_d2cSender_txClockPhaseApplied,
   output var logic         flagToAnalog_d2cSender_applyTxLaneDeskew,
+  // TX deskew: 20 bits/lane, cell 1 [9:0], cell 2 [19:10]; LSB + 9 thermometer bits/cell.
   output var logic [64*d2cTxDeskewCodeWidth-1:0] flagToAnalog_d2cSender_txLaneDeskewCodes,
   input wire logic         flagFromAnalog_d2cSender_txLaneDeskewApplied,
   output var logic         flagToAnalog_d2cReceiver_configureTxInitD2CPointTest,

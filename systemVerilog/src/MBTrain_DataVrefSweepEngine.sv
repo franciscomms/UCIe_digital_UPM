@@ -1,7 +1,7 @@
 // Parameterized linear receiver-Vref sweep for the UCIe Data lanes.
 //
 // One receiver-initiated point test is performed at each Vref code.  The
-// per-lane result vector is retained, and every active lane independently
+// per-lane longest interval is tracked as results arrive.  Every active lane
 // selects the lower midpoint of its longest non-wrapping passing interval.
 // All selected per-lane codes are then applied together and verified by one
 // final point test.
@@ -56,8 +56,21 @@ module MBTrain_DataVrefSweepEngine #(
   } SweepState_t;
 
   (* keep = "true" *) SweepState_t stateReg;
-  (* keep = "true" *) logic [VREF_VALUE_COUNT-1:0]
-    passBitmapReg [0:DATA_LANE_COUNT-1];
+  // Keep a bounded running summary instead of rescanning a full pass bitmap.
+  // This replaces VREF_VALUE_COUNT serial compare/mux stages with one narrow
+  // increment/compare per accepted result.  COUNT+1 represents an all-pass run.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(VREF_VALUE_COUNT + 1);
+  localparam int unsigned FAILED_COUNT_WIDTH =
+    (DATA_LANE_COUNT < 2) ? 1 : $clog2(DATA_LANE_COUNT + 1);
+  localparam int unsigned COUNT_TREE_LEAVES = 1 << $clog2(DATA_LANE_COUNT);
+  logic [VREF_CODE_WIDTH-1:0] runStartReg [0:DATA_LANE_COUNT-1];
+  logic [VREF_CODE_WIDTH-1:0] bestStartReg [0:DATA_LANE_COUNT-1];
+  logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg [0:DATA_LANE_COUNT-1];
+  logic [WINDOW_LENGTH_WIDTH-1:0] bestLengthReg [0:DATA_LANE_COUNT-1];
+  wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength [0:DATA_LANE_COUNT-1];
+  wire [WINDOW_LENGTH_WIDTH-1:0] bestSpan [0:DATA_LANE_COUNT-1];
+  wire [DATA_LANE_COUNT-1:0] laneHasWindow;
+  wire [FAILED_COUNT_WIDTH-1:0] failedCountTree [1:2*COUNT_TREE_LEAVES-1];
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] currentCodeReg;
   (* keep = "true" *) logic [DATA_LANE_COUNT*VREF_CODE_WIDTH-1:0]
     finalCodeVectorReg;
@@ -68,65 +81,29 @@ module MBTrain_DataVrefSweepEngine #(
   (* keep = "true" *) logic [15:0] failedLaneCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
 
-  // These combinational analysis arrays are assigned by one process only.
-  integer runStartInt [0:DATA_LANE_COUNT-1];
-  integer runLengthInt [0:DATA_LANE_COUNT-1];
-  integer bestStartInt [0:DATA_LANE_COUNT-1];
-  integer bestLengthInt [0:DATA_LANE_COUNT-1];
-  integer scanLane;
-  integer scanCode;
-  logic allActiveLanesHaveWindow;
-  logic allActiveLanesPassFinal;
+  wire allActiveLanesHaveWindow = &laneHasWindow;
+  wire allActiveLanesPassFinal =
+    ((point_test_pass & ACTIVE_DATA_LANE_MASK) == ACTIVE_DATA_LANE_MASK);
 
-  function automatic logic [15:0] count_failed_active_lanes(
-    input logic [DATA_LANE_COUNT-1:0] pass_vector
-  );
-    integer count_lane;
-    begin
-      count_failed_active_lanes = 16'd0;
-      for (count_lane = 0; count_lane < DATA_LANE_COUNT;
-           count_lane = count_lane + 1) begin
-        if (ACTIVE_DATA_LANE_MASK[count_lane] && !pass_vector[count_lane])
-          count_failed_active_lanes = count_failed_active_lanes + 16'd1;
-      end
+  for (genvar lane = 0; lane < DATA_LANE_COUNT; lane = lane + 1) begin : g_window
+    assign extendedRunLength[lane] = runLengthReg[lane] + 1'b1;
+    assign bestSpan[lane] = bestLengthReg[lane] - 1'b1;
+    assign laneHasWindow[lane] = !ACTIVE_DATA_LANE_MASK[lane] ||
+      (bestLengthReg[lane] >= WINDOW_LENGTH_WIDTH'(MIN_PASSING_WINDOW_VALUES));
+  end
+
+  // Balanced population count: logarithmic lane depth, rather than a serial
+  // chain of 16-bit increments through every active lane.
+  for (genvar leaf = 0; leaf < COUNT_TREE_LEAVES; leaf = leaf + 1) begin : g_count_leaf
+    if (leaf < DATA_LANE_COUNT) begin : g_lane
+      assign failedCountTree[COUNT_TREE_LEAVES + leaf] =
+        FAILED_COUNT_WIDTH'(ACTIVE_DATA_LANE_MASK[leaf] && !point_test_pass[leaf]);
+    end else begin : g_padding
+      assign failedCountTree[COUNT_TREE_LEAVES + leaf] = '0;
     end
-  endfunction
-
-  // Find each active lane's longest linear passing interval.  Strictly-greater
-  // replacement preserves the lower-code interval when two windows tie and
-  // deliberately does not join the first and last Vref codes.
-  always_comb begin
-    allActiveLanesHaveWindow = 1'b1;
-
-    for (scanLane = 0; scanLane < DATA_LANE_COUNT;
-         scanLane = scanLane + 1) begin
-      runStartInt[scanLane]   = 0;
-      runLengthInt[scanLane]  = 0;
-      bestStartInt[scanLane]  = 0;
-      bestLengthInt[scanLane] = 0;
-
-      for (scanCode = 0; scanCode < VREF_VALUE_COUNT;
-           scanCode = scanCode + 1) begin
-        if (passBitmapReg[scanLane][scanCode]) begin
-          if (runLengthInt[scanLane] == 0)
-            runStartInt[scanLane] = scanCode;
-          runLengthInt[scanLane] = runLengthInt[scanLane] + 1;
-          if (runLengthInt[scanLane] > bestLengthInt[scanLane]) begin
-            bestLengthInt[scanLane] = runLengthInt[scanLane];
-            bestStartInt[scanLane]  = runStartInt[scanLane];
-          end
-        end else begin
-          runLengthInt[scanLane] = 0;
-        end
-      end
-
-      if (ACTIVE_DATA_LANE_MASK[scanLane] &&
-          (bestLengthInt[scanLane] < MIN_PASSING_WINDOW_VALUES))
-        allActiveLanesHaveWindow = 1'b0;
-    end
-
-    allActiveLanesPassFinal =
-      ((point_test_pass & ACTIVE_DATA_LANE_MASK) == ACTIVE_DATA_LANE_MASK);
+  end
+  for (genvar node = 1; node < COUNT_TREE_LEAVES; node = node + 1) begin : g_count_node
+    assign failedCountTree[node] = failedCountTree[2*node] + failedCountTree[2*node+1];
   end
 
   always_comb begin
@@ -176,8 +153,12 @@ module MBTrain_DataVrefSweepEngine #(
       retryCountReg       <= 16'd0;
       for (int unsigned reset_lane = 0;
            reset_lane < DATA_LANE_COUNT;
-           reset_lane = reset_lane + 1)
-        passBitmapReg[reset_lane] <= '0;
+           reset_lane = reset_lane + 1) begin
+        runStartReg[reset_lane] <= '0;
+        runLengthReg[reset_lane] <= '0;
+        bestStartReg[reset_lane] <= '0;
+        bestLengthReg[reset_lane] <= '0;
+      end
     end else begin
       if (start && ((stateReg == SweepState_idle) ||
                     (stateReg == SweepState_done) ||
@@ -191,8 +172,12 @@ module MBTrain_DataVrefSweepEngine #(
         retryCountReg      <= 16'd0;
         for (int unsigned start_lane = 0;
              start_lane < DATA_LANE_COUNT;
-             start_lane = start_lane + 1)
-          passBitmapReg[start_lane] <= '0;
+             start_lane = start_lane + 1) begin
+          runStartReg[start_lane] <= '0;
+          runLengthReg[start_lane] <= '0;
+          bestStartReg[start_lane] <= '0;
+          bestLengthReg[start_lane] <= '0;
+        end
       end else begin
         unique case (stateReg)
           SweepState_idle: ;
@@ -210,13 +195,26 @@ module MBTrain_DataVrefSweepEngine #(
               for (int unsigned capture_lane = 0;
                    capture_lane < DATA_LANE_COUNT;
                    capture_lane = capture_lane + 1) begin
-                passBitmapReg[capture_lane][currentCodeReg] <=
-                  point_test_pass[capture_lane];
+                if (ACTIVE_DATA_LANE_MASK[capture_lane]) begin
+                  if (point_test_pass[capture_lane]) begin
+                    if (runLengthReg[capture_lane] == '0)
+                      runStartReg[capture_lane] <= currentCodeReg;
+                    runLengthReg[capture_lane] <= extendedRunLength[capture_lane];
+                    // Strict comparison preserves the lower interval on ties.
+                    if (extendedRunLength[capture_lane] > bestLengthReg[capture_lane]) begin
+                      bestLengthReg[capture_lane] <= extendedRunLength[capture_lane];
+                      bestStartReg[capture_lane] <= (runLengthReg[capture_lane] == '0) ?
+                                                   currentCodeReg : runStartReg[capture_lane];
+                    end
+                  end else begin
+                    runLengthReg[capture_lane] <= '0;
+                  end
+                end
               end
               failedLaneCountReg <= failedLaneCountReg +
-                                    count_failed_active_lanes(point_test_pass);
+                                    16'(failedCountTree[1]);
 
-              if (currentCodeReg == (VREF_VALUE_COUNT - 1)) begin
+              if (currentCodeReg == VREF_CODE_WIDTH'(VREF_VALUE_COUNT - 1)) begin
                 stateReg <= SweepState_analyze;
               end else begin
                 currentCodeReg <= currentCodeReg + 1'b1;
@@ -233,15 +231,15 @@ module MBTrain_DataVrefSweepEngine #(
                 if (ACTIVE_DATA_LANE_MASK[select_lane]) begin
                   finalCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
-                  ] <= bestStartInt[select_lane] +
-                       ((bestLengthInt[select_lane] - 1) / 2);
+                  ] <= bestStartReg[select_lane] +
+                       VREF_CODE_WIDTH'(bestSpan[select_lane] >> 1);
                   leftCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
-                  ] <= bestStartInt[select_lane];
+                  ] <= bestStartReg[select_lane];
                   rightCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
-                  ] <= bestStartInt[select_lane] +
-                       bestLengthInt[select_lane] - 1;
+                  ] <= bestStartReg[select_lane] +
+                       VREF_CODE_WIDTH'(bestSpan[select_lane]);
                 end else begin
                   finalCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
@@ -261,8 +259,12 @@ module MBTrain_DataVrefSweepEngine #(
               failedLaneCountReg  <= 16'd0;
               for (int unsigned retry_lane = 0;
                    retry_lane < DATA_LANE_COUNT;
-                   retry_lane = retry_lane + 1)
-                passBitmapReg[retry_lane] <= '0;
+                   retry_lane = retry_lane + 1) begin
+                runStartReg[retry_lane] <= '0;
+                runLengthReg[retry_lane] <= '0;
+                bestStartReg[retry_lane] <= '0;
+                bestLengthReg[retry_lane] <= '0;
+              end
               stateReg <= SweepState_applySweepCode;
             end else begin
               stateReg <= SweepState_error;
@@ -287,12 +289,16 @@ module MBTrain_DataVrefSweepEngine #(
                 failedLaneCountReg  <= 16'd0;
                 for (int unsigned verify_retry_lane = 0;
                      verify_retry_lane < DATA_LANE_COUNT;
-                     verify_retry_lane = verify_retry_lane + 1)
-                  passBitmapReg[verify_retry_lane] <= '0;
+                     verify_retry_lane = verify_retry_lane + 1) begin
+                  runStartReg[verify_retry_lane] <= '0;
+                  runLengthReg[verify_retry_lane] <= '0;
+                  bestStartReg[verify_retry_lane] <= '0;
+                  bestLengthReg[verify_retry_lane] <= '0;
+                end
                 stateReg <= SweepState_applySweepCode;
               end else begin
                 failedLaneCountReg <= failedLaneCountReg +
-                                      count_failed_active_lanes(point_test_pass);
+                                      16'(failedCountTree[1]);
                 stateReg <= SweepState_error;
               end
             end

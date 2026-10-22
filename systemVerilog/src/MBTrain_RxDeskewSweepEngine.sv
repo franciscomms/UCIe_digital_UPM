@@ -61,8 +61,16 @@ module MBTrain_RxDeskewSweepEngine #(
   } SweepState_t;
 
   (* keep = "true" *) SweepState_t stateReg;
-  (* keep = "true" *) logic [RX_DESKEW_VALUE_COUNT-1:0]
-    passBitmapReg [0:DATA_LANE_COUNT-1];
+  // Track one accepted sample per cycle instead of rescanning the complete
+  // bitmap combinationally.  The extra length bit represents an all-pass sweep.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(RX_DESKEW_VALUE_COUNT + 1);
+  typedef logic [RX_DESKEW_CODE_WIDTH-1:0] code_t;
+  typedef logic [WINDOW_LENGTH_WIDTH-1:0] window_length_t;
+  code_t runStartReg [0:DATA_LANE_COUNT-1];
+  code_t bestStartReg [0:DATA_LANE_COUNT-1];
+  window_length_t runLengthReg [0:DATA_LANE_COUNT-1];
+  window_length_t bestLengthReg [0:DATA_LANE_COUNT-1];
+  window_length_t nextRunLength [0:DATA_LANE_COUNT-1];
   (* keep = "true" *) logic [RX_DESKEW_CODE_WIDTH-1:0] currentCodeReg;
   (* keep = "true" *) logic [DATA_LANE_COUNT*RX_DESKEW_CODE_WIDTH-1:0]
     finalCodeVectorReg;
@@ -73,65 +81,31 @@ module MBTrain_RxDeskewSweepEngine #(
   (* keep = "true" *) logic [15:0] failedLaneCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
 
-  // Combinational longest-window analysis.  These variables are owned only by
-  // this always_comb process, avoiding procedural multi-driver issues.
-  integer runStartInt [0:DATA_LANE_COUNT-1];
-  integer runLengthInt [0:DATA_LANE_COUNT-1];
-  integer bestStartInt [0:DATA_LANE_COUNT-1];
-  integer bestLengthInt [0:DATA_LANE_COUNT-1];
-  integer scanLane;
-  integer scanCode;
-  logic allActiveLanesHaveWindow;
-  logic allActiveLanesPassFinal;
+  logic [DATA_LANE_COUNT-1:0] laneHasWindow;
+  wire allActiveLanesHaveWindow = &laneHasWindow;
+  wire allActiveLanesPassFinal =
+    ((point_test_pass & ACTIVE_DATA_LANE_MASK) == ACTIVE_DATA_LANE_MASK);
 
-  function automatic logic [15:0] count_failed_active_lanes(
-    input logic [DATA_LANE_COUNT-1:0] pass_vector
-  );
-    integer count_lane;
-    begin
-      count_failed_active_lanes = 16'd0;
-      for (count_lane = 0; count_lane < DATA_LANE_COUNT;
-           count_lane = count_lane + 1) begin
-        if (ACTIVE_DATA_LANE_MASK[count_lane] && !pass_vector[count_lane])
-          count_failed_active_lanes = count_failed_active_lanes + 16'd1;
-      end
+  for (genvar lane = 0; lane < DATA_LANE_COUNT; lane++) begin : windowStatus
+    assign nextRunLength[lane] = runLengthReg[lane] + window_length_t'(1);
+    assign laneHasWindow[lane] = !ACTIVE_DATA_LANE_MASK[lane] ||
+      (bestLengthReg[lane] >= window_length_t'(MIN_PASSING_WINDOW_VALUES));
+  end
+
+  // A balanced reduction avoids a lane-by-lane chain of 16-bit additions.
+  localparam int unsigned COUNT_LEAVES = 1 << $clog2(DATA_LANE_COUNT);
+  localparam int unsigned FAIL_COUNT_WIDTH = $clog2(DATA_LANE_COUNT + 1);
+  wire [FAIL_COUNT_WIDTH-1:0] failedCountTree [1:2*COUNT_LEAVES-1];
+  for (genvar leaf = 0; leaf < COUNT_LEAVES; leaf++) begin : failedCountLeaves
+    if (leaf < DATA_LANE_COUNT) begin : activeLeaf
+      assign failedCountTree[COUNT_LEAVES+leaf] =
+        FAIL_COUNT_WIDTH'(ACTIVE_DATA_LANE_MASK[leaf] && !point_test_pass[leaf]);
+    end else begin : paddingLeaf
+      assign failedCountTree[COUNT_LEAVES+leaf] = '0;
     end
-  endfunction
-
-  // Strictly-greater replacement keeps the lower-code interval when equal
-  // windows tie.  Code zero and the highest code are not treated as adjacent.
-  always_comb begin
-    allActiveLanesHaveWindow = 1'b1;
-
-    for (scanLane = 0; scanLane < DATA_LANE_COUNT;
-         scanLane = scanLane + 1) begin
-      runStartInt[scanLane]   = 0;
-      runLengthInt[scanLane]  = 0;
-      bestStartInt[scanLane]  = 0;
-      bestLengthInt[scanLane] = 0;
-
-      for (scanCode = 0; scanCode < RX_DESKEW_VALUE_COUNT;
-           scanCode = scanCode + 1) begin
-        if (passBitmapReg[scanLane][scanCode]) begin
-          if (runLengthInt[scanLane] == 0)
-            runStartInt[scanLane] = scanCode;
-          runLengthInt[scanLane] = runLengthInt[scanLane] + 1;
-          if (runLengthInt[scanLane] > bestLengthInt[scanLane]) begin
-            bestLengthInt[scanLane] = runLengthInt[scanLane];
-            bestStartInt[scanLane]  = runStartInt[scanLane];
-          end
-        end else begin
-          runLengthInt[scanLane] = 0;
-        end
-      end
-
-      if (ACTIVE_DATA_LANE_MASK[scanLane] &&
-          (bestLengthInt[scanLane] < MIN_PASSING_WINDOW_VALUES))
-        allActiveLanesHaveWindow = 1'b0;
-    end
-
-    allActiveLanesPassFinal =
-      ((point_test_pass & ACTIVE_DATA_LANE_MASK) == ACTIVE_DATA_LANE_MASK);
+  end
+  for (genvar node = 1; node < COUNT_LEAVES; node++) begin : failedCountBranches
+    assign failedCountTree[node] = failedCountTree[2*node] + failedCountTree[2*node+1];
   end
 
   always_comb begin
@@ -182,8 +156,12 @@ module MBTrain_RxDeskewSweepEngine #(
       retryCountReg      <= 16'd0;
       for (int unsigned reset_lane = 0;
            reset_lane < DATA_LANE_COUNT;
-           reset_lane = reset_lane + 1)
-        passBitmapReg[reset_lane] <= '0;
+           reset_lane = reset_lane + 1) begin
+        runStartReg[reset_lane] <= '0;
+        bestStartReg[reset_lane] <= '0;
+        runLengthReg[reset_lane] <= '0;
+        bestLengthReg[reset_lane] <= '0;
+      end
     end else begin
       if (start && ((stateReg == SweepState_idle) ||
                     (stateReg == SweepState_done) ||
@@ -197,8 +175,12 @@ module MBTrain_RxDeskewSweepEngine #(
         retryCountReg      <= 16'd0;
         for (int unsigned start_lane = 0;
              start_lane < DATA_LANE_COUNT;
-             start_lane = start_lane + 1)
-          passBitmapReg[start_lane] <= '0;
+             start_lane = start_lane + 1) begin
+          runStartReg[start_lane] <= '0;
+          bestStartReg[start_lane] <= '0;
+          runLengthReg[start_lane] <= '0;
+          bestLengthReg[start_lane] <= '0;
+        end
       end else begin
         unique case (stateReg)
           SweepState_idle: ;
@@ -216,11 +198,25 @@ module MBTrain_RxDeskewSweepEngine #(
               for (int unsigned capture_lane = 0;
                    capture_lane < DATA_LANE_COUNT;
                    capture_lane = capture_lane + 1) begin
-                passBitmapReg[capture_lane][currentCodeReg] <=
-                  point_test_pass[capture_lane];
+                if (ACTIVE_DATA_LANE_MASK[capture_lane]) begin
+                  if (point_test_pass[capture_lane]) begin
+                    if (runLengthReg[capture_lane] == '0)
+                      runStartReg[capture_lane] <= currentCodeReg;
+                    runLengthReg[capture_lane] <= nextRunLength[capture_lane];
+                    // Strict > keeps the first (lowest-code) window on ties.
+                    if (nextRunLength[capture_lane] > bestLengthReg[capture_lane]) begin
+                      bestLengthReg[capture_lane] <= nextRunLength[capture_lane];
+                      bestStartReg[capture_lane] <=
+                        (runLengthReg[capture_lane] == '0) ?
+                        currentCodeReg : runStartReg[capture_lane];
+                    end
+                  end else begin
+                    runLengthReg[capture_lane] <= '0;
+                  end
+                end
               end
               failedLaneCountReg <= failedLaneCountReg +
-                                    count_failed_active_lanes(point_test_pass);
+                                    16'(failedCountTree[1]);
 
               if (currentCodeReg == (RX_DESKEW_VALUE_COUNT - 1)) begin
                 stateReg <= SweepState_analyze;
@@ -231,6 +227,8 @@ module MBTrain_RxDeskewSweepEngine #(
             end
           end
 
+          // The final sample has updated the window registers before this
+          // state selects endpoints and the lower midpoint.
           SweepState_analyze: begin
             if (allActiveLanesHaveWindow) begin
               for (int unsigned select_lane = 0;
@@ -240,17 +238,17 @@ module MBTrain_RxDeskewSweepEngine #(
                   finalCodeVectorReg[
                     select_lane*RX_DESKEW_CODE_WIDTH +:
                     RX_DESKEW_CODE_WIDTH
-                  ] <= bestStartInt[select_lane] +
-                       ((bestLengthInt[select_lane] - 1) / 2);
+                  ] <= bestStartReg[select_lane] +
+                       code_t'((bestLengthReg[select_lane] - window_length_t'(1)) >> 1);
                   leftCodeVectorReg[
                     select_lane*RX_DESKEW_CODE_WIDTH +:
                     RX_DESKEW_CODE_WIDTH
-                  ] <= bestStartInt[select_lane];
+                  ] <= bestStartReg[select_lane];
                   rightCodeVectorReg[
                     select_lane*RX_DESKEW_CODE_WIDTH +:
                     RX_DESKEW_CODE_WIDTH
-                  ] <= bestStartInt[select_lane] +
-                       bestLengthInt[select_lane] - 1;
+                  ] <= bestStartReg[select_lane] +
+                       code_t'(bestLengthReg[select_lane] - window_length_t'(1));
                 end else begin
                   finalCodeVectorReg[
                     select_lane*RX_DESKEW_CODE_WIDTH +:
@@ -273,8 +271,12 @@ module MBTrain_RxDeskewSweepEngine #(
               failedLaneCountReg <= 16'd0;
               for (int unsigned retry_lane = 0;
                    retry_lane < DATA_LANE_COUNT;
-                   retry_lane = retry_lane + 1)
-                passBitmapReg[retry_lane] <= '0;
+                   retry_lane = retry_lane + 1) begin
+                runStartReg[retry_lane] <= '0;
+                bestStartReg[retry_lane] <= '0;
+                runLengthReg[retry_lane] <= '0;
+                bestLengthReg[retry_lane] <= '0;
+              end
               stateReg <= SweepState_applySweepCode;
             end else begin
               stateReg <= SweepState_error;
@@ -299,12 +301,16 @@ module MBTrain_RxDeskewSweepEngine #(
                 failedLaneCountReg <= 16'd0;
                 for (int unsigned verify_retry_lane = 0;
                      verify_retry_lane < DATA_LANE_COUNT;
-                     verify_retry_lane = verify_retry_lane + 1)
-                  passBitmapReg[verify_retry_lane] <= '0;
+                     verify_retry_lane = verify_retry_lane + 1) begin
+                  runStartReg[verify_retry_lane] <= '0;
+                  bestStartReg[verify_retry_lane] <= '0;
+                  runLengthReg[verify_retry_lane] <= '0;
+                  bestLengthReg[verify_retry_lane] <= '0;
+                end
                 stateReg <= SweepState_applySweepCode;
               end else begin
                 failedLaneCountReg <= failedLaneCountReg +
-                                      count_failed_active_lanes(point_test_pass);
+                                      16'(failedCountTree[1]);
                 stateReg <= SweepState_error;
               end
             end

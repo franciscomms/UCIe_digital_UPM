@@ -213,119 +213,40 @@ module LinkMgmtSidebandPacketArbiter (
   assign rr_last_granted_rdi = (rrLastSource == SourceRdi);
 assign tx_fire             = txFire;
 
-  // --------------------------------------------------------------------------
-  // RX rising-edge detection
-  //
-  // The physical RX may keep rx_in_valid high for multiple controller-clock
-  // cycles. Convert each sampled low-to-high transition into a one-cycle pulse.
-  //
-  // Assumptions:
-  //   1. rx_in_valid returns low before the next received message.
-  //   2. rx_in_msg is stable when rxValidPulse is asserted.
-  //   3. The selected RX consumer is ready during that pulse.
-  // --------------------------------------------------------------------------
-
-  (* keep = "true" *) logic rxInValidDelayed;
-  (* keep = "true" *) logic rxValidPulse;
-
-  always_ff @(posedge clock or negedge reset_n) begin
-    if (!reset_n)
-      rxInValidDelayed <= 1'b0;
-    else
-      rxInValidDelayed <= rx_in_valid;
-  end
-
-  assign rxValidPulse =
-    rx_in_valid && !rxInValidDelayed;
-
-  // --------------------------------------------------------------------------
-  // RX routing
-  // --------------------------------------------------------------------------
-
+  // RX uses valid/ready transactions. A held word remains visible to its
+  // destination until the destination accepts it; a source may present another
+  // word immediately after a handshake without dropping valid.
   UCIe2_Route_t rxRoute;
-
   logic routeToLtsm;
   logic routeToFdi;
   logic routeToRdi;
   logic dropUnknown;
   logic selectedSinkReady;
 
-  assign rxRoute =
-    UCIe2_route(rx_in_msg);
+  assign rxRoute = UCIe2_route(rx_in_msg);
+  assign routeToLtsm = (rxRoute == UCIe2_Route_LTSM);
+  assign routeToFdi = (rxRoute == UCIe2_Route_ADAPTER0) ||
+                     (rxRoute == UCIe2_Route_ADAPTER1) ||
+                     (rxRoute == UCIe2_Route_D2D_COMMON);
+  assign routeToRdi = (rxRoute == UCIe2_Route_RDI);
+  assign dropUnknown = !routeToLtsm && !routeToFdi && !routeToRdi;
 
-  assign routeToLtsm =
-    (rxRoute == UCIe2_Route_LTSM);
+  assign ltsm_rx_valid = rx_in_valid && routeToLtsm;
+  assign ltsm_rx_msg = rx_in_msg;
+  assign fdi_rx_valid = rx_in_valid && routeToFdi;
+  assign fdi_rx_msg = rx_in_msg;
+  assign rdi_rx_valid = rx_in_valid && routeToRdi;
+  assign rdi_rx_msg = rx_in_msg;
 
-  assign routeToFdi =
-    (rxRoute == UCIe2_Route_ADAPTER0) ||
-    (rxRoute == UCIe2_Route_ADAPTER1) ||
-    (rxRoute == UCIe2_Route_D2D_COMMON);
-
-  assign routeToRdi =
-    (rxRoute == UCIe2_Route_RDI);
-
-  // Route to the LTSM for one controller-clock cycle.
-  assign ltsm_rx_valid =
-    rxValidPulse && routeToLtsm;
-
-  assign ltsm_rx_msg =
-    rx_in_msg;
-
-  // Route to the FDI controller for one controller-clock cycle.
-  assign fdi_rx_valid =
-    rxValidPulse && routeToFdi;
-
-  assign fdi_rx_msg =
-    rx_in_msg;
-
-  // Route to the RDI controller for one controller-clock cycle.
-  assign rdi_rx_valid =
-    rxValidPulse && routeToRdi;
-
-  assign rdi_rx_msg =
-    rx_in_msg;
-
-  // Unknown messages are reported and consumed only once.
-  assign dropUnknown =
-    rxValidPulse &&
-    !routeToLtsm &&
-    !routeToFdi &&
-    !routeToRdi;
-
-  // Ready condition for the selected destination.
-  assign selectedSinkReady =
-    (routeToLtsm && ltsm_rx_ready) ||
-    (routeToFdi  && fdi_rx_ready)  ||
-    (routeToRdi  && rdi_rx_ready)  ||
-    dropUnknown;
-
-  // Advertise ready while the physical source is idle.
-  //
-  // On the rising-edge cycle, ready follows the selected destination.
-  // After that cycle, ready remains low while rx_in_valid remains high.
-  // This prevents one held valid level from being counted repeatedly.
-  assign rx_in_ready =
-    !rx_in_valid ||
-    (rxValidPulse && selectedSinkReady);
-
-  // Debug routing outputs indicate actual one-cycle route events.
-  assign rx_route_ltsm =
-    rxValidPulse && routeToLtsm;
-
-  assign rx_route_fdi =
-    rxValidPulse && routeToFdi;
-
-  assign rx_route_rdi =
-    rxValidPulse && routeToRdi;
-
-  assign rx_drop_unknown =
-    dropUnknown;
-
-  // A transaction occurs only once per rising edge and only if the selected
-  // destination accepts it.
-  assign rx_fire =
-    rxValidPulse && selectedSinkReady;
-
+  assign selectedSinkReady = (routeToLtsm && ltsm_rx_ready) ||
+                             (routeToFdi && fdi_rx_ready) ||
+                             (routeToRdi && rdi_rx_ready) || dropUnknown;
+  assign rx_in_ready = !rx_in_valid || selectedSinkReady;
+  assign rx_fire = rx_in_valid && rx_in_ready;
+  assign rx_route_ltsm = rx_fire && routeToLtsm;
+  assign rx_route_fdi = rx_fire && routeToFdi;
+  assign rx_route_rdi = rx_fire && routeToRdi;
+  assign rx_drop_unknown = rx_fire && dropUnknown;
 endmodule
 
 `default_nettype wire
