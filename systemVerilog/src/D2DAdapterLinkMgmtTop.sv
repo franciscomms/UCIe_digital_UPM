@@ -30,6 +30,7 @@ module D2DAdapterLinkMgmtTop #(
   output var logic                               fdi_pl_wake_ack,
   output var logic                               fdi_pl_clk_req,
   output var logic                               fdi_pl_stall_req,
+  output var logic                               fdi_active,
 
   // LTSM / PHY-facing control side from RDI.
   input  wire logic ltsm_lp_wake_req,
@@ -55,6 +56,9 @@ module D2DAdapterLinkMgmtTop #(
   input  wire logic         sb_rx_valid,
   input  wire logic [127:0] sb_rx_msg,
   output var logic         sb_rx_ready,
+
+  // Suppress RDI request/FDI parameter timeout errors; retain recovery timers.
+  input wire logic timeout_disable,
 
   input  wire logic [31:0] cycles_1us,
 
@@ -131,6 +135,7 @@ module D2DAdapterLinkMgmtTop #(
     .fdi_lp_clk_ack       (fdi_lp_clk_ack),
     .fdi_pl_stall_req     (fdi_pl_stall_req),
     .fdi_lp_stall_ack     (fdi_lp_stall_ack),
+    .fdi_active           (fdi_active),
 
     .debug_link_init_state(debug_fdi_link_init_state),
 
@@ -153,6 +158,7 @@ module D2DAdapterLinkMgmtTop #(
     .sb_rcv_valid         (fdi_sb_rcv_valid),
     .sb_rcv_msg           (fdi_sb_rcv_msg),
     .sb_rcv_ready         (fdi_sb_rcv_ready),
+    .timeout_disable (timeout_disable),
     .cycles_1us           (cycles_1us)
   );
 
@@ -186,6 +192,7 @@ module D2DAdapterLinkMgmtTop #(
 
     .lp_linkerror         (fdi_rdi_lp_linkerror),
     .pl_phyinrecenter     (),
+    .timeout_disable (timeout_disable),
     .cycles_1us           (cycles_1us)
   );
 

@@ -47,6 +47,8 @@ module MBTrain_DataTrainCenter2SweepEngine #(
 );
   localparam int unsigned MAX_DATA_LANES = 64;
   localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  // A passing run can contain every code, so its length needs one extra bit.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = PI_CODE_WIDTH + 1;
 
   localparam logic [63:0] ACTIVE_LANE_MASK =
     ucieA ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
@@ -76,7 +78,12 @@ module MBTrain_DataTrainCenter2SweepEngine #(
   (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] globalLeftPhaseReg;
   (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] globalRightPhaseReg;
 
-  logic passByPhase [0:PHASE_COUNT-1];
+  // Accumulate the longest interval as samples arrive. The old bitmap scan
+  // unrolled PHASE_COUNT dependent add/compare/mux steps into one clock path.
+  // These registers limit each sample update to one narrow increment/compare.
+  logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg, bestLengthReg;
+  logic [PI_CODE_WIDTH-1:0] runStartReg, bestStartReg;
+  wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength = runLengthReg + 1'b1;
 
   wire allActiveDataLanesPass =
     &(point_test_lane_pass | ~ACTIVE_LANE_MASK);
@@ -84,68 +91,45 @@ module MBTrain_DataTrainCenter2SweepEngine #(
                           point_test_cumulative_pass &&
                           allActiveDataLanesPass;
 
-  function automatic [15:0] countFailedComparisons(
-    input logic [63:0] lanePass,
-    input logic        validPass,
-    input logic        cumulativePass
-  );
-    integer lane;
-    integer count;
-    begin
-      count = 0;
-      for (lane = 0; lane < MAX_DATA_LANES; lane = lane + 1) begin
-        if (ACTIVE_LANE_MASK[lane] && !lanePass[lane])
-          count = count + 1;
+  // Balanced population count: six adder levels for 64 lanes, with only
+  // enough bits at each level for its partial count. Inactive lanes are zero.
+  for (genvar level = 0; level <= 6; level = level + 1) begin : genFailureCount
+    wire [level:0] count [0:(MAX_DATA_LANES >> level)-1];
+    for (genvar node = 0; node < (MAX_DATA_LANES >> level); node = node + 1) begin : genNode
+      if (level == 0) begin : genLeaf
+        assign count[node] = ACTIVE_LANE_MASK[node] && !point_test_lane_pass[node];
+      end else begin : genSum
+        assign count[node] =
+          {1'b0, genFailureCount[level-1].count[2*node]} +
+          {1'b0, genFailureCount[level-1].count[2*node+1]};
       end
-      if (!validPass)
-        count = count + 1;
-      if (!cumulativePass && (count == 0))
-        count = 1;
-      countFailedComparisons = count;
     end
-  endfunction
-
-  integer phaseIdx;
-  integer runLength;
-  integer bestLength;
-  integer runStart;
-  integer bestStart;
+  end
+  wire [6:0] failedLaneAndValidCount =
+    genFailureCount[6].count[0] + {6'b0, !point_test_valid_pass};
+  wire [15:0] failedComparisons =
+    (!point_test_cumulative_pass && (failedLaneAndValidCount == 0)) ?
+    16'd1 : {9'b0, failedLaneAndValidCount};
 
   logic globalWindowValidCalc;
   logic [PI_CODE_WIDTH-1:0] globalLeftPhaseCalc;
   logic [PI_CODE_WIDTH-1:0] globalRightPhaseCalc;
   logic [PI_CODE_WIDTH-1:0] globalCenterPhaseCalc;
 
+  // Strictly-longer updates below retain the first (lowest-code) equal run.
+  // Subtract before narrowing so the full-range passing window is preserved.
   always_comb begin
-    runLength = 0;
-    bestLength = 0;
-    runStart = 0;
-    bestStart = 0;
-
-    for (phaseIdx = 0; phaseIdx < PHASE_COUNT; phaseIdx = phaseIdx + 1) begin
-      if (passByPhase[phaseIdx]) begin
-        if (runLength == 0)
-          runStart = phaseIdx;
-        runLength = runLength + 1;
-        if (runLength > bestLength) begin
-          bestLength = runLength;
-          bestStart = runStart;
-        end
-      end else begin
-        runLength = 0;
-      end
-    end
-
-    globalWindowValidCalc = (bestLength >= MIN_COMMON_WINDOW_STEPS);
-
-    if (bestLength == 0) begin
+    globalWindowValidCalc =
+      (bestLengthReg >= WINDOW_LENGTH_WIDTH'(MIN_COMMON_WINDOW_STEPS));
+    if (bestLengthReg == 0) begin
       globalLeftPhaseCalc = '0;
       globalRightPhaseCalc = '0;
       globalCenterPhaseCalc = '0;
     end else begin
-      globalLeftPhaseCalc = bestStart;
-      globalRightPhaseCalc = bestStart + bestLength - 1;
-      globalCenterPhaseCalc = bestStart + ((bestLength - 1) >> 1);
+      globalLeftPhaseCalc = bestStartReg;
+      globalRightPhaseCalc = bestStartReg + PI_CODE_WIDTH'(bestLengthReg - 1'b1);
+      globalCenterPhaseCalc =
+        bestStartReg + PI_CODE_WIDTH'((bestLengthReg - 1'b1) >> 1);
     end
   end
 
@@ -181,6 +165,10 @@ module MBTrain_DataTrainCenter2SweepEngine #(
       lastFailedComparisonsReg <= 16'b0;
       retryCountReg <= 16'b0;
       phaseIndexReg <= '0;
+      runLengthReg <= '0;
+      bestLengthReg <= '0;
+      runStartReg <= '0;
+      bestStartReg <= '0;
       finalClockPhaseReg <= '0;
       globalLeftPhaseReg <= '0;
       globalRightPhaseReg <= '0;
@@ -194,6 +182,10 @@ module MBTrain_DataTrainCenter2SweepEngine #(
         lastFailedComparisonsReg <= 16'b0;
         retryCountReg <= 16'b0;
         phaseIndexReg <= '0;
+        runLengthReg <= '0;
+        bestLengthReg <= '0;
+        runStartReg <= '0;
+        bestStartReg <= '0;
         finalClockPhaseReg <= '0;
         globalLeftPhaseReg <= '0;
         globalRightPhaseReg <= '0;
@@ -217,12 +209,18 @@ module MBTrain_DataTrainCenter2SweepEngine #(
           end
 
           SweepState_STORE_SWEEP_RESULT: begin
-            passByPhase[phaseIndexReg] <= pointTestAllPass;
-            lastFailedComparisonsReg <= countFailedComparisons(
-              point_test_lane_pass,
-              point_test_valid_pass,
-              point_test_cumulative_pass
-            );
+            if (pointTestAllPass) begin
+              if (runLengthReg == 0)
+                runStartReg <= phaseIndexReg;
+              runLengthReg <= extendedRunLength;
+              if (extendedRunLength > bestLengthReg) begin
+                bestLengthReg <= extendedRunLength;
+                bestStartReg <= (runLengthReg == 0) ? phaseIndexReg : runStartReg;
+              end
+            end else begin
+              runLengthReg <= '0;
+            end
+            lastFailedComparisonsReg <= failedComparisons;
 
             if (phaseIndexReg == {PI_CODE_WIDTH{1'b1}}) begin
               stateReg <= SweepState_CALCULATE_GLOBAL;
@@ -242,6 +240,10 @@ module MBTrain_DataTrainCenter2SweepEngine #(
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg <= retryCountReg + 16'd1;
               phaseIndexReg <= '0;
+              runLengthReg <= '0;
+              bestLengthReg <= '0;
+              runStartReg <= '0;
+              bestStartReg <= '0;
               finalClockPhaseReg <= '0;
               globalLeftPhaseReg <= '0;
               globalRightPhaseReg <= '0;
@@ -267,11 +269,7 @@ module MBTrain_DataTrainCenter2SweepEngine #(
           end
 
           SweepState_CHECK_FINAL_TEST: begin
-            lastFailedComparisonsReg <= countFailedComparisons(
-              point_test_lane_pass,
-              point_test_valid_pass,
-              point_test_cumulative_pass
-            );
+            lastFailedComparisonsReg <= failedComparisons;
 
             if (pointTestAllPass) begin
               doneReg <= 1'b1;
@@ -279,6 +277,10 @@ module MBTrain_DataTrainCenter2SweepEngine #(
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg <= retryCountReg + 16'd1;
               phaseIndexReg <= '0;
+              runLengthReg <= '0;
+              bestLengthReg <= '0;
+              runStartReg <= '0;
+              bestStartReg <= '0;
               finalClockPhaseReg <= '0;
               globalLeftPhaseReg <= '0;
               globalRightPhaseReg <= '0;

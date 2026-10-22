@@ -15,8 +15,48 @@ package LtsmParameters_pkg;
   // The PI and deskew resolutions are implementation parameters rather than
   // UCIe protocol encodings.
   parameter int unsigned DEFAULT_D2C_PI_CODE_WIDTH = 6;
-  parameter int unsigned DEFAULT_D2C_TX_DESKEW_CODE_WIDTH = 6;
+  // TX deskew is a physical switch word, not a binary delay code. Each lane
+  // has two cascaded cells. Cell 1 is [9:0], cell 2 is [19:10]; within a cell
+  // bit 0 selects 0.5 ps and bits 1..9 select 1 ps each (sw-4 through sw4).
+  // Fill cell 1 to 9.5 ps before adding delay in cell 2: 0..19 ps total.
+  localparam int unsigned TX_DESKEW_CONTROL_WIDTH = 20;
+  localparam int unsigned TX_DESKEW_HALF_STEP_WIDTH = 6;
+  localparam int unsigned TX_DESKEW_CELL_MAX_HALF_STEPS = 19;
+  localparam int unsigned TX_DESKEW_MAX_HALF_STEPS = 38;
+  parameter int unsigned DEFAULT_D2C_TX_DESKEW_CODE_WIDTH = TX_DESKEW_CONTROL_WIDTH;
+  // Number of 0.5 ps TX delay steps corresponding to one forwarded-clock PI
+  // step. Set this ratio to the actual PHY PI resolution; the default is 1.
   parameter int unsigned DEFAULT_D2C_DESKEW_STEPS_PER_PI = 1;
+
+  // The comparisons in this loop are independent thermometer-bit decoders,
+  // not a loop-carried search. Numeric range checking is done by the training
+  // engine before it calls this function; the function defensively saturates
+  // out-of-range 6-bit inputs, but training never applies a saturated result.
+  function automatic logic [TX_DESKEW_CONTROL_WIDTH-1:0] encode_tx_deskew(
+    input logic [TX_DESKEW_HALF_STEP_WIDTH-1:0] half_steps
+  );
+    logic [4:0] first_cell_steps;
+    logic [4:0] second_cell_steps;
+    begin
+      if (half_steps >= 6'd38) begin
+        first_cell_steps = 5'd19;
+        second_cell_steps = 5'd19;
+      end else if (half_steps > 6'd19) begin
+        first_cell_steps = 5'd19;
+        second_cell_steps = 5'(half_steps - 6'd19);
+      end else begin
+        first_cell_steps = half_steps[4:0];
+        second_cell_steps = '0;
+      end
+      encode_tx_deskew = '0;
+      encode_tx_deskew[0] = first_cell_steps[0];
+      encode_tx_deskew[10] = second_cell_steps[0];
+      for (int unsigned sw = 0; sw < 9; sw++) begin
+        encode_tx_deskew[1+sw] = (first_cell_steps >= 5'(2*(sw+1)));
+        encode_tx_deskew[11+sw] = (second_cell_steps >= 5'(2*(sw+1)));
+      end
+    end
+  endfunction
   parameter bit DEFAULT_D2C_DESKEW_ADD_DELAY_INCREASES_PHASE = 1'b1;
   parameter logic [15:0] DEFAULT_D2C_MAX_COMPARISON_ERROR_THRESHOLD = 16'd0;
   parameter int unsigned DEFAULT_D2C_MIN_LANE_WINDOW_STEPS = 1;
@@ -35,11 +75,9 @@ package LtsmParameters_pkg;
   // UCIe makes the operating-rate VALTRAINVREF optimization optional.
   parameter bit DEFAULT_VALTRAIN_VREF_ENABLE = 1'b1;
 
-  // MBTRAIN.RXDESKEW defaults.  The RX delay control intentionally uses the
-  // same unsigned per-lane code convention and default resolution as TX
-  // deskew.  Code-to-time mapping remains an analog PHY responsibility.
-  parameter int unsigned DEFAULT_RX_DESKEW_CODE_WIDTH =
-    DEFAULT_D2C_TX_DESKEW_CODE_WIDTH;
+  // MBTRAIN.RXDESKEW keeps its existing independent 6-bit unsigned binary
+  // delay code and 64-value range. It does not use the TX switch encoding.
+  parameter int unsigned DEFAULT_RX_DESKEW_CODE_WIDTH = 6;
   parameter int unsigned DEFAULT_RX_DESKEW_VALUE_COUNT =
     (1 << DEFAULT_RX_DESKEW_CODE_WIDTH);
   parameter logic [15:0] DEFAULT_RX_DESKEW_MAX_COMPARISON_ERROR_THRESHOLD =

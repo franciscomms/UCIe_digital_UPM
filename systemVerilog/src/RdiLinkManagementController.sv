@@ -39,6 +39,7 @@ module RdiLinkManagementController (
   input  wire logic lp_linkerror,
 
   output var logic        pl_phyinrecenter,
+  input wire logic timeout_disable,
   input  wire logic [31:0] cycles_1us
 );
   import UcieUPM_interfaces_pkg::*;
@@ -190,6 +191,7 @@ module RdiLinkManagementController (
   RdiTimeoutController rdi_timeout (
     .clock                     (clock),
     .reset_n                   (reset_n),
+    .timeout_disable (timeout_disable),
     .cycles1us                 (cycles_1us),
     .startSidebandReqTimer     (local_req_sent),
     .sidebandRspReceived       (expected_remote_rsp_received),

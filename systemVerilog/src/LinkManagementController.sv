@@ -27,6 +27,7 @@ module LinkManagementController #(
   input  wire logic                                  fdi_lp_clk_ack,
   output var logic                                  fdi_pl_stall_req,
   input  wire logic                                  fdi_lp_stall_ack,
+  output wire logic                                  fdi_active,
 
   output var UcieUPM_d2dadapter_pkg::LinkInitState_t debug_link_init_state,
 
@@ -51,7 +52,8 @@ module LinkManagementController #(
   input  wire logic [127:0] sb_rcv_msg,
   output var logic         sb_rcv_ready,
 
-  input  wire logic [31:0] cycles_1us
+  input  wire logic [31:0] cycles_1us,
+  input  wire logic        timeout_disable
 );
   import UcieUPM_interfaces_pkg::*;
   import UcieUPM_d2dadapter_pkg::*;
@@ -208,6 +210,7 @@ module LinkManagementController #(
   assign fdiAwake              = fdiAwake_reg;
   assign fdi_pl_wake_ack       = fdi_pl_wake_ack_reg;
   assign fdi_pl_clk_req        = 1'b1;
+  assign fdi_active             = (link_state_reg == PhyState_active);
 
   // FDI stall controller.
   (* keep = "true" *) logic linkmgmt_stallreq_reg;
@@ -256,18 +259,45 @@ module LinkManagementController #(
   assign rx_deactive = !fdi_lp_rx_active_sts && !fdi_pl_rxactive_req_reg;
   assign rx_active   =  fdi_lp_rx_active_sts &&  fdi_pl_rxactive_req_reg;
 
-  (* keep = "true" *) logic [63:0] linkerrorCounter;
-  logic [63:0] maxCount_linkerr;
+  // Prepare programmable limits outside the counter/comparator path. A timer
+  // takes one coherent snapshot and retains it until its next start/restart.
+  logic timeout_config_ready;
+  logic [43:0] unused_timeout4ms;
+  logic [44:0] configured_timeout8ms;
+  logic [45:0] configured_timeout16ms;
+  logic [43:0] unused_last4ms;
+  logic [44:0] unused_last8ms;
+  logic [45:0] unused_last16ms;
+  LinkMgmtTimeoutConfig timeout_config (
+    .clock          (clock),
+    .reset_n        (reset_n),
+    .cycles_1us     (cycles_1us),
+    .config_ready   (timeout_config_ready),
+    .timeout_4ms    (unused_timeout4ms),
+    .timeout_8ms    (configured_timeout8ms),
+    .timeout_16ms   (configured_timeout16ms),
+    .last_4ms       (unused_last4ms),
+    .last_8ms       (unused_last8ms),
+    .last_16ms      (unused_last16ms)
+  );
+
+  (* keep = "true" *) logic [45:0] linkerrorCounter;
+  logic [45:0] maxCount_linkerr;
+  logic linkerrorLimitValid;
   logic linkerrorResidencyDone;
-  assign maxCount_linkerr = {32'b0, cycles_1us} * 64'd16000;
-  assign linkerrorResidencyDone = (linkerrorCounter == maxCount_linkerr);
+  assign linkerrorResidencyDone = linkerrorLimitValid &&
+                                 (linkerrorCounter == maxCount_linkerr);
 
   wire timeout_done = 1'b0;
-  (* keep = "true" *) logic [63:0] paramexchCounter;
-  logic [63:0] maxCount_paramexch;
+  (* keep = "true" *) logic [44:0] paramexchCounter;
+  logic [44:0] maxCount_paramexch;
+  logic paramexchLimitValid;
+  logic paramexchTimerActive;
   logic paramexchTimesUp;
-  assign maxCount_paramexch = {32'b0, cycles_1us} * 64'd8000;
-  assign paramexchTimesUp = (paramexchCounter == maxCount_paramexch);
+  assign paramexchTimerActive = (linkinit_state_reg == LinkInitState_FDI_PARAM_EXCH) &&
+                               (rdi_pl_state_sts == PhyState_active);
+  assign paramexchTimesUp = paramexchTimerActive && paramexchLimitValid &&
+                           !timeout_disable && (paramexchCounter == maxCount_paramexch);
 
   logic disabled_entry;
   logic linkreset_entry;
@@ -870,8 +900,12 @@ module LinkManagementController #(
       linkerror_internal <= 1'b0;
       linkreset_internal <= 1'b0;
       disabled_internal <= 1'b0;
-      linkerrorCounter <= 64'd0;
-      paramexchCounter <= 64'd0;
+      linkerrorCounter <= 46'd0;
+      maxCount_linkerr <= 46'd0;
+      linkerrorLimitValid <= 1'b0;
+      paramexchCounter <= 45'd0;
+      maxCount_paramexch <= 45'd0;
+      paramexchLimitValid <= 1'b0;
       disabled_cleanup_done <= 1'b1;
       linkreset_cleanup_done <= 1'b1;
       active_sbmsg_loc_req_flag <= 1'b0;
@@ -918,21 +952,43 @@ module LinkManagementController #(
 
       // Source placeholder registers intentionally retain their reset values.
 
+      // LinkError residency remains timed even when transaction timeouts are
+      // disabled. Waiting for a coherent configuration never uses a stale limit.
       if (link_state_reg == PhyState_linkError) begin
-        if (!linkerrorResidencyDone)
-          linkerrorCounter <= linkerrorCounter + 64'd1;
+        if (!linkerrorLimitValid) begin
+          if (timeout_config_ready) begin
+            maxCount_linkerr <= configured_timeout16ms;
+            linkerrorLimitValid <= 1'b1;
+            linkerrorCounter <= (configured_timeout16ms == 46'd0) ? 46'd0 : 46'd1;
+          end
+        end else if (!linkerrorResidencyDone) begin
+          linkerrorCounter <= linkerrorCounter + 46'd1;
+        end
       end else begin
-        linkerrorCounter <= 64'd0;
+        linkerrorCounter <= 46'd0;
+        linkerrorLimitValid <= 1'b0;
       end
 
-      if ((linkinit_state_reg == LinkInitState_FDI_PARAM_EXCH) &&
-          (rdi_pl_state_sts == PhyState_active)) begin
-        if (paramExchStallReceived)
-          paramexchCounter <= 64'd0;
-        else if (!paramexchTimesUp)
-          paramexchCounter <= paramexchCounter + 64'd1;
+      // Disabling a transaction timeout resets its elapsed interval. Enabling
+      // it again starts a complete interval using the newly prepared setting.
+      if (paramexchTimerActive && !timeout_disable) begin
+        if (paramExchStallReceived) begin
+          paramexchCounter <= 45'd0;
+          paramexchLimitValid <= timeout_config_ready;
+          if (timeout_config_ready)
+            maxCount_paramexch <= configured_timeout8ms;
+        end else if (!paramexchLimitValid) begin
+          if (timeout_config_ready) begin
+            maxCount_paramexch <= configured_timeout8ms;
+            paramexchLimitValid <= 1'b1;
+            paramexchCounter <= (configured_timeout8ms == 45'd0) ? 45'd0 : 45'd1;
+          end
+        end else if (!paramexchTimesUp) begin
+          paramexchCounter <= paramexchCounter + 45'd1;
+        end
       end else begin
-        paramexchCounter <= 64'd0;
+        paramexchCounter <= 45'd0;
+        paramexchLimitValid <= 1'b0;
       end
 
       active_sbmsg_loc_req_flag <= active_sbmsg_loc_req_flag_next;

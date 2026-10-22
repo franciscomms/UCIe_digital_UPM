@@ -42,6 +42,8 @@ module MBTrain_ValTrainCenterSweepEngine #(
   output var logic [PI_CODE_WIDTH-1:0] validRightPhase
 );
   localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  // A passing run can contain every code, so its length needs one extra bit.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = PI_CODE_WIDTH + 1;
 
   typedef enum logic [3:0] {
     SweepState_IDLE               = 4'd0,
@@ -68,51 +70,32 @@ module MBTrain_ValTrainCenterSweepEngine #(
   (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] validLeftPhaseReg;
   (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] validRightPhaseReg;
 
-  logic passByPhase [0:PHASE_COUNT-1];
-
-  integer phaseIdx;
-  integer runLength;
-  integer bestLength;
-  integer runStart;
-  integer bestStart;
+  // Accumulate the longest interval as samples arrive. The old bitmap scan
+  // unrolled PHASE_COUNT dependent add/compare/mux steps into one clock path.
+  // These registers limit each sample update to one narrow increment/compare.
+  logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg, bestLengthReg;
+  logic [PI_CODE_WIDTH-1:0] runStartReg, bestStartReg;
+  wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength = runLengthReg + 1'b1;
 
   logic validWindowFoundCalc;
   logic [PI_CODE_WIDTH-1:0] validLeftPhaseCalc;
   logic [PI_CODE_WIDTH-1:0] validRightPhaseCalc;
   logic [PI_CODE_WIDTH-1:0] validCenterPhaseCalc;
 
-  // Find the longest non-wrapping run of passing Valid samples. For an even
-  // number of codes, select the lower of the two center codes.
+  // Strictly-longer updates below retain the first (lowest-code) equal run.
+  // Subtract before narrowing so the full-range passing window is preserved.
   always_comb begin
-    runLength = 0;
-    bestLength = 0;
-    runStart = 0;
-    bestStart = 0;
-
-    for (phaseIdx = 0; phaseIdx < PHASE_COUNT; phaseIdx = phaseIdx + 1) begin
-      if (passByPhase[phaseIdx]) begin
-        if (runLength == 0)
-          runStart = phaseIdx;
-        runLength = runLength + 1;
-        if (runLength > bestLength) begin
-          bestLength = runLength;
-          bestStart = runStart;
-        end
-      end else begin
-        runLength = 0;
-      end
-    end
-
-    validWindowFoundCalc = (bestLength >= MIN_VALID_WINDOW_STEPS);
-
-    if (bestLength == 0) begin
+    validWindowFoundCalc =
+      (bestLengthReg >= WINDOW_LENGTH_WIDTH'(MIN_VALID_WINDOW_STEPS));
+    if (bestLengthReg == 0) begin
       validLeftPhaseCalc = '0;
       validRightPhaseCalc = '0;
       validCenterPhaseCalc = '0;
     end else begin
-      validLeftPhaseCalc = bestStart;
-      validRightPhaseCalc = bestStart + bestLength - 1;
-      validCenterPhaseCalc = bestStart + ((bestLength - 1) >> 1);
+      validLeftPhaseCalc = bestStartReg;
+      validRightPhaseCalc = bestStartReg + PI_CODE_WIDTH'(bestLengthReg - 1'b1);
+      validCenterPhaseCalc =
+        bestStartReg + PI_CODE_WIDTH'((bestLengthReg - 1'b1) >> 1);
     end
   end
 
@@ -148,6 +131,10 @@ module MBTrain_ValTrainCenterSweepEngine #(
       lastFailedComparisonsReg <= 16'b0;
       retryCountReg <= 16'b0;
       phaseIndexReg <= '0;
+      runLengthReg <= '0;
+      bestLengthReg <= '0;
+      runStartReg <= '0;
+      bestStartReg <= '0;
       finalClockPhaseReg <= '0;
       validLeftPhaseReg <= '0;
       validRightPhaseReg <= '0;
@@ -161,6 +148,10 @@ module MBTrain_ValTrainCenterSweepEngine #(
         lastFailedComparisonsReg <= 16'b0;
         retryCountReg <= 16'b0;
         phaseIndexReg <= '0;
+        runLengthReg <= '0;
+        bestLengthReg <= '0;
+        runStartReg <= '0;
+        bestStartReg <= '0;
         finalClockPhaseReg <= '0;
         validLeftPhaseReg <= '0;
         validRightPhaseReg <= '0;
@@ -184,7 +175,17 @@ module MBTrain_ValTrainCenterSweepEngine #(
           end
 
           SweepState_STORE_SWEEP_RESULT: begin
-            passByPhase[phaseIndexReg] <= point_test_valid_pass;
+            if (point_test_valid_pass) begin
+              if (runLengthReg == 0)
+                runStartReg <= phaseIndexReg;
+              runLengthReg <= extendedRunLength;
+              if (extendedRunLength > bestLengthReg) begin
+                bestLengthReg <= extendedRunLength;
+                bestStartReg <= (runLengthReg == 0) ? phaseIndexReg : runStartReg;
+              end
+            end else begin
+              runLengthReg <= '0;
+            end
             lastFailedComparisonsReg <=
               point_test_valid_pass ? 16'd0 : 16'd1;
 
@@ -207,6 +208,10 @@ module MBTrain_ValTrainCenterSweepEngine #(
               lastFailedComparisonsReg <= 16'd1;
               retryCountReg <= retryCountReg + 16'd1;
               phaseIndexReg <= '0;
+              runLengthReg <= '0;
+              bestLengthReg <= '0;
+              runStartReg <= '0;
+              bestStartReg <= '0;
               finalClockPhaseReg <= '0;
               validLeftPhaseReg <= '0;
               validRightPhaseReg <= '0;
@@ -242,6 +247,10 @@ module MBTrain_ValTrainCenterSweepEngine #(
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg <= retryCountReg + 16'd1;
               phaseIndexReg <= '0;
+              runLengthReg <= '0;
+              bestLengthReg <= '0;
+              runStartReg <= '0;
+              bestStartReg <= '0;
               finalClockPhaseReg <= '0;
               validLeftPhaseReg <= '0;
               validRightPhaseReg <= '0;

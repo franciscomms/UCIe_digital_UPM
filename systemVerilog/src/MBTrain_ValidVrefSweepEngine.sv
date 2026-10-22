@@ -53,43 +53,20 @@ module MBTrain_ValidVrefSweepEngine #(
   } SweepState_t;
 
   (* keep = "true" *) SweepState_t stateReg;
-  (* keep = "true" *) logic [VREF_VALUE_COUNT-1:0] passBitmapReg;
+  // Track each window as its test results arrive.  A combinational scan of a
+  // complete bitmap unrolls into VREF_VALUE_COUNT dependent compare/mux stages.
+  // The length needs one extra value for an all-passing, full-range window.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(VREF_VALUE_COUNT + 1);
+  logic [VREF_CODE_WIDTH-1:0] runStartReg, bestStartReg;
+  logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg, bestLengthReg;
+  wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength = runLengthReg + 1'b1;
+  wire [WINDOW_LENGTH_WIDTH-1:0] bestSpan = bestLengthReg - 1'b1;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] currentCodeReg;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] finalCodeReg;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] leftCodeReg;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] rightCodeReg;
   (* keep = "true" *) logic [15:0] failedPointCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
-
-  integer scanIndex;
-  integer runStartInt;
-  integer runLengthInt;
-  integer bestStartInt;
-  integer bestLengthInt;
-
-  // Longest linear passing interval.  The strict greater-than comparison gives
-  // deterministic lower-code tie breaking and intentionally does not join the
-  // first and last Vref codes.
-  always_comb begin
-    runStartInt   = 0;
-    runLengthInt  = 0;
-    bestStartInt  = 0;
-    bestLengthInt = 0;
-
-    for (scanIndex = 0; scanIndex < VREF_VALUE_COUNT; scanIndex = scanIndex + 1) begin
-      if (passBitmapReg[scanIndex]) begin
-        if (runLengthInt == 0)
-          runStartInt = scanIndex;
-        runLengthInt = runLengthInt + 1;
-        if (runLengthInt > bestLengthInt) begin
-          bestLengthInt = runLengthInt;
-          bestStartInt  = runStartInt;
-        end
-      end else begin
-        runLengthInt = 0;
-      end
-    end
-  end
 
   always_comb begin
     busy                 = (stateReg != SweepState_idle) &&
@@ -121,7 +98,10 @@ module MBTrain_ValidVrefSweepEngine #(
   always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
       stateReg             <= SweepState_idle;
-      passBitmapReg        <= '0;
+      runStartReg         <= '0;
+      runLengthReg        <= '0;
+      bestStartReg        <= '0;
+      bestLengthReg       <= '0;
       currentCodeReg       <= '0;
       finalCodeReg         <= '0;
       leftCodeReg          <= '0;
@@ -133,7 +113,10 @@ module MBTrain_ValidVrefSweepEngine #(
                     (stateReg == SweepState_done) ||
                     (stateReg == SweepState_error))) begin
         stateReg            <= SweepState_applySweepCode;
-        passBitmapReg       <= '0;
+        runStartReg         <= '0;
+        runLengthReg        <= '0;
+        bestStartReg        <= '0;
+        bestLengthReg       <= '0;
         currentCodeReg      <= '0;
         finalCodeReg        <= '0;
         leftCodeReg         <= '0;
@@ -154,11 +137,24 @@ module MBTrain_ValidVrefSweepEngine #(
 
           SweepState_waitSweepPoint: begin
             if (point_test_done) begin
-              passBitmapReg[currentCodeReg] <= point_test_pass;
+              // Strictly greater replacement keeps the first (lowest-code)
+              // interval on a tie.  A failure ends the run; endpoints do not wrap.
+              if (point_test_pass) begin
+                if (runLengthReg == '0)
+                  runStartReg         <= currentCodeReg;
+                runLengthReg        <= extendedRunLength;
+                if (extendedRunLength > bestLengthReg) begin
+                  bestLengthReg       <= extendedRunLength;
+                  bestStartReg        <= (runLengthReg == '0) ?
+                                  currentCodeReg : runStartReg;
+                end
+              end else begin
+                runLengthReg        <= '0;
+              end
               if (!point_test_pass)
                 failedPointCountReg <= failedPointCountReg + 16'd1;
 
-              if (currentCodeReg == (VREF_VALUE_COUNT - 1)) begin
+              if (currentCodeReg == VREF_CODE_WIDTH'(VREF_VALUE_COUNT - 1)) begin
                 stateReg <= SweepState_analyze;
               end else begin
                 currentCodeReg <= currentCodeReg + 1'b1;
@@ -168,15 +164,18 @@ module MBTrain_ValidVrefSweepEngine #(
           end
 
           SweepState_analyze: begin
-            if (bestLengthInt >= MIN_PASSING_WINDOW_VALUES) begin
+            if (bestLengthReg >= WINDOW_LENGTH_WIDTH'(MIN_PASSING_WINDOW_VALUES)) begin
               // Lower midpoint for an even-width window.
-              finalCodeReg <= bestStartInt + ((bestLengthInt - 1) / 2);
-              leftCodeReg  <= bestStartInt;
-              rightCodeReg <= bestStartInt + bestLengthInt - 1;
+              finalCodeReg <= bestStartReg + VREF_CODE_WIDTH'(bestSpan >> 1);
+              leftCodeReg  <= bestStartReg;
+              rightCodeReg <= bestStartReg + VREF_CODE_WIDTH'(bestSpan);
               stateReg     <= SweepState_applyFinalCode;
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg        <= retryCountReg + 16'd1;
-              passBitmapReg        <= '0;
+              runStartReg         <= '0;
+              runLengthReg        <= '0;
+              bestStartReg        <= '0;
+              bestLengthReg       <= '0;
               currentCodeReg       <= '0;
               failedPointCountReg  <= 16'd0;
               stateReg             <= SweepState_applySweepCode;
@@ -199,7 +198,10 @@ module MBTrain_ValidVrefSweepEngine #(
                 stateReg <= SweepState_done;
               end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
                 retryCountReg        <= retryCountReg + 16'd1;
-                passBitmapReg        <= '0;
+                runStartReg         <= '0;
+                runLengthReg        <= '0;
+                bestStartReg        <= '0;
+                bestLengthReg       <= '0;
                 currentCodeReg       <= '0;
                 failedPointCountReg  <= 16'd0;
                 stateReg             <= SweepState_applySweepCode;

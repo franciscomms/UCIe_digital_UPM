@@ -107,83 +107,31 @@ module MBTrainFSM #(
   output var logic           flagToAnalog_rxClkCal_doCalibration,
   input wire logic           flagFromAnalog_rxClkCal_done,
   output var logic           flagToAnalog_rxClkCal_sendClockTrack,
-  output var logic           flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern,
-  input wire logic           flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent,
-  output var logic           flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode,
-  input wire logic            flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_valTrainCenter_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_valTrainCenter_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload,
-  output var logic           flagToAnalog_valTrainVref_sendPattern,
-  input wire logic           flagFromAnalog_valTrainVref_detectedValPattern,
-  input wire logic           flagFromAnalog_valTrainVref_finishedPattern,
-  output var logic           flagToAnalog_valTrainVref_applyRxVref,
-  output var logic [validVrefCodeWidth-1:0] flagToAnalog_valTrainVref_rxVrefCode,
-  input wire logic           flagFromAnalog_valTrainVref_rxVrefApplied,
-  output var logic           flagToAnalog_valTrainVref_configureRxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_valTrainVref_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_valTrainVref_comparisonMode,
-  output var logic [15:0]    flagToAnalog_valTrainVref_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_valTrainVref_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_valTrainVref_burstCountSettings,
-  output var logic           flagToAnalog_valTrainVref_patternMode,
-  output var logic [3:0]     flagToAnalog_valTrainVref_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_valTrainVref_validPattern,
-  output var logic [2:0]     flagToAnalog_valTrainVref_dataPattern,
-  output var logic           flagToAnalog_valTrainVref_clearComparisonErrors,
-  output var logic           flagToAnalog_valTrainVref_resetLocalTxScrambler,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew,
-  output var logic [64*d2cTxDeskewCodeWidth-1:0] flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload,
-  output var logic           flagToAnalog_dataTrainVref_sendPattern,
-  input wire logic [dataLaneCount-1:0] flagFromAnalog_dataTrainVref_detectedDataPattern,
-  input wire logic           flagFromAnalog_dataTrainVref_finishedPattern,
-  output var logic           flagToAnalog_dataTrainVref_applyRxVref,
-  output var logic [dataLaneCount*dataVrefCodeWidth-1:0] flagToAnalog_dataTrainVref_rxVrefCodes,
-  input wire logic           flagFromAnalog_dataTrainVref_rxVrefApplied,
-  output var logic           flagToAnalog_dataTrainVref_configureRxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_dataTrainVref_comparisonMode,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_burstCountSettings,
-  output var logic           flagToAnalog_dataTrainVref_patternMode,
-  output var logic [3:0]     flagToAnalog_dataTrainVref_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_dataTrainVref_validPattern,
-  output var logic [2:0]     flagToAnalog_dataTrainVref_dataPattern,
-  output var logic           flagToAnalog_dataTrainVref_clearComparisonErrors,
-  output var logic           flagToAnalog_dataTrainVref_resetLocalTxScrambler,
+  output var logic           flagToAnalog_d2cSender_sendValTrainPattern,
+  input wire logic           flagFromAnalog_d2cSender_valTrainPatternSent,
+  output var logic           flagToAnalog_d2cSender_resetLocalScrambler,
+  output var logic           flagToAnalog_d2cSender_applyTxClockPhase,
+  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_txClockPhaseCode,
+  input wire logic            flagFromAnalog_d2cSender_txClockPhaseApplied,
+  output var logic           flagToAnalog_d2cReceiver_configureTxInitD2CPointTest,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold,
+  output var logic           flagToAnalog_d2cReceiver_comparisonMode,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_iterationCountSettings,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_idleCountSettings,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_burstCountSettings,
+  output var logic           flagToAnalog_d2cReceiver_patternMode,
+  output var logic [3:0]     flagToAnalog_d2cReceiver_clockPhaseControl,
+  output var logic [2:0]     flagToAnalog_d2cReceiver_validPattern,
+  output var logic [2:0]     flagToAnalog_d2cReceiver_dataPattern,
+  output var logic           flagToAnalog_d2cReceiver_resetLocalRxScrambler,
+  input wire logic [15:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
+  input wire logic [63:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  output var logic           flagToAnalog_d2cSender_sendLfsrPattern,
+  input wire logic           flagFromAnalog_d2cSender_lfsrPatternSent,
+  output var logic           flagToAnalog_d2cSender_applyTxLaneDeskew,
+  // TX deskew: 20 bits/lane, cell 1 [9:0], cell 2 [19:10]; LSB + 9 thermometer bits/cell.
+  output var logic [64*d2cTxDeskewCodeWidth-1:0] flagToAnalog_d2cSender_txLaneDeskewCodes,
+  input wire logic           flagFromAnalog_d2cSender_txLaneDeskewApplied,
   output var logic           flagToAnalog_rxDeskew_sendLfsrPattern,
   input wire logic           flagFromAnalog_rxDeskew_lfsrPatternSent,
   output var logic           flagToAnalog_rxDeskew_resetLocalTxScrambler,
@@ -202,41 +150,8 @@ module MBTrainFSM #(
   output var logic [2:0]     flagToAnalog_rxDeskew_dataPattern,
   output var logic           flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] flagFromAnalog_rxDeskew_detectedDataPattern,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode,
-  input wire logic            flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload,
   output var logic           flagToLtsm_linkSpeed_phyInRetrain,
-  output var logic           flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern,
-  input wire logic           flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent,
-  output var logic           flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_linkSpeed_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_linkSpeed_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful,
+  input wire logic [15:0]    flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
   output var logic [3:0]     state,
   output var logic [11:0]    activeSubstate,
   output var logic [15:0]    lastErrorCount,
@@ -263,6 +178,406 @@ module MBTrainFSM #(
 
   (* keep = "true" *) State_t stateReg;
   (* keep = "true" *) logic errorReg;
+
+  // Private sub-FSM interfaces: only the selected state owns the PHY ports.
+  logic stage_flagToAnalog_valVref_sendPattern;
+  logic stage_flagFromAnalog_valVref_detectedValPattern;
+  logic stage_flagFromAnalog_valVref_finishedPattern;
+  logic stage_flagToAnalog_valVref_applyRxVref;
+  logic [validVrefCodeWidth-1:0] stage_flagToAnalog_valVref_rxVrefCode;
+  logic stage_flagFromAnalog_valVref_rxVrefApplied;
+  logic stage_flagToAnalog_valVref_configureRxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_valVref_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_valVref_comparisonMode;
+  logic [15:0] stage_flagToAnalog_valVref_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_valVref_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_valVref_burstCountSettings;
+  logic stage_flagToAnalog_valVref_patternMode;
+  logic [3:0] stage_flagToAnalog_valVref_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_valVref_validPattern;
+  logic [2:0] stage_flagToAnalog_valVref_dataPattern;
+  logic stage_flagToAnalog_valVref_clearComparisonErrors;
+  logic stage_flagToAnalog_valVref_resetLocalTxScrambler;
+  logic stage_flagToAnalog_dataVref_sendPattern;
+  logic [dataLaneCount-1:0] stage_flagFromAnalog_dataVref_detectedDataPattern;
+  logic stage_flagFromAnalog_dataVref_finishedPattern;
+  logic stage_flagToAnalog_dataVref_applyRxVref;
+  logic [dataLaneCount*dataVrefCodeWidth-1:0] stage_flagToAnalog_dataVref_rxVrefCodes;
+  logic stage_flagFromAnalog_dataVref_rxVrefApplied;
+  logic stage_flagToAnalog_dataVref_configureRxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_dataVref_comparisonMode;
+  logic [15:0] stage_flagToAnalog_dataVref_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_dataVref_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_dataVref_burstCountSettings;
+  logic stage_flagToAnalog_dataVref_patternMode;
+  logic [3:0] stage_flagToAnalog_dataVref_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_dataVref_validPattern;
+  logic [2:0] stage_flagToAnalog_dataVref_dataPattern;
+  logic stage_flagToAnalog_dataVref_clearComparisonErrors;
+  logic stage_flagToAnalog_dataVref_resetLocalTxScrambler;
+  logic stage_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern;
+  logic stage_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent;
+  logic stage_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler;
+  logic stage_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase;
+  logic [d2cPiCodeWidth-1:0] stage_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode;
+  logic stage_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied;
+  logic stage_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings;
+  logic stage_flagToAnalog_d2cReceiver_valTrainCenter_patternMode;
+  logic [3:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_validPattern;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern;
+  logic stage_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler;
+  logic [15:0] stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo;
+  logic [63:0] stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload;
+  logic stage_flagToAnalog_valTrainVref_sendPattern;
+  logic stage_flagFromAnalog_valTrainVref_detectedValPattern;
+  logic stage_flagFromAnalog_valTrainVref_finishedPattern;
+  logic stage_flagToAnalog_valTrainVref_applyRxVref;
+  logic [validVrefCodeWidth-1:0] stage_flagToAnalog_valTrainVref_rxVrefCode;
+  logic stage_flagFromAnalog_valTrainVref_rxVrefApplied;
+  logic stage_flagToAnalog_valTrainVref_configureRxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_valTrainVref_comparisonMode;
+  logic [15:0] stage_flagToAnalog_valTrainVref_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_valTrainVref_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_valTrainVref_burstCountSettings;
+  logic stage_flagToAnalog_valTrainVref_patternMode;
+  logic [3:0] stage_flagToAnalog_valTrainVref_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_valTrainVref_validPattern;
+  logic [2:0] stage_flagToAnalog_valTrainVref_dataPattern;
+  logic stage_flagToAnalog_valTrainVref_clearComparisonErrors;
+  logic stage_flagToAnalog_valTrainVref_resetLocalTxScrambler;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase;
+  logic [d2cPiCodeWidth-1:0] stage_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew;
+  logic [64*d2cTxDeskewCodeWidth-1:0] stage_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode;
+  logic [3:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler;
+  logic [15:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo;
+  logic [63:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload;
+  logic stage_flagToAnalog_dataTrainVref_sendPattern;
+  logic [dataLaneCount-1:0] stage_flagFromAnalog_dataTrainVref_detectedDataPattern;
+  logic stage_flagFromAnalog_dataTrainVref_finishedPattern;
+  logic stage_flagToAnalog_dataTrainVref_applyRxVref;
+  logic [dataLaneCount*dataVrefCodeWidth-1:0] stage_flagToAnalog_dataTrainVref_rxVrefCodes;
+  logic stage_flagFromAnalog_dataTrainVref_rxVrefApplied;
+  logic stage_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_dataTrainVref_comparisonMode;
+  logic [15:0] stage_flagToAnalog_dataTrainVref_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_dataTrainVref_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_dataTrainVref_burstCountSettings;
+  logic stage_flagToAnalog_dataTrainVref_patternMode;
+  logic [3:0] stage_flagToAnalog_dataTrainVref_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_dataTrainVref_validPattern;
+  logic [2:0] stage_flagToAnalog_dataTrainVref_dataPattern;
+  logic stage_flagToAnalog_dataTrainVref_clearComparisonErrors;
+  logic stage_flagToAnalog_dataTrainVref_resetLocalTxScrambler;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase;
+  logic [d2cPiCodeWidth-1:0] stage_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode;
+  logic [3:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler;
+  logic [15:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo;
+  logic [63:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload;
+  logic stage_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern;
+  logic stage_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent;
+  logic stage_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler;
+  logic stage_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings;
+  logic stage_flagToAnalog_d2cReceiver_linkSpeed_patternMode;
+  logic [3:0] stage_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_linkSpeed_validPattern;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_linkSpeed_dataPattern;
+  logic stage_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler;
+  logic [15:0] stage_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful;
+  assign stage_flagFromAnalog_valVref_detectedValPattern =
+    (reset_n && (stateReg == State_VALVREF)) ? flagFromAnalog_valVref_detectedValPattern : '0;
+  assign stage_flagFromAnalog_valVref_finishedPattern =
+    (reset_n && (stateReg == State_VALVREF)) ? flagFromAnalog_valVref_finishedPattern : '0;
+  assign stage_flagFromAnalog_valVref_rxVrefApplied =
+    (reset_n && (stateReg == State_VALVREF)) ? flagFromAnalog_valVref_rxVrefApplied : '0;
+  assign stage_flagFromAnalog_dataVref_detectedDataPattern =
+    (reset_n && (stateReg == State_DATAVREF)) ? flagFromAnalog_dataVref_detectedDataPattern : '0;
+  assign stage_flagFromAnalog_dataVref_finishedPattern =
+    (reset_n && (stateReg == State_DATAVREF)) ? flagFromAnalog_dataVref_finishedPattern : '0;
+  assign stage_flagFromAnalog_dataVref_rxVrefApplied =
+    (reset_n && (stateReg == State_DATAVREF)) ? flagFromAnalog_dataVref_rxVrefApplied : '0;
+  assign stage_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent =
+    (reset_n && (stateReg == State_VALTRAINCENTER)) ? flagFromAnalog_d2cSender_valTrainPatternSent : '0;
+  assign stage_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied =
+    (reset_n && (stateReg == State_VALTRAINCENTER)) ? flagFromAnalog_d2cSender_txClockPhaseApplied : '0;
+  assign stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo =
+    (reset_n && (stateReg == State_VALTRAINCENTER)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : '0;
+  assign stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload =
+    (reset_n && (stateReg == State_VALTRAINCENTER)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : '0;
+  assign stage_flagFromAnalog_valTrainVref_detectedValPattern =
+    (reset_n && (stateReg == State_VALTRAINVREF)) ? flagFromAnalog_valVref_detectedValPattern : '0;
+  assign stage_flagFromAnalog_valTrainVref_finishedPattern =
+    (reset_n && (stateReg == State_VALTRAINVREF)) ? flagFromAnalog_valVref_finishedPattern : '0;
+  assign stage_flagFromAnalog_valTrainVref_rxVrefApplied =
+    (reset_n && (stateReg == State_VALTRAINVREF)) ? flagFromAnalog_valVref_rxVrefApplied : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cSender_lfsrPatternSent : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cSender_txClockPhaseApplied : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cSender_txLaneDeskewApplied : '0;
+  assign stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : '0;
+  assign stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : '0;
+  assign stage_flagFromAnalog_dataTrainVref_detectedDataPattern =
+    (reset_n && (stateReg == State_DATATRAINVREF)) ? flagFromAnalog_dataVref_detectedDataPattern : '0;
+  assign stage_flagFromAnalog_dataTrainVref_finishedPattern =
+    (reset_n && (stateReg == State_DATATRAINVREF)) ? flagFromAnalog_dataVref_finishedPattern : '0;
+  assign stage_flagFromAnalog_dataTrainVref_rxVrefApplied =
+    (reset_n && (stateReg == State_DATATRAINVREF)) ? flagFromAnalog_dataVref_rxVrefApplied : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent =
+    (reset_n && (stateReg == State_DATATRAINCENTER2)) ? flagFromAnalog_d2cSender_lfsrPatternSent : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied =
+    (reset_n && (stateReg == State_DATATRAINCENTER2)) ? flagFromAnalog_d2cSender_txClockPhaseApplied : '0;
+  assign stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo =
+    (reset_n && (stateReg == State_DATATRAINCENTER2)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : '0;
+  assign stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload =
+    (reset_n && (stateReg == State_DATATRAINCENTER2)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : '0;
+  assign stage_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent =
+    (reset_n && (stateReg == State_LINKSPEED)) ? flagFromAnalog_d2cSender_lfsrPatternSent : '0;
+  assign stage_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful =
+    (reset_n && (stateReg == State_LINKSPEED)) ? flagFromAnalog_d2cReceiver_laneComparisonSuccessful : '0;
+
+  // Shared analog controls. Data/configuration buses are valid with their
+  // corresponding apply/configure/send request; the PHY retains applied values.
+  // No command is issued in unrelated states or during reset. Center2 has no
+  // TX lane-deskew engine: Center1 alone owns applyTxLaneDeskew.
+  always_comb begin
+    flagToAnalog_valVref_sendPattern = '0;
+    flagToAnalog_valVref_applyRxVref = '0;
+    flagToAnalog_valVref_rxVrefCode = '0;
+    flagToAnalog_valVref_configureRxInitD2CPointTest = '0;
+    flagToAnalog_valVref_maximumComparisonErrorThreshold = '0;
+    flagToAnalog_valVref_comparisonMode = '0;
+    flagToAnalog_valVref_iterationCountSettings = '0;
+    flagToAnalog_valVref_idleCountSettings = '0;
+    flagToAnalog_valVref_burstCountSettings = '0;
+    flagToAnalog_valVref_patternMode = '0;
+    flagToAnalog_valVref_clockPhaseControl = '0;
+    flagToAnalog_valVref_validPattern = '0;
+    flagToAnalog_valVref_dataPattern = '0;
+    flagToAnalog_valVref_clearComparisonErrors = '0;
+    flagToAnalog_valVref_resetLocalTxScrambler = '0;
+    flagToAnalog_dataVref_sendPattern = '0;
+    flagToAnalog_dataVref_applyRxVref = '0;
+    flagToAnalog_dataVref_rxVrefCodes = '0;
+    flagToAnalog_dataVref_configureRxInitD2CPointTest = '0;
+    flagToAnalog_dataVref_maximumComparisonErrorThreshold = '0;
+    flagToAnalog_dataVref_comparisonMode = '0;
+    flagToAnalog_dataVref_iterationCountSettings = '0;
+    flagToAnalog_dataVref_idleCountSettings = '0;
+    flagToAnalog_dataVref_burstCountSettings = '0;
+    flagToAnalog_dataVref_patternMode = '0;
+    flagToAnalog_dataVref_clockPhaseControl = '0;
+    flagToAnalog_dataVref_validPattern = '0;
+    flagToAnalog_dataVref_dataPattern = '0;
+    flagToAnalog_dataVref_clearComparisonErrors = '0;
+    flagToAnalog_dataVref_resetLocalTxScrambler = '0;
+    flagToAnalog_d2cSender_sendValTrainPattern = '0;
+    flagToAnalog_d2cSender_resetLocalScrambler = '0;
+    flagToAnalog_d2cSender_applyTxClockPhase = '0;
+    flagToAnalog_d2cSender_txClockPhaseCode = '0;
+    flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = '0;
+    flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = '0;
+    flagToAnalog_d2cReceiver_comparisonMode = '0;
+    flagToAnalog_d2cReceiver_iterationCountSettings = '0;
+    flagToAnalog_d2cReceiver_idleCountSettings = '0;
+    flagToAnalog_d2cReceiver_burstCountSettings = '0;
+    flagToAnalog_d2cReceiver_patternMode = '0;
+    flagToAnalog_d2cReceiver_clockPhaseControl = '0;
+    flagToAnalog_d2cReceiver_validPattern = '0;
+    flagToAnalog_d2cReceiver_dataPattern = '0;
+    flagToAnalog_d2cReceiver_resetLocalRxScrambler = '0;
+    flagToAnalog_d2cSender_sendLfsrPattern = '0;
+    flagToAnalog_d2cSender_applyTxLaneDeskew = '0;
+    flagToAnalog_d2cSender_txLaneDeskewCodes = '0;
+    if (reset_n) begin
+      case (stateReg)
+        State_VALVREF: begin
+          flagToAnalog_valVref_sendPattern = stage_flagToAnalog_valVref_sendPattern;
+          flagToAnalog_valVref_applyRxVref = stage_flagToAnalog_valVref_applyRxVref;
+          flagToAnalog_valVref_rxVrefCode = stage_flagToAnalog_valVref_rxVrefCode;
+          flagToAnalog_valVref_configureRxInitD2CPointTest = stage_flagToAnalog_valVref_configureRxInitD2CPointTest;
+          flagToAnalog_valVref_maximumComparisonErrorThreshold = stage_flagToAnalog_valVref_maximumComparisonErrorThreshold;
+          flagToAnalog_valVref_comparisonMode = stage_flagToAnalog_valVref_comparisonMode;
+          flagToAnalog_valVref_iterationCountSettings = stage_flagToAnalog_valVref_iterationCountSettings;
+          flagToAnalog_valVref_idleCountSettings = stage_flagToAnalog_valVref_idleCountSettings;
+          flagToAnalog_valVref_burstCountSettings = stage_flagToAnalog_valVref_burstCountSettings;
+          flagToAnalog_valVref_patternMode = stage_flagToAnalog_valVref_patternMode;
+          flagToAnalog_valVref_clockPhaseControl = stage_flagToAnalog_valVref_clockPhaseControl;
+          flagToAnalog_valVref_validPattern = stage_flagToAnalog_valVref_validPattern;
+          flagToAnalog_valVref_dataPattern = stage_flagToAnalog_valVref_dataPattern;
+          flagToAnalog_valVref_clearComparisonErrors = stage_flagToAnalog_valVref_clearComparisonErrors;
+          flagToAnalog_valVref_resetLocalTxScrambler = stage_flagToAnalog_valVref_resetLocalTxScrambler;
+        end
+        State_VALTRAINVREF: begin
+          flagToAnalog_valVref_sendPattern = stage_flagToAnalog_valTrainVref_sendPattern;
+          flagToAnalog_valVref_applyRxVref = stage_flagToAnalog_valTrainVref_applyRxVref;
+          flagToAnalog_valVref_rxVrefCode = stage_flagToAnalog_valTrainVref_rxVrefCode;
+          flagToAnalog_valVref_configureRxInitD2CPointTest = stage_flagToAnalog_valTrainVref_configureRxInitD2CPointTest;
+          flagToAnalog_valVref_maximumComparisonErrorThreshold = stage_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold;
+          flagToAnalog_valVref_comparisonMode = stage_flagToAnalog_valTrainVref_comparisonMode;
+          flagToAnalog_valVref_iterationCountSettings = stage_flagToAnalog_valTrainVref_iterationCountSettings;
+          flagToAnalog_valVref_idleCountSettings = stage_flagToAnalog_valTrainVref_idleCountSettings;
+          flagToAnalog_valVref_burstCountSettings = stage_flagToAnalog_valTrainVref_burstCountSettings;
+          flagToAnalog_valVref_patternMode = stage_flagToAnalog_valTrainVref_patternMode;
+          flagToAnalog_valVref_clockPhaseControl = stage_flagToAnalog_valTrainVref_clockPhaseControl;
+          flagToAnalog_valVref_validPattern = stage_flagToAnalog_valTrainVref_validPattern;
+          flagToAnalog_valVref_dataPattern = stage_flagToAnalog_valTrainVref_dataPattern;
+          flagToAnalog_valVref_clearComparisonErrors = stage_flagToAnalog_valTrainVref_clearComparisonErrors;
+          flagToAnalog_valVref_resetLocalTxScrambler = stage_flagToAnalog_valTrainVref_resetLocalTxScrambler;
+        end
+        State_DATAVREF: begin
+          flagToAnalog_dataVref_sendPattern = stage_flagToAnalog_dataVref_sendPattern;
+          flagToAnalog_dataVref_applyRxVref = stage_flagToAnalog_dataVref_applyRxVref;
+          flagToAnalog_dataVref_rxVrefCodes = stage_flagToAnalog_dataVref_rxVrefCodes;
+          flagToAnalog_dataVref_configureRxInitD2CPointTest = stage_flagToAnalog_dataVref_configureRxInitD2CPointTest;
+          flagToAnalog_dataVref_maximumComparisonErrorThreshold = stage_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+          flagToAnalog_dataVref_comparisonMode = stage_flagToAnalog_dataVref_comparisonMode;
+          flagToAnalog_dataVref_iterationCountSettings = stage_flagToAnalog_dataVref_iterationCountSettings;
+          flagToAnalog_dataVref_idleCountSettings = stage_flagToAnalog_dataVref_idleCountSettings;
+          flagToAnalog_dataVref_burstCountSettings = stage_flagToAnalog_dataVref_burstCountSettings;
+          flagToAnalog_dataVref_patternMode = stage_flagToAnalog_dataVref_patternMode;
+          flagToAnalog_dataVref_clockPhaseControl = stage_flagToAnalog_dataVref_clockPhaseControl;
+          flagToAnalog_dataVref_validPattern = stage_flagToAnalog_dataVref_validPattern;
+          flagToAnalog_dataVref_dataPattern = stage_flagToAnalog_dataVref_dataPattern;
+          flagToAnalog_dataVref_clearComparisonErrors = stage_flagToAnalog_dataVref_clearComparisonErrors;
+          flagToAnalog_dataVref_resetLocalTxScrambler = stage_flagToAnalog_dataVref_resetLocalTxScrambler;
+        end
+        State_DATATRAINVREF: begin
+          flagToAnalog_dataVref_sendPattern = stage_flagToAnalog_dataTrainVref_sendPattern;
+          flagToAnalog_dataVref_applyRxVref = stage_flagToAnalog_dataTrainVref_applyRxVref;
+          flagToAnalog_dataVref_rxVrefCodes = stage_flagToAnalog_dataTrainVref_rxVrefCodes;
+          flagToAnalog_dataVref_configureRxInitD2CPointTest = stage_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest;
+          flagToAnalog_dataVref_maximumComparisonErrorThreshold = stage_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold;
+          flagToAnalog_dataVref_comparisonMode = stage_flagToAnalog_dataTrainVref_comparisonMode;
+          flagToAnalog_dataVref_iterationCountSettings = stage_flagToAnalog_dataTrainVref_iterationCountSettings;
+          flagToAnalog_dataVref_idleCountSettings = stage_flagToAnalog_dataTrainVref_idleCountSettings;
+          flagToAnalog_dataVref_burstCountSettings = stage_flagToAnalog_dataTrainVref_burstCountSettings;
+          flagToAnalog_dataVref_patternMode = stage_flagToAnalog_dataTrainVref_patternMode;
+          flagToAnalog_dataVref_clockPhaseControl = stage_flagToAnalog_dataTrainVref_clockPhaseControl;
+          flagToAnalog_dataVref_validPattern = stage_flagToAnalog_dataTrainVref_validPattern;
+          flagToAnalog_dataVref_dataPattern = stage_flagToAnalog_dataTrainVref_dataPattern;
+          flagToAnalog_dataVref_clearComparisonErrors = stage_flagToAnalog_dataTrainVref_clearComparisonErrors;
+          flagToAnalog_dataVref_resetLocalTxScrambler = stage_flagToAnalog_dataTrainVref_resetLocalTxScrambler;
+        end
+        State_VALTRAINCENTER: begin
+          flagToAnalog_d2cSender_sendValTrainPattern = stage_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern;
+          flagToAnalog_d2cSender_resetLocalScrambler = stage_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler;
+          flagToAnalog_d2cSender_applyTxClockPhase = stage_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase;
+          flagToAnalog_d2cSender_txClockPhaseCode = stage_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode;
+          flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = stage_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest;
+          flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = stage_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold;
+          flagToAnalog_d2cReceiver_comparisonMode = stage_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode;
+          flagToAnalog_d2cReceiver_iterationCountSettings = stage_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings;
+          flagToAnalog_d2cReceiver_idleCountSettings = stage_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings;
+          flagToAnalog_d2cReceiver_burstCountSettings = stage_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings;
+          flagToAnalog_d2cReceiver_patternMode = stage_flagToAnalog_d2cReceiver_valTrainCenter_patternMode;
+          flagToAnalog_d2cReceiver_clockPhaseControl = stage_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl;
+          flagToAnalog_d2cReceiver_validPattern = stage_flagToAnalog_d2cReceiver_valTrainCenter_validPattern;
+          flagToAnalog_d2cReceiver_dataPattern = stage_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern;
+          flagToAnalog_d2cReceiver_resetLocalRxScrambler = stage_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler;
+        end
+        State_DATATRAINCENTER1: begin
+          flagToAnalog_d2cSender_sendLfsrPattern = stage_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern;
+          flagToAnalog_d2cSender_resetLocalScrambler = stage_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler;
+          flagToAnalog_d2cSender_applyTxClockPhase = stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase;
+          flagToAnalog_d2cSender_txClockPhaseCode = stage_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode;
+          flagToAnalog_d2cSender_applyTxLaneDeskew = stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew;
+          flagToAnalog_d2cSender_txLaneDeskewCodes = stage_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes;
+          flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest;
+          flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold;
+          flagToAnalog_d2cReceiver_comparisonMode = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode;
+          flagToAnalog_d2cReceiver_iterationCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings;
+          flagToAnalog_d2cReceiver_idleCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings;
+          flagToAnalog_d2cReceiver_burstCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings;
+          flagToAnalog_d2cReceiver_patternMode = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode;
+          flagToAnalog_d2cReceiver_clockPhaseControl = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl;
+          flagToAnalog_d2cReceiver_validPattern = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern;
+          flagToAnalog_d2cReceiver_dataPattern = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern;
+          flagToAnalog_d2cReceiver_resetLocalRxScrambler = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler;
+        end
+        State_DATATRAINCENTER2: begin
+          flagToAnalog_d2cSender_sendLfsrPattern = stage_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern;
+          flagToAnalog_d2cSender_resetLocalScrambler = stage_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler;
+          flagToAnalog_d2cSender_applyTxClockPhase = stage_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase;
+          flagToAnalog_d2cSender_txClockPhaseCode = stage_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode;
+          flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest;
+          flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold;
+          flagToAnalog_d2cReceiver_comparisonMode = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode;
+          flagToAnalog_d2cReceiver_iterationCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings;
+          flagToAnalog_d2cReceiver_idleCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings;
+          flagToAnalog_d2cReceiver_burstCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings;
+          flagToAnalog_d2cReceiver_patternMode = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode;
+          flagToAnalog_d2cReceiver_clockPhaseControl = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl;
+          flagToAnalog_d2cReceiver_validPattern = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern;
+          flagToAnalog_d2cReceiver_dataPattern = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern;
+          flagToAnalog_d2cReceiver_resetLocalRxScrambler = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler;
+        end
+        State_LINKSPEED: begin
+          flagToAnalog_d2cSender_sendLfsrPattern = stage_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern;
+          flagToAnalog_d2cSender_resetLocalScrambler = stage_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler;
+          flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = stage_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest;
+          flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = stage_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold;
+          flagToAnalog_d2cReceiver_comparisonMode = stage_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode;
+          flagToAnalog_d2cReceiver_iterationCountSettings = stage_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings;
+          flagToAnalog_d2cReceiver_idleCountSettings = stage_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings;
+          flagToAnalog_d2cReceiver_burstCountSettings = stage_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings;
+          flagToAnalog_d2cReceiver_patternMode = stage_flagToAnalog_d2cReceiver_linkSpeed_patternMode;
+          flagToAnalog_d2cReceiver_clockPhaseControl = stage_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl;
+          flagToAnalog_d2cReceiver_validPattern = stage_flagToAnalog_d2cReceiver_linkSpeed_validPattern;
+          flagToAnalog_d2cReceiver_dataPattern = stage_flagToAnalog_d2cReceiver_linkSpeed_dataPattern;
+          flagToAnalog_d2cReceiver_resetLocalRxScrambler = stage_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler;
+        end
+        default: begin end
+      endcase
+    end
+  end
+
 
   logic valVref_busy;
   logic valVref_done;
@@ -397,24 +712,24 @@ module MBTrainFSM #(
     .sb_tx_din(valVref_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_VALVREF)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_valRefApplyRxVref(flagToAnalog_valVref_applyRxVref),
-    .flagToAnalog_valRefRxVrefCode(flagToAnalog_valVref_rxVrefCode),
-    .flagFromAnalog_valRefRxVrefApplied(flagFromAnalog_valVref_rxVrefApplied),
-    .flagToAnalog_valRefConfigureRxInitD2CPointTest(flagToAnalog_valVref_configureRxInitD2CPointTest),
-    .flagToAnalog_valRefMaximumComparisonErrorThreshold(flagToAnalog_valVref_maximumComparisonErrorThreshold),
-    .flagToAnalog_valRefComparisonMode(flagToAnalog_valVref_comparisonMode),
-    .flagToAnalog_valRefIterationCountSettings(flagToAnalog_valVref_iterationCountSettings),
-    .flagToAnalog_valRefIdleCountSettings(flagToAnalog_valVref_idleCountSettings),
-    .flagToAnalog_valRefBurstCountSettings(flagToAnalog_valVref_burstCountSettings),
-    .flagToAnalog_valRefPatternMode(flagToAnalog_valVref_patternMode),
-    .flagToAnalog_valRefClockPhaseControl(flagToAnalog_valVref_clockPhaseControl),
-    .flagToAnalog_valRefValidPattern(flagToAnalog_valVref_validPattern),
-    .flagToAnalog_valRefDataPattern(flagToAnalog_valVref_dataPattern),
-    .flagToAnalog_valRefClearComparisonErrors(flagToAnalog_valVref_clearComparisonErrors),
-    .flagFromAnalog_valRefDetectedValPattern(flagFromAnalog_valVref_detectedValPattern),
-    .flagToAnalog_valRefSendPattern(flagToAnalog_valVref_sendPattern),
-    .flagFromAnalog_valRefFinishedPattern(flagFromAnalog_valVref_finishedPattern),
-    .flagToAnalog_valRefResetLocalTxScrambler(flagToAnalog_valVref_resetLocalTxScrambler),
+    .flagToAnalog_valRefApplyRxVref(stage_flagToAnalog_valVref_applyRxVref),
+    .flagToAnalog_valRefRxVrefCode(stage_flagToAnalog_valVref_rxVrefCode),
+    .flagFromAnalog_valRefRxVrefApplied(stage_flagFromAnalog_valVref_rxVrefApplied),
+    .flagToAnalog_valRefConfigureRxInitD2CPointTest(stage_flagToAnalog_valVref_configureRxInitD2CPointTest),
+    .flagToAnalog_valRefMaximumComparisonErrorThreshold(stage_flagToAnalog_valVref_maximumComparisonErrorThreshold),
+    .flagToAnalog_valRefComparisonMode(stage_flagToAnalog_valVref_comparisonMode),
+    .flagToAnalog_valRefIterationCountSettings(stage_flagToAnalog_valVref_iterationCountSettings),
+    .flagToAnalog_valRefIdleCountSettings(stage_flagToAnalog_valVref_idleCountSettings),
+    .flagToAnalog_valRefBurstCountSettings(stage_flagToAnalog_valVref_burstCountSettings),
+    .flagToAnalog_valRefPatternMode(stage_flagToAnalog_valVref_patternMode),
+    .flagToAnalog_valRefClockPhaseControl(stage_flagToAnalog_valVref_clockPhaseControl),
+    .flagToAnalog_valRefValidPattern(stage_flagToAnalog_valVref_validPattern),
+    .flagToAnalog_valRefDataPattern(stage_flagToAnalog_valVref_dataPattern),
+    .flagToAnalog_valRefClearComparisonErrors(stage_flagToAnalog_valVref_clearComparisonErrors),
+    .flagFromAnalog_valRefDetectedValPattern(stage_flagFromAnalog_valVref_detectedValPattern),
+    .flagToAnalog_valRefSendPattern(stage_flagToAnalog_valVref_sendPattern),
+    .flagFromAnalog_valRefFinishedPattern(stage_flagFromAnalog_valVref_finishedPattern),
+    .flagToAnalog_valRefResetLocalTxScrambler(stage_flagToAnalog_valVref_resetLocalTxScrambler),
     .substate(valVref_substate),
     .lastErrorCount(valVref_lastErrorCount),
     .retryCount(valVref_retryCount),
@@ -453,43 +768,43 @@ module MBTrainFSM #(
     .sb_tx_din(dataVref_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_DATAVREF)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_dataVrefApplyRxVref(flagToAnalog_dataVref_applyRxVref),
-    .flagToAnalog_dataVrefRxVrefCodes(flagToAnalog_dataVref_rxVrefCodes),
-    .flagFromAnalog_dataVrefRxVrefApplied(flagFromAnalog_dataVref_rxVrefApplied),
+    .flagToAnalog_dataVrefApplyRxVref(stage_flagToAnalog_dataVref_applyRxVref),
+    .flagToAnalog_dataVrefRxVrefCodes(stage_flagToAnalog_dataVref_rxVrefCodes),
+    .flagFromAnalog_dataVrefRxVrefApplied(stage_flagFromAnalog_dataVref_rxVrefApplied),
     .flagToAnalog_dataVrefConfigureRxInitD2CPointTest(
-      flagToAnalog_dataVref_configureRxInitD2CPointTest
+      stage_flagToAnalog_dataVref_configureRxInitD2CPointTest
     ),
     .flagToAnalog_dataVrefMaximumComparisonErrorThreshold(
-      flagToAnalog_dataVref_maximumComparisonErrorThreshold
+      stage_flagToAnalog_dataVref_maximumComparisonErrorThreshold
     ),
-    .flagToAnalog_dataVrefComparisonMode(flagToAnalog_dataVref_comparisonMode),
+    .flagToAnalog_dataVrefComparisonMode(stage_flagToAnalog_dataVref_comparisonMode),
     .flagToAnalog_dataVrefIterationCountSettings(
-      flagToAnalog_dataVref_iterationCountSettings
+      stage_flagToAnalog_dataVref_iterationCountSettings
     ),
     .flagToAnalog_dataVrefIdleCountSettings(
-      flagToAnalog_dataVref_idleCountSettings
+      stage_flagToAnalog_dataVref_idleCountSettings
     ),
     .flagToAnalog_dataVrefBurstCountSettings(
-      flagToAnalog_dataVref_burstCountSettings
+      stage_flagToAnalog_dataVref_burstCountSettings
     ),
-    .flagToAnalog_dataVrefPatternMode(flagToAnalog_dataVref_patternMode),
+    .flagToAnalog_dataVrefPatternMode(stage_flagToAnalog_dataVref_patternMode),
     .flagToAnalog_dataVrefClockPhaseControl(
-      flagToAnalog_dataVref_clockPhaseControl
+      stage_flagToAnalog_dataVref_clockPhaseControl
     ),
-    .flagToAnalog_dataVrefValidPattern(flagToAnalog_dataVref_validPattern),
-    .flagToAnalog_dataVrefDataPattern(flagToAnalog_dataVref_dataPattern),
+    .flagToAnalog_dataVrefValidPattern(stage_flagToAnalog_dataVref_validPattern),
+    .flagToAnalog_dataVrefDataPattern(stage_flagToAnalog_dataVref_dataPattern),
     .flagToAnalog_dataVrefClearComparisonErrors(
-      flagToAnalog_dataVref_clearComparisonErrors
+      stage_flagToAnalog_dataVref_clearComparisonErrors
     ),
     .flagFromAnalog_dataVrefDetectedDataPattern(
-      flagFromAnalog_dataVref_detectedDataPattern
+      stage_flagFromAnalog_dataVref_detectedDataPattern
     ),
-    .flagToAnalog_dataVrefSendPattern(flagToAnalog_dataVref_sendPattern),
+    .flagToAnalog_dataVrefSendPattern(stage_flagToAnalog_dataVref_sendPattern),
     .flagFromAnalog_dataVrefFinishedPattern(
-      flagFromAnalog_dataVref_finishedPattern
+      stage_flagFromAnalog_dataVref_finishedPattern
     ),
     .flagToAnalog_dataVrefResetLocalTxScrambler(
-      flagToAnalog_dataVref_resetLocalTxScrambler
+      stage_flagToAnalog_dataVref_resetLocalTxScrambler
     ),
     .substate(dataVref_substate),
     .lastErrorCount(dataVref_lastErrorCount),
@@ -591,25 +906,25 @@ module MBTrainFSM #(
     .sb_tx_din(valTrainCenter_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_VALTRAINCENTER)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_d2cSender_sendValTrainPattern(flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern),
-    .flagFromAnalog_d2cSender_valTrainPatternSent(flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent),
-    .flagToAnalog_d2cSender_resetLocalScrambler(flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler),
-    .flagToAnalog_d2cSender_applyTxClockPhase(flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase),
-    .flagToAnalog_d2cSender_txClockPhaseCode(flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_txClockPhaseApplied(flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied),
-    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_comparisonMode(flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode),
-    .flagToAnalog_d2cReceiver_iterationCountSettings(flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_idleCountSettings(flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings),
-    .flagToAnalog_d2cReceiver_burstCountSettings(flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings),
-    .flagToAnalog_d2cReceiver_patternMode(flagToAnalog_d2cReceiver_valTrainCenter_patternMode),
-    .flagToAnalog_d2cReceiver_clockPhaseControl(flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_validPattern(flagToAnalog_d2cReceiver_valTrainCenter_validPattern),
-    .flagToAnalog_d2cReceiver_dataPattern(flagToAnalog_d2cReceiver_valTrainCenter_dataPattern),
-    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload),
+    .flagToAnalog_d2cSender_sendValTrainPattern(stage_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern),
+    .flagFromAnalog_d2cSender_valTrainPatternSent(stage_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler(stage_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler),
+    .flagToAnalog_d2cSender_applyTxClockPhase(stage_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase),
+    .flagToAnalog_d2cSender_txClockPhaseCode(stage_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode),
+    .flagFromAnalog_d2cSender_txClockPhaseApplied(stage_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(stage_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(stage_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode(stage_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings(stage_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings(stage_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings(stage_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode(stage_flagToAnalog_d2cReceiver_valTrainCenter_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl(stage_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern(stage_flagToAnalog_d2cReceiver_valTrainCenter_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern(stage_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(stage_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload),
     .substate(valTrainCenter_substate),
     .lastErrorCount(valTrainCenter_lastErrorCount),
     .retryCount(valTrainCenter_retryCount)
@@ -642,24 +957,24 @@ module MBTrainFSM #(
     .sb_tx_din(valTrainVref_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_VALTRAINVREF)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_valTrainVrefApplyRxVref(flagToAnalog_valTrainVref_applyRxVref),
-    .flagToAnalog_valTrainVrefRxVrefCode(flagToAnalog_valTrainVref_rxVrefCode),
-    .flagFromAnalog_valTrainVrefRxVrefApplied(flagFromAnalog_valTrainVref_rxVrefApplied),
-    .flagToAnalog_valTrainVrefConfigureRxInitD2CPointTest(flagToAnalog_valTrainVref_configureRxInitD2CPointTest),
-    .flagToAnalog_valTrainVrefMaximumComparisonErrorThreshold(flagToAnalog_valTrainVref_maximumComparisonErrorThreshold),
-    .flagToAnalog_valTrainVrefComparisonMode(flagToAnalog_valTrainVref_comparisonMode),
-    .flagToAnalog_valTrainVrefIterationCountSettings(flagToAnalog_valTrainVref_iterationCountSettings),
-    .flagToAnalog_valTrainVrefIdleCountSettings(flagToAnalog_valTrainVref_idleCountSettings),
-    .flagToAnalog_valTrainVrefBurstCountSettings(flagToAnalog_valTrainVref_burstCountSettings),
-    .flagToAnalog_valTrainVrefPatternMode(flagToAnalog_valTrainVref_patternMode),
-    .flagToAnalog_valTrainVrefClockPhaseControl(flagToAnalog_valTrainVref_clockPhaseControl),
-    .flagToAnalog_valTrainVrefValidPattern(flagToAnalog_valTrainVref_validPattern),
-    .flagToAnalog_valTrainVrefDataPattern(flagToAnalog_valTrainVref_dataPattern),
-    .flagToAnalog_valTrainVrefClearComparisonErrors(flagToAnalog_valTrainVref_clearComparisonErrors),
-    .flagFromAnalog_valTrainVrefDetectedValPattern(flagFromAnalog_valTrainVref_detectedValPattern),
-    .flagToAnalog_valTrainVrefSendPattern(flagToAnalog_valTrainVref_sendPattern),
-    .flagFromAnalog_valTrainVrefFinishedPattern(flagFromAnalog_valTrainVref_finishedPattern),
-    .flagToAnalog_valTrainVrefResetLocalTxScrambler(flagToAnalog_valTrainVref_resetLocalTxScrambler),
+    .flagToAnalog_valTrainVrefApplyRxVref(stage_flagToAnalog_valTrainVref_applyRxVref),
+    .flagToAnalog_valTrainVrefRxVrefCode(stage_flagToAnalog_valTrainVref_rxVrefCode),
+    .flagFromAnalog_valTrainVrefRxVrefApplied(stage_flagFromAnalog_valTrainVref_rxVrefApplied),
+    .flagToAnalog_valTrainVrefConfigureRxInitD2CPointTest(stage_flagToAnalog_valTrainVref_configureRxInitD2CPointTest),
+    .flagToAnalog_valTrainVrefMaximumComparisonErrorThreshold(stage_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold),
+    .flagToAnalog_valTrainVrefComparisonMode(stage_flagToAnalog_valTrainVref_comparisonMode),
+    .flagToAnalog_valTrainVrefIterationCountSettings(stage_flagToAnalog_valTrainVref_iterationCountSettings),
+    .flagToAnalog_valTrainVrefIdleCountSettings(stage_flagToAnalog_valTrainVref_idleCountSettings),
+    .flagToAnalog_valTrainVrefBurstCountSettings(stage_flagToAnalog_valTrainVref_burstCountSettings),
+    .flagToAnalog_valTrainVrefPatternMode(stage_flagToAnalog_valTrainVref_patternMode),
+    .flagToAnalog_valTrainVrefClockPhaseControl(stage_flagToAnalog_valTrainVref_clockPhaseControl),
+    .flagToAnalog_valTrainVrefValidPattern(stage_flagToAnalog_valTrainVref_validPattern),
+    .flagToAnalog_valTrainVrefDataPattern(stage_flagToAnalog_valTrainVref_dataPattern),
+    .flagToAnalog_valTrainVrefClearComparisonErrors(stage_flagToAnalog_valTrainVref_clearComparisonErrors),
+    .flagFromAnalog_valTrainVrefDetectedValPattern(stage_flagFromAnalog_valTrainVref_detectedValPattern),
+    .flagToAnalog_valTrainVrefSendPattern(stage_flagToAnalog_valTrainVref_sendPattern),
+    .flagFromAnalog_valTrainVrefFinishedPattern(stage_flagFromAnalog_valTrainVref_finishedPattern),
+    .flagToAnalog_valTrainVrefResetLocalTxScrambler(stage_flagToAnalog_valTrainVref_resetLocalTxScrambler),
     .substate(valTrainVref_substate),
     .lastErrorCount(valTrainVref_lastErrorCount),
     .retryCount(valTrainVref_retryCount),
@@ -695,28 +1010,28 @@ module MBTrainFSM #(
     .sb_tx_din(dataTrainCenter1_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_DATATRAINCENTER1)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_d2cSender_sendLfsrPattern(flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_lfsrPatternSent(flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent),
-    .flagToAnalog_d2cSender_resetLocalScrambler(flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler),
-    .flagToAnalog_d2cSender_applyTxClockPhase(flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase),
-    .flagToAnalog_d2cSender_txClockPhaseCode(flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_txClockPhaseApplied(flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied),
-    .flagToAnalog_d2cSender_applyTxLaneDeskew(flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew),
-    .flagToAnalog_d2cSender_txLaneDeskewCodes(flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes),
-    .flagFromAnalog_d2cSender_txLaneDeskewApplied(flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied),
-    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_comparisonMode(flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode),
-    .flagToAnalog_d2cReceiver_iterationCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_idleCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings),
-    .flagToAnalog_d2cReceiver_burstCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings),
-    .flagToAnalog_d2cReceiver_patternMode(flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode),
-    .flagToAnalog_d2cReceiver_clockPhaseControl(flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_validPattern(flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern),
-    .flagToAnalog_d2cReceiver_dataPattern(flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern),
-    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload),
+    .flagToAnalog_d2cSender_sendLfsrPattern(stage_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern),
+    .flagFromAnalog_d2cSender_lfsrPatternSent(stage_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler(stage_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler),
+    .flagToAnalog_d2cSender_applyTxClockPhase(stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase),
+    .flagToAnalog_d2cSender_txClockPhaseCode(stage_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode),
+    .flagFromAnalog_d2cSender_txClockPhaseApplied(stage_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied),
+    .flagToAnalog_d2cSender_applyTxLaneDeskew(stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew),
+    .flagToAnalog_d2cSender_txLaneDeskewCodes(stage_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes),
+    .flagFromAnalog_d2cSender_txLaneDeskewApplied(stage_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload),
     .substate(dataTrainCenter1_substate),
     .lastErrorCount(dataTrainCenter1_lastErrorCount),
     .retryCount(dataTrainCenter1_retryCount)
@@ -754,58 +1069,58 @@ module MBTrainFSM #(
     .sb_rx_valid(sb_rx_valid && (stateReg == State_DATATRAINVREF)),
     .sb_rx_dout(sb_rx_dout),
     .flagToAnalog_dataTrainVrefApplyRxVref(
-      flagToAnalog_dataTrainVref_applyRxVref
+      stage_flagToAnalog_dataTrainVref_applyRxVref
     ),
     .flagToAnalog_dataTrainVrefRxVrefCodes(
-      flagToAnalog_dataTrainVref_rxVrefCodes
+      stage_flagToAnalog_dataTrainVref_rxVrefCodes
     ),
     .flagFromAnalog_dataTrainVrefRxVrefApplied(
-      flagFromAnalog_dataTrainVref_rxVrefApplied
+      stage_flagFromAnalog_dataTrainVref_rxVrefApplied
     ),
     .flagToAnalog_dataTrainVrefConfigureRxInitD2CPointTest(
-      flagToAnalog_dataTrainVref_configureRxInitD2CPointTest
+      stage_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest
     ),
     .flagToAnalog_dataTrainVrefMaximumComparisonErrorThreshold(
-      flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold
+      stage_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold
     ),
     .flagToAnalog_dataTrainVrefComparisonMode(
-      flagToAnalog_dataTrainVref_comparisonMode
+      stage_flagToAnalog_dataTrainVref_comparisonMode
     ),
     .flagToAnalog_dataTrainVrefIterationCountSettings(
-      flagToAnalog_dataTrainVref_iterationCountSettings
+      stage_flagToAnalog_dataTrainVref_iterationCountSettings
     ),
     .flagToAnalog_dataTrainVrefIdleCountSettings(
-      flagToAnalog_dataTrainVref_idleCountSettings
+      stage_flagToAnalog_dataTrainVref_idleCountSettings
     ),
     .flagToAnalog_dataTrainVrefBurstCountSettings(
-      flagToAnalog_dataTrainVref_burstCountSettings
+      stage_flagToAnalog_dataTrainVref_burstCountSettings
     ),
     .flagToAnalog_dataTrainVrefPatternMode(
-      flagToAnalog_dataTrainVref_patternMode
+      stage_flagToAnalog_dataTrainVref_patternMode
     ),
     .flagToAnalog_dataTrainVrefClockPhaseControl(
-      flagToAnalog_dataTrainVref_clockPhaseControl
+      stage_flagToAnalog_dataTrainVref_clockPhaseControl
     ),
     .flagToAnalog_dataTrainVrefValidPattern(
-      flagToAnalog_dataTrainVref_validPattern
+      stage_flagToAnalog_dataTrainVref_validPattern
     ),
     .flagToAnalog_dataTrainVrefDataPattern(
-      flagToAnalog_dataTrainVref_dataPattern
+      stage_flagToAnalog_dataTrainVref_dataPattern
     ),
     .flagToAnalog_dataTrainVrefClearComparisonErrors(
-      flagToAnalog_dataTrainVref_clearComparisonErrors
+      stage_flagToAnalog_dataTrainVref_clearComparisonErrors
     ),
     .flagFromAnalog_dataTrainVrefDetectedDataPattern(
-      flagFromAnalog_dataTrainVref_detectedDataPattern
+      stage_flagFromAnalog_dataTrainVref_detectedDataPattern
     ),
     .flagToAnalog_dataTrainVrefSendPattern(
-      flagToAnalog_dataTrainVref_sendPattern
+      stage_flagToAnalog_dataTrainVref_sendPattern
     ),
     .flagFromAnalog_dataTrainVrefFinishedPattern(
-      flagFromAnalog_dataTrainVref_finishedPattern
+      stage_flagFromAnalog_dataTrainVref_finishedPattern
     ),
     .flagToAnalog_dataTrainVrefResetLocalTxScrambler(
-      flagToAnalog_dataTrainVref_resetLocalTxScrambler
+      stage_flagToAnalog_dataTrainVref_resetLocalTxScrambler
     ),
     .substate(dataTrainVref_substate),
     .lastErrorCount(dataTrainVref_lastErrorCount),
@@ -910,25 +1225,25 @@ module MBTrainFSM #(
     .sb_tx_din(dataTrainCenter2_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_DATATRAINCENTER2)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_d2cSender_sendLfsrPattern(flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_lfsrPatternSent(flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent),
-    .flagToAnalog_d2cSender_resetLocalScrambler(flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler),
-    .flagToAnalog_d2cSender_applyTxClockPhase(flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase),
-    .flagToAnalog_d2cSender_txClockPhaseCode(flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_txClockPhaseApplied(flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied),
-    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_comparisonMode(flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode),
-    .flagToAnalog_d2cReceiver_iterationCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_idleCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings),
-    .flagToAnalog_d2cReceiver_burstCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings),
-    .flagToAnalog_d2cReceiver_patternMode(flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode),
-    .flagToAnalog_d2cReceiver_clockPhaseControl(flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_validPattern(flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern),
-    .flagToAnalog_d2cReceiver_dataPattern(flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern),
-    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload),
+    .flagToAnalog_d2cSender_sendLfsrPattern(stage_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern),
+    .flagFromAnalog_d2cSender_lfsrPatternSent(stage_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler(stage_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler),
+    .flagToAnalog_d2cSender_applyTxClockPhase(stage_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase),
+    .flagToAnalog_d2cSender_txClockPhaseCode(stage_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode),
+    .flagFromAnalog_d2cSender_txClockPhaseApplied(stage_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload),
     .substate(dataTrainCenter2_substate),
     .lastErrorCount(dataTrainCenter2_lastErrorCount),
     .retryCount(dataTrainCenter2_retryCount)
@@ -954,21 +1269,21 @@ module MBTrainFSM #(
     .sb_rx_valid(sb_rx_valid && (stateReg == State_LINKSPEED)),
     .sb_rx_dout(sb_rx_dout),
     .flagToLtsm_phyInRetrain(flagToLtsm_linkSpeed_phyInRetrain),
-    .flagToAnalog_d2cSender_sendLfsrPattern(flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_lfsrPatternSent(flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent),
-    .flagToAnalog_d2cSender_resetLocalScrambler(flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler),
-    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_comparisonMode(flagToAnalog_d2cReceiver_linkSpeed_comparisonMode),
-    .flagToAnalog_d2cReceiver_iterationCountSettings(flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_idleCountSettings(flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings),
-    .flagToAnalog_d2cReceiver_burstCountSettings(flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings),
-    .flagToAnalog_d2cReceiver_patternMode(flagToAnalog_d2cReceiver_linkSpeed_patternMode),
-    .flagToAnalog_d2cReceiver_clockPhaseControl(flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_validPattern(flagToAnalog_d2cReceiver_linkSpeed_validPattern),
-    .flagToAnalog_d2cReceiver_dataPattern(flagToAnalog_d2cReceiver_linkSpeed_dataPattern),
-    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_laneComparisonSuccessful(flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful),
+    .flagToAnalog_d2cSender_sendLfsrPattern(stage_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern),
+    .flagFromAnalog_d2cSender_lfsrPatternSent(stage_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler(stage_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(stage_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(stage_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode(stage_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings(stage_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings(stage_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings(stage_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode(stage_flagToAnalog_d2cReceiver_linkSpeed_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl(stage_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern(stage_flagToAnalog_d2cReceiver_linkSpeed_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern(stage_flagToAnalog_d2cReceiver_linkSpeed_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(stage_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_laneComparisonSuccessful(stage_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful),
     .substate(linkSpeed_substate),
     .lastErrorCount(linkSpeed_lastErrorCount),
     .retryCount(linkSpeed_retryCount)
