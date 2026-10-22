@@ -1,4 +1,5 @@
-// Two-die Reset-to-Active integration test through production SideBandModules.
+// Two-die Reset-to-Active test of D2DAdapterLinkMgmtLtsmSBTop, including
+// its integrated serializers, deserializers, CDC and RX holding mailboxes.
 // The dies exchange only one-bit sideband data and forwarded clocks. Parallel
 // packet signals below are local observation points, never a die-to-die bypass.
 // Reset convention: asynchronous active-low reset_n; there is no reset signal.
@@ -76,6 +77,7 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
   logic all_active;
   logic serial_idle;
   logic serial_error;
+  logic any_sb_rx_overflow;
   logic serial_wire_activity;
   logic [31:0] wire_completed_0_to_1;
   logic [31:0] wire_completed_1_to_0;
@@ -141,6 +143,7 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     .serial_wire_activity(serial_wire_activity),
     .serial_idle(serial_idle),
     .serial_error(serial_error),
+    .any_sb_rx_overflow(any_sb_rx_overflow),
     .wire_completed_0_to_1(wire_completed_0_to_1),
     .wire_completed_1_to_0(wire_completed_1_to_0)
   );
@@ -148,6 +151,8 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
   // Keep the error checks running during all phases, including final drain.
   always @(posedge clock) begin
     if (reset_n) begin
+      if (any_sb_rx_overflow)
+        $fatal(1, "Integrated serial RX mailbox overflowed during bring-up");
       if (serial_error)
         $fatal(1, "Serial packet scoreboard failed: completed 0->1=%0d 1->0=%0d",
                wire_completed_0_to_1, wire_completed_1_to_0);
@@ -195,6 +200,8 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     stable_clk = 1'b0;
     pll_locked = 1'b0;
     stable_supply = 1'b0;
+    // Deliberately stretch protocol timers for a one-bit serialized link:
+    // a complete 128-bit message takes at least 128 controller cycles.
     cycles_1us = 32'd1000;
     protocol_request_active = 1'b0;
     link_0_to_1_enable = 1'b1;
