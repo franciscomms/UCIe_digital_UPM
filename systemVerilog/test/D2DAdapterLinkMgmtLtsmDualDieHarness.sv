@@ -647,8 +647,8 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   end
 
   // Scalar status for the integrated serial transmitter.
-  assign sb_tx_idle  = (dut.u_sideband_phy.txCount == 0) &&
-                       dut.u_sideband_phy.txInternalReady;
+  assign sb_tx_idle  = (dut.u_sideband.u_sideband_phy.txCount == 0) &&
+                       dut.u_sideband.u_sideband_phy.txInternalReady;
 
   // The physical pins provide no packet ready input. Directed tests can
   // pause only the integrated FIFO's admission handshake. Forcing the FIFO's
@@ -657,9 +657,9 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   // Normal bring-up keeps sb_tx_enable high and applies no override.
   always @(sb_tx_enable) begin
     if (!sb_tx_enable)
-      force dut.u_sideband_phy.tx_ready = 1'b0;
+      force dut.u_sideband.u_sideband_phy.tx_ready = 1'b0;
     else
-      release dut.u_sideband_phy.tx_ready;
+      release dut.u_sideband.u_sideband_phy.tx_ready;
   end
 
   D2DAdapterLinkMgmtLtsmSBTop #(
@@ -1064,18 +1064,18 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness (
   wire logic [127:0] mon_die1_rx_msg;
   wire logic         mon_die1_rx_ready;
 
-  assign mon_die0_tx_valid = die0.dut.sb_msg_tx_valid;
-  assign mon_die0_tx_msg = die0.dut.sb_msg_tx_msg;
-  assign mon_die0_tx_ready = die0.dut.sb_msg_tx_ready;
-  assign mon_die0_rx_valid = die0.dut.sb_msg_rx_valid;
-  assign mon_die0_rx_msg = die0.dut.sb_msg_rx_msg;
-  assign mon_die0_rx_ready = die0.dut.sb_msg_rx_ready;
-  assign mon_die1_tx_valid = die1.dut.sb_msg_tx_valid;
-  assign mon_die1_tx_msg = die1.dut.sb_msg_tx_msg;
-  assign mon_die1_tx_ready = die1.dut.sb_msg_tx_ready;
-  assign mon_die1_rx_valid = die1.dut.sb_msg_rx_valid;
-  assign mon_die1_rx_msg = die1.dut.sb_msg_rx_msg;
-  assign mon_die1_rx_ready = die1.dut.sb_msg_rx_ready;
+  assign mon_die0_tx_valid = die0.dut.u_sideband.sb_msg_tx_valid;
+  assign mon_die0_tx_msg = die0.dut.u_sideband.sb_msg_tx_msg;
+  assign mon_die0_tx_ready = die0.dut.u_sideband.sb_msg_tx_ready;
+  assign mon_die0_rx_valid = die0.dut.u_sideband.sb_msg_rx_valid;
+  assign mon_die0_rx_msg = die0.dut.u_sideband.sb_msg_rx_msg;
+  assign mon_die0_rx_ready = die0.dut.u_sideband.sb_msg_rx_ready;
+  assign mon_die1_tx_valid = die1.dut.u_sideband.sb_msg_tx_valid;
+  assign mon_die1_tx_msg = die1.dut.u_sideband.sb_msg_tx_msg;
+  assign mon_die1_tx_ready = die1.dut.u_sideband.sb_msg_tx_ready;
+  assign mon_die1_rx_valid = die1.dut.u_sideband.sb_msg_rx_valid;
+  assign mon_die1_rx_msg = die1.dut.u_sideband.sb_msg_rx_msg;
+  assign mon_die1_rx_ready = die1.dut.u_sideband.sb_msg_rx_ready;
 
   logic [PI_CODE_WIDTH-1:0] die0_valtrain_phase;
   logic [PI_CODE_WIDTH-1:0] die1_valtrain_phase;

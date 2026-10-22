@@ -58,12 +58,6 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
   logic die1_grant_ltsm;
   logic die1_grant_rdi;
   logic die1_grant_fdi;
-  logic die0_tx_valid;
-  logic [127:0] die0_tx_msg;
-  logic die0_tx_ready;
-  logic die1_tx_valid;
-  logic [127:0] die1_tx_msg;
-  logic die1_tx_ready;
   logic die0_tx_fire;
   logic die1_tx_fire;
   logic die0_rx_fire;
@@ -128,12 +122,6 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     .die1_grant_ltsm(die1_grant_ltsm),
     .die1_grant_rdi(die1_grant_rdi),
     .die1_grant_fdi(die1_grant_fdi),
-    .die0_tx_valid(die0_tx_valid),
-    .die0_tx_msg(die0_tx_msg),
-    .die0_tx_ready(die0_tx_ready),
-    .die1_tx_valid(die1_tx_valid),
-    .die1_tx_msg(die1_tx_msg),
-    .die1_tx_ready(die1_tx_ready),
     .die0_tx_fire(die0_tx_fire),
     .die1_tx_fire(die1_tx_fire),
     .die0_rx_fire(die0_rx_fire),

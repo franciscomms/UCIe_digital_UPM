@@ -229,9 +229,9 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
       trace_previous_rdi <= UcieUPM_interfaces_pkg::PhyState_reset;
     end else begin
       if ($test$plusargs("SERIAL_TRACE") && manual_sideband_mode) begin
-        if (local_die.dut.sb_msg_tx_valid && local_die.dut.sb_msg_tx_ready)
+        if (local_die.dut.u_sideband.sb_msg_tx_valid && local_die.dut.u_sideband.sb_msg_tx_ready)
           $display("[SERIAL TRACE] t=%0t TX enqueue header=%016h FDI=%0h RDI=%0h LP.req=%0h",
-            $time, local_die.dut.sb_msg_tx_msg[63:0], fdi_pl_state_sts, debug_rdi_state, fdi_lp_state_req);
+            $time, local_die.dut.u_sideband.sb_msg_tx_msg[63:0], fdi_pl_state_sts, debug_rdi_state, fdi_lp_state_req);
         if (fdi_pl_state_sts != trace_previous_fdi || debug_rdi_state != trace_previous_rdi)
           $display("[SERIAL TRACE] t=%0t state FDI=%0h RDI=%0h LP.req=%0h",
             $time, fdi_pl_state_sts, debug_rdi_state, fdi_lp_state_req);
@@ -271,18 +271,18 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
   // only one-bit sideband data and clock ports to this harness.
   D2DAdapterLinkMgmtTbSerialLinkChecker #(.CHECK_RX_ACCEPT(0)) local_output_check (
     .clock(clock), .reset_n(reset_n),
-    .tx_valid(local_die.dut.sb_msg_tx_valid),
-    .tx_msg(local_die.dut.sb_msg_tx_msg),
-    .tx_ready(local_die.dut.sb_msg_tx_ready),
+    .tx_valid(local_die.dut.u_sideband.sb_msg_tx_valid),
+    .tx_msg(local_die.dut.u_sideband.sb_msg_tx_msg),
+    .tx_ready(local_die.dut.u_sideband.sb_msg_tx_ready),
     .serial_data(local_serial_data), .serial_clock(local_serial_clock),
     .rx_valid(1'b0), .rx_msg(128'b0), .rx_ready(1'b0),
     .wire_completed(local_out_completed), .idle(local_out_check_idle), .error(local_out_error)
   );
   D2DAdapterLinkMgmtTbSerialLinkChecker #(.CHECK_RX_ACCEPT(0)) peer_output_check (
     .clock(clock), .reset_n(reset_n),
-    .tx_valid(peer_die.dut.sb_msg_tx_valid),
-    .tx_msg(peer_die.dut.sb_msg_tx_msg),
-    .tx_ready(peer_die.dut.sb_msg_tx_ready),
+    .tx_valid(peer_die.dut.u_sideband.sb_msg_tx_valid),
+    .tx_msg(peer_die.dut.u_sideband.sb_msg_tx_msg),
+    .tx_ready(peer_die.dut.u_sideband.sb_msg_tx_ready),
     .serial_data(peer_serial_data), .serial_clock(peer_serial_clock),
     .rx_valid(1'b0), .rx_msg(128'b0), .rx_ready(1'b0),
     .wire_completed(peer_out_completed), .idle(peer_out_check_idle), .error(peer_out_error)
@@ -291,18 +291,18 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
     .clock(clock), .reset_n(reset_n),
     .tx_valid(local_bfm_send_valid), .tx_msg(local_bfm_send_msg), .tx_ready(local_bfm_send_ready),
     .serial_data(local_in_data), .serial_clock(local_in_clock),
-    .rx_valid(local_die.dut.sb_msg_rx_valid),
-    .rx_msg(local_die.dut.sb_msg_rx_msg),
-    .rx_ready(local_die.dut.sb_msg_rx_ready),
+    .rx_valid(local_die.dut.u_sideband.sb_msg_rx_valid),
+    .rx_msg(local_die.dut.u_sideband.sb_msg_rx_msg),
+    .rx_ready(local_die.dut.u_sideband.sb_msg_rx_ready),
     .wire_completed(local_in_completed), .idle(local_in_check_idle), .error(local_in_error)
   );
   D2DAdapterLinkMgmtTbSerialLinkChecker peer_input_check (
     .clock(clock), .reset_n(reset_n),
     .tx_valid(peer_bfm_send_valid), .tx_msg(peer_bfm_send_msg), .tx_ready(peer_bfm_send_ready),
     .serial_data(peer_in_data), .serial_clock(peer_in_clock),
-    .rx_valid(peer_die.dut.sb_msg_rx_valid),
-    .rx_msg(peer_die.dut.sb_msg_rx_msg),
-    .rx_ready(peer_die.dut.sb_msg_rx_ready),
+    .rx_valid(peer_die.dut.u_sideband.sb_msg_rx_valid),
+    .rx_msg(peer_die.dut.u_sideband.sb_msg_rx_msg),
+    .rx_ready(peer_die.dut.u_sideband.sb_msg_rx_ready),
     .wire_completed(peer_in_completed), .idle(peer_in_check_idle), .error(peer_in_error)
   );
 
