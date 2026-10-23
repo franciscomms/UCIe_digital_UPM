@@ -44,6 +44,7 @@ bash test/run_tests.sh bringup
 bash test/run_tests.sh backpressure
 bash test/run_tests.sh 128b +SCENARIO=retrain
 bash test/run_tests.sh digital
+bash test/run_tests.sh blockmodes
 ```
 
 `sources.f` contains the package-first compilation order for other
@@ -56,6 +57,12 @@ nonzero exit status.
 
 ## Changes
 
+- `UcieDigitalTopBlockTestModesSpec_tb.sv` (`run_tests.sh blockmodes`): smoke
+  test of the block isolation modes `testModeFdi`, `testModeRdi` and
+  `testModeLtsm`. For each mode only that block's `jtag<Blk>_clock` runs; the
+  block must react on its `jtag<Blk>_*` pins while every functional output
+  stays frozen and every other TDR output stays 0. Generated from the
+  `UcieDigitalTop` port list (all ports connected with `.*`).
 - `UcieDigitalTopTestModeDigitalSpec_tb.sv` (`run_tests.sh digital`): the
   dual-die bring-up spec with `TEST_MODE_DIGITAL = 1`. Each die is a
   `UcieDigitalTop` with `testModeDigital = 1`, driven and observed only via its

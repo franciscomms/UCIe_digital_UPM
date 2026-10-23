@@ -60,3 +60,4 @@ D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb.sv
 D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb.sv
 D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv
 UcieDigitalTopTestModeDigitalSpec_tb.sv
+UcieDigitalTopBlockTestModesSpec_tb.sv
