@@ -1,4 +1,4 @@
-// Complete UCIe LTSM/RDI/FDI bring-up through two D2DAdapterLinkMgmtLtsmSBTops.
+// Complete UCIe LTSM/RDI/FDI bring-up through two UcieDigitalCores.
 // Directed stalls apply inside each integrated serializer at FIFO admission;
 // passive hierarchical monitors check packet stability and stall recovery.
 // Die ports carry one serial data wire and one forwarded clock per direction.
@@ -169,7 +169,7 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
              die0_mbtrain_state, die1_mbtrain_state,
              die0_mbtrain_active_substate, die1_mbtrain_active_substate);
     if (sb_rx_overflow_error)
-      $fatal(1, "D2DAdapterLinkMgmtLtsmSBTop receive holding register overflowed during backpressure: cycle=%0d",
+      $fatal(1, "UcieDigitalCore receive holding register overflowed during backpressure: cycle=%0d",
              cycle_count);
     if (serial_error)
       $fatal(1, "Serial packet scoreboard failed: completed 0->1=%0d 1->0=%0d",

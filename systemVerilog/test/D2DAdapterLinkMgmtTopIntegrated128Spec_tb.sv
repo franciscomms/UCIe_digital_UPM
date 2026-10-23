@@ -1,7 +1,7 @@
 // SystemVerilog translation of D2DAdapterLinkMgmtTopIntegrated128Spec(1).scala.
 // Revised to run the complete UCIe 2.0 LTSM training sequence and every
 // directed message through production one-bit sideband serializers.
-// Each die model instantiates D2DAdapterLinkMgmtLtsmSBTop, including its
+// Each die model instantiates UcieDigitalCore, including its
 // serializer, clock-domain crossing, and controller receive mailbox.
 // The bfm_send_* / bfm_received_* API carries 128-bit test transactions.
 // Both die instances expose only one-bit sideband data and forwarded clocks.

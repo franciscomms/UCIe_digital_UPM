@@ -1,4 +1,4 @@
-// Dual-die integration harness for D2DAdapterLinkMgmtLtsmSBTop.
+// Dual-die integration harness for UcieDigitalCore.
 // link_*_enable is a simulation-only serializer admission stall; it never
 // gates a forwarded clock or bypasses the integrated sideband PHY.
 //
@@ -1059,7 +1059,7 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
     endcase
   end
 
-  D2DAdapterLinkMgmtLtsmSBTop #(
+  UcieDigitalCore #(
     // The link-management widths are intentionally left at the DUT defaults;
     // this testbench only drives link-management control and sideband traffic.
     .sbFeatureExtension                       (1'b0),
@@ -1288,7 +1288,44 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
     .debug_rx_route_fdi                                                             (debug_rx_route_fdi),
     .debug_rx_route_rdi                                                             (debug_rx_route_rdi),
     .debug_rx_drop_unknown                                                          (debug_rx_drop_unknown),
-    .debug_rx_fire                                                                  (debug_rx_fire)
+    .debug_rx_fire                                                                  (debug_rx_fire),
+
+    // FDI isolation test mode is not exercised here: tied off.
+    .testModeFdi                                                                    (1'b0),
+    .jtagFdi_clock                                                                  (1'b0),
+    .jtagFdi_reset_n                                                                (1'b0),
+    .jtagFdi_cycles_1us                                                             (32'd0),
+    .jtagFdi_timeout_disable                                                        (1'b0),
+    .jtagFdi_fdi_lp_state_req                                                       (UcieUPM_interfaces_pkg::PhyStateReq_nop),
+    .jtagFdi_fdi_lp_linkerror                                                       (1'b0),
+    .jtagFdi_fdi_lp_rx_active_sts                                                   (1'b0),
+    .jtagFdi_fdi_lp_wake_req                                                        (1'b0),
+    .jtagFdi_fdi_lp_clk_ack                                                         (1'b0),
+    .jtagFdi_fdi_lp_stall_ack                                                       (1'b0),
+    .jtagFdi_fdi_pl_state_sts                                                       (),
+    .jtagFdi_fdi_pl_rx_active_req                                                   (),
+    .jtagFdi_fdi_pl_inband_pres                                                     (),
+    .jtagFdi_fdi_pl_wake_ack                                                        (),
+    .jtagFdi_fdi_pl_clk_req                                                         (),
+    .jtagFdi_fdi_pl_stall_req                                                       (),
+    .jtagFdi_fdi_active                                                             (),
+    .jtagFdi_debug_link_init_state                                                  (),
+    .jtagFdi_rdi_lp_linkerror                                                       (),
+    .jtagFdi_rdi_lp_state_req                                                       (),
+    .jtagFdi_rdi_pl_state_sts                                                       (UcieUPM_interfaces_pkg::PhyState_t'('0)),
+    .jtagFdi_rdi_pl_inband_pres                                                     (1'b0),
+    .jtagFdi_fdiNeedsRdiAwake                                                       (),
+    .jtagFdi_rdiAwake                                                               (1'b0),
+    .jtagFdi_rdiNeedsFdiAwake                                                       (1'b0),
+    .jtagFdi_fdiAwake                                                               (),
+    .jtagFdi_rdi_pl_stall_req                                                       (1'b0),
+    .jtagFdi_rdi_lp_stall_ack                                                       (),
+    .jtagFdi_sb_snd_valid                                                           (),
+    .jtagFdi_sb_snd_msg                                                             (),
+    .jtagFdi_sb_snd_ready                                                           (1'b0),
+    .jtagFdi_sb_rcv_valid                                                           (1'b0),
+    .jtagFdi_sb_rcv_msg                                                             (128'd0),
+    .jtagFdi_sb_rcv_ready                                                           ()
   );
 endmodule
 

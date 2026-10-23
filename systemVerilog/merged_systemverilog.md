@@ -5,8 +5,8 @@ Total files: **59**
 ## File Index
 
 1. #src-D2DAdapterConstants-sv
-2. #src-D2DAdapterLinkMgmtLtsmSbJtagTop-sv
-3. #src-D2DAdapterLinkMgmtLtsmSBTop-sv
+2. #src-UcieDigitalTop-sv
+3. #src-UcieDigitalCore-sv
 4. #src-DvsecRegisterBlock-sv
 5. #src-Fdi-sv
 6. #src-LinkManagementController-sv
@@ -99,24 +99,24 @@ endpackage
 
 ```
 
-<a id="src-D2DAdapterLinkMgmtLtsmSbJtagTop-sv"></a>
+<a id="src-UcieDigitalTop-sv"></a>
 
-## [2] src\D2DAdapterLinkMgmtLtsmSbJtagTop.sv
+## [2] src\UcieDigitalTop.sv
 
 ```systemverilog
 // FILE_INDEX: 2
-// FILE_PATH : src\D2DAdapterLinkMgmtLtsmSbJtagTop.sv
+// FILE_PATH : src\UcieDigitalTop.sv
 
 `default_nettype none
 
 // ============================================================================
-// D2DAdapterLinkMgmtLtsmSbJtagTop
-// JTAG test wrapper around D2DAdapterLinkMgmtLtsmSBTop. Every IO of the core top
+// UcieDigitalTop
+// JTAG test wrapper around UcieDigitalCore. Every IO of the core top
 // can be routed either to its functional pin or to a JTAG Test Data Register
 // (TDR), selected by testModeDigital.
 //
 // Port naming:
-//   <name>       Functional pin. Same name, type and direction as in D2DAdapterLinkMgmtLtsmSBTop.
+//   <name>       Functional pin. Same name, type and direction as in UcieDigitalCore.
 //   jtag_<name>  Test pin toward the TDR. Same type and direction as <name>.
 //
 // Muxing, per core port:
@@ -132,10 +132,10 @@ endpackage
 // are quiet (or with reset_n asserted) to avoid glitches on the core clock.
 // For synthesis these should be replaced by glitch-free clock-mux cells.
 //
-// Parameters are identical to D2DAdapterLinkMgmtLtsmSBTop and passed straight through.
+// Parameters are identical to UcieDigitalCore and passed straight through.
 // ============================================================================
 
-module D2DAdapterLinkMgmtLtsmSbJtagTop #(
+module UcieDigitalTop #(
   parameter int unsigned FDI_WIDTH         = UcieUPM_fdi_params_pkg::FDI_WIDTH,
   parameter int unsigned FDI_DLLP_WIDTH    = UcieUPM_fdi_params_pkg::FDI_DLLP_WIDTH,
   parameter int unsigned FDI_SB_WIDTH      = UcieUPM_fdi_params_pkg::FDI_SB_WIDTH,
@@ -1188,7 +1188,7 @@ module D2DAdapterLinkMgmtLtsmSbJtagTop #(
   // --------------------------------------------------------------------------
   // Core top
   // --------------------------------------------------------------------------
-  D2DAdapterLinkMgmtLtsmSBTop #(
+  UcieDigitalCore #(
     .FDI_WIDTH                                (FDI_WIDTH),
     .FDI_DLLP_WIDTH                           (FDI_DLLP_WIDTH),
     .FDI_SB_WIDTH                             (FDI_SB_WIDTH),
@@ -1433,21 +1433,21 @@ endmodule
 
 ```
 
-<a id="src-D2DAdapterLinkMgmtLtsmSBTop-sv"></a>
+<a id="src-UcieDigitalCore-sv"></a>
 
-## [3] src\D2DAdapterLinkMgmtLtsmSBTop.sv
+## [3] src\UcieDigitalCore.sv
 
 ```systemverilog
 // FILE_INDEX: 3
-// FILE_PATH : src\D2DAdapterLinkMgmtLtsmSBTop.sv
+// FILE_PATH : src\UcieDigitalCore.sv
 
 `default_nettype none
 
 // ============================================================================
-// D2DAdapterLinkMgmtLtsmSBTop
+// UcieDigitalCore
 // Single top for the UCIe D2D adapter: FDI/RDI link management, link training
 // (LTSM) and the serial sideband PHY. Merges the former D2DAdapterLinkMgmtTop,
-// D2DAdapterLinkMgmtLtsmTop and D2DAdapterLinkMgmtLtsmSBTop wrappers.
+// D2DAdapterLinkMgmtLtsmTop and UcieDigitalCore wrappers.
 // Reset convention: asynchronous active-low reset_n goes to every child.
 //
 // Modules and connections:
@@ -1474,7 +1474,7 @@ endmodule
 //   ltsm / fdi / rdi <-> u_sideband <-> sb_tx_dout / sb_tx_clk, sb_rx_din / sb_rx_clk
 // ============================================================================
 
-module D2DAdapterLinkMgmtLtsmSBTop #(
+module UcieDigitalCore #(
   parameter int unsigned FDI_WIDTH         = UcieUPM_fdi_params_pkg::FDI_WIDTH,
   parameter int unsigned FDI_DLLP_WIDTH    = UcieUPM_fdi_params_pkg::FDI_DLLP_WIDTH,
   parameter int unsigned FDI_SB_WIDTH      = UcieUPM_fdi_params_pkg::FDI_SB_WIDTH,
@@ -20371,7 +20371,7 @@ endmodule
 //
 // What was done:
 //   The sideband modules and glue logic that used to sit directly in
-//   D2DAdapterLinkMgmtLtsmSBTop were moved here unchanged, so the top only
+//   UcieDigitalCore were moved here unchanged, so the top only
 //   instantiates the clients and this wrapper. Moved pieces:
 //     ltsmTxCapture  LtsmSidebandTxCapture          Queue: ltsm pulse TX -> arb.
 //     ltsmRxPulse    LtsmSidebandRxPulseAdapter     arb valid/ready RX -> ltsm pulse RX.
@@ -21174,7 +21174,7 @@ endpackage
 // FILE_INDEX: 51
 // FILE_PATH : test\D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb.sv
 
-// Complete UCIe LTSM/RDI/FDI bring-up through two D2DAdapterLinkMgmtLtsmSBTops.
+// Complete UCIe LTSM/RDI/FDI bring-up through two UcieDigitalCores.
 // Directed stalls apply inside each integrated serializer at FIFO admission;
 // passive hierarchical monitors check packet stability and stall recovery.
 // Die ports carry one serial data wire and one forwarded clock per direction.
@@ -21345,7 +21345,7 @@ module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
              die0_mbtrain_state, die1_mbtrain_state,
              die0_mbtrain_active_substate, die1_mbtrain_active_substate);
     if (sb_rx_overflow_error)
-      $fatal(1, "D2DAdapterLinkMgmtLtsmSBTop receive holding register overflowed during backpressure: cycle=%0d",
+      $fatal(1, "UcieDigitalCore receive holding register overflowed during backpressure: cycle=%0d",
              cycle_count);
     if (serial_error)
       $fatal(1, "Serial packet scoreboard failed: completed 0->1=%0d 1->0=%0d",
@@ -21409,7 +21409,7 @@ endmodule
 // FILE_INDEX: 52
 // FILE_PATH : test\D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb.sv
 
-// Two-die Reset-to-Active test of D2DAdapterLinkMgmtLtsmSBTop, including
+// Two-die Reset-to-Active test of UcieDigitalCore, including
 // its integrated serializers, deserializers, CDC and RX holding mailboxes.
 // The dies exchange only one-bit sideband data and forwarded clocks. Parallel
 // packet signals below are local observation points, never a die-to-die bypass.
@@ -21853,7 +21853,7 @@ endmodule
 // FILE_INDEX: 53
 // FILE_PATH : test\D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness.sv
 
-// Directed two-die bring-up through D2DAdapterLinkMgmtLtsmSBTop on each die.
+// Directed two-die bring-up through UcieDigitalCore on each die.
 // Stall packet acceptance at the serializer FIFO input; the forwarded serial
 // clocks and data wires are never gated by the testbench.
 // Reset convention: asynchronous active-low reset_n.
@@ -22308,7 +22308,7 @@ endmodule
 // FILE_INDEX: 54
 // FILE_PATH : test\D2DAdapterLinkMgmtLtsmDualDieHarness.sv
 
-// Dual-die integration harness for D2DAdapterLinkMgmtLtsmSBTop.
+// Dual-die integration harness for UcieDigitalCore.
 // link_*_enable is a simulation-only serializer admission stall; it never
 // gates a forwarded clock or bypasses the integrated sideband PHY.
 //
@@ -23369,7 +23369,7 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
     endcase
   end
 
-  D2DAdapterLinkMgmtLtsmSBTop #(
+  UcieDigitalCore #(
     // The link-management widths are intentionally left at the DUT defaults;
     // this testbench only drives link-management control and sideband traffic.
     .sbFeatureExtension                       (1'b0),
@@ -24039,7 +24039,7 @@ endmodule
 // FILE_INDEX: 55
 // FILE_PATH : test\D2DAdapterLinkMgmtLtsmIntegrated128Harness.sv
 
-// Directed single-DUT scenarios using D2DAdapterLinkMgmtLtsmSBTop at both dies.
+// Directed single-DUT scenarios using UcieDigitalCore at both dies.
 // Training uses an external store-and-forward serial BFM: complete LTSM wire
 // frames are decoded and reserialized to the other die; local management
 // frames are retained for directed stimulus, and peer management is drained.
@@ -24849,7 +24849,7 @@ endmodule
 // SystemVerilog translation of D2DAdapterLinkMgmtTopIntegrated128Spec(1).scala.
 // Revised to run the complete UCIe 2.0 LTSM training sequence and every
 // directed message through production one-bit sideband serializers.
-// Each die model instantiates D2DAdapterLinkMgmtLtsmSBTop, including its
+// Each die model instantiates UcieDigitalCore, including its
 // serializer, clock-domain crossing, and controller receive mailbox.
 // The bfm_send_* / bfm_received_* API carries 128-bit test transactions.
 // Both die instances expose only one-bit sideband data and forwarded clocks.

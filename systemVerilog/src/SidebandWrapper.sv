@@ -7,7 +7,7 @@
 //
 // What was done:
 //   The sideband modules and glue logic that used to sit directly in
-//   D2DAdapterLinkMgmtLtsmSBTop were moved here unchanged, so the top only
+//   UcieDigitalCore were moved here unchanged, so the top only
 //   instantiates the clients and this wrapper. Moved pieces:
 //     ltsmTxCapture  LtsmSidebandTxCapture          Queue: ltsm pulse TX -> arb.
 //     ltsmRxPulse    LtsmSidebandRxPulseAdapter     arb valid/ready RX -> ltsm pulse RX.

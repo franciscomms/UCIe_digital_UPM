@@ -1,11 +1,13 @@
 `default_nettype none
 
 // ============================================================================
-// D2DAdapterLinkMgmtLtsmSBTop
+// UcieDigitalCore
 // Single top for the UCIe D2D adapter: FDI/RDI link management, link training
 // (LTSM) and the serial sideband PHY. Merges the former D2DAdapterLinkMgmtTop,
-// D2DAdapterLinkMgmtLtsmTop and D2DAdapterLinkMgmtLtsmSBTop wrappers.
-// Reset convention: asynchronous active-low reset_n goes to every child.
+// D2DAdapterLinkMgmtLtsmTop and UcieDigitalCore wrappers.
+// Reset convention: asynchronous active-low reset_n goes to every child
+// (gated by testModeFdi for rdi/ltsm/u_sideband, muxed with jtagFdi_reset_n
+// for fdi; see FDI isolation test mode below).
 //
 // Modules and connections:
 //   fdi            LinkManagementController       FDI state machine. Talks to the
@@ -29,9 +31,22 @@
 //
 // Sideband message path:
 //   ltsm / fdi / rdi <-> u_sideband <-> sb_tx_dout / sb_tx_clk, sb_rx_din / sb_rx_clk
+//
+// FDI isolation test mode (testModeFdi):
+//   Every port of the fdi instance can be routed either to its normal source/
+//   sink (core port or rdi/u_sideband net) or to the jtagFdi_<port> TDR pins.
+//                     testModeFdi = 0               testModeFdi = 1
+//   fdi input         normal source                 jtagFdi_<port>
+//   fdi output        drives normal sink            drives jtagFdi_<port>
+//                     (jtagFdi_<port> held at 0)    (normal sink held idle/0)
+//   rdi, ltsm and u_sideband are held in reset while testModeFdi = 1, and the
+//   fdi -> rdi/u_sideband nets are forced idle (no request, no packet), so
+//   the rest of the core stays quiet. The fdi clock is a plain combinational
+//   mux: change testModeFdi only while both clocks are quiet (or with reset
+//   asserted). For synthesis replace it with a glitch-free clock-mux cell.
 // ============================================================================
 
-module D2DAdapterLinkMgmtLtsmSBTop #(
+module UcieDigitalCore #(
   parameter int unsigned FDI_WIDTH         = UcieUPM_fdi_params_pkg::FDI_WIDTH,
   parameter int unsigned FDI_DLLP_WIDTH    = UcieUPM_fdi_params_pkg::FDI_DLLP_WIDTH,
   parameter int unsigned FDI_SB_WIDTH      = UcieUPM_fdi_params_pkg::FDI_SB_WIDTH,
@@ -323,7 +338,56 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   output var logic debug_rx_route_fdi,
   output var logic debug_rx_route_rdi,
   output var logic debug_rx_drop_unknown,
-  output var logic debug_rx_fire
+  output var logic debug_rx_fire,
+
+  // ==========================================================================
+  // FDI ISOLATION TEST (testModeFdi = 1)
+  // One jtagFdi_<port> pin per LinkManagementController port, same type and
+  // direction. Inputs are ignored and outputs held at 0 while testModeFdi = 0.
+  // ==========================================================================
+  input wire logic testModeFdi,
+
+  // Common clock, reset and timing.
+  input wire logic        jtagFdi_clock,
+  input wire logic        jtagFdi_reset_n,
+  input wire logic [31:0] jtagFdi_cycles_1us,
+  input wire logic        jtagFdi_timeout_disable,
+
+  // Protocol-layer side.
+  input wire UcieUPM_interfaces_pkg::PhyStateReq_t jtagFdi_fdi_lp_state_req,
+  input wire logic                                  jtagFdi_fdi_lp_linkerror,
+  input wire logic                                  jtagFdi_fdi_lp_rx_active_sts,
+  input wire logic                                  jtagFdi_fdi_lp_wake_req,
+  input wire logic                                  jtagFdi_fdi_lp_clk_ack,
+  input wire logic                                  jtagFdi_fdi_lp_stall_ack,
+  output var UcieUPM_interfaces_pkg::PhyState_t jtagFdi_fdi_pl_state_sts,
+  output var logic                               jtagFdi_fdi_pl_rx_active_req,
+  output var logic                               jtagFdi_fdi_pl_inband_pres,
+  output var logic                               jtagFdi_fdi_pl_wake_ack,
+  output var logic                               jtagFdi_fdi_pl_clk_req,
+  output var logic                               jtagFdi_fdi_pl_stall_req,
+  output var logic                               jtagFdi_fdi_active,
+  output var UcieUPM_d2dadapter_pkg::LinkInitState_t jtagFdi_debug_link_init_state,
+
+  // RDI side (normally connected to rdi).
+  output var logic                                  jtagFdi_rdi_lp_linkerror,
+  output var UcieUPM_interfaces_pkg::PhyStateReq_t jtagFdi_rdi_lp_state_req,
+  input wire UcieUPM_interfaces_pkg::PhyState_t    jtagFdi_rdi_pl_state_sts,
+  input wire logic                                  jtagFdi_rdi_pl_inband_pres,
+  output var logic                                  jtagFdi_fdiNeedsRdiAwake,
+  input wire logic                                  jtagFdi_rdiAwake,
+  input wire logic                                  jtagFdi_rdiNeedsFdiAwake,
+  output var logic                                  jtagFdi_fdiAwake,
+  input wire logic                                  jtagFdi_rdi_pl_stall_req,
+  output var logic                                  jtagFdi_rdi_lp_stall_ack,
+
+  // Sideband client side (normally connected to u_sideband).
+  output var logic         jtagFdi_sb_snd_valid,
+  output var logic [127:0] jtagFdi_sb_snd_msg,
+  input wire logic         jtagFdi_sb_snd_ready,
+  input wire logic         jtagFdi_sb_rcv_valid,
+  input wire logic [127:0] jtagFdi_sb_rcv_msg,
+  output var logic         jtagFdi_sb_rcv_ready
 );
   import UcieUPM_interfaces_pkg::*;
   import UcieUPM_d2dadapter_pkg::*;
@@ -371,6 +435,107 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   wire logic         ltsm_pulse_rx_valid;
   wire logic [127:0] ltsm_pulse_rx_msg;
 
+  // Reset of rdi, ltsm and u_sideband: held asserted during FDI isolation test.
+  logic restCore_reset_n;
+
+  // fdi instance port nets (after the testModeFdi mux).
+  logic         fdiCore_clock;
+  logic         fdiCore_reset_n;
+  logic [31:0]  fdiCore_cycles_1us;
+  logic         fdiCore_timeout_disable;
+  PhyStateReq_t fdiCore_fdi_lp_state_req;
+  logic         fdiCore_fdi_lp_linkerror;
+  logic         fdiCore_fdi_lp_rx_active_sts;
+  logic         fdiCore_fdi_lp_wake_req;
+  logic         fdiCore_fdi_lp_clk_ack;
+  logic         fdiCore_fdi_lp_stall_ack;
+  PhyState_t    fdiCore_fdi_pl_state_sts;
+  logic         fdiCore_fdi_pl_rx_active_req;
+  logic         fdiCore_fdi_pl_inband_pres;
+  logic         fdiCore_fdi_pl_wake_ack;
+  logic         fdiCore_fdi_pl_clk_req;
+  logic         fdiCore_fdi_pl_stall_req;
+  logic         fdiCore_fdi_active;
+  LinkInitState_t fdiCore_debug_link_init_state;
+  logic         fdiCore_rdi_lp_linkerror;
+  PhyStateReq_t fdiCore_rdi_lp_state_req;
+  PhyState_t    fdiCore_rdi_pl_state_sts;
+  logic         fdiCore_rdi_pl_inband_pres;
+  logic         fdiCore_fdiNeedsRdiAwake;
+  logic         fdiCore_rdiAwake;
+  logic         fdiCore_rdiNeedsFdiAwake;
+  logic         fdiCore_fdiAwake;
+  logic         fdiCore_rdi_pl_stall_req;
+  logic         fdiCore_rdi_lp_stall_ack;
+  logic         fdiCore_sb_snd_valid;
+  logic [127:0] fdiCore_sb_snd_msg;
+  logic         fdiCore_sb_snd_ready;
+  logic         fdiCore_sb_rcv_valid;
+  logic [127:0] fdiCore_sb_rcv_msg;
+  logic         fdiCore_sb_rcv_ready;
+
+  // --------------------------------------------------------------------------
+  // FDI isolation test muxes
+  // --------------------------------------------------------------------------
+  assign restCore_reset_n = reset_n & ~testModeFdi;
+
+  // Inputs to fdi: normal source or TDR pin.
+  assign fdiCore_clock                = testModeFdi ? jtagFdi_clock                : clock;
+  assign fdiCore_reset_n              = testModeFdi ? jtagFdi_reset_n              : reset_n;
+  assign fdiCore_cycles_1us           = testModeFdi ? jtagFdi_cycles_1us           : cycles_1us;
+  assign fdiCore_timeout_disable      = testModeFdi ? jtagFdi_timeout_disable      : timeout_disable;
+  assign fdiCore_fdi_lp_state_req     = testModeFdi ? jtagFdi_fdi_lp_state_req     : fdi_lp_state_req;
+  assign fdiCore_fdi_lp_linkerror     = testModeFdi ? jtagFdi_fdi_lp_linkerror     : fdi_lp_linkerror;
+  assign fdiCore_fdi_lp_rx_active_sts = testModeFdi ? jtagFdi_fdi_lp_rx_active_sts : fdi_lp_rx_active_sts;
+  assign fdiCore_fdi_lp_wake_req      = testModeFdi ? jtagFdi_fdi_lp_wake_req      : fdi_lp_wake_req;
+  assign fdiCore_fdi_lp_clk_ack       = testModeFdi ? jtagFdi_fdi_lp_clk_ack       : fdi_lp_clk_ack;
+  assign fdiCore_fdi_lp_stall_ack     = testModeFdi ? jtagFdi_fdi_lp_stall_ack     : fdi_lp_stall_ack;
+  assign fdiCore_rdi_pl_state_sts     = testModeFdi ? jtagFdi_rdi_pl_state_sts     : rdi_pl_state_sts_int;
+  assign fdiCore_rdi_pl_inband_pres   = testModeFdi ? jtagFdi_rdi_pl_inband_pres   : rdi_pl_inband_pres_int;
+  assign fdiCore_rdiAwake             = testModeFdi ? jtagFdi_rdiAwake             : rdiAwake_int;
+  assign fdiCore_rdiNeedsFdiAwake     = testModeFdi ? jtagFdi_rdiNeedsFdiAwake     : rdiNeedsFdiAwake_int;
+  assign fdiCore_rdi_pl_stall_req     = testModeFdi ? jtagFdi_rdi_pl_stall_req     : rdi_pl_stall_req_int;
+  assign fdiCore_sb_snd_ready         = testModeFdi ? jtagFdi_sb_snd_ready         : fdi_sb_snd_ready;
+  assign fdiCore_sb_rcv_valid         = testModeFdi ? jtagFdi_sb_rcv_valid         : fdi_sb_rcv_valid;
+  assign fdiCore_sb_rcv_msg           = testModeFdi ? jtagFdi_sb_rcv_msg           : fdi_sb_rcv_msg;
+
+  // Outputs of fdi toward core ports: core port or TDR pin (other side is 0).
+  assign fdi_pl_state_sts              = testModeFdi ? PhyState_t'('0) : fdiCore_fdi_pl_state_sts;
+  assign jtagFdi_fdi_pl_state_sts      = testModeFdi ? fdiCore_fdi_pl_state_sts : PhyState_t'('0);
+  assign fdi_pl_rx_active_req          = testModeFdi ? 1'b0 : fdiCore_fdi_pl_rx_active_req;
+  assign jtagFdi_fdi_pl_rx_active_req  = testModeFdi ? fdiCore_fdi_pl_rx_active_req : 1'b0;
+  assign fdi_pl_inband_pres            = testModeFdi ? 1'b0 : fdiCore_fdi_pl_inband_pres;
+  assign jtagFdi_fdi_pl_inband_pres    = testModeFdi ? fdiCore_fdi_pl_inband_pres : 1'b0;
+  assign fdi_pl_wake_ack               = testModeFdi ? 1'b0 : fdiCore_fdi_pl_wake_ack;
+  assign jtagFdi_fdi_pl_wake_ack       = testModeFdi ? fdiCore_fdi_pl_wake_ack : 1'b0;
+  assign fdi_pl_clk_req                = testModeFdi ? 1'b0 : fdiCore_fdi_pl_clk_req;
+  assign jtagFdi_fdi_pl_clk_req        = testModeFdi ? fdiCore_fdi_pl_clk_req : 1'b0;
+  assign fdi_pl_stall_req              = testModeFdi ? 1'b0 : fdiCore_fdi_pl_stall_req;
+  assign jtagFdi_fdi_pl_stall_req      = testModeFdi ? fdiCore_fdi_pl_stall_req : 1'b0;
+  assign fdi_active                    = testModeFdi ? 1'b0 : fdiCore_fdi_active;
+  assign jtagFdi_fdi_active            = testModeFdi ? fdiCore_fdi_active : 1'b0;
+  assign debug_fdi_link_init_state     = testModeFdi ? LinkInitState_t'('0) : fdiCore_debug_link_init_state;
+  assign jtagFdi_debug_link_init_state = testModeFdi ? fdiCore_debug_link_init_state : LinkInitState_t'('0);
+
+  // Outputs of fdi toward rdi / u_sideband: neighbour or TDR pin. In test
+  // mode the neighbour sees an idle FDI (NOP request, no packet, no ack).
+  assign fdi_rdi_lp_linkerror      = testModeFdi ? 1'b0 : fdiCore_rdi_lp_linkerror;
+  assign jtagFdi_rdi_lp_linkerror  = testModeFdi ? fdiCore_rdi_lp_linkerror : 1'b0;
+  assign fdi_rdi_lp_state_req      = testModeFdi ? PhyStateReq_nop : fdiCore_rdi_lp_state_req;
+  assign jtagFdi_rdi_lp_state_req  = testModeFdi ? fdiCore_rdi_lp_state_req : PhyStateReq_nop;
+  assign fdiNeedsRdiAwake_int      = testModeFdi ? 1'b0 : fdiCore_fdiNeedsRdiAwake;
+  assign jtagFdi_fdiNeedsRdiAwake  = testModeFdi ? fdiCore_fdiNeedsRdiAwake : 1'b0;
+  assign fdiAwake_int              = testModeFdi ? 1'b0 : fdiCore_fdiAwake;
+  assign jtagFdi_fdiAwake          = testModeFdi ? fdiCore_fdiAwake : 1'b0;
+  assign fdi_rdi_lp_stall_ack      = testModeFdi ? 1'b0 : fdiCore_rdi_lp_stall_ack;
+  assign jtagFdi_rdi_lp_stall_ack  = testModeFdi ? fdiCore_rdi_lp_stall_ack : 1'b0;
+  assign fdi_sb_snd_valid          = testModeFdi ? 1'b0 : fdiCore_sb_snd_valid;
+  assign jtagFdi_sb_snd_valid      = testModeFdi ? fdiCore_sb_snd_valid : 1'b0;
+  assign fdi_sb_snd_msg            = testModeFdi ? 128'd0 : fdiCore_sb_snd_msg;
+  assign jtagFdi_sb_snd_msg        = testModeFdi ? fdiCore_sb_snd_msg : 128'd0;
+  assign fdi_sb_rcv_ready          = testModeFdi ? 1'b0 : fdiCore_sb_rcv_ready;
+  assign jtagFdi_sb_rcv_ready      = testModeFdi ? fdiCore_sb_rcv_ready : 1'b0;
+
   // --------------------------------------------------------------------------
   // FDI link management
   // --------------------------------------------------------------------------
@@ -382,46 +547,46 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
     .RDI_SB_WIDTH      (RDI_SB_WIDTH),
     .SB_NODE_MSG_WIDTH (SB_NODE_MSG_WIDTH)
   ) fdi (
-    .clock                (clock),
-    .reset_n              (reset_n),
+    .clock                (fdiCore_clock),
+    .reset_n              (fdiCore_reset_n),
 
-    .fdi_lp_state_req     (fdi_lp_state_req),
-    .fdi_lp_linkerror     (fdi_lp_linkerror),
-    .fdi_lp_rx_active_sts (fdi_lp_rx_active_sts),
-    .fdi_pl_state_sts     (fdi_pl_state_sts),
-    .fdi_pl_rx_active_req (fdi_pl_rx_active_req),
-    .fdi_pl_inband_pres   (fdi_pl_inband_pres),
-    .fdi_pl_wake_ack      (fdi_pl_wake_ack),
-    .fdi_lp_wake_req      (fdi_lp_wake_req),
-    .fdi_pl_clk_req       (fdi_pl_clk_req),
-    .fdi_lp_clk_ack       (fdi_lp_clk_ack),
-    .fdi_pl_stall_req     (fdi_pl_stall_req),
-    .fdi_lp_stall_ack     (fdi_lp_stall_ack),
-    .fdi_active           (fdi_active),
+    .fdi_lp_state_req     (fdiCore_fdi_lp_state_req),
+    .fdi_lp_linkerror     (fdiCore_fdi_lp_linkerror),
+    .fdi_lp_rx_active_sts (fdiCore_fdi_lp_rx_active_sts),
+    .fdi_pl_state_sts     (fdiCore_fdi_pl_state_sts),
+    .fdi_pl_rx_active_req (fdiCore_fdi_pl_rx_active_req),
+    .fdi_pl_inband_pres   (fdiCore_fdi_pl_inband_pres),
+    .fdi_pl_wake_ack      (fdiCore_fdi_pl_wake_ack),
+    .fdi_lp_wake_req      (fdiCore_fdi_lp_wake_req),
+    .fdi_pl_clk_req       (fdiCore_fdi_pl_clk_req),
+    .fdi_lp_clk_ack       (fdiCore_fdi_lp_clk_ack),
+    .fdi_pl_stall_req     (fdiCore_fdi_pl_stall_req),
+    .fdi_lp_stall_ack     (fdiCore_fdi_lp_stall_ack),
+    .fdi_active           (fdiCore_fdi_active),
 
-    .debug_link_init_state(debug_fdi_link_init_state),
+    .debug_link_init_state(fdiCore_debug_link_init_state),
 
-    .rdi_lp_linkerror     (fdi_rdi_lp_linkerror),
-    .rdi_lp_state_req     (fdi_rdi_lp_state_req),
-    .rdi_pl_state_sts     (rdi_pl_state_sts_int),
-    .rdi_pl_inband_pres   (rdi_pl_inband_pres_int),
+    .rdi_lp_linkerror     (fdiCore_rdi_lp_linkerror),
+    .rdi_lp_state_req     (fdiCore_rdi_lp_state_req),
+    .rdi_pl_state_sts     (fdiCore_rdi_pl_state_sts),
+    .rdi_pl_inband_pres   (fdiCore_rdi_pl_inband_pres),
 
-    .fdiNeedsRdiAwake     (fdiNeedsRdiAwake_int),
-    .rdiAwake             (rdiAwake_int),
-    .rdiNeedsFdiAwake     (rdiNeedsFdiAwake_int),
-    .fdiAwake             (fdiAwake_int),
+    .fdiNeedsRdiAwake     (fdiCore_fdiNeedsRdiAwake),
+    .rdiAwake             (fdiCore_rdiAwake),
+    .rdiNeedsFdiAwake     (fdiCore_rdiNeedsFdiAwake),
+    .fdiAwake             (fdiCore_fdiAwake),
 
-    .rdi_pl_stall_req     (rdi_pl_stall_req_int),
-    .rdi_lp_stall_ack     (fdi_rdi_lp_stall_ack),
+    .rdi_pl_stall_req     (fdiCore_rdi_pl_stall_req),
+    .rdi_lp_stall_ack     (fdiCore_rdi_lp_stall_ack),
 
-    .sb_snd_valid         (fdi_sb_snd_valid),
-    .sb_snd_msg           (fdi_sb_snd_msg),
-    .sb_snd_ready         (fdi_sb_snd_ready),
-    .sb_rcv_valid         (fdi_sb_rcv_valid),
-    .sb_rcv_msg           (fdi_sb_rcv_msg),
-    .sb_rcv_ready         (fdi_sb_rcv_ready),
-    .timeout_disable      (timeout_disable),
-    .cycles_1us           (cycles_1us)
+    .sb_snd_valid         (fdiCore_sb_snd_valid),
+    .sb_snd_msg           (fdiCore_sb_snd_msg),
+    .sb_snd_ready         (fdiCore_sb_snd_ready),
+    .sb_rcv_valid         (fdiCore_sb_rcv_valid),
+    .sb_rcv_msg           (fdiCore_sb_rcv_msg),
+    .sb_rcv_ready         (fdiCore_sb_rcv_ready),
+    .timeout_disable      (fdiCore_timeout_disable),
+    .cycles_1us           (fdiCore_cycles_1us)
   );
 
   // --------------------------------------------------------------------------
@@ -431,7 +596,7 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
   // --------------------------------------------------------------------------
   RdiLinkManagementController rdi (
     .clock                (clock),
-    .reset_n              (reset_n),
+    .reset_n              (restCore_reset_n),
 
     .ltsm_lp_wake_req     (1'b0),
     .ltsm_pl_wake_ack     (),
@@ -471,7 +636,7 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
     .LTSM_TX_CAPTURE_ENTRIES (4)
   ) u_sideband (
     .clock                         (clock),
-    .reset_n                       (reset_n),
+    .reset_n                       (restCore_reset_n),
 
     .ltsm_tx_valid                 (ltsm_raw_tx_valid),
     .ltsm_tx_msg                   (ltsm_raw_tx_msg),
@@ -559,7 +724,7 @@ module D2DAdapterLinkMgmtLtsmSBTop #(
     .rxDeskewMaxTrainingRetries               (rxDeskewMaxTrainingRetries)
   ) ltsm (
     .clock                                                                     (clock),
-    .reset_n                                                                   (reset_n),
+    .reset_n                                                                   (restCore_reset_n),
     .sb_tx_din                                                                 (ltsm_raw_tx_msg),
     .sb_tx_valid                                                               (ltsm_raw_tx_valid),
     .sb_tx_ready                                                               (ltsm_raw_tx_ready),

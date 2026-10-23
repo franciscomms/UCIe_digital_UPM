@@ -1,13 +1,13 @@
 `default_nettype none
 
 // ============================================================================
-// D2DAdapterLinkMgmtLtsmSbJtagTop
-// JTAG test wrapper around D2DAdapterLinkMgmtLtsmSBTop. Every IO of the core top
+// UcieDigitalTop
+// JTAG test wrapper around UcieDigitalCore. Every IO of the core top
 // can be routed either to its functional pin or to a JTAG Test Data Register
 // (TDR), selected by testModeDigital.
 //
 // Port naming:
-//   <name>       Functional pin. Same name, type and direction as in D2DAdapterLinkMgmtLtsmSBTop.
+//   <name>       Functional pin. Same name, type and direction as in UcieDigitalCore.
 //   jtag_<name>  Test pin toward the TDR. Same type and direction as <name>.
 //
 // Muxing, per core port:
@@ -23,10 +23,23 @@
 // are quiet (or with reset_n asserted) to avoid glitches on the core clock.
 // For synthesis these should be replaced by glitch-free clock-mux cells.
 //
-// Parameters are identical to D2DAdapterLinkMgmtLtsmSBTop and passed straight through.
+// FDI isolation test (testModeFdi), a second TDR separate from the one above:
+//   jtagFdi_<port>  One pin per port of the FDI (LinkManagementController)
+//                   inside the core, passed straight through to u_core. The
+//                   muxing is done in UcieDigitalCore; see its header.
+//   testModeDigital has priority: testModeFdi only takes effect while
+//   testModeDigital = 0. In FDI test the rest of the core is held in reset
+//   and the functional FDI pins read 0.
+//
+//   testModeDigital  testModeFdi   mode
+//         0               0        functional
+//         1               x        digital test (jtag_*)
+//         0               1        FDI isolation test (jtagFdi_*)
+//
+// Parameters are identical to UcieDigitalCore and passed straight through.
 // ============================================================================
 
-module D2DAdapterLinkMgmtLtsmSbJtagTop #(
+module UcieDigitalTop #(
   parameter int unsigned FDI_WIDTH         = UcieUPM_fdi_params_pkg::FDI_WIDTH,
   parameter int unsigned FDI_DLLP_WIDTH    = UcieUPM_fdi_params_pkg::FDI_DLLP_WIDTH,
   parameter int unsigned FDI_SB_WIDTH      = UcieUPM_fdi_params_pkg::FDI_SB_WIDTH,
@@ -82,9 +95,12 @@ module D2DAdapterLinkMgmtLtsmSbJtagTop #(
 ) (
   // ==========================================================================
   // TEST MODE SELECT
-  // 0: functional pins drive/observe the core. 1: jtag_* (TDR) pins do.
+  // testModeDigital = 1: jtag_* (TDR) pins drive/observe the core.
+  // testModeFdi = 1 (and testModeDigital = 0): jtagFdi_* pins drive/observe
+  // the FDI only. Both 0: functional pins drive/observe the core.
   // ==========================================================================
   input wire logic testModeDigital,
+  input wire logic testModeFdi,
 
   // ##########################################################################
   // FUNCTIONAL PINS (testModeDigital = 0)
@@ -568,8 +584,68 @@ module D2DAdapterLinkMgmtLtsmSbJtagTop #(
   output var logic jtag_debug_rx_route_fdi,
   output var logic jtag_debug_rx_route_rdi,
   output var logic jtag_debug_rx_drop_unknown,
-  output var logic jtag_debug_rx_fire
+  output var logic jtag_debug_rx_fire,
+
+  // ##########################################################################
+  // JTAG FDI TDR PINS (testModeFdi = 1, testModeDigital = 0)
+  // One pin per FDI (LinkManagementController) port, prefixed with jtagFdi_.
+  // Inputs are ignored and outputs held at 0 outside FDI test.
+  // ##########################################################################
+
+  // Common clock, reset and timing.
+  input wire logic        jtagFdi_clock,
+  input wire logic        jtagFdi_reset_n,
+  input wire logic [31:0] jtagFdi_cycles_1us,
+  input wire logic        jtagFdi_timeout_disable,
+
+  // Protocol-layer side.
+  input wire UcieUPM_interfaces_pkg::PhyStateReq_t jtagFdi_fdi_lp_state_req,
+  input wire logic                                  jtagFdi_fdi_lp_linkerror,
+  input wire logic                                  jtagFdi_fdi_lp_rx_active_sts,
+  input wire logic                                  jtagFdi_fdi_lp_wake_req,
+  input wire logic                                  jtagFdi_fdi_lp_clk_ack,
+  input wire logic                                  jtagFdi_fdi_lp_stall_ack,
+  output var UcieUPM_interfaces_pkg::PhyState_t jtagFdi_fdi_pl_state_sts,
+  output var logic                               jtagFdi_fdi_pl_rx_active_req,
+  output var logic                               jtagFdi_fdi_pl_inband_pres,
+  output var logic                               jtagFdi_fdi_pl_wake_ack,
+  output var logic                               jtagFdi_fdi_pl_clk_req,
+  output var logic                               jtagFdi_fdi_pl_stall_req,
+  output var logic                               jtagFdi_fdi_active,
+  output var UcieUPM_d2dadapter_pkg::LinkInitState_t jtagFdi_debug_link_init_state,
+
+  // RDI side (normally connected to the internal rdi).
+  output var logic                                  jtagFdi_rdi_lp_linkerror,
+  output var UcieUPM_interfaces_pkg::PhyStateReq_t jtagFdi_rdi_lp_state_req,
+  input wire UcieUPM_interfaces_pkg::PhyState_t    jtagFdi_rdi_pl_state_sts,
+  input wire logic                                  jtagFdi_rdi_pl_inband_pres,
+  output var logic                                  jtagFdi_fdiNeedsRdiAwake,
+  input wire logic                                  jtagFdi_rdiAwake,
+  input wire logic                                  jtagFdi_rdiNeedsFdiAwake,
+  output var logic                                  jtagFdi_fdiAwake,
+  input wire logic                                  jtagFdi_rdi_pl_stall_req,
+  output var logic                                  jtagFdi_rdi_lp_stall_ack,
+
+  // Sideband client side (normally connected to the internal sideband).
+  output var logic         jtagFdi_sb_snd_valid,
+  output var logic [127:0] jtagFdi_sb_snd_msg,
+  input wire logic         jtagFdi_sb_snd_ready,
+  input wire logic         jtagFdi_sb_rcv_valid,
+  input wire logic [127:0] jtagFdi_sb_rcv_msg,
+  output var logic         jtagFdi_sb_rcv_ready
 );
+
+  // --------------------------------------------------------------------------
+  // Test mode select: testModeDigital has priority over testModeFdi.
+  // --------------------------------------------------------------------------
+  logic core_testModeFdi;
+  assign core_testModeFdi = testModeFdi & ~testModeDigital;
+
+`ifndef SYNTHESIS
+  always @(posedge testModeFdi or posedge testModeDigital)
+    if (testModeFdi && testModeDigital)
+      $warning("UcieDigitalTop: testModeFdi ignored while testModeDigital = 1");
+`endif
 
   // --------------------------------------------------------------------------
   // Core-side nets (ports of u_core)
@@ -1079,7 +1155,7 @@ module D2DAdapterLinkMgmtLtsmSbJtagTop #(
   // --------------------------------------------------------------------------
   // Core top
   // --------------------------------------------------------------------------
-  D2DAdapterLinkMgmtLtsmSBTop #(
+  UcieDigitalCore #(
     .FDI_WIDTH                                (FDI_WIDTH),
     .FDI_DLLP_WIDTH                           (FDI_DLLP_WIDTH),
     .FDI_SB_WIDTH                             (FDI_SB_WIDTH),
@@ -1315,7 +1391,44 @@ module D2DAdapterLinkMgmtLtsmSbJtagTop #(
     .debug_rx_route_fdi                                                             (core_debug_rx_route_fdi),
     .debug_rx_route_rdi                                                             (core_debug_rx_route_rdi),
     .debug_rx_drop_unknown                                                          (core_debug_rx_drop_unknown),
-    .debug_rx_fire                                                                  (core_debug_rx_fire)
+    .debug_rx_fire                                                                  (core_debug_rx_fire),
+
+    // FDI isolation test: straight through, muxed inside the core.
+    .testModeFdi                                                                    (core_testModeFdi),
+    .jtagFdi_clock                                                                  (jtagFdi_clock),
+    .jtagFdi_reset_n                                                                (jtagFdi_reset_n),
+    .jtagFdi_cycles_1us                                                             (jtagFdi_cycles_1us),
+    .jtagFdi_timeout_disable                                                        (jtagFdi_timeout_disable),
+    .jtagFdi_fdi_lp_state_req                                                       (jtagFdi_fdi_lp_state_req),
+    .jtagFdi_fdi_lp_linkerror                                                       (jtagFdi_fdi_lp_linkerror),
+    .jtagFdi_fdi_lp_rx_active_sts                                                   (jtagFdi_fdi_lp_rx_active_sts),
+    .jtagFdi_fdi_lp_wake_req                                                        (jtagFdi_fdi_lp_wake_req),
+    .jtagFdi_fdi_lp_clk_ack                                                         (jtagFdi_fdi_lp_clk_ack),
+    .jtagFdi_fdi_lp_stall_ack                                                       (jtagFdi_fdi_lp_stall_ack),
+    .jtagFdi_fdi_pl_state_sts                                                       (jtagFdi_fdi_pl_state_sts),
+    .jtagFdi_fdi_pl_rx_active_req                                                   (jtagFdi_fdi_pl_rx_active_req),
+    .jtagFdi_fdi_pl_inband_pres                                                     (jtagFdi_fdi_pl_inband_pres),
+    .jtagFdi_fdi_pl_wake_ack                                                        (jtagFdi_fdi_pl_wake_ack),
+    .jtagFdi_fdi_pl_clk_req                                                         (jtagFdi_fdi_pl_clk_req),
+    .jtagFdi_fdi_pl_stall_req                                                       (jtagFdi_fdi_pl_stall_req),
+    .jtagFdi_fdi_active                                                             (jtagFdi_fdi_active),
+    .jtagFdi_debug_link_init_state                                                  (jtagFdi_debug_link_init_state),
+    .jtagFdi_rdi_lp_linkerror                                                       (jtagFdi_rdi_lp_linkerror),
+    .jtagFdi_rdi_lp_state_req                                                       (jtagFdi_rdi_lp_state_req),
+    .jtagFdi_rdi_pl_state_sts                                                       (jtagFdi_rdi_pl_state_sts),
+    .jtagFdi_rdi_pl_inband_pres                                                     (jtagFdi_rdi_pl_inband_pres),
+    .jtagFdi_fdiNeedsRdiAwake                                                       (jtagFdi_fdiNeedsRdiAwake),
+    .jtagFdi_rdiAwake                                                               (jtagFdi_rdiAwake),
+    .jtagFdi_rdiNeedsFdiAwake                                                       (jtagFdi_rdiNeedsFdiAwake),
+    .jtagFdi_fdiAwake                                                               (jtagFdi_fdiAwake),
+    .jtagFdi_rdi_pl_stall_req                                                       (jtagFdi_rdi_pl_stall_req),
+    .jtagFdi_rdi_lp_stall_ack                                                       (jtagFdi_rdi_lp_stall_ack),
+    .jtagFdi_sb_snd_valid                                                           (jtagFdi_sb_snd_valid),
+    .jtagFdi_sb_snd_msg                                                             (jtagFdi_sb_snd_msg),
+    .jtagFdi_sb_snd_ready                                                           (jtagFdi_sb_snd_ready),
+    .jtagFdi_sb_rcv_valid                                                           (jtagFdi_sb_rcv_valid),
+    .jtagFdi_sb_rcv_msg                                                             (jtagFdi_sb_rcv_msg),
+    .jtagFdi_sb_rcv_ready                                                           (jtagFdi_sb_rcv_ready)
   );
 
 endmodule

@@ -1,4 +1,4 @@
-// Directed single-DUT scenarios using D2DAdapterLinkMgmtLtsmSBTop at both dies.
+// Directed single-DUT scenarios using UcieDigitalCore at both dies.
 // Training uses an external store-and-forward serial BFM: complete LTSM wire
 // frames are decoded and reserialized to the other die; local management
 // frames are retained for directed stimulus, and peer management is drained.

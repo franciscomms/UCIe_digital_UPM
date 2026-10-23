@@ -1,6 +1,6 @@
 # Serial-sideband top-level tests
 
-These testbenches instantiate `D2DAdapterLinkMgmtLtsmSBTop` from the supplied
+These testbenches instantiate `UcieDigitalCore` from the supplied
 source archive. The three top-level test names are unchanged. All 52 files in
 the supplied `src/` directory remain byte-for-byte unchanged.
 

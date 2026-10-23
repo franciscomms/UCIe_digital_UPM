@@ -1,4 +1,4 @@
-// Two-die Reset-to-Active test of D2DAdapterLinkMgmtLtsmSBTop, including
+// Two-die Reset-to-Active test of UcieDigitalCore, including
 // its integrated serializers, deserializers, CDC and RX holding mailboxes.
 // The dies exchange only one-bit sideband data and forwarded clocks. Parallel
 // packet signals below are local observation points, never a die-to-die bypass.

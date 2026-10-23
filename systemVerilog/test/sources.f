@@ -9,7 +9,7 @@ timescale.sv
 ../src/D2DAdapterConstants.sv
 ../src/RdiLinkManagementConstants.sv
 ../src/SidebandMsgGenerator_corregido.sv
-../src/D2DAdapterLinkMgmtLtsmSBTop.sv
+../src/UcieDigitalCore.sv
 ../src/SidebandWrapper.sv
 ../src/LinkManagementController.sv
 ../src/LinkMgmtSidebandPacketArbiter.sv
