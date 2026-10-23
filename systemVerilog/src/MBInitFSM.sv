@@ -434,8 +434,18 @@ module MBInitFSM #(
   wire [127:0] MBINIT_REPAIRMB_START_REQ = msgMbinitRepairMbStartReq(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
   wire [127:0] MBINIT_REPAIRMB_START_RESP = msgMbinitRepairMbStartResp(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
   wire [127:0] MBINIT_REPAIRMB_D2C_POINT_TEST_REQ = msgMbinitRepairMbStartTxInitD2CPointTestReq(
-    ENDPOINT_PHY, ENDPOINT_REMOTE_PHY, 16'b0, 1'b0, 16'h0080, 16'b0,
-    16'b0, 1'b0, 4'b0, 3'b0, 3'b001);
+        ENDPOINT_PHY,
+        ENDPOINT_REMOTE_PHY,
+        16'b0,       // msgInfo
+        1'b0,        // comparisonMode
+        16'h0001,    // iterationCountSettings = 1
+        16'b0,       // idleCountSettings
+        16'h0800,    // burstCountSettings = 2048
+        1'b0,        // patternMode
+        4'b0,        // clockPhaseControl
+        3'b0,        // validPattern
+        3'b001       // dataPattern = per-lane ID
+    );
   wire [127:0] MBINIT_REPAIRMB_D2C_POINT_TEST_RESP = msgMbinitRepairMbStartTxInitD2CPointTestResp(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
   wire [127:0] MBINIT_REPAIRMB_LFSR_CLEAR_ERROR_REQ = msgMbinitRepairMbLfsrClearErrorReq(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
   wire [127:0] MBINIT_REPAIRMB_LFSR_CLEAR_ERROR_RESP = msgMbinitRepairMbLfsrClearErrorResp(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);

@@ -1,69 +1,78 @@
 # SystemVerilog Project Merge
 
-Total files: **50**
+Total files: **59**
 
 ## File Index
 
-1. #D2DAdapterConstants-sv
-2. #D2DAdapterLinkMgmtLtsmTop_corrected-sv
-3. #D2DAdapterLinkMgmtTop-sv
-4. #Fdi-sv
-5. #LinkManagementController-sv
-6. #LinkMgmtSidebandPacketArbiter-sv
-7. #LinkTrainingFSM-sv
-8. #LtsmSidebandRxPulseAdapter-sv
-9. #LtsmSidebandTxCapture-sv
-10. #MBInitFSM-sv
-11. #MBTrain_DataTrainCenter1-sv
-12. #MBTrain_DataTrainCenter1SweepEngine-sv
-13. #MBTrain_DataTrainCenter2-sv
-14. #MBTrain_DataTrainCenter2SweepEngine-sv
-15. #MBTrain_DataTrainVrefFSM-sv
-16. #MBTrain_DataVrefFSM-sv
-17. #MBTrain_DataVrefStateCore-sv
-18. #MBTrain_DataVrefSweepEngine-sv
-19. #MBTrain_LinkSpeed-sv
-20. #MBTrain_RxClkCalFSM-sv
-21. #MBTrain_RxDeskewFSM-sv
-22. #MBTrain_RxDeskewSweepEngine-sv
-23. #MBTrain_SpeedIdleFSM-sv
-24. #MBTrain_TxSelfCalFSM-sv
-25. #MBTrain_ValidVrefStateCore-sv
-26. #MBTrain_ValidVrefSweepEngine-sv
-27. #MBTrain_ValTrainCenterFSM-sv
-28. #MBTrain_ValTrainCenterSweepEngine-sv
-29. #MBTrain_ValTrainVrefFSM-sv
-30. #MBTrain_ValVrefFSM-sv
-31. #MBTrainFSM-sv
-32. #Parameters-sv
-33. #Rdi-sv
-34. #RdiLinkManagementConstants-sv
-35. #RdiLinkManagementController-sv
-36. #RdiTimeoutController-sv
-37. #RxInitD2CPointTestReceiverFSM-sv
-38. #RxInitD2CPointTestSenderFSM-sv
-39. #SideBandModule-sv
-40. #SidebandMsgGenerator_corregido-sv
-41. #sidebandNode-sv
-42. #SidebandRx-sv
-43. #SidebandRxCdc-sv
-44. #SidebandTx-sv
-45. #StallController-sv
-46. #States-sv
-47. #TxInitD2CPointTestReceiverFSM-sv
-48. #TxInitD2CPointTestSenderFSM-sv
-49. #Types-sv
-50. #UCIePhyRegisterBlock-sv
+1. #src-D2DAdapterConstants-sv
+2. #src-D2DAdapterLinkMgmtLtsmSbJtagTop-sv
+3. #src-D2DAdapterLinkMgmtLtsmSBTop-sv
+4. #src-DvsecRegisterBlock-sv
+5. #src-Fdi-sv
+6. #src-LinkManagementController-sv
+7. #src-LinkMgmtSidebandPacketArbiter-sv
+8. #src-LinkMgmtTimeoutConfig-sv
+9. #src-LinkTrainingFSM-sv
+10. #src-LtsmSidebandRxPulseAdapter-sv
+11. #src-LtsmSidebandTxCapture-sv
+12. #src-MBInitFSM-sv
+13. #src-MBTrain_DataTrainCenter1-sv
+14. #src-MBTrain_DataTrainCenter1SweepEngine-sv
+15. #src-MBTrain_DataTrainCenter2-sv
+16. #src-MBTrain_DataTrainCenter2SweepEngine-sv
+17. #src-MBTrain_DataTrainVrefFSM-sv
+18. #src-MBTrain_DataVrefFSM-sv
+19. #src-MBTrain_DataVrefStateCore-sv
+20. #src-MBTrain_DataVrefSweepEngine-sv
+21. #src-MBTrain_LinkSpeed-sv
+22. #src-MBTrain_RxClkCalFSM-sv
+23. #src-MBTrain_RxDeskewFSM-sv
+24. #src-MBTrain_RxDeskewSweepEngine-sv
+25. #src-MBTrain_SpeedIdleFSM-sv
+26. #src-MBTrain_TxSelfCalFSM-sv
+27. #src-MBTrain_ValidVrefStateCore-sv
+28. #src-MBTrain_ValidVrefSweepEngine-sv
+29. #src-MBTrain_ValTrainCenterFSM-sv
+30. #src-MBTrain_ValTrainCenterSweepEngine-sv
+31. #src-MBTrain_ValTrainVrefFSM-sv
+32. #src-MBTrain_ValVrefFSM-sv
+33. #src-MBTrainFSM-sv
+34. #src-Parameters-sv
+35. #src-Rdi-sv
+36. #src-RdiLinkManagementConstants-sv
+37. #src-RdiLinkManagementController-sv
+38. #src-RdiTimeoutController-sv
+39. #src-RxInitD2CPointTestReceiverFSM-sv
+40. #src-RxInitD2CPointTestSenderFSM-sv
+41. #src-SideBandModule-sv
+42. #src-SidebandMsgGenerator_corregido-sv
+43. #src-sidebandNode-sv
+44. #src-SidebandRx-sv
+45. #src-SidebandTx-sv
+46. #src-SidebandWrapper-sv
+47. #src-StallController-sv
+48. #src-TxInitD2CPointTestReceiverFSM-sv
+49. #src-TxInitD2CPointTestSenderFSM-sv
+50. #src-Types-sv
+51. #test-D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb-sv
+52. #test-D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb-sv
+53. #test-D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness-sv
+54. #test-D2DAdapterLinkMgmtLtsmDualDieHarness-sv
+55. #test-D2DAdapterLinkMgmtLtsmIntegrated128Harness-sv
+56. #test-D2DAdapterLinkMgmtTbSerialBfm-sv
+57. #test-D2DAdapterLinkMgmtTbSerialLinkChecker-sv
+58. #test-D2DAdapterLinkMgmtTopIntegrated128Spec_tb-sv
+59. #test-timescale-sv
 
 ---
 
-<a id="D2DAdapterConstants-sv"></a>
+<a id="src-D2DAdapterConstants-sv"></a>
 
-## [1] D2DAdapterConstants.sv
+## [1] src\D2DAdapterConstants.sv
 
 ```systemverilog
 // FILE_INDEX: 1
-// FILE_PATH : D2DAdapterConstants.sv
+// FILE_PATH : src\D2DAdapterConstants.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: D2DAdapterConstants(4).scala
@@ -90,24 +99,43 @@ endpackage
 
 ```
 
-<a id="D2DAdapterLinkMgmtLtsmTop_corrected-sv"></a>
+<a id="src-D2DAdapterLinkMgmtLtsmSbJtagTop-sv"></a>
 
-## [2] D2DAdapterLinkMgmtLtsmTop_corrected.sv
+## [2] src\D2DAdapterLinkMgmtLtsmSbJtagTop.sv
 
 ```systemverilog
 // FILE_INDEX: 2
-// FILE_PATH : D2DAdapterLinkMgmtLtsmTop_corrected.sv
-
-// Synthesizable SystemVerilog translation.
-// Integrated D2D adapter link-management and LinkTrainingFSM wrapper.
-// LtsmExternalIO is flattened with the ltsm_ prefix while preserving every field name.
-// Reset convention: asynchronous active-low reset_n is passed to every state-holding child.
-// UCIe PHY-state names and encodings are taken from UcieUPM_interfaces_pkg
-// in Types.sv; this wrapper does not depend on a separate LTSM-state package.
+// FILE_PATH : src\D2DAdapterLinkMgmtLtsmSbJtagTop.sv
 
 `default_nettype none
 
-module D2DAdapterLinkMgmtLtsmTop #(
+// ============================================================================
+// D2DAdapterLinkMgmtLtsmSbJtagTop
+// JTAG test wrapper around D2DAdapterLinkMgmtLtsmSBTop. Every IO of the core top
+// can be routed either to its functional pin or to a JTAG Test Data Register
+// (TDR), selected by testModeDigital.
+//
+// Port naming:
+//   <name>       Functional pin. Same name, type and direction as in D2DAdapterLinkMgmtLtsmSBTop.
+//   jtag_<name>  Test pin toward the TDR. Same type and direction as <name>.
+//
+// Muxing, per core port:
+//                     testModeDigital = 0           testModeDigital = 1
+//   core input        driven by <name>              driven by jtag_<name>
+//                     (jtag_<name> ignored)         (<name> ignored)
+//   core output       drives <name>                 drives jtag_<name>
+//                     (jtag_<name> held at 0)       (<name> held at 0)
+//
+// clock, reset_n and sb_rx_clk are muxed like any other input, so in test mode
+// the TDR drives the core clock and reset. The clock muxes are plain
+// combinational muxes: change testModeDigital only while both clock sources
+// are quiet (or with reset_n asserted) to avoid glitches on the core clock.
+// For synthesis these should be replaced by glitch-free clock-mux cells.
+//
+// Parameters are identical to D2DAdapterLinkMgmtLtsmSBTop and passed straight through.
+// ============================================================================
+
+module D2DAdapterLinkMgmtLtsmSbJtagTop #(
   parameter int unsigned FDI_WIDTH         = UcieUPM_fdi_params_pkg::FDI_WIDTH,
   parameter int unsigned FDI_DLLP_WIDTH    = UcieUPM_fdi_params_pkg::FDI_DLLP_WIDTH,
   parameter int unsigned FDI_SB_WIDTH      = UcieUPM_fdi_params_pkg::FDI_SB_WIDTH,
@@ -158,38 +186,57 @@ module D2DAdapterLinkMgmtLtsmTop #(
   parameter int unsigned rxDeskewMinPassingWindowValues =
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_MIN_PASSING_WINDOW_VALUES,
   parameter int unsigned rxDeskewMaxTrainingRetries =
-    LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES,
+  parameter int unsigned SB_TX_FIFO_ENTRIES = 4
 ) (
+  // ==========================================================================
+  // TEST MODE SELECT
+  // 0: functional pins drive/observe the core. 1: jtag_* (TDR) pins do.
+  // ==========================================================================
+  input wire logic testModeDigital,
+
+  // ##########################################################################
+  // FUNCTIONAL PINS (testModeDigital = 0)
+  // ##########################################################################
+
+  // ==========================================================================
+  // COMMON CLOCK AND RESET
+  // ==========================================================================
   input wire logic clock,
   input wire logic reset_n,
 
-  // Protocol-facing FDI interface.
+  // ==========================================================================
+  // FDI INTERFACE
+  // Protocol layer <-> D2D adapter link-management interface.
+  // ==========================================================================
   input wire UcieUPM_interfaces_pkg::PhyStateReq_t fdi_lp_state_req,
   input wire logic                                  fdi_lp_linkerror,
   input wire logic                                  fdi_lp_rx_active_sts,
   input wire logic                                  fdi_lp_wake_req,
   input wire logic                                  fdi_lp_clk_ack,
   input wire logic                                  fdi_lp_stall_ack,
-
   output var UcieUPM_interfaces_pkg::PhyState_t fdi_pl_state_sts,
   output var logic                               fdi_pl_rx_active_req,
   output var logic                               fdi_pl_inband_pres,
   output var logic                               fdi_pl_wake_ack,
   output var logic                               fdi_pl_clk_req,
   output var logic                               fdi_pl_stall_req,
+  output var logic                               fdi_active,
+  // Suppress RDI request/FDI parameter timeout errors; retain recovery timers.
+  input wire logic timeout_disable,
 
-  // Complete-message sideband transport to the remote die.
-  output var logic         sb_tx_valid,
-  output var logic [127:0] sb_tx_msg,
-  input wire logic         sb_tx_ready,
-
-  input wire logic         sb_rx_valid,
-  input wire logic [127:0] sb_rx_msg,
-  output var logic         sb_rx_ready,
-
+  // ==========================================================================
+  // LINK-MANAGEMENT TIMING REFERENCE
+  // Used by the FDI and RDI link-management timeout counters.
+  // ==========================================================================
   input wire logic [31:0] cycles_1us,
 
-  // Flattened initial-LTSM analog/training interface.
+  // ==========================================================================
+  // LTSM INTERFACE
+  // Flattened LinkTrainingFSM interface toward the analog/PHY control logic.
+  // ==========================================================================
+
+  // LTSM startup and analog readiness inputs.
   input wire logic           ltsm_start,
   input wire logic           ltsm_stable_clk,
   input wire logic           ltsm_pll_locked,
@@ -251,8 +298,11 @@ module D2DAdapterLinkMgmtLtsmTop #(
   output var logic           ltsm_dbg_sbTxValid,
   output var logic [127:0]   ltsm_dbg_sbTxDin,
   output var logic           ltsm_dbg_flagTrainError,
+  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   output var logic [2:0]     ltsm_dbg_mbinitSubstate,
   output var logic [4:0]     ltsm_dbg_mbinitReversalMbReceivedSuccessCount,
+
+  // LTSM MBTRAIN.VALVREF interface.
   output var logic           ltsm_flagToAnalog_valVref_sendPattern,
   input wire logic           ltsm_flagFromAnalog_valVref_detectedValPattern,
   input wire logic           ltsm_flagFromAnalog_valVref_finishedPattern,
@@ -271,6 +321,8 @@ module D2DAdapterLinkMgmtLtsmTop #(
   output var logic [2:0]     ltsm_flagToAnalog_valVref_dataPattern,
   output var logic           ltsm_flagToAnalog_valVref_clearComparisonErrors,
   output var logic           ltsm_flagToAnalog_valVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.DATAVREF interface.
   output var logic           ltsm_flagToAnalog_dataVref_sendPattern,
   input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_dataVref_detectedDataPattern,
   input wire logic           ltsm_flagFromAnalog_dataVref_finishedPattern,
@@ -289,86 +341,40 @@ module D2DAdapterLinkMgmtLtsmTop #(
   output var logic [2:0]     ltsm_flagToAnalog_dataVref_dataPattern,
   output var logic           ltsm_flagToAnalog_dataVref_clearComparisonErrors,
   output var logic           ltsm_flagToAnalog_dataVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.RXCLKCAL interface.
   output var logic           ltsm_flagToAnalog_rxClkCal_doCalibration,
   input wire logic           ltsm_flagFromAnalog_rxClkCal_done,
   output var logic           ltsm_flagToAnalog_rxClkCal_sendClockTrack,
-  output var logic           ltsm_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern,
-  input wire logic           ltsm_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent,
-  output var logic           ltsm_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler,
-  output var logic           ltsm_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode,
-  input wire logic            ltsm_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_valTrainCenter_patternMode,
-  output var logic [3:0]     ltsm_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl,
-  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_valTrainCenter_validPattern,
-  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler,
-  input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload,
-  output var logic           ltsm_flagToAnalog_valTrainVref_sendPattern,
-  input wire logic           ltsm_flagFromAnalog_valTrainVref_detectedValPattern,
-  input wire logic           ltsm_flagFromAnalog_valTrainVref_finishedPattern,
-  output var logic           ltsm_flagToAnalog_valTrainVref_applyRxVref,
-  output var logic [validVrefCodeWidth-1:0] ltsm_flagToAnalog_valTrainVref_rxVrefCode,
-  input wire logic           ltsm_flagFromAnalog_valTrainVref_rxVrefApplied,
-  output var logic           ltsm_flagToAnalog_valTrainVref_configureRxInitD2CPointTest,
-  output var logic [15:0]    ltsm_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold,
-  output var logic           ltsm_flagToAnalog_valTrainVref_comparisonMode,
-  output var logic [15:0]    ltsm_flagToAnalog_valTrainVref_iterationCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_valTrainVref_idleCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_valTrainVref_burstCountSettings,
-  output var logic           ltsm_flagToAnalog_valTrainVref_patternMode,
-  output var logic [3:0]     ltsm_flagToAnalog_valTrainVref_clockPhaseControl,
-  output var logic [2:0]     ltsm_flagToAnalog_valTrainVref_validPattern,
-  output var logic [2:0]     ltsm_flagToAnalog_valTrainVref_dataPattern,
-  output var logic           ltsm_flagToAnalog_valTrainVref_clearComparisonErrors,
-  output var logic           ltsm_flagToAnalog_valTrainVref_resetLocalTxScrambler,
-  output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern,
-  input wire logic           ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent,
-  output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler,
-  output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode,
-  input wire logic           ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied,
-  output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew,
-  output var logic [64*d2cTxDeskewCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes,
-  input wire logic           ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode,
-  output var logic [3:0]     ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl,
-  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern,
-  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler,
-  input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload,
-  output var logic           ltsm_flagToAnalog_dataTrainVref_sendPattern,
-  input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_dataTrainVref_detectedDataPattern,
-  input wire logic           ltsm_flagFromAnalog_dataTrainVref_finishedPattern,
-  output var logic           ltsm_flagToAnalog_dataTrainVref_applyRxVref,
-  output var logic [dataLaneCount*dataVrefCodeWidth-1:0] ltsm_flagToAnalog_dataTrainVref_rxVrefCodes,
-  input wire logic           ltsm_flagFromAnalog_dataTrainVref_rxVrefApplied,
-  output var logic           ltsm_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest,
-  output var logic [15:0]    ltsm_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold,
-  output var logic           ltsm_flagToAnalog_dataTrainVref_comparisonMode,
-  output var logic [15:0]    ltsm_flagToAnalog_dataTrainVref_iterationCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_dataTrainVref_idleCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_dataTrainVref_burstCountSettings,
-  output var logic           ltsm_flagToAnalog_dataTrainVref_patternMode,
-  output var logic [3:0]     ltsm_flagToAnalog_dataTrainVref_clockPhaseControl,
-  output var logic [2:0]     ltsm_flagToAnalog_dataTrainVref_validPattern,
-  output var logic [2:0]     ltsm_flagToAnalog_dataTrainVref_dataPattern,
-  output var logic           ltsm_flagToAnalog_dataTrainVref_clearComparisonErrors,
-  output var logic           ltsm_flagToAnalog_dataTrainVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN shared D2C sender/receiver and TX-deskew interface
+  // (muxed inside MBTrainFSM between VALTRAINCENTER, DATATRAINCENTER1/2 and LINKSPEED).
+  output var logic           ltsm_flagToAnalog_d2cSender_sendValTrainPattern,
+  input wire logic           ltsm_flagFromAnalog_d2cSender_valTrainPatternSent,
+  output var logic           ltsm_flagToAnalog_d2cSender_resetLocalScrambler,
+  output var logic           ltsm_flagToAnalog_d2cSender_applyTxClockPhase,
+  output var logic [d2cPiCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txClockPhaseCode,
+  input wire logic            ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied,
+  output var logic           ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest,
+  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold,
+  output var logic           ltsm_flagToAnalog_d2cReceiver_comparisonMode,
+  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_iterationCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_idleCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_burstCountSettings,
+  output var logic           ltsm_flagToAnalog_d2cReceiver_patternMode,
+  output var logic [3:0]     ltsm_flagToAnalog_d2cReceiver_clockPhaseControl,
+  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_validPattern,
+  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_dataPattern,
+  output var logic           ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler,
+  input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
+  input wire logic [63:0]    ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  output var logic           ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
+  input wire logic           ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
+  output var logic           ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew,
+  output var logic [64*d2cTxDeskewCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes,
+  input wire logic           ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied,
+
+  // LTSM MBTRAIN.RXDESKEW interface.
   output var logic           ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
   input wire logic           ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
   output var logic           ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler,
@@ -387,166 +393,1573 @@ module D2DAdapterLinkMgmtLtsmTop #(
   output var logic [2:0]     ltsm_flagToAnalog_rxDeskew_dataPattern,
   output var logic           ltsm_flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_rxDeskew_detectedDataPattern,
-  output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern,
-  input wire logic           ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent,
-  output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler,
-  output var logic           ltsm_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode,
-  input wire logic            ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode,
-  output var logic [3:0]     ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl,
-  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern,
-  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler,
-  input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload,
+
+  // LTSM MBTRAIN.LINKSPEED interface.
   output var logic           ltsm_flagToLtsm_linkSpeed_phyInRetrain,
-  output var logic           ltsm_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern,
-  input wire logic           ltsm_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent,
-  output var logic           ltsm_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings,
-  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_linkSpeed_patternMode,
-  output var logic [3:0]     ltsm_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl,
-  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_linkSpeed_validPattern,
-  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_linkSpeed_dataPattern,
-  output var logic           ltsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler,
-  input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful,
+  input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
   output var logic [3:0]     ltsm_dbg_mbtrainState,
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    ltsm_dbg_mbtrainActiveSubstate,
   output var logic [15:0]    ltsm_dbg_mbtrainLastErrorCount,
   output var logic [15:0]    ltsm_dbg_mbtrainRetryCount,
 
-  // Integration-level state/debug visibility.
+  // ==========================================================================
+  // SIDEBAND PHY INTERFACE
+  // Serialized pins connected to the remote die.
+  // ==========================================================================
+  output var logic sb_tx_dout,
+  output var logic sb_tx_clk,
+  input wire logic sb_rx_din,
+  input wire logic sb_rx_clk,
+
+  // Sideband receive-buffer status. Sticky until reset.
+  output var logic debug_sb_rx_overflow,
+
+  // ==========================================================================
+  // FDI / RDI / LTSM / SIDEBAND INTEGRATION DEBUG
+  // RDI is internal to this top, so its externally visible
+  // signals are debug/status outputs rather than a separate functional port.
+  // ==========================================================================
   output var logic [3:0] debug_ltsm_state,
   output var logic       debug_ltsm_inband_pres,
   output var UcieUPM_d2dadapter_pkg::LinkInitState_t debug_fdi_link_init_state,
   output var UcieUPM_interfaces_pkg::PhyState_t      debug_rdi_state,
   output var UcieUPM_interfaces_pkg::PhyStateReq_t   debug_fdi_to_rdi_state_req,
-
   output var logic debug_arb_grant_ltsm,
   output var logic debug_arb_grant_fdi,
   output var logic debug_arb_grant_rdi,
   output var logic debug_arb_tx_locked,
+  output var logic [1:0] debug_arb_rr_last_source,
+  output var logic debug_arb_rr_last_granted_rdi,
   output var logic debug_arb_tx_fire,
+  output var logic debug_rx_route_ltsm,
+  output var logic debug_rx_route_fdi,
+  output var logic debug_rx_route_rdi,
+  output var logic debug_rx_drop_unknown,
+  output var logic debug_rx_fire,
 
+  // ##########################################################################
+  // JTAG TDR PINS (testModeDigital = 1)
+  // Same order and grouping as the functional pins, prefixed with jtag_.
+  // ##########################################################################
+
+  // ==========================================================================
+  // COMMON CLOCK AND RESET
+  // ==========================================================================
+  input wire logic jtag_clock,
+  input wire logic jtag_reset_n,
+
+  // ==========================================================================
+  // FDI INTERFACE
+  // Protocol layer <-> D2D adapter link-management interface.
+  // ==========================================================================
+  input wire UcieUPM_interfaces_pkg::PhyStateReq_t jtag_fdi_lp_state_req,
+  input wire logic                                  jtag_fdi_lp_linkerror,
+  input wire logic                                  jtag_fdi_lp_rx_active_sts,
+  input wire logic                                  jtag_fdi_lp_wake_req,
+  input wire logic                                  jtag_fdi_lp_clk_ack,
+  input wire logic                                  jtag_fdi_lp_stall_ack,
+  output var UcieUPM_interfaces_pkg::PhyState_t jtag_fdi_pl_state_sts,
+  output var logic                               jtag_fdi_pl_rx_active_req,
+  output var logic                               jtag_fdi_pl_inband_pres,
+  output var logic                               jtag_fdi_pl_wake_ack,
+  output var logic                               jtag_fdi_pl_clk_req,
+  output var logic                               jtag_fdi_pl_stall_req,
+  output var logic                               jtag_fdi_active,
+  input wire logic jtag_timeout_disable,
+
+  // ==========================================================================
+  // LINK-MANAGEMENT TIMING REFERENCE
+  // Used by the FDI and RDI link-management timeout counters.
+  // ==========================================================================
+  input wire logic [31:0] jtag_cycles_1us,
+
+  // ==========================================================================
+  // LTSM INTERFACE
+  // Flattened LinkTrainingFSM interface toward the analog/PHY control logic.
+  // ==========================================================================
+
+  // LTSM startup and analog readiness inputs.
+  input wire logic           jtag_ltsm_start,
+  input wire logic           jtag_ltsm_stable_clk,
+  input wire logic           jtag_ltsm_pll_locked,
+  input wire logic           jtag_ltsm_stable_supply,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns,
+  input wire logic           jtag_ltsm_flagFromAnalog_FinishedClkPatterns,
+  input wire logic           jtag_ltsm_flagFromAnalog_FinishedValTrainPattern,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern,
+  input wire logic           jtag_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L,
+  input wire logic           jtag_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L,
+  input wire logic           jtag_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L,
+  input wire logic           jtag_ltsm_flagFromAnalog_ValTrainPatternReceived,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14,
+  input wire logic           jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14,
+  input wire logic           jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15,
+  output var logic           jtag_ltsm_flagToAnalog_RepairClkState,
+  output var logic           jtag_ltsm_flagToAnalog_SendClkPatterns,
+  output var logic           jtag_ltsm_flagToAnalog_RepairValState,
+  output var logic           jtag_ltsm_flagToAnalog_SendValTrainPattern,
+  output var logic           jtag_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern,
+  output var logic           jtag_ltsm_flagToAnalog_RepairMbSendLaneIDPattern,
+  output var logic           jtag_ltsm_flagToAnalog_RepairMbSetReceiver,
+  output var logic           jtag_ltsm_flagToAnalog_LaneReversalApplied,
+  output var logic           jtag_ltsm_flagToAnalog_linkInit_resetLfsrScrambler,
+  output var logic [3:0]     jtag_ltsm_state,
+  output var logic           jtag_ltsm_dbg_flagSbinitFirstClkPatternSeen,
+  output var logic           jtag_ltsm_dbg_rxValidRisingEdge,
+  output var logic [2:0]     jtag_ltsm_dbg_sbinitSendCount,
+  output var logic           jtag_ltsm_dbg_sbTxValid,
+  output var logic [127:0]   jtag_ltsm_dbg_sbTxDin,
+  output var logic           jtag_ltsm_dbg_flagTrainError,
+  output var logic [2:0]     jtag_ltsm_dbg_mbinitSubstate,
+  output var logic [4:0]     jtag_ltsm_dbg_mbinitReversalMbReceivedSuccessCount,
+
+  // LTSM MBTRAIN.VALVREF interface.
+  output var logic           jtag_ltsm_flagToAnalog_valVref_sendPattern,
+  input wire logic           jtag_ltsm_flagFromAnalog_valVref_detectedValPattern,
+  input wire logic           jtag_ltsm_flagFromAnalog_valVref_finishedPattern,
+  output var logic           jtag_ltsm_flagToAnalog_valVref_applyRxVref,
+  output var logic [validVrefCodeWidth-1:0] jtag_ltsm_flagToAnalog_valVref_rxVrefCode,
+  input wire logic           jtag_ltsm_flagFromAnalog_valVref_rxVrefApplied,
+  output var logic           jtag_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold,
+  output var logic           jtag_ltsm_flagToAnalog_valVref_comparisonMode,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_valVref_iterationCountSettings,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_valVref_idleCountSettings,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_valVref_burstCountSettings,
+  output var logic           jtag_ltsm_flagToAnalog_valVref_patternMode,
+  output var logic [3:0]     jtag_ltsm_flagToAnalog_valVref_clockPhaseControl,
+  output var logic [2:0]     jtag_ltsm_flagToAnalog_valVref_validPattern,
+  output var logic [2:0]     jtag_ltsm_flagToAnalog_valVref_dataPattern,
+  output var logic           jtag_ltsm_flagToAnalog_valVref_clearComparisonErrors,
+  output var logic           jtag_ltsm_flagToAnalog_valVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.DATAVREF interface.
+  output var logic           jtag_ltsm_flagToAnalog_dataVref_sendPattern,
+  input wire logic [dataLaneCount-1:0] jtag_ltsm_flagFromAnalog_dataVref_detectedDataPattern,
+  input wire logic           jtag_ltsm_flagFromAnalog_dataVref_finishedPattern,
+  output var logic           jtag_ltsm_flagToAnalog_dataVref_applyRxVref,
+  output var logic [dataLaneCount*dataVrefCodeWidth-1:0] jtag_ltsm_flagToAnalog_dataVref_rxVrefCodes,
+  input wire logic           jtag_ltsm_flagFromAnalog_dataVref_rxVrefApplied,
+  output var logic           jtag_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold,
+  output var logic           jtag_ltsm_flagToAnalog_dataVref_comparisonMode,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_dataVref_iterationCountSettings,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_dataVref_idleCountSettings,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_dataVref_burstCountSettings,
+  output var logic           jtag_ltsm_flagToAnalog_dataVref_patternMode,
+  output var logic [3:0]     jtag_ltsm_flagToAnalog_dataVref_clockPhaseControl,
+  output var logic [2:0]     jtag_ltsm_flagToAnalog_dataVref_validPattern,
+  output var logic [2:0]     jtag_ltsm_flagToAnalog_dataVref_dataPattern,
+  output var logic           jtag_ltsm_flagToAnalog_dataVref_clearComparisonErrors,
+  output var logic           jtag_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.RXCLKCAL interface.
+  output var logic           jtag_ltsm_flagToAnalog_rxClkCal_doCalibration,
+  input wire logic           jtag_ltsm_flagFromAnalog_rxClkCal_done,
+  output var logic           jtag_ltsm_flagToAnalog_rxClkCal_sendClockTrack,
+
+  // LTSM MBTRAIN shared D2C sender/receiver and TX-deskew interface
+  // (muxed inside MBTrainFSM between VALTRAINCENTER, DATATRAINCENTER1/2 and LINKSPEED).
+  output var logic           jtag_ltsm_flagToAnalog_d2cSender_sendValTrainPattern,
+  input wire logic           jtag_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent,
+  output var logic           jtag_ltsm_flagToAnalog_d2cSender_resetLocalScrambler,
+  output var logic           jtag_ltsm_flagToAnalog_d2cSender_applyTxClockPhase,
+  output var logic [d2cPiCodeWidth-1:0] jtag_ltsm_flagToAnalog_d2cSender_txClockPhaseCode,
+  input wire logic            jtag_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied,
+  output var logic           jtag_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold,
+  output var logic           jtag_ltsm_flagToAnalog_d2cReceiver_comparisonMode,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_d2cReceiver_idleCountSettings,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_d2cReceiver_burstCountSettings,
+  output var logic           jtag_ltsm_flagToAnalog_d2cReceiver_patternMode,
+  output var logic [3:0]     jtag_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl,
+  output var logic [2:0]     jtag_ltsm_flagToAnalog_d2cReceiver_validPattern,
+  output var logic [2:0]     jtag_ltsm_flagToAnalog_d2cReceiver_dataPattern,
+  output var logic           jtag_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler,
+  input wire logic [15:0]    jtag_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
+  input wire logic [63:0]    jtag_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  output var logic           jtag_ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
+  input wire logic           jtag_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
+  output var logic           jtag_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew,
+  output var logic [64*d2cTxDeskewCodeWidth-1:0] jtag_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes,
+  input wire logic           jtag_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied,
+
+  // LTSM MBTRAIN.RXDESKEW interface.
+  output var logic           jtag_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
+  input wire logic           jtag_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
+  output var logic           jtag_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler,
+  output var logic           jtag_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew,
+  output var logic [dataLaneCount*rxDeskewCodeWidth-1:0] jtag_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes,
+  input wire logic           jtag_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied,
+  output var logic           jtag_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold,
+  output var logic           jtag_ltsm_flagToAnalog_rxDeskew_comparisonMode,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_rxDeskew_iterationCountSettings,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_rxDeskew_idleCountSettings,
+  output var logic [15:0]    jtag_ltsm_flagToAnalog_rxDeskew_burstCountSettings,
+  output var logic           jtag_ltsm_flagToAnalog_rxDeskew_patternMode,
+  output var logic [3:0]     jtag_ltsm_flagToAnalog_rxDeskew_clockPhaseControl,
+  output var logic [2:0]     jtag_ltsm_flagToAnalog_rxDeskew_validPattern,
+  output var logic [2:0]     jtag_ltsm_flagToAnalog_rxDeskew_dataPattern,
+  output var logic           jtag_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors,
+  input wire logic [dataLaneCount-1:0] jtag_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern,
+
+  // LTSM MBTRAIN.LINKSPEED interface.
+  output var logic           jtag_ltsm_flagToLtsm_linkSpeed_phyInRetrain,
+  input wire logic [15:0]    jtag_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
+  output var logic [3:0]     jtag_ltsm_dbg_mbtrainState,
+  output var logic [11:0]    jtag_ltsm_dbg_mbtrainActiveSubstate,
+  output var logic [15:0]    jtag_ltsm_dbg_mbtrainLastErrorCount,
+  output var logic [15:0]    jtag_ltsm_dbg_mbtrainRetryCount,
+
+  // ==========================================================================
+  // SIDEBAND PHY INTERFACE
+  // Serialized pins connected to the remote die.
+  // ==========================================================================
+  output var logic jtag_sb_tx_dout,
+  output var logic jtag_sb_tx_clk,
+  input wire logic jtag_sb_rx_din,
+  input wire logic jtag_sb_rx_clk,
+
+  // Sideband receive-buffer status. Sticky until reset.
+  output var logic jtag_debug_sb_rx_overflow,
+
+  // ==========================================================================
+  // FDI / RDI / LTSM / SIDEBAND INTEGRATION DEBUG
+  // RDI is internal to this top, so its externally visible
+  // signals are debug/status outputs rather than a separate functional port.
+  // ==========================================================================
+  output var logic [3:0] jtag_debug_ltsm_state,
+  output var logic       jtag_debug_ltsm_inband_pres,
+  output var UcieUPM_d2dadapter_pkg::LinkInitState_t jtag_debug_fdi_link_init_state,
+  output var UcieUPM_interfaces_pkg::PhyState_t      jtag_debug_rdi_state,
+  output var UcieUPM_interfaces_pkg::PhyStateReq_t   jtag_debug_fdi_to_rdi_state_req,
+  output var logic jtag_debug_arb_grant_ltsm,
+  output var logic jtag_debug_arb_grant_fdi,
+  output var logic jtag_debug_arb_grant_rdi,
+  output var logic jtag_debug_arb_tx_locked,
+  output var logic [1:0] jtag_debug_arb_rr_last_source,
+  output var logic jtag_debug_arb_rr_last_granted_rdi,
+  output var logic jtag_debug_arb_tx_fire,
+  output var logic jtag_debug_rx_route_ltsm,
+  output var logic jtag_debug_rx_route_fdi,
+  output var logic jtag_debug_rx_route_rdi,
+  output var logic jtag_debug_rx_drop_unknown,
+  output var logic jtag_debug_rx_fire
+);
+
+  // --------------------------------------------------------------------------
+  // Core-side nets (ports of u_core)
+  // --------------------------------------------------------------------------
+  logic core_clock;
+  logic core_reset_n;
+  UcieUPM_interfaces_pkg::PhyStateReq_t core_fdi_lp_state_req;
+  logic core_fdi_lp_linkerror;
+  logic core_fdi_lp_rx_active_sts;
+  logic core_fdi_lp_wake_req;
+  logic core_fdi_lp_clk_ack;
+  logic core_fdi_lp_stall_ack;
+  UcieUPM_interfaces_pkg::PhyState_t core_fdi_pl_state_sts;
+  logic core_fdi_pl_rx_active_req;
+  logic core_fdi_pl_inband_pres;
+  logic core_fdi_pl_wake_ack;
+  logic core_fdi_pl_clk_req;
+  logic core_fdi_pl_stall_req;
+  logic core_fdi_active;
+  logic core_timeout_disable;
+  logic [31:0] core_cycles_1us;
+  logic core_ltsm_start;
+  logic core_ltsm_stable_clk;
+  logic core_ltsm_pll_locked;
+  logic core_ltsm_stable_supply;
+  logic core_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns;
+  logic core_ltsm_flagFromAnalog_FinishedClkPatterns;
+  logic core_ltsm_flagFromAnalog_FinishedValTrainPattern;
+  logic core_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern;
+  logic core_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern;
+  logic core_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L;
+  logic core_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L;
+  logic core_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L;
+  logic core_ltsm_flagFromAnalog_ValTrainPatternReceived;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14;
+  logic core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14;
+  logic core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15;
+  logic core_ltsm_flagToAnalog_RepairClkState;
+  logic core_ltsm_flagToAnalog_SendClkPatterns;
+  logic core_ltsm_flagToAnalog_RepairValState;
+  logic core_ltsm_flagToAnalog_SendValTrainPattern;
+  logic core_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern;
+  logic core_ltsm_flagToAnalog_RepairMbSendLaneIDPattern;
+  logic core_ltsm_flagToAnalog_RepairMbSetReceiver;
+  logic core_ltsm_flagToAnalog_LaneReversalApplied;
+  logic core_ltsm_flagToAnalog_linkInit_resetLfsrScrambler;
+  logic [3:0] core_ltsm_state;
+  logic core_ltsm_dbg_flagSbinitFirstClkPatternSeen;
+  logic core_ltsm_dbg_rxValidRisingEdge;
+  logic [2:0] core_ltsm_dbg_sbinitSendCount;
+  logic core_ltsm_dbg_sbTxValid;
+  logic [127:0] core_ltsm_dbg_sbTxDin;
+  logic core_ltsm_dbg_flagTrainError;
+  logic [2:0] core_ltsm_dbg_mbinitSubstate;
+  logic [4:0] core_ltsm_dbg_mbinitReversalMbReceivedSuccessCount;
+  logic core_ltsm_flagToAnalog_valVref_sendPattern;
+  logic core_ltsm_flagFromAnalog_valVref_detectedValPattern;
+  logic core_ltsm_flagFromAnalog_valVref_finishedPattern;
+  logic core_ltsm_flagToAnalog_valVref_applyRxVref;
+  logic [validVrefCodeWidth-1:0] core_ltsm_flagToAnalog_valVref_rxVrefCode;
+  logic core_ltsm_flagFromAnalog_valVref_rxVrefApplied;
+  logic core_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest;
+  logic [15:0] core_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold;
+  logic core_ltsm_flagToAnalog_valVref_comparisonMode;
+  logic [15:0] core_ltsm_flagToAnalog_valVref_iterationCountSettings;
+  logic [15:0] core_ltsm_flagToAnalog_valVref_idleCountSettings;
+  logic [15:0] core_ltsm_flagToAnalog_valVref_burstCountSettings;
+  logic core_ltsm_flagToAnalog_valVref_patternMode;
+  logic [3:0] core_ltsm_flagToAnalog_valVref_clockPhaseControl;
+  logic [2:0] core_ltsm_flagToAnalog_valVref_validPattern;
+  logic [2:0] core_ltsm_flagToAnalog_valVref_dataPattern;
+  logic core_ltsm_flagToAnalog_valVref_clearComparisonErrors;
+  logic core_ltsm_flagToAnalog_valVref_resetLocalTxScrambler;
+  logic core_ltsm_flagToAnalog_dataVref_sendPattern;
+  logic [dataLaneCount-1:0] core_ltsm_flagFromAnalog_dataVref_detectedDataPattern;
+  logic core_ltsm_flagFromAnalog_dataVref_finishedPattern;
+  logic core_ltsm_flagToAnalog_dataVref_applyRxVref;
+  logic [dataLaneCount*dataVrefCodeWidth-1:0] core_ltsm_flagToAnalog_dataVref_rxVrefCodes;
+  logic core_ltsm_flagFromAnalog_dataVref_rxVrefApplied;
+  logic core_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest;
+  logic [15:0] core_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+  logic core_ltsm_flagToAnalog_dataVref_comparisonMode;
+  logic [15:0] core_ltsm_flagToAnalog_dataVref_iterationCountSettings;
+  logic [15:0] core_ltsm_flagToAnalog_dataVref_idleCountSettings;
+  logic [15:0] core_ltsm_flagToAnalog_dataVref_burstCountSettings;
+  logic core_ltsm_flagToAnalog_dataVref_patternMode;
+  logic [3:0] core_ltsm_flagToAnalog_dataVref_clockPhaseControl;
+  logic [2:0] core_ltsm_flagToAnalog_dataVref_validPattern;
+  logic [2:0] core_ltsm_flagToAnalog_dataVref_dataPattern;
+  logic core_ltsm_flagToAnalog_dataVref_clearComparisonErrors;
+  logic core_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler;
+  logic core_ltsm_flagToAnalog_rxClkCal_doCalibration;
+  logic core_ltsm_flagFromAnalog_rxClkCal_done;
+  logic core_ltsm_flagToAnalog_rxClkCal_sendClockTrack;
+  logic core_ltsm_flagToAnalog_d2cSender_sendValTrainPattern;
+  logic core_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent;
+  logic core_ltsm_flagToAnalog_d2cSender_resetLocalScrambler;
+  logic core_ltsm_flagToAnalog_d2cSender_applyTxClockPhase;
+  logic [d2cPiCodeWidth-1:0] core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode;
+  logic core_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied;
+  logic core_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest;
+  logic [15:0] core_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold;
+  logic core_ltsm_flagToAnalog_d2cReceiver_comparisonMode;
+  logic [15:0] core_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings;
+  logic [15:0] core_ltsm_flagToAnalog_d2cReceiver_idleCountSettings;
+  logic [15:0] core_ltsm_flagToAnalog_d2cReceiver_burstCountSettings;
+  logic core_ltsm_flagToAnalog_d2cReceiver_patternMode;
+  logic [3:0] core_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl;
+  logic [2:0] core_ltsm_flagToAnalog_d2cReceiver_validPattern;
+  logic [2:0] core_ltsm_flagToAnalog_d2cReceiver_dataPattern;
+  logic core_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler;
+  logic [15:0] core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo;
+  logic [63:0] core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
+  logic core_ltsm_flagToAnalog_d2cSender_sendLfsrPattern;
+  logic core_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent;
+  logic core_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew;
+  logic [64*d2cTxDeskewCodeWidth-1:0] core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
+  logic core_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied;
+  logic core_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern;
+  logic core_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent;
+  logic core_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler;
+  logic core_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew;
+  logic [dataLaneCount*rxDeskewCodeWidth-1:0] core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes;
+  logic core_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied;
+  logic core_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest;
+  logic [15:0] core_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold;
+  logic core_ltsm_flagToAnalog_rxDeskew_comparisonMode;
+  logic [15:0] core_ltsm_flagToAnalog_rxDeskew_iterationCountSettings;
+  logic [15:0] core_ltsm_flagToAnalog_rxDeskew_idleCountSettings;
+  logic [15:0] core_ltsm_flagToAnalog_rxDeskew_burstCountSettings;
+  logic core_ltsm_flagToAnalog_rxDeskew_patternMode;
+  logic [3:0] core_ltsm_flagToAnalog_rxDeskew_clockPhaseControl;
+  logic [2:0] core_ltsm_flagToAnalog_rxDeskew_validPattern;
+  logic [2:0] core_ltsm_flagToAnalog_rxDeskew_dataPattern;
+  logic core_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors;
+  logic [dataLaneCount-1:0] core_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern;
+  logic core_ltsm_flagToLtsm_linkSpeed_phyInRetrain;
+  logic [15:0] core_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
+  logic [3:0] core_ltsm_dbg_mbtrainState;
+  logic [11:0] core_ltsm_dbg_mbtrainActiveSubstate;
+  logic [15:0] core_ltsm_dbg_mbtrainLastErrorCount;
+  logic [15:0] core_ltsm_dbg_mbtrainRetryCount;
+  logic core_sb_tx_dout;
+  logic core_sb_tx_clk;
+  logic core_sb_rx_din;
+  logic core_sb_rx_clk;
+  logic core_debug_sb_rx_overflow;
+  logic [3:0] core_debug_ltsm_state;
+  logic core_debug_ltsm_inband_pres;
+  UcieUPM_d2dadapter_pkg::LinkInitState_t core_debug_fdi_link_init_state;
+  UcieUPM_interfaces_pkg::PhyState_t core_debug_rdi_state;
+  UcieUPM_interfaces_pkg::PhyStateReq_t core_debug_fdi_to_rdi_state_req;
+  logic core_debug_arb_grant_ltsm;
+  logic core_debug_arb_grant_fdi;
+  logic core_debug_arb_grant_rdi;
+  logic core_debug_arb_tx_locked;
+  logic [1:0] core_debug_arb_rr_last_source;
+  logic core_debug_arb_rr_last_granted_rdi;
+  logic core_debug_arb_tx_fire;
+  logic core_debug_rx_route_ltsm;
+  logic core_debug_rx_route_fdi;
+  logic core_debug_rx_route_rdi;
+  logic core_debug_rx_drop_unknown;
+  logic core_debug_rx_fire;
+
+  // --------------------------------------------------------------------------
+  // Input muxes: functional pin or TDR pin -> core
+  // --------------------------------------------------------------------------
+  assign core_clock = testModeDigital ? jtag_clock : clock;
+  assign core_reset_n = testModeDigital ? jtag_reset_n : reset_n;
+  assign core_fdi_lp_state_req = testModeDigital ? jtag_fdi_lp_state_req : fdi_lp_state_req;
+  assign core_fdi_lp_linkerror = testModeDigital ? jtag_fdi_lp_linkerror : fdi_lp_linkerror;
+  assign core_fdi_lp_rx_active_sts = testModeDigital ? jtag_fdi_lp_rx_active_sts : fdi_lp_rx_active_sts;
+  assign core_fdi_lp_wake_req = testModeDigital ? jtag_fdi_lp_wake_req : fdi_lp_wake_req;
+  assign core_fdi_lp_clk_ack = testModeDigital ? jtag_fdi_lp_clk_ack : fdi_lp_clk_ack;
+  assign core_fdi_lp_stall_ack = testModeDigital ? jtag_fdi_lp_stall_ack : fdi_lp_stall_ack;
+  assign core_cycles_1us = testModeDigital ? jtag_cycles_1us : cycles_1us;
+  assign core_timeout_disable = testModeDigital ? jtag_timeout_disable : timeout_disable;
+  assign core_ltsm_start = testModeDigital ? jtag_ltsm_start : ltsm_start;
+  assign core_ltsm_stable_clk = testModeDigital ? jtag_ltsm_stable_clk : ltsm_stable_clk;
+  assign core_ltsm_pll_locked = testModeDigital ? jtag_ltsm_pll_locked : ltsm_pll_locked;
+  assign core_ltsm_stable_supply = testModeDigital ? jtag_ltsm_stable_supply : ltsm_stable_supply;
+  assign core_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns = testModeDigital ? jtag_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns : ltsm_flagFromAnalog_ReadyToExchangeClkPatterns;
+  assign core_ltsm_flagFromAnalog_FinishedClkPatterns = testModeDigital ? jtag_ltsm_flagFromAnalog_FinishedClkPatterns : ltsm_flagFromAnalog_FinishedClkPatterns;
+  assign core_ltsm_flagFromAnalog_FinishedValTrainPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_FinishedValTrainPattern : ltsm_flagFromAnalog_FinishedValTrainPattern;
+  assign core_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern : ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern;
+  assign core_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern : ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern;
+  assign core_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L = testModeDigital ? jtag_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L : ltsm_flagFromAnalog_clkPatternReceivedRTRK_L;
+  assign core_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L = testModeDigital ? jtag_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L : ltsm_flagFromAnalog_clkPatternReceivedRCKN_L;
+  assign core_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L = testModeDigital ? jtag_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L : ltsm_flagFromAnalog_clkPatternReceivedRCKP_L;
+  assign core_ltsm_flagFromAnalog_ValTrainPatternReceived = testModeDigital ? jtag_ltsm_flagFromAnalog_ValTrainPatternReceived : ltsm_flagFromAnalog_ValTrainPatternReceived;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15;
+  assign core_ltsm_flagFromAnalog_valVref_detectedValPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_valVref_detectedValPattern : ltsm_flagFromAnalog_valVref_detectedValPattern;
+  assign core_ltsm_flagFromAnalog_valVref_finishedPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_valVref_finishedPattern : ltsm_flagFromAnalog_valVref_finishedPattern;
+  assign core_ltsm_flagFromAnalog_valVref_rxVrefApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_valVref_rxVrefApplied : ltsm_flagFromAnalog_valVref_rxVrefApplied;
+  assign core_ltsm_flagFromAnalog_dataVref_detectedDataPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_dataVref_detectedDataPattern : ltsm_flagFromAnalog_dataVref_detectedDataPattern;
+  assign core_ltsm_flagFromAnalog_dataVref_finishedPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_dataVref_finishedPattern : ltsm_flagFromAnalog_dataVref_finishedPattern;
+  assign core_ltsm_flagFromAnalog_dataVref_rxVrefApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_dataVref_rxVrefApplied : ltsm_flagFromAnalog_dataVref_rxVrefApplied;
+  assign core_ltsm_flagFromAnalog_rxClkCal_done = testModeDigital ? jtag_ltsm_flagFromAnalog_rxClkCal_done : ltsm_flagFromAnalog_rxClkCal_done;
+  assign core_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent : ltsm_flagFromAnalog_d2cSender_valTrainPatternSent;
+  assign core_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied : ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied;
+  assign core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo;
+  assign core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
+  assign core_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent : ltsm_flagFromAnalog_d2cSender_lfsrPatternSent;
+  assign core_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied : ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied;
+  assign core_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent = testModeDigital ? jtag_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent : ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent;
+  assign core_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied : ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied;
+  assign core_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern : ltsm_flagFromAnalog_rxDeskew_detectedDataPattern;
+  assign core_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful : ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
+  assign core_sb_rx_din = testModeDigital ? jtag_sb_rx_din : sb_rx_din;
+  assign core_sb_rx_clk = testModeDigital ? jtag_sb_rx_clk : sb_rx_clk;
+
+  // --------------------------------------------------------------------------
+  // Output muxes: core -> functional pin or TDR pin (the unselected side is 0)
+  // --------------------------------------------------------------------------
+  assign fdi_pl_state_sts = testModeDigital ? UcieUPM_interfaces_pkg::PhyState_t'('0) : core_fdi_pl_state_sts;
+  assign jtag_fdi_pl_state_sts = testModeDigital ? core_fdi_pl_state_sts : UcieUPM_interfaces_pkg::PhyState_t'('0);
+  assign fdi_pl_rx_active_req = testModeDigital ? '0 : core_fdi_pl_rx_active_req;
+  assign jtag_fdi_pl_rx_active_req = testModeDigital ? core_fdi_pl_rx_active_req : '0;
+  assign fdi_pl_inband_pres = testModeDigital ? '0 : core_fdi_pl_inband_pres;
+  assign jtag_fdi_pl_inband_pres = testModeDigital ? core_fdi_pl_inband_pres : '0;
+  assign fdi_pl_wake_ack = testModeDigital ? '0 : core_fdi_pl_wake_ack;
+  assign jtag_fdi_pl_wake_ack = testModeDigital ? core_fdi_pl_wake_ack : '0;
+  assign fdi_pl_clk_req = testModeDigital ? '0 : core_fdi_pl_clk_req;
+  assign jtag_fdi_pl_clk_req = testModeDigital ? core_fdi_pl_clk_req : '0;
+  assign fdi_pl_stall_req = testModeDigital ? '0 : core_fdi_pl_stall_req;
+  assign jtag_fdi_pl_stall_req = testModeDigital ? core_fdi_pl_stall_req : '0;
+  assign fdi_active = testModeDigital ? '0 : core_fdi_active;
+  assign jtag_fdi_active = testModeDigital ? core_fdi_active : '0;
+  assign ltsm_flagToAnalog_RepairClkState = testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairClkState;
+  assign jtag_ltsm_flagToAnalog_RepairClkState = testModeDigital ? core_ltsm_flagToAnalog_RepairClkState : '0;
+  assign ltsm_flagToAnalog_SendClkPatterns = testModeDigital ? '0 : core_ltsm_flagToAnalog_SendClkPatterns;
+  assign jtag_ltsm_flagToAnalog_SendClkPatterns = testModeDigital ? core_ltsm_flagToAnalog_SendClkPatterns : '0;
+  assign ltsm_flagToAnalog_RepairValState = testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairValState;
+  assign jtag_ltsm_flagToAnalog_RepairValState = testModeDigital ? core_ltsm_flagToAnalog_RepairValState : '0;
+  assign ltsm_flagToAnalog_SendValTrainPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_SendValTrainPattern;
+  assign jtag_ltsm_flagToAnalog_SendValTrainPattern = testModeDigital ? core_ltsm_flagToAnalog_SendValTrainPattern : '0;
+  assign ltsm_flagToAnalog_ReversalMbSendLaneIDPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern;
+  assign jtag_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern = testModeDigital ? core_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern : '0;
+  assign ltsm_flagToAnalog_RepairMbSendLaneIDPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairMbSendLaneIDPattern;
+  assign jtag_ltsm_flagToAnalog_RepairMbSendLaneIDPattern = testModeDigital ? core_ltsm_flagToAnalog_RepairMbSendLaneIDPattern : '0;
+  assign ltsm_flagToAnalog_RepairMbSetReceiver = testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairMbSetReceiver;
+  assign jtag_ltsm_flagToAnalog_RepairMbSetReceiver = testModeDigital ? core_ltsm_flagToAnalog_RepairMbSetReceiver : '0;
+  assign ltsm_flagToAnalog_LaneReversalApplied = testModeDigital ? '0 : core_ltsm_flagToAnalog_LaneReversalApplied;
+  assign jtag_ltsm_flagToAnalog_LaneReversalApplied = testModeDigital ? core_ltsm_flagToAnalog_LaneReversalApplied : '0;
+  assign ltsm_flagToAnalog_linkInit_resetLfsrScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_linkInit_resetLfsrScrambler;
+  assign jtag_ltsm_flagToAnalog_linkInit_resetLfsrScrambler = testModeDigital ? core_ltsm_flagToAnalog_linkInit_resetLfsrScrambler : '0;
+  assign ltsm_state = testModeDigital ? '0 : core_ltsm_state;
+  assign jtag_ltsm_state = testModeDigital ? core_ltsm_state : '0;
+  assign ltsm_dbg_flagSbinitFirstClkPatternSeen = testModeDigital ? '0 : core_ltsm_dbg_flagSbinitFirstClkPatternSeen;
+  assign jtag_ltsm_dbg_flagSbinitFirstClkPatternSeen = testModeDigital ? core_ltsm_dbg_flagSbinitFirstClkPatternSeen : '0;
+  assign ltsm_dbg_rxValidRisingEdge = testModeDigital ? '0 : core_ltsm_dbg_rxValidRisingEdge;
+  assign jtag_ltsm_dbg_rxValidRisingEdge = testModeDigital ? core_ltsm_dbg_rxValidRisingEdge : '0;
+  assign ltsm_dbg_sbinitSendCount = testModeDigital ? '0 : core_ltsm_dbg_sbinitSendCount;
+  assign jtag_ltsm_dbg_sbinitSendCount = testModeDigital ? core_ltsm_dbg_sbinitSendCount : '0;
+  assign ltsm_dbg_sbTxValid = testModeDigital ? '0 : core_ltsm_dbg_sbTxValid;
+  assign jtag_ltsm_dbg_sbTxValid = testModeDigital ? core_ltsm_dbg_sbTxValid : '0;
+  assign ltsm_dbg_sbTxDin = testModeDigital ? '0 : core_ltsm_dbg_sbTxDin;
+  assign jtag_ltsm_dbg_sbTxDin = testModeDigital ? core_ltsm_dbg_sbTxDin : '0;
+  assign ltsm_dbg_flagTrainError = testModeDigital ? '0 : core_ltsm_dbg_flagTrainError;
+  assign jtag_ltsm_dbg_flagTrainError = testModeDigital ? core_ltsm_dbg_flagTrainError : '0;
+  assign ltsm_dbg_mbinitSubstate = testModeDigital ? '0 : core_ltsm_dbg_mbinitSubstate;
+  assign jtag_ltsm_dbg_mbinitSubstate = testModeDigital ? core_ltsm_dbg_mbinitSubstate : '0;
+  assign ltsm_dbg_mbinitReversalMbReceivedSuccessCount = testModeDigital ? '0 : core_ltsm_dbg_mbinitReversalMbReceivedSuccessCount;
+  assign jtag_ltsm_dbg_mbinitReversalMbReceivedSuccessCount = testModeDigital ? core_ltsm_dbg_mbinitReversalMbReceivedSuccessCount : '0;
+  assign ltsm_flagToAnalog_valVref_sendPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_sendPattern;
+  assign jtag_ltsm_flagToAnalog_valVref_sendPattern = testModeDigital ? core_ltsm_flagToAnalog_valVref_sendPattern : '0;
+  assign ltsm_flagToAnalog_valVref_applyRxVref = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_applyRxVref;
+  assign jtag_ltsm_flagToAnalog_valVref_applyRxVref = testModeDigital ? core_ltsm_flagToAnalog_valVref_applyRxVref : '0;
+  assign ltsm_flagToAnalog_valVref_rxVrefCode = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_rxVrefCode;
+  assign jtag_ltsm_flagToAnalog_valVref_rxVrefCode = testModeDigital ? core_ltsm_flagToAnalog_valVref_rxVrefCode : '0;
+  assign ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest;
+  assign jtag_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest = testModeDigital ? core_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold;
+  assign jtag_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold = testModeDigital ? core_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_valVref_comparisonMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_comparisonMode;
+  assign jtag_ltsm_flagToAnalog_valVref_comparisonMode = testModeDigital ? core_ltsm_flagToAnalog_valVref_comparisonMode : '0;
+  assign ltsm_flagToAnalog_valVref_iterationCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_iterationCountSettings;
+  assign jtag_ltsm_flagToAnalog_valVref_iterationCountSettings = testModeDigital ? core_ltsm_flagToAnalog_valVref_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_valVref_idleCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_idleCountSettings;
+  assign jtag_ltsm_flagToAnalog_valVref_idleCountSettings = testModeDigital ? core_ltsm_flagToAnalog_valVref_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_valVref_burstCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_burstCountSettings;
+  assign jtag_ltsm_flagToAnalog_valVref_burstCountSettings = testModeDigital ? core_ltsm_flagToAnalog_valVref_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_valVref_patternMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_patternMode;
+  assign jtag_ltsm_flagToAnalog_valVref_patternMode = testModeDigital ? core_ltsm_flagToAnalog_valVref_patternMode : '0;
+  assign ltsm_flagToAnalog_valVref_clockPhaseControl = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_clockPhaseControl;
+  assign jtag_ltsm_flagToAnalog_valVref_clockPhaseControl = testModeDigital ? core_ltsm_flagToAnalog_valVref_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_valVref_validPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_validPattern;
+  assign jtag_ltsm_flagToAnalog_valVref_validPattern = testModeDigital ? core_ltsm_flagToAnalog_valVref_validPattern : '0;
+  assign ltsm_flagToAnalog_valVref_dataPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_dataPattern;
+  assign jtag_ltsm_flagToAnalog_valVref_dataPattern = testModeDigital ? core_ltsm_flagToAnalog_valVref_dataPattern : '0;
+  assign ltsm_flagToAnalog_valVref_clearComparisonErrors = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_clearComparisonErrors;
+  assign jtag_ltsm_flagToAnalog_valVref_clearComparisonErrors = testModeDigital ? core_ltsm_flagToAnalog_valVref_clearComparisonErrors : '0;
+  assign ltsm_flagToAnalog_valVref_resetLocalTxScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_resetLocalTxScrambler;
+  assign jtag_ltsm_flagToAnalog_valVref_resetLocalTxScrambler = testModeDigital ? core_ltsm_flagToAnalog_valVref_resetLocalTxScrambler : '0;
+  assign ltsm_flagToAnalog_dataVref_sendPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_sendPattern;
+  assign jtag_ltsm_flagToAnalog_dataVref_sendPattern = testModeDigital ? core_ltsm_flagToAnalog_dataVref_sendPattern : '0;
+  assign ltsm_flagToAnalog_dataVref_applyRxVref = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_applyRxVref;
+  assign jtag_ltsm_flagToAnalog_dataVref_applyRxVref = testModeDigital ? core_ltsm_flagToAnalog_dataVref_applyRxVref : '0;
+  assign ltsm_flagToAnalog_dataVref_rxVrefCodes = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_rxVrefCodes;
+  assign jtag_ltsm_flagToAnalog_dataVref_rxVrefCodes = testModeDigital ? core_ltsm_flagToAnalog_dataVref_rxVrefCodes : '0;
+  assign ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest;
+  assign jtag_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest = testModeDigital ? core_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+  assign jtag_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold = testModeDigital ? core_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_dataVref_comparisonMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_comparisonMode;
+  assign jtag_ltsm_flagToAnalog_dataVref_comparisonMode = testModeDigital ? core_ltsm_flagToAnalog_dataVref_comparisonMode : '0;
+  assign ltsm_flagToAnalog_dataVref_iterationCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_iterationCountSettings;
+  assign jtag_ltsm_flagToAnalog_dataVref_iterationCountSettings = testModeDigital ? core_ltsm_flagToAnalog_dataVref_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_dataVref_idleCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_idleCountSettings;
+  assign jtag_ltsm_flagToAnalog_dataVref_idleCountSettings = testModeDigital ? core_ltsm_flagToAnalog_dataVref_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_dataVref_burstCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_burstCountSettings;
+  assign jtag_ltsm_flagToAnalog_dataVref_burstCountSettings = testModeDigital ? core_ltsm_flagToAnalog_dataVref_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_dataVref_patternMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_patternMode;
+  assign jtag_ltsm_flagToAnalog_dataVref_patternMode = testModeDigital ? core_ltsm_flagToAnalog_dataVref_patternMode : '0;
+  assign ltsm_flagToAnalog_dataVref_clockPhaseControl = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_clockPhaseControl;
+  assign jtag_ltsm_flagToAnalog_dataVref_clockPhaseControl = testModeDigital ? core_ltsm_flagToAnalog_dataVref_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_dataVref_validPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_validPattern;
+  assign jtag_ltsm_flagToAnalog_dataVref_validPattern = testModeDigital ? core_ltsm_flagToAnalog_dataVref_validPattern : '0;
+  assign ltsm_flagToAnalog_dataVref_dataPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_dataPattern;
+  assign jtag_ltsm_flagToAnalog_dataVref_dataPattern = testModeDigital ? core_ltsm_flagToAnalog_dataVref_dataPattern : '0;
+  assign ltsm_flagToAnalog_dataVref_clearComparisonErrors = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_clearComparisonErrors;
+  assign jtag_ltsm_flagToAnalog_dataVref_clearComparisonErrors = testModeDigital ? core_ltsm_flagToAnalog_dataVref_clearComparisonErrors : '0;
+  assign ltsm_flagToAnalog_dataVref_resetLocalTxScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler;
+  assign jtag_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler = testModeDigital ? core_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler : '0;
+  assign ltsm_flagToAnalog_rxClkCal_doCalibration = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxClkCal_doCalibration;
+  assign jtag_ltsm_flagToAnalog_rxClkCal_doCalibration = testModeDigital ? core_ltsm_flagToAnalog_rxClkCal_doCalibration : '0;
+  assign ltsm_flagToAnalog_rxClkCal_sendClockTrack = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxClkCal_sendClockTrack;
+  assign jtag_ltsm_flagToAnalog_rxClkCal_sendClockTrack = testModeDigital ? core_ltsm_flagToAnalog_rxClkCal_sendClockTrack : '0;
+  assign ltsm_flagToAnalog_d2cSender_sendValTrainPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_sendValTrainPattern;
+  assign jtag_ltsm_flagToAnalog_d2cSender_sendValTrainPattern = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_sendValTrainPattern : '0;
+  assign ltsm_flagToAnalog_d2cSender_resetLocalScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_resetLocalScrambler;
+  assign jtag_ltsm_flagToAnalog_d2cSender_resetLocalScrambler = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_resetLocalScrambler : '0;
+  assign ltsm_flagToAnalog_d2cSender_applyTxClockPhase = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_applyTxClockPhase;
+  assign jtag_ltsm_flagToAnalog_d2cSender_applyTxClockPhase = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_applyTxClockPhase : '0;
+  assign ltsm_flagToAnalog_d2cSender_txClockPhaseCode = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode;
+  assign jtag_ltsm_flagToAnalog_d2cSender_txClockPhaseCode = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_comparisonMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_comparisonMode;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_comparisonMode = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_comparisonMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_iterationCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_idleCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_idleCountSettings;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_idleCountSettings = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_burstCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_burstCountSettings;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_burstCountSettings = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_patternMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_patternMode;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_patternMode = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_patternMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_clockPhaseControl = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_validPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_validPattern;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_validPattern = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_validPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_dataPattern;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_dataPattern = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_dataPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler;
+  assign jtag_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler : '0;
+  assign ltsm_flagToAnalog_d2cSender_sendLfsrPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_sendLfsrPattern;
+  assign jtag_ltsm_flagToAnalog_d2cSender_sendLfsrPattern = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_sendLfsrPattern : '0;
+  assign ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew;
+  assign jtag_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew : '0;
+  assign ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
+  assign jtag_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes : '0;
+  assign ltsm_flagToAnalog_rxDeskew_sendLfsrPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern : '0;
+  assign ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler : '0;
+  assign ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew : '0;
+  assign ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes : '0;
+  assign ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_rxDeskew_comparisonMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_comparisonMode;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_comparisonMode = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_comparisonMode : '0;
+  assign ltsm_flagToAnalog_rxDeskew_iterationCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_iterationCountSettings;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_iterationCountSettings = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_rxDeskew_idleCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_idleCountSettings;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_idleCountSettings = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_rxDeskew_burstCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_burstCountSettings;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_burstCountSettings = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_rxDeskew_patternMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_patternMode;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_patternMode = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_patternMode : '0;
+  assign ltsm_flagToAnalog_rxDeskew_clockPhaseControl = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_clockPhaseControl;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_clockPhaseControl = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_rxDeskew_validPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_validPattern;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_validPattern = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_validPattern : '0;
+  assign ltsm_flagToAnalog_rxDeskew_dataPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_dataPattern;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_dataPattern = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_dataPattern : '0;
+  assign ltsm_flagToAnalog_rxDeskew_clearComparisonErrors = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors;
+  assign jtag_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors : '0;
+  assign ltsm_flagToLtsm_linkSpeed_phyInRetrain = testModeDigital ? '0 : core_ltsm_flagToLtsm_linkSpeed_phyInRetrain;
+  assign jtag_ltsm_flagToLtsm_linkSpeed_phyInRetrain = testModeDigital ? core_ltsm_flagToLtsm_linkSpeed_phyInRetrain : '0;
+  assign ltsm_dbg_mbtrainState = testModeDigital ? '0 : core_ltsm_dbg_mbtrainState;
+  assign jtag_ltsm_dbg_mbtrainState = testModeDigital ? core_ltsm_dbg_mbtrainState : '0;
+  assign ltsm_dbg_mbtrainActiveSubstate = testModeDigital ? '0 : core_ltsm_dbg_mbtrainActiveSubstate;
+  assign jtag_ltsm_dbg_mbtrainActiveSubstate = testModeDigital ? core_ltsm_dbg_mbtrainActiveSubstate : '0;
+  assign ltsm_dbg_mbtrainLastErrorCount = testModeDigital ? '0 : core_ltsm_dbg_mbtrainLastErrorCount;
+  assign jtag_ltsm_dbg_mbtrainLastErrorCount = testModeDigital ? core_ltsm_dbg_mbtrainLastErrorCount : '0;
+  assign ltsm_dbg_mbtrainRetryCount = testModeDigital ? '0 : core_ltsm_dbg_mbtrainRetryCount;
+  assign jtag_ltsm_dbg_mbtrainRetryCount = testModeDigital ? core_ltsm_dbg_mbtrainRetryCount : '0;
+  assign sb_tx_dout = testModeDigital ? '0 : core_sb_tx_dout;
+  assign jtag_sb_tx_dout = testModeDigital ? core_sb_tx_dout : '0;
+  assign sb_tx_clk = testModeDigital ? '0 : core_sb_tx_clk;
+  assign jtag_sb_tx_clk = testModeDigital ? core_sb_tx_clk : '0;
+  assign debug_sb_rx_overflow = testModeDigital ? '0 : core_debug_sb_rx_overflow;
+  assign jtag_debug_sb_rx_overflow = testModeDigital ? core_debug_sb_rx_overflow : '0;
+  assign debug_ltsm_state = testModeDigital ? '0 : core_debug_ltsm_state;
+  assign jtag_debug_ltsm_state = testModeDigital ? core_debug_ltsm_state : '0;
+  assign debug_ltsm_inband_pres = testModeDigital ? '0 : core_debug_ltsm_inband_pres;
+  assign jtag_debug_ltsm_inband_pres = testModeDigital ? core_debug_ltsm_inband_pres : '0;
+  assign debug_fdi_link_init_state = testModeDigital ? UcieUPM_d2dadapter_pkg::LinkInitState_t'('0) : core_debug_fdi_link_init_state;
+  assign jtag_debug_fdi_link_init_state = testModeDigital ? core_debug_fdi_link_init_state : UcieUPM_d2dadapter_pkg::LinkInitState_t'('0);
+  assign debug_rdi_state = testModeDigital ? UcieUPM_interfaces_pkg::PhyState_t'('0) : core_debug_rdi_state;
+  assign jtag_debug_rdi_state = testModeDigital ? core_debug_rdi_state : UcieUPM_interfaces_pkg::PhyState_t'('0);
+  assign debug_fdi_to_rdi_state_req = testModeDigital ? UcieUPM_interfaces_pkg::PhyStateReq_t'('0) : core_debug_fdi_to_rdi_state_req;
+  assign jtag_debug_fdi_to_rdi_state_req = testModeDigital ? core_debug_fdi_to_rdi_state_req : UcieUPM_interfaces_pkg::PhyStateReq_t'('0);
+  assign debug_arb_grant_ltsm = testModeDigital ? '0 : core_debug_arb_grant_ltsm;
+  assign jtag_debug_arb_grant_ltsm = testModeDigital ? core_debug_arb_grant_ltsm : '0;
+  assign debug_arb_grant_fdi = testModeDigital ? '0 : core_debug_arb_grant_fdi;
+  assign jtag_debug_arb_grant_fdi = testModeDigital ? core_debug_arb_grant_fdi : '0;
+  assign debug_arb_grant_rdi = testModeDigital ? '0 : core_debug_arb_grant_rdi;
+  assign jtag_debug_arb_grant_rdi = testModeDigital ? core_debug_arb_grant_rdi : '0;
+  assign debug_arb_tx_locked = testModeDigital ? '0 : core_debug_arb_tx_locked;
+  assign jtag_debug_arb_tx_locked = testModeDigital ? core_debug_arb_tx_locked : '0;
+  assign debug_arb_rr_last_source = testModeDigital ? '0 : core_debug_arb_rr_last_source;
+  assign jtag_debug_arb_rr_last_source = testModeDigital ? core_debug_arb_rr_last_source : '0;
+  assign debug_arb_rr_last_granted_rdi = testModeDigital ? '0 : core_debug_arb_rr_last_granted_rdi;
+  assign jtag_debug_arb_rr_last_granted_rdi = testModeDigital ? core_debug_arb_rr_last_granted_rdi : '0;
+  assign debug_arb_tx_fire = testModeDigital ? '0 : core_debug_arb_tx_fire;
+  assign jtag_debug_arb_tx_fire = testModeDigital ? core_debug_arb_tx_fire : '0;
+  assign debug_rx_route_ltsm = testModeDigital ? '0 : core_debug_rx_route_ltsm;
+  assign jtag_debug_rx_route_ltsm = testModeDigital ? core_debug_rx_route_ltsm : '0;
+  assign debug_rx_route_fdi = testModeDigital ? '0 : core_debug_rx_route_fdi;
+  assign jtag_debug_rx_route_fdi = testModeDigital ? core_debug_rx_route_fdi : '0;
+  assign debug_rx_route_rdi = testModeDigital ? '0 : core_debug_rx_route_rdi;
+  assign jtag_debug_rx_route_rdi = testModeDigital ? core_debug_rx_route_rdi : '0;
+  assign debug_rx_drop_unknown = testModeDigital ? '0 : core_debug_rx_drop_unknown;
+  assign jtag_debug_rx_drop_unknown = testModeDigital ? core_debug_rx_drop_unknown : '0;
+  assign debug_rx_fire = testModeDigital ? '0 : core_debug_rx_fire;
+  assign jtag_debug_rx_fire = testModeDigital ? core_debug_rx_fire : '0;
+
+  // --------------------------------------------------------------------------
+  // Core top
+  // --------------------------------------------------------------------------
+  D2DAdapterLinkMgmtLtsmSBTop #(
+    .FDI_WIDTH                                (FDI_WIDTH),
+    .FDI_DLLP_WIDTH                           (FDI_DLLP_WIDTH),
+    .FDI_SB_WIDTH                             (FDI_SB_WIDTH),
+    .RDI_WIDTH                                (RDI_WIDTH),
+    .RDI_SB_WIDTH                             (RDI_SB_WIDTH),
+    .SB_NODE_MSG_WIDTH                        (SB_NODE_MSG_WIDTH),
+    .sbFeatureExtension                       (sbFeatureExtension),
+    .ucieA                                    (ucieA),
+    .moduleID                                 (moduleID),
+    .clkPhase                                 (clkPhase),
+    .clkMode                                  (clkMode),
+    .voltageSwing                             (voltageSwing),
+    .maxLinkSpeed                             (maxLinkSpeed),
+    .d2cPiCodeWidth                           (d2cPiCodeWidth),
+    .d2cTxDeskewCodeWidth                     (d2cTxDeskewCodeWidth),
+    .d2cDeskewStepsPerPi                      (d2cDeskewStepsPerPi),
+    .d2cDeskewAddDelayIncreasesPhase          (d2cDeskewAddDelayIncreasesPhase),
+    .d2cMaximumComparisonErrorThreshold       (d2cMaximumComparisonErrorThreshold),
+    .d2cMinLaneWindowSteps                    (d2cMinLaneWindowSteps),
+    .d2cMinCommonWindowSteps                  (d2cMinCommonWindowSteps),
+    .d2cMaxTrainingRetries                    (d2cMaxTrainingRetries),
+    .validVrefValueCount                      (validVrefValueCount),
+    .validVrefCodeWidth                       (validVrefCodeWidth),
+    .validVrefMinimumMillivolts               (validVrefMinimumMillivolts),
+    .validVrefMaximumMillivolts               (validVrefMaximumMillivolts),
+    .validVrefMaximumComparisonErrorThreshold (validVrefMaximumComparisonErrorThreshold),
+    .validVrefMinPassingWindowValues          (validVrefMinPassingWindowValues),
+    .validVrefMaxTrainingRetries              (validVrefMaxTrainingRetries),
+    .valTrainVrefEnable                       (valTrainVrefEnable),
+    .dataLaneCount                            (dataLaneCount),
+    .activeDataLaneMask                       (activeDataLaneMask),
+    .dataVrefValueCount                       (dataVrefValueCount),
+    .dataVrefCodeWidth                        (dataVrefCodeWidth),
+    .dataVrefMinimumMillivolts                (dataVrefMinimumMillivolts),
+    .dataVrefMaximumMillivolts                (dataVrefMaximumMillivolts),
+    .dataVrefMaximumComparisonErrorThreshold  (dataVrefMaximumComparisonErrorThreshold),
+    .dataVrefMinPassingWindowValues           (dataVrefMinPassingWindowValues),
+    .dataVrefMaxTrainingRetries               (dataVrefMaxTrainingRetries),
+    .dataTrainVrefEnable                      (dataTrainVrefEnable),
+    .rxDeskewEnable                           (rxDeskewEnable),
+    .rxDeskewValueCount                       (rxDeskewValueCount),
+    .rxDeskewCodeWidth                        (rxDeskewCodeWidth),
+    .rxDeskewMaximumComparisonErrorThreshold  (rxDeskewMaximumComparisonErrorThreshold),
+    .rxDeskewMinPassingWindowValues           (rxDeskewMinPassingWindowValues),
+    .rxDeskewMaxTrainingRetries               (rxDeskewMaxTrainingRetries),
+    .SB_TX_FIFO_ENTRIES                       (SB_TX_FIFO_ENTRIES)
+  ) u_core (
+    .clock                                                                          (core_clock),
+    .reset_n                                                                        (core_reset_n),
+    .fdi_lp_state_req                                                               (core_fdi_lp_state_req),
+    .fdi_lp_linkerror                                                               (core_fdi_lp_linkerror),
+    .fdi_lp_rx_active_sts                                                           (core_fdi_lp_rx_active_sts),
+    .fdi_lp_wake_req                                                                (core_fdi_lp_wake_req),
+    .fdi_lp_clk_ack                                                                 (core_fdi_lp_clk_ack),
+    .fdi_lp_stall_ack                                                               (core_fdi_lp_stall_ack),
+    .fdi_pl_state_sts                                                               (core_fdi_pl_state_sts),
+    .fdi_pl_rx_active_req                                                           (core_fdi_pl_rx_active_req),
+    .fdi_pl_inband_pres                                                             (core_fdi_pl_inband_pres),
+    .fdi_pl_wake_ack                                                                (core_fdi_pl_wake_ack),
+    .fdi_pl_clk_req                                                                 (core_fdi_pl_clk_req),
+    .fdi_pl_stall_req                                                               (core_fdi_pl_stall_req),
+    .fdi_active                                                                     (core_fdi_active),
+    .timeout_disable                                                                (core_timeout_disable),
+    .cycles_1us                                                                     (core_cycles_1us),
+    .ltsm_start                                                                     (core_ltsm_start),
+    .ltsm_stable_clk                                                                (core_ltsm_stable_clk),
+    .ltsm_pll_locked                                                                (core_ltsm_pll_locked),
+    .ltsm_stable_supply                                                             (core_ltsm_stable_supply),
+    .ltsm_flagFromAnalog_ReadyToExchangeClkPatterns                                 (core_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns),
+    .ltsm_flagFromAnalog_FinishedClkPatterns                                        (core_ltsm_flagFromAnalog_FinishedClkPatterns),
+    .ltsm_flagFromAnalog_FinishedValTrainPattern                                    (core_ltsm_flagFromAnalog_FinishedValTrainPattern),
+    .ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern                            (core_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern),
+    .ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern                              (core_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern),
+    .ltsm_flagFromAnalog_clkPatternReceivedRTRK_L                                   (core_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L),
+    .ltsm_flagFromAnalog_clkPatternReceivedRCKN_L                                   (core_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L),
+    .ltsm_flagFromAnalog_clkPatternReceivedRCKP_L                                   (core_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L),
+    .ltsm_flagFromAnalog_ValTrainPatternReceived                                    (core_ltsm_flagFromAnalog_ValTrainPatternReceived),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9                            (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10                           (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11                           (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12                           (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13                           (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14                           (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15                           (core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9                             (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10                            (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11                            (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12                            (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13                            (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14                            (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15                            (core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15),
+    .ltsm_flagToAnalog_RepairClkState                                               (core_ltsm_flagToAnalog_RepairClkState),
+    .ltsm_flagToAnalog_SendClkPatterns                                              (core_ltsm_flagToAnalog_SendClkPatterns),
+    .ltsm_flagToAnalog_RepairValState                                               (core_ltsm_flagToAnalog_RepairValState),
+    .ltsm_flagToAnalog_SendValTrainPattern                                          (core_ltsm_flagToAnalog_SendValTrainPattern),
+    .ltsm_flagToAnalog_ReversalMbSendLaneIDPattern                                  (core_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern),
+    .ltsm_flagToAnalog_RepairMbSendLaneIDPattern                                    (core_ltsm_flagToAnalog_RepairMbSendLaneIDPattern),
+    .ltsm_flagToAnalog_RepairMbSetReceiver                                          (core_ltsm_flagToAnalog_RepairMbSetReceiver),
+    .ltsm_flagToAnalog_LaneReversalApplied                                          (core_ltsm_flagToAnalog_LaneReversalApplied),
+    .ltsm_flagToAnalog_linkInit_resetLfsrScrambler                                  (core_ltsm_flagToAnalog_linkInit_resetLfsrScrambler),
+    .ltsm_state                                                                     (core_ltsm_state),
+    .ltsm_dbg_flagSbinitFirstClkPatternSeen                                         (core_ltsm_dbg_flagSbinitFirstClkPatternSeen),
+    .ltsm_dbg_rxValidRisingEdge                                                     (core_ltsm_dbg_rxValidRisingEdge),
+    .ltsm_dbg_sbinitSendCount                                                       (core_ltsm_dbg_sbinitSendCount),
+    .ltsm_dbg_sbTxValid                                                             (core_ltsm_dbg_sbTxValid),
+    .ltsm_dbg_sbTxDin                                                               (core_ltsm_dbg_sbTxDin),
+    .ltsm_dbg_flagTrainError                                                        (core_ltsm_dbg_flagTrainError),
+    .ltsm_dbg_mbinitSubstate                                                        (core_ltsm_dbg_mbinitSubstate),
+    .ltsm_dbg_mbinitReversalMbReceivedSuccessCount                                  (core_ltsm_dbg_mbinitReversalMbReceivedSuccessCount),
+    .ltsm_flagToAnalog_valVref_sendPattern                                          (core_ltsm_flagToAnalog_valVref_sendPattern),
+    .ltsm_flagFromAnalog_valVref_detectedValPattern                                 (core_ltsm_flagFromAnalog_valVref_detectedValPattern),
+    .ltsm_flagFromAnalog_valVref_finishedPattern                                    (core_ltsm_flagFromAnalog_valVref_finishedPattern),
+    .ltsm_flagToAnalog_valVref_applyRxVref                                          (core_ltsm_flagToAnalog_valVref_applyRxVref),
+    .ltsm_flagToAnalog_valVref_rxVrefCode                                           (core_ltsm_flagToAnalog_valVref_rxVrefCode),
+    .ltsm_flagFromAnalog_valVref_rxVrefApplied                                      (core_ltsm_flagFromAnalog_valVref_rxVrefApplied),
+    .ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest                          (core_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest),
+    .ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold                      (core_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold),
+    .ltsm_flagToAnalog_valVref_comparisonMode                                       (core_ltsm_flagToAnalog_valVref_comparisonMode),
+    .ltsm_flagToAnalog_valVref_iterationCountSettings                               (core_ltsm_flagToAnalog_valVref_iterationCountSettings),
+    .ltsm_flagToAnalog_valVref_idleCountSettings                                    (core_ltsm_flagToAnalog_valVref_idleCountSettings),
+    .ltsm_flagToAnalog_valVref_burstCountSettings                                   (core_ltsm_flagToAnalog_valVref_burstCountSettings),
+    .ltsm_flagToAnalog_valVref_patternMode                                          (core_ltsm_flagToAnalog_valVref_patternMode),
+    .ltsm_flagToAnalog_valVref_clockPhaseControl                                    (core_ltsm_flagToAnalog_valVref_clockPhaseControl),
+    .ltsm_flagToAnalog_valVref_validPattern                                         (core_ltsm_flagToAnalog_valVref_validPattern),
+    .ltsm_flagToAnalog_valVref_dataPattern                                          (core_ltsm_flagToAnalog_valVref_dataPattern),
+    .ltsm_flagToAnalog_valVref_clearComparisonErrors                                (core_ltsm_flagToAnalog_valVref_clearComparisonErrors),
+    .ltsm_flagToAnalog_valVref_resetLocalTxScrambler                                (core_ltsm_flagToAnalog_valVref_resetLocalTxScrambler),
+    .ltsm_flagToAnalog_dataVref_sendPattern                                         (core_ltsm_flagToAnalog_dataVref_sendPattern),
+    .ltsm_flagFromAnalog_dataVref_detectedDataPattern                               (core_ltsm_flagFromAnalog_dataVref_detectedDataPattern),
+    .ltsm_flagFromAnalog_dataVref_finishedPattern                                   (core_ltsm_flagFromAnalog_dataVref_finishedPattern),
+    .ltsm_flagToAnalog_dataVref_applyRxVref                                         (core_ltsm_flagToAnalog_dataVref_applyRxVref),
+    .ltsm_flagToAnalog_dataVref_rxVrefCodes                                         (core_ltsm_flagToAnalog_dataVref_rxVrefCodes),
+    .ltsm_flagFromAnalog_dataVref_rxVrefApplied                                     (core_ltsm_flagFromAnalog_dataVref_rxVrefApplied),
+    .ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest                         (core_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest),
+    .ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold                     (core_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold),
+    .ltsm_flagToAnalog_dataVref_comparisonMode                                      (core_ltsm_flagToAnalog_dataVref_comparisonMode),
+    .ltsm_flagToAnalog_dataVref_iterationCountSettings                              (core_ltsm_flagToAnalog_dataVref_iterationCountSettings),
+    .ltsm_flagToAnalog_dataVref_idleCountSettings                                   (core_ltsm_flagToAnalog_dataVref_idleCountSettings),
+    .ltsm_flagToAnalog_dataVref_burstCountSettings                                  (core_ltsm_flagToAnalog_dataVref_burstCountSettings),
+    .ltsm_flagToAnalog_dataVref_patternMode                                         (core_ltsm_flagToAnalog_dataVref_patternMode),
+    .ltsm_flagToAnalog_dataVref_clockPhaseControl                                   (core_ltsm_flagToAnalog_dataVref_clockPhaseControl),
+    .ltsm_flagToAnalog_dataVref_validPattern                                        (core_ltsm_flagToAnalog_dataVref_validPattern),
+    .ltsm_flagToAnalog_dataVref_dataPattern                                         (core_ltsm_flagToAnalog_dataVref_dataPattern),
+    .ltsm_flagToAnalog_dataVref_clearComparisonErrors                               (core_ltsm_flagToAnalog_dataVref_clearComparisonErrors),
+    .ltsm_flagToAnalog_dataVref_resetLocalTxScrambler                               (core_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler),
+    .ltsm_flagToAnalog_rxClkCal_doCalibration                                       (core_ltsm_flagToAnalog_rxClkCal_doCalibration),
+    .ltsm_flagFromAnalog_rxClkCal_done                                              (core_ltsm_flagFromAnalog_rxClkCal_done),
+    .ltsm_flagToAnalog_rxClkCal_sendClockTrack                                      (core_ltsm_flagToAnalog_rxClkCal_sendClockTrack),
+    .ltsm_flagToAnalog_d2cSender_sendValTrainPattern                                (core_ltsm_flagToAnalog_d2cSender_sendValTrainPattern),
+    .ltsm_flagFromAnalog_d2cSender_valTrainPatternSent                              (core_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent),
+    .ltsm_flagToAnalog_d2cSender_resetLocalScrambler                                (core_ltsm_flagToAnalog_d2cSender_resetLocalScrambler),
+    .ltsm_flagToAnalog_d2cSender_applyTxClockPhase                                  (core_ltsm_flagToAnalog_d2cSender_applyTxClockPhase),
+    .ltsm_flagToAnalog_d2cSender_txClockPhaseCode                                   (core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode),
+    .ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied                              (core_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied),
+    .ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest                      (core_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest),
+    .ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold                  (core_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold),
+    .ltsm_flagToAnalog_d2cReceiver_comparisonMode                                   (core_ltsm_flagToAnalog_d2cReceiver_comparisonMode),
+    .ltsm_flagToAnalog_d2cReceiver_iterationCountSettings                           (core_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings),
+    .ltsm_flagToAnalog_d2cReceiver_idleCountSettings                                (core_ltsm_flagToAnalog_d2cReceiver_idleCountSettings),
+    .ltsm_flagToAnalog_d2cReceiver_burstCountSettings                               (core_ltsm_flagToAnalog_d2cReceiver_burstCountSettings),
+    .ltsm_flagToAnalog_d2cReceiver_patternMode                                      (core_ltsm_flagToAnalog_d2cReceiver_patternMode),
+    .ltsm_flagToAnalog_d2cReceiver_clockPhaseControl                                (core_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl),
+    .ltsm_flagToAnalog_d2cReceiver_validPattern                                     (core_ltsm_flagToAnalog_d2cReceiver_validPattern),
+    .ltsm_flagToAnalog_d2cReceiver_dataPattern                                      (core_ltsm_flagToAnalog_d2cReceiver_dataPattern),
+    .ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler                            (core_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler),
+    .ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo                        (core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo),
+    .ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload                        (core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload),
+    .ltsm_flagToAnalog_d2cSender_sendLfsrPattern                                    (core_ltsm_flagToAnalog_d2cSender_sendLfsrPattern),
+    .ltsm_flagFromAnalog_d2cSender_lfsrPatternSent                                  (core_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent),
+    .ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew                                  (core_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew),
+    .ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes                                  (core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes),
+    .ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied                              (core_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied),
+    .ltsm_flagToAnalog_rxDeskew_sendLfsrPattern                                     (core_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern),
+    .ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent                                   (core_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent),
+    .ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler                               (core_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler),
+    .ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew                                   (core_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew),
+    .ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes                                   (core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes),
+    .ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied                               (core_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied),
+    .ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest                         (core_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest),
+    .ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold                     (core_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold),
+    .ltsm_flagToAnalog_rxDeskew_comparisonMode                                      (core_ltsm_flagToAnalog_rxDeskew_comparisonMode),
+    .ltsm_flagToAnalog_rxDeskew_iterationCountSettings                              (core_ltsm_flagToAnalog_rxDeskew_iterationCountSettings),
+    .ltsm_flagToAnalog_rxDeskew_idleCountSettings                                   (core_ltsm_flagToAnalog_rxDeskew_idleCountSettings),
+    .ltsm_flagToAnalog_rxDeskew_burstCountSettings                                  (core_ltsm_flagToAnalog_rxDeskew_burstCountSettings),
+    .ltsm_flagToAnalog_rxDeskew_patternMode                                         (core_ltsm_flagToAnalog_rxDeskew_patternMode),
+    .ltsm_flagToAnalog_rxDeskew_clockPhaseControl                                   (core_ltsm_flagToAnalog_rxDeskew_clockPhaseControl),
+    .ltsm_flagToAnalog_rxDeskew_validPattern                                        (core_ltsm_flagToAnalog_rxDeskew_validPattern),
+    .ltsm_flagToAnalog_rxDeskew_dataPattern                                         (core_ltsm_flagToAnalog_rxDeskew_dataPattern),
+    .ltsm_flagToAnalog_rxDeskew_clearComparisonErrors                               (core_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors),
+    .ltsm_flagFromAnalog_rxDeskew_detectedDataPattern                               (core_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern),
+    .ltsm_flagToLtsm_linkSpeed_phyInRetrain                                         (core_ltsm_flagToLtsm_linkSpeed_phyInRetrain),
+    .ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful                       (core_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
+    .ltsm_dbg_mbtrainState                                                          (core_ltsm_dbg_mbtrainState),
+    .ltsm_dbg_mbtrainActiveSubstate                                                 (core_ltsm_dbg_mbtrainActiveSubstate),
+    .ltsm_dbg_mbtrainLastErrorCount                                                 (core_ltsm_dbg_mbtrainLastErrorCount),
+    .ltsm_dbg_mbtrainRetryCount                                                     (core_ltsm_dbg_mbtrainRetryCount),
+    .sb_tx_dout                                                                     (core_sb_tx_dout),
+    .sb_tx_clk                                                                      (core_sb_tx_clk),
+    .sb_rx_din                                                                      (core_sb_rx_din),
+    .sb_rx_clk                                                                      (core_sb_rx_clk),
+    .debug_sb_rx_overflow                                                           (core_debug_sb_rx_overflow),
+    .debug_ltsm_state                                                               (core_debug_ltsm_state),
+    .debug_ltsm_inband_pres                                                         (core_debug_ltsm_inband_pres),
+    .debug_fdi_link_init_state                                                      (core_debug_fdi_link_init_state),
+    .debug_rdi_state                                                                (core_debug_rdi_state),
+    .debug_fdi_to_rdi_state_req                                                     (core_debug_fdi_to_rdi_state_req),
+    .debug_arb_grant_ltsm                                                           (core_debug_arb_grant_ltsm),
+    .debug_arb_grant_fdi                                                            (core_debug_arb_grant_fdi),
+    .debug_arb_grant_rdi                                                            (core_debug_arb_grant_rdi),
+    .debug_arb_tx_locked                                                            (core_debug_arb_tx_locked),
+    .debug_arb_rr_last_source                                                       (core_debug_arb_rr_last_source),
+    .debug_arb_rr_last_granted_rdi                                                  (core_debug_arb_rr_last_granted_rdi),
+    .debug_arb_tx_fire                                                              (core_debug_arb_tx_fire),
+    .debug_rx_route_ltsm                                                            (core_debug_rx_route_ltsm),
+    .debug_rx_route_fdi                                                             (core_debug_rx_route_fdi),
+    .debug_rx_route_rdi                                                             (core_debug_rx_route_rdi),
+    .debug_rx_drop_unknown                                                          (core_debug_rx_drop_unknown),
+    .debug_rx_fire                                                                  (core_debug_rx_fire)
+  );
+
+endmodule
+
+`default_nettype wire
+
+```
+
+<a id="src-D2DAdapterLinkMgmtLtsmSBTop-sv"></a>
+
+## [3] src\D2DAdapterLinkMgmtLtsmSBTop.sv
+
+```systemverilog
+// FILE_INDEX: 3
+// FILE_PATH : src\D2DAdapterLinkMgmtLtsmSBTop.sv
+
+`default_nettype none
+
+// ============================================================================
+// D2DAdapterLinkMgmtLtsmSBTop
+// Single top for the UCIe D2D adapter: FDI/RDI link management, link training
+// (LTSM) and the serial sideband PHY. Merges the former D2DAdapterLinkMgmtTop,
+// D2DAdapterLinkMgmtLtsmTop and D2DAdapterLinkMgmtLtsmSBTop wrappers.
+// Reset convention: asynchronous active-low reset_n goes to every child.
+//
+// Modules and connections:
+//   fdi            LinkManagementController       FDI state machine. Talks to the
+//                                                 protocol layer on the fdi_* ports and
+//                                                 drives/monitors rdi state requests.
+//   rdi            RdiLinkManagementController    RDI state machine. Follows fdi requests
+//                                                 and the LTSM link-up status
+//                                                 (ltsmInbandPresent). Wake/clock
+//                                                 handshake toward the LTSM is tied off.
+//   ltsm           LinkTrainingFSM                Link training. Analog/training flags on
+//                                                 the ltsm_* ports; its state is mapped
+//                                                 to a PHY state that feeds rdi.
+//   u_sideband     SidebandWrapper                Whole sideband path: LTSM TX/RX
+//                                                 adapters, packet arbiter, RX holding
+//                                                 register and SideBandModule PHY.
+//                                                 See SidebandWrapper.sv for details.
+//
+// Glue logic kept in this top (intentionally, end of file): the ltsm state ->
+// PHY state decode that drives ltsmInbandPresent into rdi, and the debug/state
+// output assigns.
+//
+// Sideband message path:
+//   ltsm / fdi / rdi <-> u_sideband <-> sb_tx_dout / sb_tx_clk, sb_rx_din / sb_rx_clk
+// ============================================================================
+
+module D2DAdapterLinkMgmtLtsmSBTop #(
+  parameter int unsigned FDI_WIDTH         = UcieUPM_fdi_params_pkg::FDI_WIDTH,
+  parameter int unsigned FDI_DLLP_WIDTH    = UcieUPM_fdi_params_pkg::FDI_DLLP_WIDTH,
+  parameter int unsigned FDI_SB_WIDTH      = UcieUPM_fdi_params_pkg::FDI_SB_WIDTH,
+  parameter int unsigned RDI_WIDTH         = UcieUPM_rdi_params_pkg::RDI_WIDTH,
+  parameter int unsigned RDI_SB_WIDTH      = UcieUPM_rdi_params_pkg::RDI_SB_WIDTH,
+  parameter int unsigned SB_NODE_MSG_WIDTH = UcieUPM_sideband_params_pkg::SIDEBAND_NODE_MSG_WIDTH,
+  parameter bit sbFeatureExtension = LtsmParameters_pkg::DEFAULT_SB_FEATURE_EXTENSION,
+  parameter bit ucieA               = LtsmParameters_pkg::DEFAULT_UCIE_A,
+  parameter logic [1:0] moduleID    = LtsmParameters_pkg::DEFAULT_MODULE_ID,
+  parameter bit clkPhase            = LtsmParameters_pkg::DEFAULT_CLK_PHASE,
+  parameter bit clkMode             = LtsmParameters_pkg::DEFAULT_CLK_MODE,
+  parameter logic [4:0] voltageSwing = LtsmParameters_pkg::DEFAULT_VOLTAGE_SWING,
+  parameter logic [3:0] maxLinkSpeed = LtsmParameters_pkg::DEFAULT_MAX_LINK_SPEED,
+  parameter int unsigned d2cPiCodeWidth = LtsmParameters_pkg::DEFAULT_D2C_PI_CODE_WIDTH,
+  parameter int unsigned d2cTxDeskewCodeWidth = LtsmParameters_pkg::DEFAULT_D2C_TX_DESKEW_CODE_WIDTH,
+  parameter int unsigned d2cDeskewStepsPerPi = LtsmParameters_pkg::DEFAULT_D2C_DESKEW_STEPS_PER_PI,
+  parameter bit d2cDeskewAddDelayIncreasesPhase = LtsmParameters_pkg::DEFAULT_D2C_DESKEW_ADD_DELAY_INCREASES_PHASE,
+  parameter logic [15:0] d2cMaximumComparisonErrorThreshold = LtsmParameters_pkg::DEFAULT_D2C_MAX_COMPARISON_ERROR_THRESHOLD,
+  parameter int unsigned d2cMinLaneWindowSteps = LtsmParameters_pkg::DEFAULT_D2C_MIN_LANE_WINDOW_STEPS,
+  parameter int unsigned d2cMinCommonWindowSteps = LtsmParameters_pkg::DEFAULT_D2C_MIN_COMMON_WINDOW_STEPS,
+  parameter int unsigned d2cMaxTrainingRetries = LtsmParameters_pkg::DEFAULT_D2C_MAX_TRAINING_RETRIES,
+  parameter int unsigned validVrefValueCount = LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
+  parameter int unsigned validVrefCodeWidth =
+    (validVrefValueCount <= 1) ? 1 : $clog2(validVrefValueCount),
+  parameter int unsigned validVrefMinimumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
+  parameter int unsigned validVrefMaximumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAXIMUM_MILLIVOLTS,
+  parameter logic [15:0] validVrefMaximumComparisonErrorThreshold = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAX_COMPARISON_ERROR_THRESHOLD,
+  parameter int unsigned validVrefMinPassingWindowValues = LtsmParameters_pkg::DEFAULT_VALID_VREF_MIN_PASSING_WINDOW_VALUES,
+  parameter int unsigned validVrefMaxTrainingRetries = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAX_TRAINING_RETRIES,
+  parameter bit valTrainVrefEnable = LtsmParameters_pkg::DEFAULT_VALTRAIN_VREF_ENABLE,
+  parameter int unsigned dataLaneCount = 16,
+  parameter logic [dataLaneCount-1:0] activeDataLaneMask = {dataLaneCount{1'b1}},
+  parameter int unsigned dataVrefValueCount = LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
+  parameter int unsigned dataVrefCodeWidth =
+    (dataVrefValueCount <= 1) ? 1 : $clog2(dataVrefValueCount),
+  parameter int unsigned dataVrefMinimumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
+  parameter int unsigned dataVrefMaximumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAXIMUM_MILLIVOLTS,
+  parameter logic [15:0] dataVrefMaximumComparisonErrorThreshold = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAX_COMPARISON_ERROR_THRESHOLD,
+  parameter int unsigned dataVrefMinPassingWindowValues = LtsmParameters_pkg::DEFAULT_VALID_VREF_MIN_PASSING_WINDOW_VALUES,
+  parameter int unsigned dataVrefMaxTrainingRetries = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAX_TRAINING_RETRIES,
+  parameter bit dataTrainVrefEnable = 1'b1,
+  parameter bit rxDeskewEnable = LtsmParameters_pkg::DEFAULT_RX_DESKEW_ENABLE,
+  parameter int unsigned rxDeskewValueCount = LtsmParameters_pkg::DEFAULT_RX_DESKEW_VALUE_COUNT,
+  parameter int unsigned rxDeskewCodeWidth =
+    (rxDeskewValueCount <= 1) ? 1 : $clog2(rxDeskewValueCount),
+  parameter logic [15:0] rxDeskewMaximumComparisonErrorThreshold =
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_COMPARISON_ERROR_THRESHOLD,
+  parameter int unsigned rxDeskewMinPassingWindowValues =
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_MIN_PASSING_WINDOW_VALUES,
+  parameter int unsigned rxDeskewMaxTrainingRetries =
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES,
+  parameter int unsigned SB_TX_FIFO_ENTRIES = 4
+) (
+  // ==========================================================================
+  // COMMON CLOCK AND RESET
+  // ==========================================================================
+  input wire logic clock,
+  input wire logic reset_n,
+
+  // ==========================================================================
+  // FDI INTERFACE
+  // Protocol layer <-> D2D adapter link-management interface.
+  // ==========================================================================
+  input wire UcieUPM_interfaces_pkg::PhyStateReq_t fdi_lp_state_req,
+  input wire logic                                  fdi_lp_linkerror,
+  input wire logic                                  fdi_lp_rx_active_sts,
+  input wire logic                                  fdi_lp_wake_req,
+  input wire logic                                  fdi_lp_clk_ack,
+  input wire logic                                  fdi_lp_stall_ack,
+  output var UcieUPM_interfaces_pkg::PhyState_t fdi_pl_state_sts,
+  output var logic                               fdi_pl_rx_active_req,
+  output var logic                               fdi_pl_inband_pres,
+  output var logic                               fdi_pl_wake_ack,
+  output var logic                               fdi_pl_clk_req,
+  output var logic                               fdi_pl_stall_req,
+  output var logic                               fdi_active,
+  // Suppress RDI request/FDI parameter timeout errors; retain recovery timers.
+  input wire logic timeout_disable,
+
+  // ==========================================================================
+  // LINK-MANAGEMENT TIMING REFERENCE
+  // Used by the FDI and RDI link-management timeout counters.
+  // ==========================================================================
+  input wire logic [31:0] cycles_1us,
+
+  // ==========================================================================
+  // LTSM INTERFACE
+  // Flattened LinkTrainingFSM interface toward the analog/PHY control logic.
+  // ==========================================================================
+
+  // LTSM startup and analog readiness inputs.
+  input wire logic           ltsm_start,
+  input wire logic           ltsm_stable_clk,
+  input wire logic           ltsm_pll_locked,
+  input wire logic           ltsm_stable_supply,
+  input wire logic           ltsm_flagFromAnalog_ReadyToExchangeClkPatterns,
+  input wire logic           ltsm_flagFromAnalog_FinishedClkPatterns,
+  input wire logic           ltsm_flagFromAnalog_FinishedValTrainPattern,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern,
+  input wire logic           ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern,
+  input wire logic           ltsm_flagFromAnalog_clkPatternReceivedRTRK_L,
+  input wire logic           ltsm_flagFromAnalog_clkPatternReceivedRCKN_L,
+  input wire logic           ltsm_flagFromAnalog_clkPatternReceivedRCKP_L,
+  input wire logic           ltsm_flagFromAnalog_ValTrainPatternReceived,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14,
+  input wire logic           ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14,
+  input wire logic           ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15,
+  output var logic           ltsm_flagToAnalog_RepairClkState,
+  output var logic           ltsm_flagToAnalog_SendClkPatterns,
+  output var logic           ltsm_flagToAnalog_RepairValState,
+  output var logic           ltsm_flagToAnalog_SendValTrainPattern,
+  output var logic           ltsm_flagToAnalog_ReversalMbSendLaneIDPattern,
+  output var logic           ltsm_flagToAnalog_RepairMbSendLaneIDPattern,
+  output var logic           ltsm_flagToAnalog_RepairMbSetReceiver,
+  output var logic           ltsm_flagToAnalog_LaneReversalApplied,
+  output var logic           ltsm_flagToAnalog_linkInit_resetLfsrScrambler,
+  output var logic [3:0]     ltsm_state,
+  output var logic           ltsm_dbg_flagSbinitFirstClkPatternSeen,
+  output var logic           ltsm_dbg_rxValidRisingEdge,
+  output var logic [2:0]     ltsm_dbg_sbinitSendCount,
+  output var logic           ltsm_dbg_sbTxValid,
+  output var logic [127:0]   ltsm_dbg_sbTxDin,
+  output var logic           ltsm_dbg_flagTrainError,
+  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
+  output var logic [2:0]     ltsm_dbg_mbinitSubstate,
+  output var logic [4:0]     ltsm_dbg_mbinitReversalMbReceivedSuccessCount,
+
+  // LTSM MBTRAIN.VALVREF interface.
+  output var logic           ltsm_flagToAnalog_valVref_sendPattern,
+  input wire logic           ltsm_flagFromAnalog_valVref_detectedValPattern,
+  input wire logic           ltsm_flagFromAnalog_valVref_finishedPattern,
+  output var logic           ltsm_flagToAnalog_valVref_applyRxVref,
+  output var logic [validVrefCodeWidth-1:0] ltsm_flagToAnalog_valVref_rxVrefCode,
+  input wire logic           ltsm_flagFromAnalog_valVref_rxVrefApplied,
+  output var logic           ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest,
+  output var logic [15:0]    ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold,
+  output var logic           ltsm_flagToAnalog_valVref_comparisonMode,
+  output var logic [15:0]    ltsm_flagToAnalog_valVref_iterationCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_valVref_idleCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_valVref_burstCountSettings,
+  output var logic           ltsm_flagToAnalog_valVref_patternMode,
+  output var logic [3:0]     ltsm_flagToAnalog_valVref_clockPhaseControl,
+  output var logic [2:0]     ltsm_flagToAnalog_valVref_validPattern,
+  output var logic [2:0]     ltsm_flagToAnalog_valVref_dataPattern,
+  output var logic           ltsm_flagToAnalog_valVref_clearComparisonErrors,
+  output var logic           ltsm_flagToAnalog_valVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.DATAVREF interface.
+  output var logic           ltsm_flagToAnalog_dataVref_sendPattern,
+  input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_dataVref_detectedDataPattern,
+  input wire logic           ltsm_flagFromAnalog_dataVref_finishedPattern,
+  output var logic           ltsm_flagToAnalog_dataVref_applyRxVref,
+  output var logic [dataLaneCount*dataVrefCodeWidth-1:0] ltsm_flagToAnalog_dataVref_rxVrefCodes,
+  input wire logic           ltsm_flagFromAnalog_dataVref_rxVrefApplied,
+  output var logic           ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest,
+  output var logic [15:0]    ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold,
+  output var logic           ltsm_flagToAnalog_dataVref_comparisonMode,
+  output var logic [15:0]    ltsm_flagToAnalog_dataVref_iterationCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_dataVref_idleCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_dataVref_burstCountSettings,
+  output var logic           ltsm_flagToAnalog_dataVref_patternMode,
+  output var logic [3:0]     ltsm_flagToAnalog_dataVref_clockPhaseControl,
+  output var logic [2:0]     ltsm_flagToAnalog_dataVref_validPattern,
+  output var logic [2:0]     ltsm_flagToAnalog_dataVref_dataPattern,
+  output var logic           ltsm_flagToAnalog_dataVref_clearComparisonErrors,
+  output var logic           ltsm_flagToAnalog_dataVref_resetLocalTxScrambler,
+
+  // LTSM MBTRAIN.RXCLKCAL interface.
+  output var logic           ltsm_flagToAnalog_rxClkCal_doCalibration,
+  input wire logic           ltsm_flagFromAnalog_rxClkCal_done,
+  output var logic           ltsm_flagToAnalog_rxClkCal_sendClockTrack,
+
+  // LTSM MBTRAIN shared D2C sender/receiver and TX-deskew interface
+  // (muxed inside MBTrainFSM between VALTRAINCENTER, DATATRAINCENTER1/2 and LINKSPEED).
+  output var logic           ltsm_flagToAnalog_d2cSender_sendValTrainPattern,
+  input wire logic           ltsm_flagFromAnalog_d2cSender_valTrainPatternSent,
+  output var logic           ltsm_flagToAnalog_d2cSender_resetLocalScrambler,
+  output var logic           ltsm_flagToAnalog_d2cSender_applyTxClockPhase,
+  output var logic [d2cPiCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txClockPhaseCode,
+  input wire logic            ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied,
+  output var logic           ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest,
+  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold,
+  output var logic           ltsm_flagToAnalog_d2cReceiver_comparisonMode,
+  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_iterationCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_idleCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_d2cReceiver_burstCountSettings,
+  output var logic           ltsm_flagToAnalog_d2cReceiver_patternMode,
+  output var logic [3:0]     ltsm_flagToAnalog_d2cReceiver_clockPhaseControl,
+  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_validPattern,
+  output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_dataPattern,
+  output var logic           ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler,
+  input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
+  input wire logic [63:0]    ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  output var logic           ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
+  input wire logic           ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
+  output var logic           ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew,
+  // TX deskew: 20 bits/lane, cell 1 [9:0], cell 2 [19:10]; LSB + 9 thermometer bits/cell.
+  output var logic [64*d2cTxDeskewCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes,
+  input wire logic           ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied,
+
+  // LTSM MBTRAIN.RXDESKEW interface.
+  output var logic           ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
+  input wire logic           ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
+  output var logic           ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler,
+  output var logic           ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew,
+  output var logic [dataLaneCount*rxDeskewCodeWidth-1:0] ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes,
+  input wire logic           ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied,
+  output var logic           ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest,
+  output var logic [15:0]    ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold,
+  output var logic           ltsm_flagToAnalog_rxDeskew_comparisonMode,
+  output var logic [15:0]    ltsm_flagToAnalog_rxDeskew_iterationCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_rxDeskew_idleCountSettings,
+  output var logic [15:0]    ltsm_flagToAnalog_rxDeskew_burstCountSettings,
+  output var logic           ltsm_flagToAnalog_rxDeskew_patternMode,
+  output var logic [3:0]     ltsm_flagToAnalog_rxDeskew_clockPhaseControl,
+  output var logic [2:0]     ltsm_flagToAnalog_rxDeskew_validPattern,
+  output var logic [2:0]     ltsm_flagToAnalog_rxDeskew_dataPattern,
+  output var logic           ltsm_flagToAnalog_rxDeskew_clearComparisonErrors,
+  input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_rxDeskew_detectedDataPattern,
+
+  // LTSM MBTRAIN.LINKSPEED interface.
+  output var logic           ltsm_flagToLtsm_linkSpeed_phyInRetrain,
+  input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
+  output var logic [3:0]     ltsm_dbg_mbtrainState,
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
+  output var logic [11:0]    ltsm_dbg_mbtrainActiveSubstate,
+  output var logic [15:0]    ltsm_dbg_mbtrainLastErrorCount,
+  output var logic [15:0]    ltsm_dbg_mbtrainRetryCount,
+
+  // ==========================================================================
+  // SIDEBAND PHY INTERFACE
+  // Serialized pins connected to the remote die.
+  // ==========================================================================
+  output var logic sb_tx_dout,
+  output var logic sb_tx_clk,
+  input wire logic sb_rx_din,
+  input wire logic sb_rx_clk,
+
+  // Sideband receive-buffer status. Sticky until reset.
+  output var logic debug_sb_rx_overflow,
+
+  // ==========================================================================
+  // FDI / RDI / LTSM / SIDEBAND INTEGRATION DEBUG
+  // RDI is internal to this top, so its externally visible
+  // signals are debug/status outputs rather than a separate functional port.
+  // ==========================================================================
+  output var logic [3:0] debug_ltsm_state,
+  output var logic       debug_ltsm_inband_pres,
+  output var UcieUPM_d2dadapter_pkg::LinkInitState_t debug_fdi_link_init_state,
+  output var UcieUPM_interfaces_pkg::PhyState_t      debug_rdi_state,
+  output var UcieUPM_interfaces_pkg::PhyStateReq_t   debug_fdi_to_rdi_state_req,
+  output var logic debug_arb_grant_ltsm,
+  output var logic debug_arb_grant_fdi,
+  output var logic debug_arb_grant_rdi,
+  output var logic debug_arb_tx_locked,
+  output var logic [1:0] debug_arb_rr_last_source,
+  output var logic debug_arb_rr_last_granted_rdi,
+  output var logic debug_arb_tx_fire,
   output var logic debug_rx_route_ltsm,
   output var logic debug_rx_route_fdi,
   output var logic debug_rx_route_rdi,
   output var logic debug_rx_drop_unknown,
   output var logic debug_rx_fire
 );
+  import UcieUPM_interfaces_pkg::*;
+  import UcieUPM_d2dadapter_pkg::*;
+
+  // --------------------------------------------------------------------------
+  // Internal nets
+  // --------------------------------------------------------------------------
+  // FDI <-> RDI bridge signals.
+  logic         fdi_rdi_lp_linkerror;
+  PhyStateReq_t fdi_rdi_lp_state_req;
+  PhyState_t    rdi_pl_state_sts_int;
+  logic         rdi_pl_inband_pres_int;
+  logic         rdi_pl_stall_req_int;
+  logic         fdi_rdi_lp_stall_ack;
+  logic         rdiAwake_int;
+  logic         rdiNeedsFdiAwake_int;
+  logic         fdiAwake_int;
+  logic         fdiNeedsRdiAwake_int;
+
+  // FDI sideband client.
+  logic         fdi_sb_snd_valid;
+  logic [127:0] fdi_sb_snd_msg;
+  logic         fdi_sb_snd_ready;
+  logic         fdi_sb_rcv_valid;
+  logic [127:0] fdi_sb_rcv_msg;
+  logic         fdi_sb_rcv_ready;
+
+  // RDI sideband client.
+  logic         rdi_sb_snd_valid;
+  logic [127:0] rdi_sb_snd_msg;
+  logic         rdi_sb_snd_ready;
+  logic         rdi_sb_rcv_valid;
+  logic [127:0] rdi_sb_rcv_msg;
+  logic         rdi_sb_rcv_ready;
+
+  // LTSM state.
   wire logic [3:0] ltsm_state_int;
   UcieUPM_interfaces_pkg::PhyState_t ltsmPhyState;
   wire logic       ltsmInbandPresent;
 
+  // LTSM sideband client (pulse interface).
   wire logic         ltsm_raw_tx_valid;
   wire logic [127:0] ltsm_raw_tx_msg;
   wire logic         ltsm_raw_tx_ready;
-  wire logic         ltsm_queue_tx_valid;
-  wire logic [127:0] ltsm_queue_tx_msg;
-  wire logic         ltsm_queue_tx_ready;
-
-  wire logic         ltsm_stream_rx_valid;
-  wire logic [127:0] ltsm_stream_rx_msg;
-  wire logic         ltsm_stream_rx_ready;
   wire logic         ltsm_pulse_rx_valid;
   wire logic [127:0] ltsm_pulse_rx_msg;
 
-  // The initial LTSM has no wake/clock handshake pins. Keep the RDI-side
-  // compatibility handshake awake, matching the Chisel wrapper tie-offs.
-  D2DAdapterLinkMgmtTop #(
+  // --------------------------------------------------------------------------
+  // FDI link management
+  // --------------------------------------------------------------------------
+  LinkManagementController #(
     .FDI_WIDTH         (FDI_WIDTH),
     .FDI_DLLP_WIDTH    (FDI_DLLP_WIDTH),
     .FDI_SB_WIDTH      (FDI_SB_WIDTH),
     .RDI_WIDTH         (RDI_WIDTH),
     .RDI_SB_WIDTH      (RDI_SB_WIDTH),
     .SB_NODE_MSG_WIDTH (SB_NODE_MSG_WIDTH)
-  ) linkMgmt (
+  ) fdi (
+    .clock                (clock),
+    .reset_n              (reset_n),
+
+    .fdi_lp_state_req     (fdi_lp_state_req),
+    .fdi_lp_linkerror     (fdi_lp_linkerror),
+    .fdi_lp_rx_active_sts (fdi_lp_rx_active_sts),
+    .fdi_pl_state_sts     (fdi_pl_state_sts),
+    .fdi_pl_rx_active_req (fdi_pl_rx_active_req),
+    .fdi_pl_inband_pres   (fdi_pl_inband_pres),
+    .fdi_pl_wake_ack      (fdi_pl_wake_ack),
+    .fdi_lp_wake_req      (fdi_lp_wake_req),
+    .fdi_pl_clk_req       (fdi_pl_clk_req),
+    .fdi_lp_clk_ack       (fdi_lp_clk_ack),
+    .fdi_pl_stall_req     (fdi_pl_stall_req),
+    .fdi_lp_stall_ack     (fdi_lp_stall_ack),
+    .fdi_active           (fdi_active),
+
+    .debug_link_init_state(debug_fdi_link_init_state),
+
+    .rdi_lp_linkerror     (fdi_rdi_lp_linkerror),
+    .rdi_lp_state_req     (fdi_rdi_lp_state_req),
+    .rdi_pl_state_sts     (rdi_pl_state_sts_int),
+    .rdi_pl_inband_pres   (rdi_pl_inband_pres_int),
+
+    .fdiNeedsRdiAwake     (fdiNeedsRdiAwake_int),
+    .rdiAwake             (rdiAwake_int),
+    .rdiNeedsFdiAwake     (rdiNeedsFdiAwake_int),
+    .fdiAwake             (fdiAwake_int),
+
+    .rdi_pl_stall_req     (rdi_pl_stall_req_int),
+    .rdi_lp_stall_ack     (fdi_rdi_lp_stall_ack),
+
+    .sb_snd_valid         (fdi_sb_snd_valid),
+    .sb_snd_msg           (fdi_sb_snd_msg),
+    .sb_snd_ready         (fdi_sb_snd_ready),
+    .sb_rcv_valid         (fdi_sb_rcv_valid),
+    .sb_rcv_msg           (fdi_sb_rcv_msg),
+    .sb_rcv_ready         (fdi_sb_rcv_ready),
+    .timeout_disable      (timeout_disable),
+    .cycles_1us           (cycles_1us)
+  );
+
+  // --------------------------------------------------------------------------
+  // RDI link management
+  // The LTSM has no wake/clock handshake pins, so the RDI-side handshake is
+  // kept awake (wake_req = 0, clk_ack = 1), matching the Chisel tie-offs.
+  // --------------------------------------------------------------------------
+  RdiLinkManagementController rdi (
+    .clock                (clock),
+    .reset_n              (reset_n),
+
+    .ltsm_lp_wake_req     (1'b0),
+    .ltsm_pl_wake_ack     (),
+    .ltsm_pl_clk_req      (),
+    .ltsm_lp_clk_ack      (1'b1),
+
+    .lp_state_req         (fdi_rdi_lp_state_req),
+    .pl_state_sts         (rdi_pl_state_sts_int),
+    .pl_stallreq          (rdi_pl_stall_req_int),
+    .lp_stallack          (fdi_rdi_lp_stall_ack),
+    .rdi_pl_inband_pres   (rdi_pl_inband_pres_int),
+    .ltsm_pl_inband_pres  (ltsmInbandPresent),
+
+    .fdiNeedsRdiAwake     (fdiNeedsRdiAwake_int),
+    .rdiAwake             (rdiAwake_int),
+    .rdiNeedsFdiAwake     (rdiNeedsFdiAwake_int),
+    .fdiAwake             (fdiAwake_int),
+
+    .sb_snd_valid         (rdi_sb_snd_valid),
+    .sb_snd_msg           (rdi_sb_snd_msg),
+    .sb_snd_ready         (rdi_sb_snd_ready),
+    .sb_rcv_valid         (rdi_sb_rcv_valid),
+    .sb_rcv_msg           (rdi_sb_rcv_msg),
+    .sb_rcv_ready         (rdi_sb_rcv_ready),
+
+    .lp_linkerror         (fdi_rdi_lp_linkerror),
+    .pl_phyinrecenter     (),
+    .timeout_disable      (timeout_disable),
+    .cycles_1us           (cycles_1us)
+  );
+
+  // --------------------------------------------------------------------------
+  // Sideband path (ltsm / fdi / rdi <-> serial sideband pins)
+  // --------------------------------------------------------------------------
+  SidebandWrapper #(
+    .SB_TX_FIFO_ENTRIES      (SB_TX_FIFO_ENTRIES),
+    .LTSM_TX_CAPTURE_ENTRIES (4)
+  ) u_sideband (
     .clock                         (clock),
     .reset_n                       (reset_n),
-    .fdi_lp_state_req              (fdi_lp_state_req),
-    .fdi_lp_linkerror              (fdi_lp_linkerror),
-    .fdi_lp_rx_active_sts          (fdi_lp_rx_active_sts),
-    .fdi_lp_wake_req               (fdi_lp_wake_req),
-    .fdi_lp_clk_ack                (fdi_lp_clk_ack),
-    .fdi_lp_stall_ack              (fdi_lp_stall_ack),
-    .fdi_pl_state_sts              (fdi_pl_state_sts),
-    .fdi_pl_rx_active_req          (fdi_pl_rx_active_req),
-    .fdi_pl_inband_pres            (fdi_pl_inband_pres),
-    .fdi_pl_wake_ack               (fdi_pl_wake_ack),
-    .fdi_pl_clk_req                (fdi_pl_clk_req),
-    .fdi_pl_stall_req              (fdi_pl_stall_req),
-    .ltsm_lp_wake_req              (1'b0),
-    .ltsm_pl_wake_ack              (),
-    .ltsm_lp_clk_ack               (1'b1),
-    .ltsm_pl_clk_req               (),
-    .ltsm_pl_inband_pres           (ltsmInbandPresent),
-    .ltsm_sb_tx_valid              (ltsm_queue_tx_valid),
-    .ltsm_sb_tx_msg                (ltsm_queue_tx_msg),
-    .ltsm_sb_tx_ready              (ltsm_queue_tx_ready),
-    .ltsm_sb_rx_valid              (ltsm_stream_rx_valid),
-    .ltsm_sb_rx_msg                (ltsm_stream_rx_msg),
-    .ltsm_sb_rx_ready              (ltsm_stream_rx_ready),
-    .sb_tx_valid                   (sb_tx_valid),
-    .sb_tx_msg                     (sb_tx_msg),
-    .sb_tx_ready                   (sb_tx_ready),
-    .sb_rx_valid                   (sb_rx_valid),
-    .sb_rx_msg                     (sb_rx_msg),
-    .sb_rx_ready                   (sb_rx_ready),
-    .cycles_1us                    (cycles_1us),
-    .debug_fdi_link_init_state     (debug_fdi_link_init_state),
-    .debug_rdi_state               (debug_rdi_state),
-    .debug_fdi_to_rdi_state_req    (debug_fdi_to_rdi_state_req),
+
+    .ltsm_tx_valid                 (ltsm_raw_tx_valid),
+    .ltsm_tx_msg                   (ltsm_raw_tx_msg),
+    .ltsm_tx_ready                 (ltsm_raw_tx_ready),
+    .ltsm_rx_valid                 (ltsm_pulse_rx_valid),
+    .ltsm_rx_msg                   (ltsm_pulse_rx_msg),
+
+    .fdi_tx_valid                  (fdi_sb_snd_valid),
+    .fdi_tx_msg                    (fdi_sb_snd_msg),
+    .fdi_tx_ready                  (fdi_sb_snd_ready),
+    .fdi_rx_valid                  (fdi_sb_rcv_valid),
+    .fdi_rx_msg                    (fdi_sb_rcv_msg),
+    .fdi_rx_ready                  (fdi_sb_rcv_ready),
+
+    .rdi_tx_valid                  (rdi_sb_snd_valid),
+    .rdi_tx_msg                    (rdi_sb_snd_msg),
+    .rdi_tx_ready                  (rdi_sb_snd_ready),
+    .rdi_rx_valid                  (rdi_sb_rcv_valid),
+    .rdi_rx_msg                    (rdi_sb_rcv_msg),
+    .rdi_rx_ready                  (rdi_sb_rcv_ready),
+
+    .sb_tx_dout                    (sb_tx_dout),
+    .sb_tx_clk                     (sb_tx_clk),
+    .sb_rx_din                     (sb_rx_din),
+    .sb_rx_clk                     (sb_rx_clk),
+
     .debug_arb_grant_ltsm          (debug_arb_grant_ltsm),
     .debug_arb_grant_fdi           (debug_arb_grant_fdi),
     .debug_arb_grant_rdi           (debug_arb_grant_rdi),
     .debug_arb_tx_locked           (debug_arb_tx_locked),
-    .debug_arb_rr_last_source      (),
-    .debug_arb_rr_last_rdi         (),
+    .debug_arb_rr_last_source      (debug_arb_rr_last_source),
+    .debug_arb_rr_last_granted_rdi (debug_arb_rr_last_granted_rdi),
     .debug_arb_tx_fire             (debug_arb_tx_fire),
     .debug_rx_route_ltsm           (debug_rx_route_ltsm),
     .debug_rx_route_fdi            (debug_rx_route_fdi),
     .debug_rx_route_rdi            (debug_rx_route_rdi),
     .debug_rx_drop_unknown         (debug_rx_drop_unknown),
-    .debug_rx_fire                 (debug_rx_fire)
+    .debug_rx_fire                 (debug_rx_fire),
+    .debug_sb_rx_overflow          (debug_sb_rx_overflow)
   );
 
-  LtsmSidebandTxCapture #(
-    .ENTRIES (4)
-  ) ltsmTxCapture (
-    .clock     (clock),
-    .reset_n   (reset_n),
-    .raw_valid (ltsm_raw_tx_valid),
-    .raw_msg   (ltsm_raw_tx_msg),
-    .raw_ready (ltsm_raw_tx_ready),
-    .out_valid (ltsm_queue_tx_valid),
-    .out_msg   (ltsm_queue_tx_msg),
-    .out_ready (ltsm_queue_tx_ready)
-  );
-
-  LtsmSidebandRxPulseAdapter ltsmRxPulse (
-    .clock     (clock),
-    .reset_n   (reset_n),
-    .in_valid  (ltsm_stream_rx_valid),
-    .in_msg    (ltsm_stream_rx_msg),
-    .in_ready  (ltsm_stream_rx_ready),
-    .out_valid (ltsm_pulse_rx_valid),
-    .out_msg   (ltsm_pulse_rx_msg)
-  );
-
-  // LinkTrainingFSM implementation is supplied separately. The direct port names
-  // below intentionally preserve the names used by the Chisel instance.
+  // --------------------------------------------------------------------------
+  // Link training (LTSM)
+  // --------------------------------------------------------------------------
+  // Port names below preserve the names used by the Chisel instance.
   LinkTrainingFSM #(
     .sbFeatureExtension                       (sbFeatureExtension),
     .ucieA                                    (ucieA),
@@ -656,6 +2069,7 @@ module D2DAdapterLinkMgmtLtsmTop #(
     .dbg_sbTxValid                                                             (ltsm_dbg_sbTxValid),
     .dbg_sbTxDin                                                               (ltsm_dbg_sbTxDin),
     .dbg_flagTrainError                                                        (ltsm_dbg_flagTrainError),
+    // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
     .dbg_mbinitSubstate                                                        (ltsm_dbg_mbinitSubstate),
     .dbg_mbinitReversalMbReceivedSuccessCount                                  (ltsm_dbg_mbinitReversalMbReceivedSuccessCount),
     .flagToAnalog_valVref_sendPattern                                          (ltsm_flagToAnalog_valVref_sendPattern),
@@ -697,83 +2111,30 @@ module D2DAdapterLinkMgmtLtsmTop #(
     .flagToAnalog_rxClkCal_doCalibration                                       (ltsm_flagToAnalog_rxClkCal_doCalibration),
     .flagFromAnalog_rxClkCal_done                                              (ltsm_flagFromAnalog_rxClkCal_done),
     .flagToAnalog_rxClkCal_sendClockTrack                                      (ltsm_flagToAnalog_rxClkCal_sendClockTrack),
-    .flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern                 (ltsm_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern),
-    .flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent               (ltsm_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent),
-    .flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler                 (ltsm_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler),
-    .flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase                   (ltsm_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase),
-    .flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode                    (ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied               (ltsm_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied),
-    .flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest       (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold   (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode                    (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode),
-    .flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings            (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings                 (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings),
-    .flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings                (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings),
-    .flagToAnalog_d2cReceiver_valTrainCenter_patternMode                       (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_patternMode),
-    .flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl                 (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_valTrainCenter_validPattern                      (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_validPattern),
-    .flagToAnalog_d2cReceiver_valTrainCenter_dataPattern                       (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern),
-    .flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler             (ltsm_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo         (ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload         (ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload),
-    .flagToAnalog_valTrainVref_sendPattern                                     (ltsm_flagToAnalog_valTrainVref_sendPattern),
-    .flagFromAnalog_valTrainVref_detectedValPattern                            (ltsm_flagFromAnalog_valTrainVref_detectedValPattern),
-    .flagFromAnalog_valTrainVref_finishedPattern                               (ltsm_flagFromAnalog_valTrainVref_finishedPattern),
-    .flagToAnalog_valTrainVref_applyRxVref                                     (ltsm_flagToAnalog_valTrainVref_applyRxVref),
-    .flagToAnalog_valTrainVref_rxVrefCode                                      (ltsm_flagToAnalog_valTrainVref_rxVrefCode),
-    .flagFromAnalog_valTrainVref_rxVrefApplied                                 (ltsm_flagFromAnalog_valTrainVref_rxVrefApplied),
-    .flagToAnalog_valTrainVref_configureRxInitD2CPointTest                     (ltsm_flagToAnalog_valTrainVref_configureRxInitD2CPointTest),
-    .flagToAnalog_valTrainVref_maximumComparisonErrorThreshold                 (ltsm_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold),
-    .flagToAnalog_valTrainVref_comparisonMode                                  (ltsm_flagToAnalog_valTrainVref_comparisonMode),
-    .flagToAnalog_valTrainVref_iterationCountSettings                          (ltsm_flagToAnalog_valTrainVref_iterationCountSettings),
-    .flagToAnalog_valTrainVref_idleCountSettings                               (ltsm_flagToAnalog_valTrainVref_idleCountSettings),
-    .flagToAnalog_valTrainVref_burstCountSettings                              (ltsm_flagToAnalog_valTrainVref_burstCountSettings),
-    .flagToAnalog_valTrainVref_patternMode                                     (ltsm_flagToAnalog_valTrainVref_patternMode),
-    .flagToAnalog_valTrainVref_clockPhaseControl                               (ltsm_flagToAnalog_valTrainVref_clockPhaseControl),
-    .flagToAnalog_valTrainVref_validPattern                                    (ltsm_flagToAnalog_valTrainVref_validPattern),
-    .flagToAnalog_valTrainVref_dataPattern                                     (ltsm_flagToAnalog_valTrainVref_dataPattern),
-    .flagToAnalog_valTrainVref_clearComparisonErrors                           (ltsm_flagToAnalog_valTrainVref_clearComparisonErrors),
-    .flagToAnalog_valTrainVref_resetLocalTxScrambler                           (ltsm_flagToAnalog_valTrainVref_resetLocalTxScrambler),
-    .flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern                   (ltsm_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent                 (ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent),
-    .flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler               (ltsm_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler),
-    .flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase                 (ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase),
-    .flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode                  (ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied             (ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied),
-    .flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew                 (ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew),
-    .flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes                 (ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes),
-    .flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied             (ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest     (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode                  (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings          (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings               (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings              (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode                     (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl               (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern                    (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern                     (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler           (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo       (ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload       (ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload),
-    .flagToAnalog_dataTrainVref_sendPattern                                    (ltsm_flagToAnalog_dataTrainVref_sendPattern),
-    .flagFromAnalog_dataTrainVref_detectedDataPattern                          (ltsm_flagFromAnalog_dataTrainVref_detectedDataPattern),
-    .flagFromAnalog_dataTrainVref_finishedPattern                              (ltsm_flagFromAnalog_dataTrainVref_finishedPattern),
-    .flagToAnalog_dataTrainVref_applyRxVref                                    (ltsm_flagToAnalog_dataTrainVref_applyRxVref),
-    .flagToAnalog_dataTrainVref_rxVrefCodes                                    (ltsm_flagToAnalog_dataTrainVref_rxVrefCodes),
-    .flagFromAnalog_dataTrainVref_rxVrefApplied                                (ltsm_flagFromAnalog_dataTrainVref_rxVrefApplied),
-    .flagToAnalog_dataTrainVref_configureRxInitD2CPointTest                    (ltsm_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest),
-    .flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold                (ltsm_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold),
-    .flagToAnalog_dataTrainVref_comparisonMode                                 (ltsm_flagToAnalog_dataTrainVref_comparisonMode),
-    .flagToAnalog_dataTrainVref_iterationCountSettings                         (ltsm_flagToAnalog_dataTrainVref_iterationCountSettings),
-    .flagToAnalog_dataTrainVref_idleCountSettings                              (ltsm_flagToAnalog_dataTrainVref_idleCountSettings),
-    .flagToAnalog_dataTrainVref_burstCountSettings                             (ltsm_flagToAnalog_dataTrainVref_burstCountSettings),
-    .flagToAnalog_dataTrainVref_patternMode                                    (ltsm_flagToAnalog_dataTrainVref_patternMode),
-    .flagToAnalog_dataTrainVref_clockPhaseControl                              (ltsm_flagToAnalog_dataTrainVref_clockPhaseControl),
-    .flagToAnalog_dataTrainVref_validPattern                                   (ltsm_flagToAnalog_dataTrainVref_validPattern),
-    .flagToAnalog_dataTrainVref_dataPattern                                    (ltsm_flagToAnalog_dataTrainVref_dataPattern),
-    .flagToAnalog_dataTrainVref_clearComparisonErrors                          (ltsm_flagToAnalog_dataTrainVref_clearComparisonErrors),
-    .flagToAnalog_dataTrainVref_resetLocalTxScrambler                          (ltsm_flagToAnalog_dataTrainVref_resetLocalTxScrambler),
+    .flagToAnalog_d2cSender_sendValTrainPattern                 (ltsm_flagToAnalog_d2cSender_sendValTrainPattern),
+    .flagFromAnalog_d2cSender_valTrainPatternSent               (ltsm_flagFromAnalog_d2cSender_valTrainPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler                 (ltsm_flagToAnalog_d2cSender_resetLocalScrambler),
+    .flagToAnalog_d2cSender_applyTxClockPhase                   (ltsm_flagToAnalog_d2cSender_applyTxClockPhase),
+    .flagToAnalog_d2cSender_txClockPhaseCode                    (ltsm_flagToAnalog_d2cSender_txClockPhaseCode),
+    .flagFromAnalog_d2cSender_txClockPhaseApplied               (ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest       (ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold   (ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode                    (ltsm_flagToAnalog_d2cReceiver_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings            (ltsm_flagToAnalog_d2cReceiver_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings                 (ltsm_flagToAnalog_d2cReceiver_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings                (ltsm_flagToAnalog_d2cReceiver_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode                       (ltsm_flagToAnalog_d2cReceiver_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl                 (ltsm_flagToAnalog_d2cReceiver_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern                      (ltsm_flagToAnalog_d2cReceiver_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern                       (ltsm_flagToAnalog_d2cReceiver_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler             (ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo         (ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload         (ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload),
+    .flagToAnalog_d2cSender_sendLfsrPattern                   (ltsm_flagToAnalog_d2cSender_sendLfsrPattern),
+    .flagFromAnalog_d2cSender_lfsrPatternSent                 (ltsm_flagFromAnalog_d2cSender_lfsrPatternSent),
+    .flagToAnalog_d2cSender_applyTxLaneDeskew                 (ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew),
+    .flagToAnalog_d2cSender_txLaneDeskewCodes                 (ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes),
+    .flagFromAnalog_d2cSender_txLaneDeskewApplied             (ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied),
     .flagToAnalog_rxDeskew_sendLfsrPattern                                     (ltsm_flagToAnalog_rxDeskew_sendLfsrPattern),
     .flagFromAnalog_rxDeskew_lfsrPatternSent                                   (ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent),
     .flagToAnalog_rxDeskew_resetLocalTxScrambler                               (ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler),
@@ -792,42 +2153,10 @@ module D2DAdapterLinkMgmtLtsmTop #(
     .flagToAnalog_rxDeskew_dataPattern                                         (ltsm_flagToAnalog_rxDeskew_dataPattern),
     .flagToAnalog_rxDeskew_clearComparisonErrors                               (ltsm_flagToAnalog_rxDeskew_clearComparisonErrors),
     .flagFromAnalog_rxDeskew_detectedDataPattern                               (ltsm_flagFromAnalog_rxDeskew_detectedDataPattern),
-    .flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern                   (ltsm_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent                 (ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent),
-    .flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler               (ltsm_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler),
-    .flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase                 (ltsm_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase),
-    .flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode                  (ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied             (ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest     (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode                  (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings          (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings               (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings              (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode                     (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl               (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern                    (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern                     (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler           (ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo       (ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload       (ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload),
     .flagToLtsm_linkSpeed_phyInRetrain                                         (ltsm_flagToLtsm_linkSpeed_phyInRetrain),
-    .flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern                          (ltsm_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent                        (ltsm_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent),
-    .flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler                      (ltsm_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler),
-    .flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest            (ltsm_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold        (ltsm_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_linkSpeed_comparisonMode                         (ltsm_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode),
-    .flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings                 (ltsm_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings                      (ltsm_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings),
-    .flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings                     (ltsm_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings),
-    .flagToAnalog_d2cReceiver_linkSpeed_patternMode                            (ltsm_flagToAnalog_d2cReceiver_linkSpeed_patternMode),
-    .flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl                      (ltsm_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_linkSpeed_validPattern                           (ltsm_flagToAnalog_d2cReceiver_linkSpeed_validPattern),
-    .flagToAnalog_d2cReceiver_linkSpeed_dataPattern                            (ltsm_flagToAnalog_d2cReceiver_linkSpeed_dataPattern),
-    .flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler                  (ltsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful             (ltsm_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful),
+    .flagFromAnalog_d2cReceiver_laneComparisonSuccessful             (ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
     .dbg_mbtrainState                                                          (ltsm_dbg_mbtrainState),
+    // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     .dbg_mbtrainActiveSubstate                                                 (ltsm_dbg_mbtrainActiveSubstate),
     .dbg_mbtrainLastErrorCount                                                 (ltsm_dbg_mbtrainLastErrorCount),
     .dbg_mbtrainRetryCount                                                     (ltsm_dbg_mbtrainRetryCount)
@@ -859,277 +2188,325 @@ module D2DAdapterLinkMgmtLtsmTop #(
     debug_ltsm_state           = ltsm_state_int;
     debug_ltsm_inband_pres     = ltsmInbandPresent;
   end
-endmodule
-
-`default_nettype wire
-
-```
-
-<a id="D2DAdapterLinkMgmtTop-sv"></a>
-
-## [3] D2DAdapterLinkMgmtTop.sv
-
-```systemverilog
-// FILE_INDEX: 3
-// FILE_PATH : D2DAdapterLinkMgmtTop.sv
-
-// Hand-translated synthesizable SystemVerilog.
-// Source: D2DAdapterLinkMgmtTop(7).scala
-// This is the integrated FDI + RDI + three-client sideband-arbiter wrapper.
-// Reset convention: asynchronous active-low reset_n is passed to every child module.
-
-`default_nettype none
-
-module D2DAdapterLinkMgmtTop #(
-  parameter int unsigned FDI_WIDTH         = UcieUPM_fdi_params_pkg::FDI_WIDTH,
-  parameter int unsigned FDI_DLLP_WIDTH    = UcieUPM_fdi_params_pkg::FDI_DLLP_WIDTH,
-  parameter int unsigned FDI_SB_WIDTH      = UcieUPM_fdi_params_pkg::FDI_SB_WIDTH,
-  parameter int unsigned RDI_WIDTH         = UcieUPM_rdi_params_pkg::RDI_WIDTH,
-  parameter int unsigned RDI_SB_WIDTH      = UcieUPM_rdi_params_pkg::RDI_SB_WIDTH,
-  parameter int unsigned SB_NODE_MSG_WIDTH = UcieUPM_sideband_params_pkg::SIDEBAND_NODE_MSG_WIDTH
-) (
-  input wire logic clock,
-  input wire logic reset_n,
-
-  // Protocol-facing FDI side.
-  input  wire UcieUPM_interfaces_pkg::PhyStateReq_t fdi_lp_state_req,
-  input  wire logic                                  fdi_lp_linkerror,
-  input  wire logic                                  fdi_lp_rx_active_sts,
-  input  wire logic                                  fdi_lp_wake_req,
-  input  wire logic                                  fdi_lp_clk_ack,
-  input  wire logic                                  fdi_lp_stall_ack,
-
-  output var UcieUPM_interfaces_pkg::PhyState_t fdi_pl_state_sts,
-  output var logic                               fdi_pl_rx_active_req,
-  output var logic                               fdi_pl_inband_pres,
-  output var logic                               fdi_pl_wake_ack,
-  output var logic                               fdi_pl_clk_req,
-  output var logic                               fdi_pl_stall_req,
-
-  // LTSM / PHY-facing control side from RDI.
-  input  wire logic ltsm_lp_wake_req,
-  output var logic ltsm_pl_wake_ack,
-  input  wire logic ltsm_lp_clk_ack,
-  output var logic ltsm_pl_clk_req,
-  input  wire logic ltsm_pl_inband_pres,
-
-  // External LTSM sideband-message producer and sink.
-  input  wire logic         ltsm_sb_tx_valid,
-  input  wire logic [127:0] ltsm_sb_tx_msg,
-  output var logic         ltsm_sb_tx_ready,
-
-  output var logic         ltsm_sb_rx_valid,
-  output var logic [127:0] ltsm_sb_rx_msg,
-  input  wire logic         ltsm_sb_rx_ready,
-
-  // Shared abstract 128-bit sideband-message transport.
-  output var logic         sb_tx_valid,
-  output var logic [127:0] sb_tx_msg,
-  input  wire logic         sb_tx_ready,
-
-  input  wire logic         sb_rx_valid,
-  input  wire logic [127:0] sb_rx_msg,
-  output var logic         sb_rx_ready,
-
-  input  wire logic [31:0] cycles_1us,
-
-  // Debug / waveform visibility.
-  output var UcieUPM_d2dadapter_pkg::LinkInitState_t debug_fdi_link_init_state,
-  output var UcieUPM_interfaces_pkg::PhyState_t      debug_rdi_state,
-  output var UcieUPM_interfaces_pkg::PhyStateReq_t   debug_fdi_to_rdi_state_req,
-
-  output var logic       debug_arb_grant_ltsm,
-  output var logic       debug_arb_grant_fdi,
-  output var logic       debug_arb_grant_rdi,
-  output var logic       debug_arb_tx_locked,
-  output var logic [1:0] debug_arb_rr_last_source,
-  output var logic       debug_arb_rr_last_rdi,
-  output var logic       debug_arb_tx_fire,
-
-  output var logic debug_rx_route_ltsm,
-  output var logic debug_rx_route_fdi,
-  output var logic debug_rx_route_rdi,
-  output var logic debug_rx_drop_unknown,
-  output var logic debug_rx_fire
-);
-  import UcieUPM_interfaces_pkg::*;
-  import UcieUPM_d2dadapter_pkg::*;
-
-  // FDI <-> RDI bridge signals.
-  logic         fdi_rdi_lp_linkerror;
-  PhyStateReq_t fdi_rdi_lp_state_req;
-  PhyState_t    rdi_pl_state_sts_int;
-  logic         rdi_pl_inband_pres_int;
-  logic         rdi_pl_stall_req_int;
-  logic         fdi_rdi_lp_stall_ack;
-  logic         rdiAwake_int;
-  logic         rdiNeedsFdiAwake_int;
-  logic         fdiAwake_int;
-  logic         fdiNeedsRdiAwake_int;
-
-  // FDI sideband client.
-  logic         fdi_sb_snd_valid;
-  logic [127:0] fdi_sb_snd_msg;
-  logic         fdi_sb_snd_ready;
-  logic         fdi_sb_rcv_valid;
-  logic [127:0] fdi_sb_rcv_msg;
-  logic         fdi_sb_rcv_ready;
-
-  // RDI sideband client.
-  logic         rdi_sb_snd_valid;
-  logic [127:0] rdi_sb_snd_msg;
-  logic         rdi_sb_snd_ready;
-  logic         rdi_sb_rcv_valid;
-  logic [127:0] rdi_sb_rcv_msg;
-  logic         rdi_sb_rcv_ready;
-
-  LinkManagementController #(
-    .FDI_WIDTH         (FDI_WIDTH),
-    .FDI_DLLP_WIDTH    (FDI_DLLP_WIDTH),
-    .FDI_SB_WIDTH      (FDI_SB_WIDTH),
-    .RDI_WIDTH         (RDI_WIDTH),
-    .RDI_SB_WIDTH      (RDI_SB_WIDTH),
-    .SB_NODE_MSG_WIDTH (SB_NODE_MSG_WIDTH)
-  ) fdi (
-    .clock                (clock),
-    .reset_n              (reset_n),
-
-    .fdi_lp_state_req     (fdi_lp_state_req),
-    .fdi_lp_linkerror     (fdi_lp_linkerror),
-    .fdi_lp_rx_active_sts (fdi_lp_rx_active_sts),
-    .fdi_pl_state_sts     (fdi_pl_state_sts),
-    .fdi_pl_rx_active_req (fdi_pl_rx_active_req),
-    .fdi_pl_inband_pres   (fdi_pl_inband_pres),
-    .fdi_pl_wake_ack      (fdi_pl_wake_ack),
-    .fdi_lp_wake_req      (fdi_lp_wake_req),
-    .fdi_pl_clk_req       (fdi_pl_clk_req),
-    .fdi_lp_clk_ack       (fdi_lp_clk_ack),
-    .fdi_pl_stall_req     (fdi_pl_stall_req),
-    .fdi_lp_stall_ack     (fdi_lp_stall_ack),
-
-    .debug_link_init_state(debug_fdi_link_init_state),
-
-    .rdi_lp_linkerror     (fdi_rdi_lp_linkerror),
-    .rdi_lp_state_req     (fdi_rdi_lp_state_req),
-    .rdi_pl_state_sts     (rdi_pl_state_sts_int),
-    .rdi_pl_inband_pres   (rdi_pl_inband_pres_int),
-
-    .fdiNeedsRdiAwake     (fdiNeedsRdiAwake_int),
-    .rdiAwake             (rdiAwake_int),
-    .rdiNeedsFdiAwake     (rdiNeedsFdiAwake_int),
-    .fdiAwake             (fdiAwake_int),
-
-    .rdi_pl_stall_req     (rdi_pl_stall_req_int),
-    .rdi_lp_stall_ack     (fdi_rdi_lp_stall_ack),
-
-    .sb_snd_valid         (fdi_sb_snd_valid),
-    .sb_snd_msg           (fdi_sb_snd_msg),
-    .sb_snd_ready         (fdi_sb_snd_ready),
-    .sb_rcv_valid         (fdi_sb_rcv_valid),
-    .sb_rcv_msg           (fdi_sb_rcv_msg),
-    .sb_rcv_ready         (fdi_sb_rcv_ready),
-    .cycles_1us           (cycles_1us)
-  );
-
-  RdiLinkManagementController rdi (
-    .clock                (clock),
-    .reset_n              (reset_n),
-
-    .ltsm_lp_wake_req     (ltsm_lp_wake_req),
-    .ltsm_pl_wake_ack     (ltsm_pl_wake_ack),
-    .ltsm_pl_clk_req      (ltsm_pl_clk_req),
-    .ltsm_lp_clk_ack      (ltsm_lp_clk_ack),
-
-    .lp_state_req         (fdi_rdi_lp_state_req),
-    .pl_state_sts         (rdi_pl_state_sts_int),
-    .pl_stallreq          (rdi_pl_stall_req_int),
-    .lp_stallack          (fdi_rdi_lp_stall_ack),
-    .rdi_pl_inband_pres   (rdi_pl_inband_pres_int),
-    .ltsm_pl_inband_pres  (ltsm_pl_inband_pres),
-
-    .fdiNeedsRdiAwake     (fdiNeedsRdiAwake_int),
-    .rdiAwake             (rdiAwake_int),
-    .rdiNeedsFdiAwake     (rdiNeedsFdiAwake_int),
-    .fdiAwake             (fdiAwake_int),
-
-    .sb_snd_valid         (rdi_sb_snd_valid),
-    .sb_snd_msg           (rdi_sb_snd_msg),
-    .sb_snd_ready         (rdi_sb_snd_ready),
-    .sb_rcv_valid         (rdi_sb_rcv_valid),
-    .sb_rcv_msg           (rdi_sb_rcv_msg),
-    .sb_rcv_ready         (rdi_sb_rcv_ready),
-
-    .lp_linkerror         (fdi_rdi_lp_linkerror),
-    .pl_phyinrecenter     (),
-    .cycles_1us           (cycles_1us)
-  );
-
-  LinkMgmtSidebandPacketArbiter arb (
-    .clock                 (clock),
-    .reset_n               (reset_n),
-
-    .ltsm_tx_valid         (ltsm_sb_tx_valid),
-    .ltsm_tx_msg           (ltsm_sb_tx_msg),
-    .ltsm_tx_ready         (ltsm_sb_tx_ready),
-
-    .fdi_tx_valid          (fdi_sb_snd_valid),
-    .fdi_tx_msg            (fdi_sb_snd_msg),
-    .fdi_tx_ready          (fdi_sb_snd_ready),
-
-    .rdi_tx_valid          (rdi_sb_snd_valid),
-    .rdi_tx_msg            (rdi_sb_snd_msg),
-    .rdi_tx_ready          (rdi_sb_snd_ready),
-
-    .tx_out_valid          (sb_tx_valid),
-    .tx_out_msg            (sb_tx_msg),
-    .tx_out_ready          (sb_tx_ready),
-
-    .rx_in_valid           (sb_rx_valid),
-    .rx_in_msg             (sb_rx_msg),
-    .rx_in_ready           (sb_rx_ready),
-
-    .ltsm_rx_valid         (ltsm_sb_rx_valid),
-    .ltsm_rx_msg           (ltsm_sb_rx_msg),
-    .ltsm_rx_ready         (ltsm_sb_rx_ready),
-
-    .fdi_rx_valid          (fdi_sb_rcv_valid),
-    .fdi_rx_msg            (fdi_sb_rcv_msg),
-    .fdi_rx_ready          (fdi_sb_rcv_ready),
-
-    .rdi_rx_valid          (rdi_sb_rcv_valid),
-    .rdi_rx_msg            (rdi_sb_rcv_msg),
-    .rdi_rx_ready          (rdi_sb_rcv_ready),
-
-    .grant_ltsm            (debug_arb_grant_ltsm),
-    .grant_fdi             (debug_arb_grant_fdi),
-    .grant_rdi             (debug_arb_grant_rdi),
-    .tx_locked             (debug_arb_tx_locked),
-    .rr_last_source        (debug_arb_rr_last_source),
-    .rr_last_granted_rdi   (debug_arb_rr_last_rdi),
-    .tx_fire               (debug_arb_tx_fire),
-
-    .rx_route_ltsm         (debug_rx_route_ltsm),
-    .rx_route_fdi          (debug_rx_route_fdi),
-    .rx_route_rdi          (debug_rx_route_rdi),
-    .rx_drop_unknown       (debug_rx_drop_unknown),
-    .rx_fire               (debug_rx_fire)
-  );
 
   assign debug_rdi_state            = rdi_pl_state_sts_int;
   assign debug_fdi_to_rdi_state_req = fdi_rdi_lp_state_req;
+
 endmodule
 
 `default_nettype wire
 
 ```
 
-<a id="Fdi-sv"></a>
+<a id="src-DvsecRegisterBlock-sv"></a>
 
-## [4] Fdi.sv
+## [4] src\DvsecRegisterBlock.sv
 
 ```systemverilog
 // FILE_INDEX: 4
-// FILE_PATH : Fdi.sv
+// FILE_PATH : src\DvsecRegisterBlock.sv
+
+// Twelve writable 32-bit registers and two 64-bit registers, using UCIe layouts.
+// This simple bank does not enforce RO, reserved-bit, W1C or capability rules:
+// software and local hardware are responsible for the values they write.
+// Link DVSEC uses 0x00C/0x010/0x014; PHY uses full addresses from 0x1000.
+// Reads are combinational; writes occur on rising edges, with local priority.
+module UCIePhyRegisterBlock (
+    input  logic        clk_i,
+    input  logic        rst_ni,
+
+    // Local port: write one 32-bit word when we=1.
+    input  logic        local_we_i,
+    input  logic [31:0] local_addr_i,
+    input  logic [31:0] local_wdata_i,
+    output logic [31:0] local_rdata_o,
+
+    // SB port: keep we/address/data/BE stable until an edge with waccepted=1.
+    input  logic        sb_we_i,
+    input  logic [31:0] sb_addr_i,
+    input  logic [31:0] sb_wdata_i,
+    input  logic [3:0]  sb_be_i,
+    output logic [31:0] sb_rdata_o,
+    output logic        sb_waccepted_o,
+    output logic [31:0] phy_control_o
+);
+    // UCIe Link Capability, address 0x00C (9.5.1.4, Table 9-8).
+    // Advertises Link and Adapter capabilities to software. Writable here like the
+    // existing registers; RO, HWInit and reserved-field rules are not enforced.
+    // [0] Raw Format; [3:1] max width: 0=x16, 1=x32, 2=x64, 3=x128, 4=x256, 7=x8;
+    // [7:4] max speed: 0=4, 1=8, 2=12, 3=16, 4=24, 5=32 GT/s; [8] Retimer;
+    // [9] multi-protocol; [10] Advanced Package; [15:11] Streaming Flit Formats;
+    // [16] enhanced multi-protocol; [17] PCIe standard start header;
+    // [18] PCIe latency-optimized optional bytes; [19] parity error signaling;
+    // [20] Advanced module width: 1=x32, 0=x64; [21] x32 support in x64 module;
+    // [22] Standard module width: 1=x8, 0=x16; [23] sideband PMO; [31:24] reserved.
+    logic [31:0] ucie_link_capability_q;
+
+    // UCIe Link Control, address 0x010 (9.5.1.5, Table 9-9).
+    // Stores requested settings. This bank does not start training, automatically
+    // clear command bits, or constrain values against Link Capability.
+    // [0] Raw enable; [1] multi-protocol; [5:2] target width; [9:6] target speed;
+    // [10] start training; [11] retrain; [12] unused; [17:13] Streaming formats;
+    // [18] enhanced multi-protocol; [19] PCIe standard start header;
+    // [20] PCIe latency-optimized optional bytes; [21] sideband PMO; [31:22] reserved.
+    logic [31:0] ucie_link_control_q;
+
+    // UCIe Link Status, address 0x014 (9.5.1.6, Table 9-10).
+    // Stores observed Link results. This bank does not implement RO, RW1C/RW1CS,
+    // mirroring, or automatic event/status updates.
+    // [0] Raw enabled; [1] multi-protocol; [2] enhanced multi-protocol;
+    // [3] x32 Advanced module; [6:4] reserved; [10:7] active width;
+    // [14:11] active speed; [15] Link up; [16] training; [17] status changed;
+    // [18] bandwidth changed; [19] correctable error; [20] non-fatal error;
+    // [21] fatal error; [25:22] Flit Format; [26] sideband PMO; [31:27] reserved.
+    logic [31:0] ucie_link_status_q;
+
+    // PHY Capability, address 0x1000 (UCIe Table 9-47).
+    // Describes the PHY's supported features. Initialize it to match the hardware;
+    // consumers read it before choosing settings. Writable here like any register.
+    // [2:0] reserved; [3] RX termination support; [4] TX equalization support;
+    // [9:5] TX swing code: 1=0.40 V, 2=0.45 V, ... 16=1.15 V;
+    // [10] reserved; [12:11] RX clock: 00=strobe/free-running, 10=free-running only;
+    // [14:13] phase: 00=differential, 01/10=quadrature at 24/32 GT/s and
+    // differential up to 16 GT/s; [15] package: 1=Standard, 0=Advanced;
+    // [16] TCM support; [31:17] reserved. Other field encodings are reserved.
+    logic [31:0] phy_capability_q;
+
+    // PHY Control, address 0x1004 (UCIe Table 9-48).
+    // Stores requested settings. The PHY controller reads phy_control_o and
+    // applies them; writing Control does not automatically change Status.
+    // [2:0] reserved; [3] RX termination enable; [4] TX equalization enable;
+    // [5] RX clock: 0=strobe, 1=free-running; [6] phase: 0=differential only,
+    // 1=quadrature at 24/32 GT/s and differential up to 16 GT/s;
+    // [7] force x32 in Advanced x64 (not applicable to Standard Package);
+    // [8] force x8 in Standard x16 for debug, only without lane reversal;
+    // [31:9] reserved. The caller must select supported settings.
+    logic [31:0] phy_control_q;
+
+    // PHY Status, address 0x1008 (UCIe Table 9-49).
+    // Stores observed results provided by PHY hardware, for external monitoring.
+    // Both ports can overwrite it; callers must avoid replacing real status with
+    // requested settings. Clock fields describe the REMOTE partner, not Control.
+    // [2:0] reserved; [3] actual local RX termination; [4] actual local TX EQ;
+    // [5] remote RX clock mode: 0=strobe, 1=free-running;
+    // [6] remote phase: 0=differential, 1=quadrature at 24/32 GT/s;
+    // [7] lane reversal within the module; [31:8] reserved.
+    logic [31:0] phy_status_q;
+
+    // PHY Initialization and Debug, address 0x100C (9.5.3.25, Table 9-50).
+    // NOT USED IN THE CURRENT VERSION: storage only; no LTSM pause/resume logic.
+    // Software can select a training pause point for future debug integration.
+    // [2:0] initialization control: 000=normal training to ACTIVE;
+    // 001=pause after MBINIT.PARAM step 2; 010=after MBTRAIN.VALVREF step 1;
+    // 011=after MBTRAIN.RXDESKEW step 1; 100=after MBTRAIN.DATATRAINCENTER2
+    // step 1 (the last two apply to initial training and retraining).
+    // Other codes reserved. [4:3] reserved; [5] Resume Training: a 0->1
+    // transition requests continuation; [31:6] reserved. Reset: zero.
+    // Future LTSM integration must disable the relevant timeouts while paused;
+    // a corresponding remote sideband message can also allow training to resume.
+    // This register does not automatically start training or clear Resume Training.
+    logic [31:0] phy_init_debug_q;
+
+    // Training Setup 1, module 0, address 0x1010 (9.5.3.26, Table 9-51).
+    // Configuration for the pattern generator/training controller, not results.
+    // Software/FW may program it via SB before a test; local PHY may configure it
+    // if the integration assigns ownership to hardware. No automatic updates here.
+    // [2:0] data pattern: 000=per-lane LFSR, 001=per-lane ID;
+    // PHY-Compliance only: 010=AA clock, 011=all zeros, 100=all ones,
+    // 101=inverted clock. Other codes reserved.
+    // [5:3] valid pattern: 000=functional 1111 0000 (LSB first); others reserved.
+    // [9:6] clock phase: 0=TX-found clock PI center, 1=left training edge,
+    // 2=right training edge; others reserved. [10] mode: 0=continuous, 1=burst.
+    // [26:11] burst duration in UI (not bank clock cycles), default 4.
+    // [31:27] reserved. Other fields default zero: reset word = 0x00002000.
+    logic [31:0] training_setup1_q;
+
+    // Training Setup 2, module 0, address 0x1020 (9.5.3.27, Table 9-52).
+    // Complements Setup 1: the pattern controller executes burst/idle iterations.
+    // [15:0] idle count: low duration after a burst in UI, default 4.
+    // [31:16] iterations of burst followed by idle, default 4.
+    // Reset = 0x00040004. RW configuration; counters live outside this bank.
+    logic [31:0] training_setup2_q;
+
+    // Training Setup 3, module 0, addresses 0x1030/0x1034 (9.5.3.28, Table 9-53).
+    // RX comparison lane mask: bit n=1 excludes lane n from comparison;
+    // bit n=0 does not mask it. It does not turn lanes off or mark them failed.
+    // [63:0] lane mask, reset zero (none masked). The RX comparator consumes it.
+    // 0x1030 accesses [31:0]; 0x1034 accesses [63:32]. Writes preserve the other
+    // half; two accesses are not atomic. Program while idle or coordinate use.
+    logic [63:0] training_setup3_q;
+
+    // Training Setup 4, module 0, address 0x1050 (9.5.3.29, Table 9-54).
+    // RX comparison configuration, not an error counter. Reset: zero.
+    // [3:0] redundant repair-lane mask: bit 0 masks RD0, bit 1 masks RD1, etc.
+    // [15:4] per-lane comparison error threshold for counting to start.
+    // [31:16] aggregate comparison error threshold for counting to start.
+    // Threshold zero counts all errors. Repair-lane applicability depends on PHY.
+    // Thresholds are carried in the corresponding TX/RX-initiated Data-to-Clock
+    // point-test and eye-sweep SB messages: remote uses them for TX-initiated
+    // tests; RX uses them locally and informs the remote for RX-initiated tests.
+    // Caller controls settings; comparison and message generation are external.
+    logic [31:0] training_setup4_q;
+
+    // Current Lane Map Module 0, addresses 0x1060/0x1064 (UCIe 9.5.3.30,
+    // Table 9-55, D2D/PHY offset 0x1060). Reset: all zero.
+    // Bit n indicates physical RX lane n is operational. PHY training logic
+    // supplies the map; writing it does not activate or repair physical lanes.
+    // Standard Package uses [15:0]; [63:16] do not apply and callers should keep
+    // them zero. This simple RW bank does not enforce that restriction.
+    // 0x1060 accesses [31:0]; 0x1064 accesses [63:32]. Each write preserves the
+    // other half. Two accesses are not atomic; coordinate snapshots externally.
+    logic [63:0] current_lane_map_module0_q;
+
+    // Error Log 0, address 0x1080 (UCIe Table 9-59, module 0).
+    // Training history for diagnosis. The LTSM builds and writes this word;
+    // this bank does not shift states or detect training failures automatically.
+    // [7:0] latest state N; [8] lane reversal; [9] width degradation (Standard);
+    // [15:10] reserved; [23:16] state N-1; [31:24] state N-2.
+    // State encodings (hex), also used by N-3 in Log 1:
+    // 00 RESET, 01 SBINIT, 02 MBINIT.PARAM, 03 MBINIT.CAL, 04 MBINIT.REPAIRCLK,
+    // 05 MBINIT.REPAIRVAL, 06 MBINIT.REVERSALMB, 07 MBINIT.REPAIRMB,
+    // 08 MBTRAIN.VALVREF, 09 MBTRAIN.DATAVREF, 0A MBTRAIN.SPEEDIDLE,
+    // 0B MBTRAIN.TXSELFCAL, 0C MBTRAIN.RXSELFCAL, 0D MBTRAIN.VALTRAINCENTER,
+    // 0E MBTRAIN.VALTRAINVREF, 0F MBTRAIN.DATATRAINCENTER1,
+    // 10 MBTRAIN.DATATRAINVREF, 11 MBTRAIN.RXDESKEW, 12 MBTRAIN.DATATRAINCENTER2,
+    // 13 MBTRAIN.LINKSPEED, 14 MBTRAIN.REPAIR, 15 PHYRETRAIN, 16 LINKINIT,
+    // 17 ACTIVE, 18 TRAINERROR, 19 L1/L2; other encodings reserved.
+    logic [31:0] error_log0_q;
+
+    // Error Log 1, address 0x1090 (UCIe Table 9-60, module 0).
+    // Additional history and PHY error flags, supplied explicitly by the caller.
+    // [7:0] state N-3; [8] training timeout escalated to fatal;
+    // [9] sideband handshake timeout, excluding training messages;
+    // [10] remote LinkError request over RDI sideband; [11] internal PHY error;
+    // [31:12] reserved. All bits are ordinary RW in this simplified bank:
+    // writing 1 stores 1, writing 0 stores 0. No automatic events or W1C/W1S.
+    // Callers coordinate updates and preserve any history/errors they want to keep.
+    logic [31:0] error_log1_q;
+
+    // Two independent combinational read ports; unknown addresses return zero.
+    always_comb begin
+        case (local_addr_i)
+            32'h00C: local_rdata_o = ucie_link_capability_q;
+            32'h010: local_rdata_o = ucie_link_control_q;
+            32'h014: local_rdata_o = ucie_link_status_q;
+            32'h1000: local_rdata_o = phy_capability_q;
+            32'h1004: local_rdata_o = phy_control_q;
+            32'h1008: local_rdata_o = phy_status_q;
+            32'h100C: local_rdata_o = phy_init_debug_q;
+            32'h1010: local_rdata_o = training_setup1_q;
+            32'h1020: local_rdata_o = training_setup2_q;
+            32'h1030: local_rdata_o = training_setup3_q[31:0];
+            32'h1034: local_rdata_o = training_setup3_q[63:32];
+            32'h1050: local_rdata_o = training_setup4_q;
+            32'h1060: local_rdata_o = current_lane_map_module0_q[31:0];
+            32'h1064: local_rdata_o = current_lane_map_module0_q[63:32];
+            32'h1080: local_rdata_o = error_log0_q;
+            32'h1090: local_rdata_o = error_log1_q;
+            default: local_rdata_o = 32'b0;
+        endcase
+        case (sb_addr_i)
+            32'h00C: sb_rdata_o = ucie_link_capability_q;
+            32'h010: sb_rdata_o = ucie_link_control_q;
+            32'h014: sb_rdata_o = ucie_link_status_q;
+            32'h1000: sb_rdata_o = phy_capability_q;
+            32'h1004: sb_rdata_o = phy_control_q;
+            32'h1008: sb_rdata_o = phy_status_q;
+            32'h100C: sb_rdata_o = phy_init_debug_q;
+            32'h1010: sb_rdata_o = training_setup1_q;
+            32'h1020: sb_rdata_o = training_setup2_q;
+            32'h1030: sb_rdata_o = training_setup3_q[31:0];
+            32'h1034: sb_rdata_o = training_setup3_q[63:32];
+            32'h1050: sb_rdata_o = training_setup4_q;
+            32'h1060: sb_rdata_o = current_lane_map_module0_q[31:0];
+            32'h1064: sb_rdata_o = current_lane_map_module0_q[63:32];
+            32'h1080: sb_rdata_o = error_log0_q;
+            32'h1090: sb_rdata_o = error_log1_q;
+            default: sb_rdata_o = 32'b0;
+        endcase
+    end
+
+    assign phy_control_o = phy_control_q;
+    // Combinational acceptance at the clock edge, not a delayed completion pulse.
+    // Continuous local writes defer SB. Unmapped SB writes are acknowledged no-ops.
+    assign sb_waccepted_o = rst_ni && sb_we_i && !local_we_i;
+
+    // Register updates. Keep the previous example reset values explicitly.
+    // Domain Reset clears history; Link Down alone must not assert this reset.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+            ucie_link_capability_q <= 32'h0000_0001;
+            ucie_link_control_q    <= 32'h0000_0000;
+            ucie_link_status_q     <= 32'h0000_0000;
+            phy_capability_q <= 32'h0000_8028;
+            phy_control_q    <= 32'h0000_0008;
+            phy_status_q     <= 32'h0000_0008;
+            phy_init_debug_q <= 32'h0000_0000;
+            training_setup1_q <= 32'h0000_2000;
+            training_setup2_q <= 32'h0004_0004;
+            training_setup3_q <= 64'h0000_0000_0000_0000;
+            training_setup4_q <= 32'h0000_0000;
+            current_lane_map_module0_q <= 64'h0000_0000_0000_0000;
+            error_log0_q     <= 32'h0000_0000;
+            error_log1_q     <= 32'h0000_0000;
+        end else if (local_we_i) begin
+            case (local_addr_i)
+                32'h00C: ucie_link_capability_q <= local_wdata_i;
+                32'h010: ucie_link_control_q    <= local_wdata_i;
+                32'h014: ucie_link_status_q     <= local_wdata_i;
+                32'h1000: phy_capability_q <= local_wdata_i;
+                32'h1004: phy_control_q    <= local_wdata_i;
+                32'h1008: phy_status_q     <= local_wdata_i;
+                32'h100C: phy_init_debug_q <= local_wdata_i;
+                32'h1010: training_setup1_q <= local_wdata_i;
+                32'h1020: training_setup2_q <= local_wdata_i;
+                32'h1030: training_setup3_q[31:0] <= local_wdata_i;
+                32'h1034: training_setup3_q[63:32] <= local_wdata_i;
+                32'h1050: training_setup4_q <= local_wdata_i;
+                32'h1060: current_lane_map_module0_q[31:0]  <= local_wdata_i;
+                32'h1064: current_lane_map_module0_q[63:32] <= local_wdata_i;
+                32'h1080: error_log0_q     <= local_wdata_i;
+                32'h1090: error_log1_q     <= local_wdata_i;
+                default: begin end
+            endcase
+        end else if (sb_waccepted_o) begin
+            // BE selects bytes only
+            for (int b = 0; b < 4; b++) begin
+                if (sb_be_i[b]) begin
+                    case (sb_addr_i)
+                        32'h00C: ucie_link_capability_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h010: ucie_link_control_q[b*8 +: 8]    <= sb_wdata_i[b*8 +: 8];
+                        32'h014: ucie_link_status_q[b*8 +: 8]     <= sb_wdata_i[b*8 +: 8];
+                        32'h1000: phy_capability_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h1004: phy_control_q[b*8 +: 8]    <= sb_wdata_i[b*8 +: 8];
+                        32'h1008: phy_status_q[b*8 +: 8]     <= sb_wdata_i[b*8 +: 8];
+                        32'h100C: phy_init_debug_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h1010: training_setup1_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h1020: training_setup2_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h1030: training_setup3_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h1034: training_setup3_q[32+b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h1050: training_setup4_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h1060: current_lane_map_module0_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h1064: current_lane_map_module0_q[32+b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
+                        32'h1080: error_log0_q[b*8 +: 8]     <= sb_wdata_i[b*8 +: 8];
+                        32'h1090: error_log1_q[b*8 +: 8]     <= sb_wdata_i[b*8 +: 8];
+                        default: begin end
+                    endcase
+                end
+            end
+        end
+    end
+endmodule
+
+```
+
+<a id="src-Fdi-sv"></a>
+
+## [5] src\Fdi.sv
+
+```systemverilog
+// FILE_INDEX: 5
+// FILE_PATH : src\Fdi.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: Fdi(3).scala
@@ -1148,13 +2525,13 @@ endpackage
 
 ```
 
-<a id="LinkManagementController-sv"></a>
+<a id="src-LinkManagementController-sv"></a>
 
-## [5] LinkManagementController.sv
+## [6] src\LinkManagementController.sv
 
 ```systemverilog
-// FILE_INDEX: 5
-// FILE_PATH : LinkManagementController.sv
+// FILE_INDEX: 6
+// FILE_PATH : src\LinkManagementController.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: LinkManagementController(1).scala
@@ -1185,6 +2562,7 @@ module LinkManagementController #(
   input  wire logic                                  fdi_lp_clk_ack,
   output var logic                                  fdi_pl_stall_req,
   input  wire logic                                  fdi_lp_stall_ack,
+  output wire logic                                  fdi_active,
 
   output var UcieUPM_d2dadapter_pkg::LinkInitState_t debug_link_init_state,
 
@@ -1209,7 +2587,8 @@ module LinkManagementController #(
   input  wire logic [127:0] sb_rcv_msg,
   output var logic         sb_rcv_ready,
 
-  input  wire logic [31:0] cycles_1us
+  input  wire logic [31:0] cycles_1us,
+  input  wire logic        timeout_disable
 );
   import UcieUPM_interfaces_pkg::*;
   import UcieUPM_d2dadapter_pkg::*;
@@ -1366,6 +2745,7 @@ module LinkManagementController #(
   assign fdiAwake              = fdiAwake_reg;
   assign fdi_pl_wake_ack       = fdi_pl_wake_ack_reg;
   assign fdi_pl_clk_req        = 1'b1;
+  assign fdi_active             = (link_state_reg == PhyState_active);
 
   // FDI stall controller.
   (* keep = "true" *) logic linkmgmt_stallreq_reg;
@@ -1414,18 +2794,45 @@ module LinkManagementController #(
   assign rx_deactive = !fdi_lp_rx_active_sts && !fdi_pl_rxactive_req_reg;
   assign rx_active   =  fdi_lp_rx_active_sts &&  fdi_pl_rxactive_req_reg;
 
-  (* keep = "true" *) logic [63:0] linkerrorCounter;
-  logic [63:0] maxCount_linkerr;
+  // Prepare programmable limits outside the counter/comparator path. A timer
+  // takes one coherent snapshot and retains it until its next start/restart.
+  logic timeout_config_ready;
+  logic [43:0] unused_timeout4ms;
+  logic [44:0] configured_timeout8ms;
+  logic [45:0] configured_timeout16ms;
+  logic [43:0] unused_last4ms;
+  logic [44:0] unused_last8ms;
+  logic [45:0] unused_last16ms;
+  LinkMgmtTimeoutConfig timeout_config (
+    .clock          (clock),
+    .reset_n        (reset_n),
+    .cycles_1us     (cycles_1us),
+    .config_ready   (timeout_config_ready),
+    .timeout_4ms    (unused_timeout4ms),
+    .timeout_8ms    (configured_timeout8ms),
+    .timeout_16ms   (configured_timeout16ms),
+    .last_4ms       (unused_last4ms),
+    .last_8ms       (unused_last8ms),
+    .last_16ms      (unused_last16ms)
+  );
+
+  (* keep = "true" *) logic [45:0] linkerrorCounter;
+  logic [45:0] maxCount_linkerr;
+  logic linkerrorLimitValid;
   logic linkerrorResidencyDone;
-  assign maxCount_linkerr = {32'b0, cycles_1us} * 64'd16000;
-  assign linkerrorResidencyDone = (linkerrorCounter == maxCount_linkerr);
+  assign linkerrorResidencyDone = linkerrorLimitValid &&
+                                 (linkerrorCounter == maxCount_linkerr);
 
   wire timeout_done = 1'b0;
-  (* keep = "true" *) logic [63:0] paramexchCounter;
-  logic [63:0] maxCount_paramexch;
+  (* keep = "true" *) logic [44:0] paramexchCounter;
+  logic [44:0] maxCount_paramexch;
+  logic paramexchLimitValid;
+  logic paramexchTimerActive;
   logic paramexchTimesUp;
-  assign maxCount_paramexch = {32'b0, cycles_1us} * 64'd8000;
-  assign paramexchTimesUp = (paramexchCounter == maxCount_paramexch);
+  assign paramexchTimerActive = (linkinit_state_reg == LinkInitState_FDI_PARAM_EXCH) &&
+                               (rdi_pl_state_sts == PhyState_active);
+  assign paramexchTimesUp = paramexchTimerActive && paramexchLimitValid &&
+                           !timeout_disable && (paramexchCounter == maxCount_paramexch);
 
   logic disabled_entry;
   logic linkreset_entry;
@@ -2028,8 +3435,12 @@ module LinkManagementController #(
       linkerror_internal <= 1'b0;
       linkreset_internal <= 1'b0;
       disabled_internal <= 1'b0;
-      linkerrorCounter <= 64'd0;
-      paramexchCounter <= 64'd0;
+      linkerrorCounter <= 46'd0;
+      maxCount_linkerr <= 46'd0;
+      linkerrorLimitValid <= 1'b0;
+      paramexchCounter <= 45'd0;
+      maxCount_paramexch <= 45'd0;
+      paramexchLimitValid <= 1'b0;
       disabled_cleanup_done <= 1'b1;
       linkreset_cleanup_done <= 1'b1;
       active_sbmsg_loc_req_flag <= 1'b0;
@@ -2076,21 +3487,43 @@ module LinkManagementController #(
 
       // Source placeholder registers intentionally retain their reset values.
 
+      // LinkError residency remains timed even when transaction timeouts are
+      // disabled. Waiting for a coherent configuration never uses a stale limit.
       if (link_state_reg == PhyState_linkError) begin
-        if (!linkerrorResidencyDone)
-          linkerrorCounter <= linkerrorCounter + 64'd1;
+        if (!linkerrorLimitValid) begin
+          if (timeout_config_ready) begin
+            maxCount_linkerr <= configured_timeout16ms;
+            linkerrorLimitValid <= 1'b1;
+            linkerrorCounter <= (configured_timeout16ms == 46'd0) ? 46'd0 : 46'd1;
+          end
+        end else if (!linkerrorResidencyDone) begin
+          linkerrorCounter <= linkerrorCounter + 46'd1;
+        end
       end else begin
-        linkerrorCounter <= 64'd0;
+        linkerrorCounter <= 46'd0;
+        linkerrorLimitValid <= 1'b0;
       end
 
-      if ((linkinit_state_reg == LinkInitState_FDI_PARAM_EXCH) &&
-          (rdi_pl_state_sts == PhyState_active)) begin
-        if (paramExchStallReceived)
-          paramexchCounter <= 64'd0;
-        else if (!paramexchTimesUp)
-          paramexchCounter <= paramexchCounter + 64'd1;
+      // Disabling a transaction timeout resets its elapsed interval. Enabling
+      // it again starts a complete interval using the newly prepared setting.
+      if (paramexchTimerActive && !timeout_disable) begin
+        if (paramExchStallReceived) begin
+          paramexchCounter <= 45'd0;
+          paramexchLimitValid <= timeout_config_ready;
+          if (timeout_config_ready)
+            maxCount_paramexch <= configured_timeout8ms;
+        end else if (!paramexchLimitValid) begin
+          if (timeout_config_ready) begin
+            maxCount_paramexch <= configured_timeout8ms;
+            paramexchLimitValid <= 1'b1;
+            paramexchCounter <= (configured_timeout8ms == 45'd0) ? 45'd0 : 45'd1;
+          end
+        end else if (!paramexchTimesUp) begin
+          paramexchCounter <= paramexchCounter + 45'd1;
+        end
       end else begin
-        paramexchCounter <= 64'd0;
+        paramexchCounter <= 45'd0;
+        paramexchLimitValid <= 1'b0;
       end
 
       active_sbmsg_loc_req_flag <= active_sbmsg_loc_req_flag_next;
@@ -2120,13 +3553,13 @@ endmodule
 
 ```
 
-<a id="LinkMgmtSidebandPacketArbiter-sv"></a>
+<a id="src-LinkMgmtSidebandPacketArbiter-sv"></a>
 
-## [6] LinkMgmtSidebandPacketArbiter.sv
+## [7] src\LinkMgmtSidebandPacketArbiter.sv
 
 ```systemverilog
-// FILE_INDEX: 6
-// FILE_PATH : LinkMgmtSidebandPacketArbiter.sv
+// FILE_INDEX: 7
+// FILE_PATH : src\LinkMgmtSidebandPacketArbiter.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: LinkMgmtSidebandPacketArbiter(7).scala
@@ -2343,131 +3776,130 @@ module LinkMgmtSidebandPacketArbiter (
   assign rr_last_granted_rdi = (rrLastSource == SourceRdi);
 assign tx_fire             = txFire;
 
-  // --------------------------------------------------------------------------
-  // RX rising-edge detection
-  //
-  // The physical RX may keep rx_in_valid high for multiple controller-clock
-  // cycles. Convert each sampled low-to-high transition into a one-cycle pulse.
-  //
-  // Assumptions:
-  //   1. rx_in_valid returns low before the next received message.
-  //   2. rx_in_msg is stable when rxValidPulse is asserted.
-  //   3. The selected RX consumer is ready during that pulse.
-  // --------------------------------------------------------------------------
-
-  (* keep = "true" *) logic rxInValidDelayed;
-  (* keep = "true" *) logic rxValidPulse;
-
-  always_ff @(posedge clock or negedge reset_n) begin
-    if (!reset_n)
-      rxInValidDelayed <= 1'b0;
-    else
-      rxInValidDelayed <= rx_in_valid;
-  end
-
-  assign rxValidPulse =
-    rx_in_valid && !rxInValidDelayed;
-
-  // --------------------------------------------------------------------------
-  // RX routing
-  // --------------------------------------------------------------------------
-
+  // RX uses valid/ready transactions. A held word remains visible to its
+  // destination until the destination accepts it; a source may present another
+  // word immediately after a handshake without dropping valid.
   UCIe2_Route_t rxRoute;
-
   logic routeToLtsm;
   logic routeToFdi;
   logic routeToRdi;
   logic dropUnknown;
   logic selectedSinkReady;
 
-  assign rxRoute =
-    UCIe2_route(rx_in_msg);
+  assign rxRoute = UCIe2_route(rx_in_msg);
+  assign routeToLtsm = (rxRoute == UCIe2_Route_LTSM);
+  assign routeToFdi = (rxRoute == UCIe2_Route_ADAPTER0) ||
+                     (rxRoute == UCIe2_Route_ADAPTER1) ||
+                     (rxRoute == UCIe2_Route_D2D_COMMON);
+  assign routeToRdi = (rxRoute == UCIe2_Route_RDI);
+  assign dropUnknown = !routeToLtsm && !routeToFdi && !routeToRdi;
 
-  assign routeToLtsm =
-    (rxRoute == UCIe2_Route_LTSM);
+  assign ltsm_rx_valid = rx_in_valid && routeToLtsm;
+  assign ltsm_rx_msg = rx_in_msg;
+  assign fdi_rx_valid = rx_in_valid && routeToFdi;
+  assign fdi_rx_msg = rx_in_msg;
+  assign rdi_rx_valid = rx_in_valid && routeToRdi;
+  assign rdi_rx_msg = rx_in_msg;
 
-  assign routeToFdi =
-    (rxRoute == UCIe2_Route_ADAPTER0) ||
-    (rxRoute == UCIe2_Route_ADAPTER1) ||
-    (rxRoute == UCIe2_Route_D2D_COMMON);
-
-  assign routeToRdi =
-    (rxRoute == UCIe2_Route_RDI);
-
-  // Route to the LTSM for one controller-clock cycle.
-  assign ltsm_rx_valid =
-    rxValidPulse && routeToLtsm;
-
-  assign ltsm_rx_msg =
-    rx_in_msg;
-
-  // Route to the FDI controller for one controller-clock cycle.
-  assign fdi_rx_valid =
-    rxValidPulse && routeToFdi;
-
-  assign fdi_rx_msg =
-    rx_in_msg;
-
-  // Route to the RDI controller for one controller-clock cycle.
-  assign rdi_rx_valid =
-    rxValidPulse && routeToRdi;
-
-  assign rdi_rx_msg =
-    rx_in_msg;
-
-  // Unknown messages are reported and consumed only once.
-  assign dropUnknown =
-    rxValidPulse &&
-    !routeToLtsm &&
-    !routeToFdi &&
-    !routeToRdi;
-
-  // Ready condition for the selected destination.
-  assign selectedSinkReady =
-    (routeToLtsm && ltsm_rx_ready) ||
-    (routeToFdi  && fdi_rx_ready)  ||
-    (routeToRdi  && rdi_rx_ready)  ||
-    dropUnknown;
-
-  // Advertise ready while the physical source is idle.
-  //
-  // On the rising-edge cycle, ready follows the selected destination.
-  // After that cycle, ready remains low while rx_in_valid remains high.
-  // This prevents one held valid level from being counted repeatedly.
-  assign rx_in_ready =
-    !rx_in_valid ||
-    (rxValidPulse && selectedSinkReady);
-
-  // Debug routing outputs indicate actual one-cycle route events.
-  assign rx_route_ltsm =
-    rxValidPulse && routeToLtsm;
-
-  assign rx_route_fdi =
-    rxValidPulse && routeToFdi;
-
-  assign rx_route_rdi =
-    rxValidPulse && routeToRdi;
-
-  assign rx_drop_unknown =
-    dropUnknown;
-
-  // A transaction occurs only once per rising edge and only if the selected
-  // destination accepts it.
-  assign rx_fire =
-    rxValidPulse && selectedSinkReady;
-
+  assign selectedSinkReady = (routeToLtsm && ltsm_rx_ready) ||
+                             (routeToFdi && fdi_rx_ready) ||
+                             (routeToRdi && rdi_rx_ready) || dropUnknown;
+  assign rx_in_ready = !rx_in_valid || selectedSinkReady;
+  assign rx_fire = rx_in_valid && rx_in_ready;
+  assign rx_route_ltsm = rx_fire && routeToLtsm;
+  assign rx_route_fdi = rx_fire && routeToFdi;
+  assign rx_route_rdi = rx_fire && routeToRdi;
+  assign rx_drop_unknown = rx_fire && dropUnknown;
 endmodule
 
 `default_nettype wire
+
 ```
 
-<a id="LinkTrainingFSM-sv"></a>
+<a id="src-LinkMgmtTimeoutConfig-sv"></a>
 
-## [7] LinkTrainingFSM.sv
+## [8] src\LinkMgmtTimeoutConfig.sv
 
 ```systemverilog
-// FILE_INDEX: 7
-// FILE_PATH : LinkTrainingFSM.sv
+// FILE_INDEX: 8
+// FILE_PATH : src\LinkMgmtTimeoutConfig.sv
+
+`default_nettype none
+
+// Prepare programmable timeouts outside the active timer comparison path.
+// 4000 = 125 << 5, 8000 = 125 << 6, 16000 = 125 << 7,
+// and 125*x = 128*x - 3*x. Each arithmetic operation has its own register
+// boundary. Full unsigned 32-bit cycles_1us values are supported without
+// overflow. Configuration and outputs are synchronous to clock.
+module LinkMgmtTimeoutConfig (
+  input  wire logic        clock,
+  input  wire logic        reset_n,
+  input  wire logic [31:0] cycles_1us,
+  output wire logic        config_ready,
+  output wire logic [43:0] timeout_4ms,
+  output wire logic [44:0] timeout_8ms,
+  output wire logic [45:0] timeout_16ms,
+  output wire logic [43:0] last_4ms,
+  output wire logic [44:0] last_8ms,
+  output wire logic [45:0] last_16ms
+);
+  logic [3:0] valid;
+  logic [31:0] cycles_s0, cycles_s1, cycles_s2, cycles_s3;
+  logic [33:0] triple_s1;
+  logic [38:0] shifted_s1, base_s2, base_s3, base_last_s3;
+  logic zero_s3;
+
+  // A new value is usable after four sampling edges. A change immediately
+  // deasserts ready until that exact value has traversed the pipeline.
+  // Running timers keep their own latched limit and do not depend on ready.
+  assign config_ready = valid[3] && (cycles_s3 == cycles_1us);
+  assign timeout_4ms  = {base_s3, 5'b0};
+  assign timeout_8ms  = {base_s3, 6'b0};
+  assign timeout_16ms = {base_s3, 7'b0};
+  assign last_4ms  = zero_s3 ? 44'd0 : {base_last_s3, 5'b11111};
+  assign last_8ms  = zero_s3 ? 45'd0 : {base_last_s3, 6'b111111};
+  assign last_16ms = zero_s3 ? 46'd0 : {base_last_s3, 7'b1111111};
+
+  always_ff @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      valid <= 4'b0;
+      cycles_s0 <= 32'd0;
+      cycles_s1 <= 32'd0;
+      cycles_s2 <= 32'd0;
+      cycles_s3 <= 32'd0;
+      triple_s1 <= 34'd0;
+      shifted_s1 <= 39'd0;
+      base_s2 <= 39'd0;
+      base_s3 <= 39'd0;
+      base_last_s3 <= 39'd0;
+      zero_s3 <= 1'b1;
+    end else begin
+      valid <= {valid[2:0], 1'b1};
+      cycles_s0 <= cycles_1us;
+      cycles_s1 <= cycles_s0;
+      cycles_s2 <= cycles_s1;
+      cycles_s3 <= cycles_s2;
+      triple_s1 <= {1'b0, cycles_s0, 1'b0} + {2'b0, cycles_s0};
+      shifted_s1 <= {cycles_s0, 7'b0};
+      base_s2 <= shifted_s1 - {5'b0, triple_s1};
+      base_s3 <= base_s2;
+      base_last_s3 <= (base_s2 == 39'd0) ? 39'd0 : base_s2 - 39'd1;
+      zero_s3 <= (base_s2 == 39'd0);
+    end
+  end
+endmodule
+
+`default_nettype wire
+
+```
+
+<a id="src-LinkTrainingFSM-sv"></a>
+
+## [9] src\LinkTrainingFSM.sv
+
+```systemverilog
+// FILE_INDEX: 9
+// FILE_PATH : src\LinkTrainingFSM.sv
 
 // SystemVerilog translation of LinkTrainingFSM.scala.
 // Every state element uses an asynchronous, active-low reset_n.
@@ -2588,7 +4020,20 @@ module LinkTrainingFSM #(
   output var logic           dbg_sbTxValid,
   output var logic [127:0]   dbg_sbTxDin,
   output var logic           dbg_flagTrainError,
+  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   output var logic [2:0]     dbg_mbinitSubstate,
+  output var logic [1:0]     dbg_mbinitParamSenderState,
+  output var logic [1:0]     dbg_mbinitParamReceiverState,
+  output var logic [1:0]     dbg_mbinitCalSenderState,
+  output var logic [1:0]     dbg_mbinitCalReceiverState,
+  output var logic [2:0]     dbg_mbinitRepairClkSenderState,
+  output var logic [2:0]     dbg_mbinitRepairClkReceiverState,
+  output var logic [2:0]     dbg_mbinitRepairValSenderState,
+  output var logic [2:0]     dbg_mbinitRepairValReceiverState,
+  output var logic [3:0]     dbg_mbinitReversalMbSenderState,
+  output var logic [2:0]     dbg_mbinitReversalMbReceiverState,
+  output var logic [4:0]     dbg_mbinitRepairMbSenderState,
+  output var logic [3:0]     dbg_mbinitRepairMbReceiverState,
   output var logic [4:0]     dbg_mbinitReversalMbReceivedSuccessCount,
   output var logic           flagToAnalog_valVref_sendPattern,
   input wire logic           flagFromAnalog_valVref_detectedValPattern,
@@ -2629,83 +4074,31 @@ module LinkTrainingFSM #(
   output var logic           flagToAnalog_rxClkCal_doCalibration,
   input wire logic           flagFromAnalog_rxClkCal_done,
   output var logic           flagToAnalog_rxClkCal_sendClockTrack,
-  output var logic           flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern,
-  input wire logic           flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent,
-  output var logic           flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode,
-  input wire logic            flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_valTrainCenter_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_valTrainCenter_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload,
-  output var logic           flagToAnalog_valTrainVref_sendPattern,
-  input wire logic           flagFromAnalog_valTrainVref_detectedValPattern,
-  input wire logic           flagFromAnalog_valTrainVref_finishedPattern,
-  output var logic           flagToAnalog_valTrainVref_applyRxVref,
-  output var logic [validVrefCodeWidth-1:0] flagToAnalog_valTrainVref_rxVrefCode,
-  input wire logic           flagFromAnalog_valTrainVref_rxVrefApplied,
-  output var logic           flagToAnalog_valTrainVref_configureRxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_valTrainVref_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_valTrainVref_comparisonMode,
-  output var logic [15:0]    flagToAnalog_valTrainVref_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_valTrainVref_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_valTrainVref_burstCountSettings,
-  output var logic           flagToAnalog_valTrainVref_patternMode,
-  output var logic [3:0]     flagToAnalog_valTrainVref_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_valTrainVref_validPattern,
-  output var logic [2:0]     flagToAnalog_valTrainVref_dataPattern,
-  output var logic           flagToAnalog_valTrainVref_clearComparisonErrors,
-  output var logic           flagToAnalog_valTrainVref_resetLocalTxScrambler,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew,
-  output var logic [64*d2cTxDeskewCodeWidth-1:0] flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload,
-  output var logic           flagToAnalog_dataTrainVref_sendPattern,
-  input wire logic [dataLaneCount-1:0] flagFromAnalog_dataTrainVref_detectedDataPattern,
-  input wire logic           flagFromAnalog_dataTrainVref_finishedPattern,
-  output var logic           flagToAnalog_dataTrainVref_applyRxVref,
-  output var logic [dataLaneCount*dataVrefCodeWidth-1:0] flagToAnalog_dataTrainVref_rxVrefCodes,
-  input wire logic           flagFromAnalog_dataTrainVref_rxVrefApplied,
-  output var logic           flagToAnalog_dataTrainVref_configureRxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_dataTrainVref_comparisonMode,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_burstCountSettings,
-  output var logic           flagToAnalog_dataTrainVref_patternMode,
-  output var logic [3:0]     flagToAnalog_dataTrainVref_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_dataTrainVref_validPattern,
-  output var logic [2:0]     flagToAnalog_dataTrainVref_dataPattern,
-  output var logic           flagToAnalog_dataTrainVref_clearComparisonErrors,
-  output var logic           flagToAnalog_dataTrainVref_resetLocalTxScrambler,
+  output var logic           flagToAnalog_d2cSender_sendValTrainPattern,
+  input wire logic           flagFromAnalog_d2cSender_valTrainPatternSent,
+  output var logic           flagToAnalog_d2cSender_resetLocalScrambler,
+  output var logic           flagToAnalog_d2cSender_applyTxClockPhase,
+  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_txClockPhaseCode,
+  input wire logic            flagFromAnalog_d2cSender_txClockPhaseApplied,
+  output var logic           flagToAnalog_d2cReceiver_configureTxInitD2CPointTest,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold,
+  output var logic           flagToAnalog_d2cReceiver_comparisonMode,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_iterationCountSettings,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_idleCountSettings,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_burstCountSettings,
+  output var logic           flagToAnalog_d2cReceiver_patternMode,
+  output var logic [3:0]     flagToAnalog_d2cReceiver_clockPhaseControl,
+  output var logic [2:0]     flagToAnalog_d2cReceiver_validPattern,
+  output var logic [2:0]     flagToAnalog_d2cReceiver_dataPattern,
+  output var logic           flagToAnalog_d2cReceiver_resetLocalRxScrambler,
+  input wire logic [15:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
+  input wire logic [63:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  output var logic           flagToAnalog_d2cSender_sendLfsrPattern,
+  input wire logic           flagFromAnalog_d2cSender_lfsrPatternSent,
+  output var logic           flagToAnalog_d2cSender_applyTxLaneDeskew,
+  // TX deskew: 20 bits/lane, cell 1 [9:0], cell 2 [19:10]; LSB + 9 thermometer bits/cell.
+  output var logic [64*d2cTxDeskewCodeWidth-1:0] flagToAnalog_d2cSender_txLaneDeskewCodes,
+  input wire logic           flagFromAnalog_d2cSender_txLaneDeskewApplied,
   output var logic           flagToAnalog_rxDeskew_sendLfsrPattern,
   input wire logic           flagFromAnalog_rxDeskew_lfsrPatternSent,
   output var logic           flagToAnalog_rxDeskew_resetLocalTxScrambler,
@@ -2724,43 +4117,61 @@ module LinkTrainingFSM #(
   output var logic [2:0]     flagToAnalog_rxDeskew_dataPattern,
   output var logic           flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] flagFromAnalog_rxDeskew_detectedDataPattern,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode,
-  input wire logic            flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload,
   output var logic           flagToLtsm_linkSpeed_phyInRetrain,
-  output var logic           flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern,
-  input wire logic           flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent,
-  output var logic           flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_linkSpeed_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_linkSpeed_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful,
+  input wire logic [15:0]    flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
   output var logic [3:0]     dbg_mbtrainState,
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    dbg_mbtrainActiveSubstate,
+  output var logic [3:0]     dbg_mbtrainValVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainValVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainValVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainValVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainValVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainDataVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainDataVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainDataVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainDataVrefPointResponderState,
+  output var logic [1:0]     dbg_mbtrainSpeedIdleSenderState,
+  output var logic [1:0]     dbg_mbtrainSpeedIdleReceiverState,
+  output var logic [1:0]     dbg_mbtrainTxSelfCalSenderState,
+  output var logic [1:0]     dbg_mbtrainTxSelfCalReceiverState,
+  output var logic [2:0]     dbg_mbtrainRxClkCalSenderState,
+  output var logic [2:0]     dbg_mbtrainRxClkCalReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterSenderState,
+  output var logic [2:0]     dbg_mbtrainValTrainCenterReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterD2cSenderState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterD2cReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterSweepState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainValTrainVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1SenderState,
+  output var logic [2:0]     dbg_mbtrainDataTrainCenter1ReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1D2cSenderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1D2cReceiverState,
+  output var logic [4:0]     dbg_mbtrainDataTrainCenter1SweepState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainDataTrainVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewLocalState,
+  output var logic [2:0]     dbg_mbtrainRxDeskewRemoteState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewSweepState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2SenderState,
+  output var logic [2:0]     dbg_mbtrainDataTrainCenter2ReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2D2cSenderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2D2cReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2SweepState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedSenderState,
+  output var logic [2:0]     dbg_mbtrainLinkSpeedReceiverState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedD2cSenderState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedD2cReceiverState,
   output var logic [15:0]    dbg_mbtrainLastErrorCount,
   output var logic [15:0]    dbg_mbtrainRetryCount
 );
@@ -2788,7 +4199,7 @@ module LinkTrainingFSM #(
   (* keep = "true" *) logic prevRxValid;
   (* keep = "true" *) logic flagSbinitFirstClkPatternSeen;
   (* keep = "true" *) logic flagSbinitSecondClkPatternSeen;
-  (* keep = "true" *) logic flagSbinitOorSeen;
+  (* keep = "true" *) logic flagSbinitOorSuccessSeen;
   (* keep = "true" *) logic flagSbinitReceivedDoneReq;
   (* keep = "true" *) logic flagSbinitReceivedDoneResp;
   (* keep = "true" *) logic flagSbinitSentDoneReq;
@@ -2801,7 +4212,7 @@ module LinkTrainingFSM #(
   wire mbTrainActive = (stateReg == LTState_MBTRAIN);
 
   wire [127:0] SBINIT_CLK_PATTERN = {64'b0, 64'h5555555555555555};
-  wire [127:0] SBINIT_OOR_SUCCESS = msgSbinitOutOfReset(1'b1, ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
+  wire [127:0] SBINIT_OOR_SUCCESS = msgSbinitOutOfResetSuccess(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
   wire [127:0] SBINIT_DONE_REQ = msgSbinitDoneReq(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
   wire [127:0] SBINIT_DONE_RESP = msgSbinitDoneResp(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
 
@@ -2818,11 +4229,20 @@ module LinkTrainingFSM #(
   logic mbInitFsm_flagToAnalog_RepairMbSetReceiver;
   logic mbInitFsm_flagToAnalog_ReversalMbSendLaneIDPattern;
   logic mbInitFsm_flagToAnalog_LaneReversalApplied;
+  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   logic [2:0] mbInitFsm_substate;
+  logic [1:0] mbInitFsm_dbg_mbinitParamSenderState;
+  logic [1:0] mbInitFsm_dbg_mbinitParamReceiverState;
+  logic [1:0] mbInitFsm_dbg_mbinitCalSenderState;
+  logic [1:0] mbInitFsm_dbg_mbinitCalReceiverState;
   logic [2:0] mbInitFsm_dbg_mbinitRepairClkSenderState;
   logic [2:0] mbInitFsm_dbg_mbinitRepairClkReceiverState;
   logic [2:0] mbInitFsm_dbg_mbinitRepairValSenderState;
   logic [2:0] mbInitFsm_dbg_mbinitRepairValReceiverState;
+  logic [3:0] mbInitFsm_dbg_mbinitReversalMbSenderState;
+  logic [2:0] mbInitFsm_dbg_mbinitReversalMbReceiverState;
+  logic [4:0] mbInitFsm_dbg_mbinitRepairMbSenderState;
+  logic [3:0] mbInitFsm_dbg_mbinitRepairMbReceiverState;
   logic [4:0] mbInitFsm_dbg_mbinitReversalMbReceivedSuccessCount;
   logic mbTrainFsm_busy;
   logic mbTrainFsm_done;
@@ -2861,68 +4281,24 @@ module LinkTrainingFSM #(
   logic mbTrainFsm_flagToAnalog_dataVref_resetLocalTxScrambler;
   logic mbTrainFsm_flagToAnalog_rxClkCal_doCalibration;
   logic mbTrainFsm_flagToAnalog_rxClkCal_sendClockTrack;
-  logic mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern;
-  logic mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler;
-  logic mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase;
-  logic [d2cPiCodeWidth-1:0] mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_patternMode;
-  logic [3:0] mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl;
-  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_validPattern;
-  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler;
-  logic mbTrainFsm_flagToAnalog_valTrainVref_sendPattern;
-  logic mbTrainFsm_flagToAnalog_valTrainVref_applyRxVref;
-  logic [validVrefCodeWidth-1:0] mbTrainFsm_flagToAnalog_valTrainVref_rxVrefCode;
-  logic mbTrainFsm_flagToAnalog_valTrainVref_configureRxInitD2CPointTest;
-  logic [15:0] mbTrainFsm_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold;
-  logic mbTrainFsm_flagToAnalog_valTrainVref_comparisonMode;
-  logic [15:0] mbTrainFsm_flagToAnalog_valTrainVref_iterationCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_valTrainVref_idleCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_valTrainVref_burstCountSettings;
-  logic mbTrainFsm_flagToAnalog_valTrainVref_patternMode;
-  logic [3:0] mbTrainFsm_flagToAnalog_valTrainVref_clockPhaseControl;
-  logic [2:0] mbTrainFsm_flagToAnalog_valTrainVref_validPattern;
-  logic [2:0] mbTrainFsm_flagToAnalog_valTrainVref_dataPattern;
-  logic mbTrainFsm_flagToAnalog_valTrainVref_clearComparisonErrors;
-  logic mbTrainFsm_flagToAnalog_valTrainVref_resetLocalTxScrambler;
-  logic mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern;
-  logic mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler;
-  logic mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase;
-  logic [d2cPiCodeWidth-1:0] mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode;
-  logic mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew;
-  logic [64*d2cTxDeskewCodeWidth-1:0] mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode;
-  logic [3:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl;
-  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern;
-  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler;
-  logic mbTrainFsm_flagToAnalog_dataTrainVref_sendPattern;
-  logic mbTrainFsm_flagToAnalog_dataTrainVref_applyRxVref;
-  logic [dataLaneCount*dataVrefCodeWidth-1:0] mbTrainFsm_flagToAnalog_dataTrainVref_rxVrefCodes;
-  logic mbTrainFsm_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest;
-  logic [15:0] mbTrainFsm_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold;
-  logic mbTrainFsm_flagToAnalog_dataTrainVref_comparisonMode;
-  logic [15:0] mbTrainFsm_flagToAnalog_dataTrainVref_iterationCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_dataTrainVref_idleCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_dataTrainVref_burstCountSettings;
-  logic mbTrainFsm_flagToAnalog_dataTrainVref_patternMode;
-  logic [3:0] mbTrainFsm_flagToAnalog_dataTrainVref_clockPhaseControl;
-  logic [2:0] mbTrainFsm_flagToAnalog_dataTrainVref_validPattern;
-  logic [2:0] mbTrainFsm_flagToAnalog_dataTrainVref_dataPattern;
-  logic mbTrainFsm_flagToAnalog_dataTrainVref_clearComparisonErrors;
-  logic mbTrainFsm_flagToAnalog_dataTrainVref_resetLocalTxScrambler;
+  logic mbTrainFsm_flagToAnalog_d2cSender_sendValTrainPattern;
+  logic mbTrainFsm_flagToAnalog_d2cSender_resetLocalScrambler;
+  logic mbTrainFsm_flagToAnalog_d2cSender_applyTxClockPhase;
+  logic [d2cPiCodeWidth-1:0] mbTrainFsm_flagToAnalog_d2cSender_txClockPhaseCode;
+  logic mbTrainFsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest;
+  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold;
+  logic mbTrainFsm_flagToAnalog_d2cReceiver_comparisonMode;
+  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_iterationCountSettings;
+  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_idleCountSettings;
+  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_burstCountSettings;
+  logic mbTrainFsm_flagToAnalog_d2cReceiver_patternMode;
+  logic [3:0] mbTrainFsm_flagToAnalog_d2cReceiver_clockPhaseControl;
+  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_validPattern;
+  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataPattern;
+  logic mbTrainFsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler;
+  logic mbTrainFsm_flagToAnalog_d2cSender_sendLfsrPattern;
+  logic mbTrainFsm_flagToAnalog_d2cSender_applyTxLaneDeskew;
+  logic [64*d2cTxDeskewCodeWidth-1:0] mbTrainFsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
   logic mbTrainFsm_flagToAnalog_rxDeskew_sendLfsrPattern;
   logic mbTrainFsm_flagToAnalog_rxDeskew_resetLocalTxScrambler;
   logic mbTrainFsm_flagToAnalog_rxDeskew_applyRxLaneDeskew;
@@ -2939,37 +4315,60 @@ module LinkTrainingFSM #(
   logic [2:0] mbTrainFsm_flagToAnalog_rxDeskew_validPattern;
   logic [2:0] mbTrainFsm_flagToAnalog_rxDeskew_dataPattern;
   logic mbTrainFsm_flagToAnalog_rxDeskew_clearComparisonErrors;
-  logic mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern;
-  logic mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler;
-  logic mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase;
-  logic [d2cPiCodeWidth-1:0] mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode;
-  logic [3:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl;
-  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern;
-  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler;
   logic mbTrainFsm_flagToLtsm_linkSpeed_phyInRetrain;
-  logic mbTrainFsm_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern;
-  logic mbTrainFsm_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings;
-  logic [15:0] mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_patternMode;
-  logic [3:0] mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl;
-  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_validPattern;
-  logic [2:0] mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_dataPattern;
-  logic mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler;
   logic [3:0] mbTrainFsm_state;
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   logic [11:0] mbTrainFsm_activeSubstate;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValVrefLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainValVrefRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValVrefSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValVrefPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValVrefPointResponderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataVrefLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainDataVrefRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataVrefSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataVrefPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataVrefPointResponderState;
+  logic [1:0] mbTrainFsm_dbg_mbtrainSpeedIdleSenderState;
+  logic [1:0] mbTrainFsm_dbg_mbtrainSpeedIdleReceiverState;
+  logic [1:0] mbTrainFsm_dbg_mbtrainTxSelfCalSenderState;
+  logic [1:0] mbTrainFsm_dbg_mbtrainTxSelfCalReceiverState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainRxClkCalSenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainRxClkCalReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainCenterSenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainValTrainCenterReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainCenterD2cSenderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainCenterD2cReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainCenterSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainVrefLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainValTrainVrefRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainVrefSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainVrefPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainValTrainVrefPointResponderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1SenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1ReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cSenderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cReceiverState;
+  logic [4:0] mbTrainFsm_dbg_mbtrainDataTrainCenter1SweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainVrefLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainDataTrainVrefRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainVrefSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainVrefPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainVrefPointResponderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainRxDeskewLocalState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainRxDeskewRemoteState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainRxDeskewSweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainRxDeskewPointInitiatorState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainRxDeskewPointResponderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2SenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2ReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cSenderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainDataTrainCenter2SweepState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainLinkSpeedSenderState;
+  logic [2:0] mbTrainFsm_dbg_mbtrainLinkSpeedReceiverState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainLinkSpeedD2cSenderState;
+  logic [3:0] mbTrainFsm_dbg_mbtrainLinkSpeedD2cReceiverState;
   logic [15:0] mbTrainFsm_lastErrorCount;
   logic [15:0] mbTrainFsm_retryCount;
 
@@ -3042,11 +4441,20 @@ module LinkTrainingFSM #(
     .flagToAnalog_RepairMbSetReceiver                                         (mbInitFsm_flagToAnalog_RepairMbSetReceiver),
     .flagToAnalog_ReversalMbSendLaneIDPattern                                 (mbInitFsm_flagToAnalog_ReversalMbSendLaneIDPattern),
     .flagToAnalog_LaneReversalApplied                                         (mbInitFsm_flagToAnalog_LaneReversalApplied),
+    // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
     .substate                                                                 (mbInitFsm_substate),
+    .dbg_mbinitParamSenderState                                               (mbInitFsm_dbg_mbinitParamSenderState),
+    .dbg_mbinitParamReceiverState                                             (mbInitFsm_dbg_mbinitParamReceiverState),
+    .dbg_mbinitCalSenderState                                                 (mbInitFsm_dbg_mbinitCalSenderState),
+    .dbg_mbinitCalReceiverState                                               (mbInitFsm_dbg_mbinitCalReceiverState),
     .dbg_mbinitRepairClkSenderState                                           (mbInitFsm_dbg_mbinitRepairClkSenderState),
     .dbg_mbinitRepairClkReceiverState                                         (mbInitFsm_dbg_mbinitRepairClkReceiverState),
     .dbg_mbinitRepairValSenderState                                           (mbInitFsm_dbg_mbinitRepairValSenderState),
     .dbg_mbinitRepairValReceiverState                                         (mbInitFsm_dbg_mbinitRepairValReceiverState),
+    .dbg_mbinitReversalMbSenderState                                          (mbInitFsm_dbg_mbinitReversalMbSenderState),
+    .dbg_mbinitReversalMbReceiverState                                        (mbInitFsm_dbg_mbinitReversalMbReceiverState),
+    .dbg_mbinitRepairMbSenderState                                            (mbInitFsm_dbg_mbinitRepairMbSenderState),
+    .dbg_mbinitRepairMbReceiverState                                          (mbInitFsm_dbg_mbinitRepairMbReceiverState),
     .dbg_mbinitReversalMbReceivedSuccessCount                                 (mbInitFsm_dbg_mbinitReversalMbReceivedSuccessCount)
   );
 
@@ -3142,83 +4550,30 @@ module LinkTrainingFSM #(
     .flagToAnalog_rxClkCal_doCalibration                                      (mbTrainFsm_flagToAnalog_rxClkCal_doCalibration),
     .flagFromAnalog_rxClkCal_done                                             (flagFromAnalog_rxClkCal_done),
     .flagToAnalog_rxClkCal_sendClockTrack                                     (mbTrainFsm_flagToAnalog_rxClkCal_sendClockTrack),
-    .flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern                (mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern),
-    .flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent              (flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent),
-    .flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler                (mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler),
-    .flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase                  (mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase),
-    .flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode                   (mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied              (flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied),
-    .flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest      (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold  (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode                   (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode),
-    .flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings           (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings                (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings),
-    .flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings               (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings),
-    .flagToAnalog_d2cReceiver_valTrainCenter_patternMode                      (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_patternMode),
-    .flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl                (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_valTrainCenter_validPattern                     (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_validPattern),
-    .flagToAnalog_d2cReceiver_valTrainCenter_dataPattern                      (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern),
-    .flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler            (mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo        (flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload        (flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload),
-    .flagToAnalog_valTrainVref_sendPattern                                     (mbTrainFsm_flagToAnalog_valTrainVref_sendPattern),
-    .flagFromAnalog_valTrainVref_detectedValPattern                            (flagFromAnalog_valTrainVref_detectedValPattern),
-    .flagFromAnalog_valTrainVref_finishedPattern                               (flagFromAnalog_valTrainVref_finishedPattern),
-    .flagToAnalog_valTrainVref_applyRxVref                                     (mbTrainFsm_flagToAnalog_valTrainVref_applyRxVref),
-    .flagToAnalog_valTrainVref_rxVrefCode                                      (mbTrainFsm_flagToAnalog_valTrainVref_rxVrefCode),
-    .flagFromAnalog_valTrainVref_rxVrefApplied                                 (flagFromAnalog_valTrainVref_rxVrefApplied),
-    .flagToAnalog_valTrainVref_configureRxInitD2CPointTest                     (mbTrainFsm_flagToAnalog_valTrainVref_configureRxInitD2CPointTest),
-    .flagToAnalog_valTrainVref_maximumComparisonErrorThreshold                 (mbTrainFsm_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold),
-    .flagToAnalog_valTrainVref_comparisonMode                                  (mbTrainFsm_flagToAnalog_valTrainVref_comparisonMode),
-    .flagToAnalog_valTrainVref_iterationCountSettings                          (mbTrainFsm_flagToAnalog_valTrainVref_iterationCountSettings),
-    .flagToAnalog_valTrainVref_idleCountSettings                               (mbTrainFsm_flagToAnalog_valTrainVref_idleCountSettings),
-    .flagToAnalog_valTrainVref_burstCountSettings                              (mbTrainFsm_flagToAnalog_valTrainVref_burstCountSettings),
-    .flagToAnalog_valTrainVref_patternMode                                     (mbTrainFsm_flagToAnalog_valTrainVref_patternMode),
-    .flagToAnalog_valTrainVref_clockPhaseControl                               (mbTrainFsm_flagToAnalog_valTrainVref_clockPhaseControl),
-    .flagToAnalog_valTrainVref_validPattern                                    (mbTrainFsm_flagToAnalog_valTrainVref_validPattern),
-    .flagToAnalog_valTrainVref_dataPattern                                     (mbTrainFsm_flagToAnalog_valTrainVref_dataPattern),
-    .flagToAnalog_valTrainVref_clearComparisonErrors                           (mbTrainFsm_flagToAnalog_valTrainVref_clearComparisonErrors),
-    .flagToAnalog_valTrainVref_resetLocalTxScrambler                           (mbTrainFsm_flagToAnalog_valTrainVref_resetLocalTxScrambler),
-    .flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern                  (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent                (flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent),
-    .flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler              (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler),
-    .flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase                (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase),
-    .flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode                 (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied            (flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied),
-    .flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew                 (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew),
-    .flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes                (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes),
-    .flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied             (flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest    (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode                 (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings         (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings              (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings             (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode                    (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl              (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern                   (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern                    (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern),
-    .flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler          (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo      (flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload      (flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload),
-    .flagToAnalog_dataTrainVref_sendPattern                                    (mbTrainFsm_flagToAnalog_dataTrainVref_sendPattern),
-    .flagFromAnalog_dataTrainVref_detectedDataPattern                          (flagFromAnalog_dataTrainVref_detectedDataPattern),
-    .flagFromAnalog_dataTrainVref_finishedPattern                              (flagFromAnalog_dataTrainVref_finishedPattern),
-    .flagToAnalog_dataTrainVref_applyRxVref                                    (mbTrainFsm_flagToAnalog_dataTrainVref_applyRxVref),
-    .flagToAnalog_dataTrainVref_rxVrefCodes                                    (mbTrainFsm_flagToAnalog_dataTrainVref_rxVrefCodes),
-    .flagFromAnalog_dataTrainVref_rxVrefApplied                                (flagFromAnalog_dataTrainVref_rxVrefApplied),
-    .flagToAnalog_dataTrainVref_configureRxInitD2CPointTest                    (mbTrainFsm_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest),
-    .flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold                (mbTrainFsm_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold),
-    .flagToAnalog_dataTrainVref_comparisonMode                                 (mbTrainFsm_flagToAnalog_dataTrainVref_comparisonMode),
-    .flagToAnalog_dataTrainVref_iterationCountSettings                         (mbTrainFsm_flagToAnalog_dataTrainVref_iterationCountSettings),
-    .flagToAnalog_dataTrainVref_idleCountSettings                              (mbTrainFsm_flagToAnalog_dataTrainVref_idleCountSettings),
-    .flagToAnalog_dataTrainVref_burstCountSettings                             (mbTrainFsm_flagToAnalog_dataTrainVref_burstCountSettings),
-    .flagToAnalog_dataTrainVref_patternMode                                    (mbTrainFsm_flagToAnalog_dataTrainVref_patternMode),
-    .flagToAnalog_dataTrainVref_clockPhaseControl                              (mbTrainFsm_flagToAnalog_dataTrainVref_clockPhaseControl),
-    .flagToAnalog_dataTrainVref_validPattern                                   (mbTrainFsm_flagToAnalog_dataTrainVref_validPattern),
-    .flagToAnalog_dataTrainVref_dataPattern                                    (mbTrainFsm_flagToAnalog_dataTrainVref_dataPattern),
-    .flagToAnalog_dataTrainVref_clearComparisonErrors                          (mbTrainFsm_flagToAnalog_dataTrainVref_clearComparisonErrors),
-    .flagToAnalog_dataTrainVref_resetLocalTxScrambler                          (mbTrainFsm_flagToAnalog_dataTrainVref_resetLocalTxScrambler),
+    .flagToAnalog_d2cSender_sendValTrainPattern                (mbTrainFsm_flagToAnalog_d2cSender_sendValTrainPattern),
+    .flagFromAnalog_d2cSender_valTrainPatternSent              (flagFromAnalog_d2cSender_valTrainPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler                (mbTrainFsm_flagToAnalog_d2cSender_resetLocalScrambler),
+    .flagToAnalog_d2cSender_applyTxClockPhase                  (mbTrainFsm_flagToAnalog_d2cSender_applyTxClockPhase),
+    .flagToAnalog_d2cSender_txClockPhaseCode                   (mbTrainFsm_flagToAnalog_d2cSender_txClockPhaseCode),
+    .flagFromAnalog_d2cSender_txClockPhaseApplied              (flagFromAnalog_d2cSender_txClockPhaseApplied),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest      (mbTrainFsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold  (mbTrainFsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode                   (mbTrainFsm_flagToAnalog_d2cReceiver_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings           (mbTrainFsm_flagToAnalog_d2cReceiver_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings                (mbTrainFsm_flagToAnalog_d2cReceiver_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings               (mbTrainFsm_flagToAnalog_d2cReceiver_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode                      (mbTrainFsm_flagToAnalog_d2cReceiver_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl                (mbTrainFsm_flagToAnalog_d2cReceiver_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern                     (mbTrainFsm_flagToAnalog_d2cReceiver_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern                      (mbTrainFsm_flagToAnalog_d2cReceiver_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler            (mbTrainFsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo        (flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload        (flagFromAnalog_d2cReceiver_txInitD2CResultsPayload),
+    .flagToAnalog_d2cSender_sendLfsrPattern                  (mbTrainFsm_flagToAnalog_d2cSender_sendLfsrPattern),
+    .flagFromAnalog_d2cSender_lfsrPatternSent                (flagFromAnalog_d2cSender_lfsrPatternSent),
+    .flagToAnalog_d2cSender_applyTxLaneDeskew                 (mbTrainFsm_flagToAnalog_d2cSender_applyTxLaneDeskew),
+    .flagToAnalog_d2cSender_txLaneDeskewCodes                (mbTrainFsm_flagToAnalog_d2cSender_txLaneDeskewCodes),
+    .flagFromAnalog_d2cSender_txLaneDeskewApplied             (flagFromAnalog_d2cSender_txLaneDeskewApplied),
     .flagToAnalog_rxDeskew_sendLfsrPattern                                      (mbTrainFsm_flagToAnalog_rxDeskew_sendLfsrPattern),
     .flagFromAnalog_rxDeskew_lfsrPatternSent                                    (flagFromAnalog_rxDeskew_lfsrPatternSent),
     .flagToAnalog_rxDeskew_resetLocalTxScrambler                                (mbTrainFsm_flagToAnalog_rxDeskew_resetLocalTxScrambler),
@@ -3237,43 +4592,61 @@ module LinkTrainingFSM #(
     .flagToAnalog_rxDeskew_dataPattern                                          (mbTrainFsm_flagToAnalog_rxDeskew_dataPattern),
     .flagToAnalog_rxDeskew_clearComparisonErrors                                (mbTrainFsm_flagToAnalog_rxDeskew_clearComparisonErrors),
     .flagFromAnalog_rxDeskew_detectedDataPattern                                (flagFromAnalog_rxDeskew_detectedDataPattern),
-    .flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern                  (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent                (flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent),
-    .flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler              (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler),
-    .flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase                (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase),
-    .flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode                 (mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied            (flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest    (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode                 (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings         (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings              (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings             (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode                    (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl              (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern                   (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern                    (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern),
-    .flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler          (mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo      (flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload      (flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload),
     .flagToLtsm_linkSpeed_phyInRetrain                                        (mbTrainFsm_flagToLtsm_linkSpeed_phyInRetrain),
-    .flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern                         (mbTrainFsm_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent                       (flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent),
-    .flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler                     (mbTrainFsm_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler),
-    .flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest           (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold       (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_linkSpeed_comparisonMode                        (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode),
-    .flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings                (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings                     (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings),
-    .flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings                    (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings),
-    .flagToAnalog_d2cReceiver_linkSpeed_patternMode                           (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_patternMode),
-    .flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl                     (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_linkSpeed_validPattern                          (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_validPattern),
-    .flagToAnalog_d2cReceiver_linkSpeed_dataPattern                           (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_dataPattern),
-    .flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler                 (mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful            (flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful),
+    .flagFromAnalog_d2cReceiver_laneComparisonSuccessful            (flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
     .state                                                                    (mbTrainFsm_state),
+    // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     .activeSubstate                                                           (mbTrainFsm_activeSubstate),
+    .dbg_mbtrainValVrefLocalState                                             (mbTrainFsm_dbg_mbtrainValVrefLocalState),
+    .dbg_mbtrainValVrefRemoteState                                            (mbTrainFsm_dbg_mbtrainValVrefRemoteState),
+    .dbg_mbtrainValVrefSweepState                                             (mbTrainFsm_dbg_mbtrainValVrefSweepState),
+    .dbg_mbtrainValVrefPointInitiatorState                                    (mbTrainFsm_dbg_mbtrainValVrefPointInitiatorState),
+    .dbg_mbtrainValVrefPointResponderState                                    (mbTrainFsm_dbg_mbtrainValVrefPointResponderState),
+    .dbg_mbtrainDataVrefLocalState                                            (mbTrainFsm_dbg_mbtrainDataVrefLocalState),
+    .dbg_mbtrainDataVrefRemoteState                                           (mbTrainFsm_dbg_mbtrainDataVrefRemoteState),
+    .dbg_mbtrainDataVrefSweepState                                            (mbTrainFsm_dbg_mbtrainDataVrefSweepState),
+    .dbg_mbtrainDataVrefPointInitiatorState                                   (mbTrainFsm_dbg_mbtrainDataVrefPointInitiatorState),
+    .dbg_mbtrainDataVrefPointResponderState                                   (mbTrainFsm_dbg_mbtrainDataVrefPointResponderState),
+    .dbg_mbtrainSpeedIdleSenderState                                          (mbTrainFsm_dbg_mbtrainSpeedIdleSenderState),
+    .dbg_mbtrainSpeedIdleReceiverState                                        (mbTrainFsm_dbg_mbtrainSpeedIdleReceiverState),
+    .dbg_mbtrainTxSelfCalSenderState                                          (mbTrainFsm_dbg_mbtrainTxSelfCalSenderState),
+    .dbg_mbtrainTxSelfCalReceiverState                                        (mbTrainFsm_dbg_mbtrainTxSelfCalReceiverState),
+    .dbg_mbtrainRxClkCalSenderState                                           (mbTrainFsm_dbg_mbtrainRxClkCalSenderState),
+    .dbg_mbtrainRxClkCalReceiverState                                         (mbTrainFsm_dbg_mbtrainRxClkCalReceiverState),
+    .dbg_mbtrainValTrainCenterSenderState                                     (mbTrainFsm_dbg_mbtrainValTrainCenterSenderState),
+    .dbg_mbtrainValTrainCenterReceiverState                                   (mbTrainFsm_dbg_mbtrainValTrainCenterReceiverState),
+    .dbg_mbtrainValTrainCenterD2cSenderState                                  (mbTrainFsm_dbg_mbtrainValTrainCenterD2cSenderState),
+    .dbg_mbtrainValTrainCenterD2cReceiverState                                (mbTrainFsm_dbg_mbtrainValTrainCenterD2cReceiverState),
+    .dbg_mbtrainValTrainCenterSweepState                                      (mbTrainFsm_dbg_mbtrainValTrainCenterSweepState),
+    .dbg_mbtrainValTrainVrefLocalState                                        (mbTrainFsm_dbg_mbtrainValTrainVrefLocalState),
+    .dbg_mbtrainValTrainVrefRemoteState                                       (mbTrainFsm_dbg_mbtrainValTrainVrefRemoteState),
+    .dbg_mbtrainValTrainVrefSweepState                                        (mbTrainFsm_dbg_mbtrainValTrainVrefSweepState),
+    .dbg_mbtrainValTrainVrefPointInitiatorState                               (mbTrainFsm_dbg_mbtrainValTrainVrefPointInitiatorState),
+    .dbg_mbtrainValTrainVrefPointResponderState                               (mbTrainFsm_dbg_mbtrainValTrainVrefPointResponderState),
+    .dbg_mbtrainDataTrainCenter1SenderState                                   (mbTrainFsm_dbg_mbtrainDataTrainCenter1SenderState),
+    .dbg_mbtrainDataTrainCenter1ReceiverState                                 (mbTrainFsm_dbg_mbtrainDataTrainCenter1ReceiverState),
+    .dbg_mbtrainDataTrainCenter1D2cSenderState                                (mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cSenderState),
+    .dbg_mbtrainDataTrainCenter1D2cReceiverState                              (mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cReceiverState),
+    .dbg_mbtrainDataTrainCenter1SweepState                                    (mbTrainFsm_dbg_mbtrainDataTrainCenter1SweepState),
+    .dbg_mbtrainDataTrainVrefLocalState                                       (mbTrainFsm_dbg_mbtrainDataTrainVrefLocalState),
+    .dbg_mbtrainDataTrainVrefRemoteState                                      (mbTrainFsm_dbg_mbtrainDataTrainVrefRemoteState),
+    .dbg_mbtrainDataTrainVrefSweepState                                       (mbTrainFsm_dbg_mbtrainDataTrainVrefSweepState),
+    .dbg_mbtrainDataTrainVrefPointInitiatorState                              (mbTrainFsm_dbg_mbtrainDataTrainVrefPointInitiatorState),
+    .dbg_mbtrainDataTrainVrefPointResponderState                              (mbTrainFsm_dbg_mbtrainDataTrainVrefPointResponderState),
+    .dbg_mbtrainRxDeskewLocalState                                            (mbTrainFsm_dbg_mbtrainRxDeskewLocalState),
+    .dbg_mbtrainRxDeskewRemoteState                                           (mbTrainFsm_dbg_mbtrainRxDeskewRemoteState),
+    .dbg_mbtrainRxDeskewSweepState                                            (mbTrainFsm_dbg_mbtrainRxDeskewSweepState),
+    .dbg_mbtrainRxDeskewPointInitiatorState                                   (mbTrainFsm_dbg_mbtrainRxDeskewPointInitiatorState),
+    .dbg_mbtrainRxDeskewPointResponderState                                   (mbTrainFsm_dbg_mbtrainRxDeskewPointResponderState),
+    .dbg_mbtrainDataTrainCenter2SenderState                                   (mbTrainFsm_dbg_mbtrainDataTrainCenter2SenderState),
+    .dbg_mbtrainDataTrainCenter2ReceiverState                                 (mbTrainFsm_dbg_mbtrainDataTrainCenter2ReceiverState),
+    .dbg_mbtrainDataTrainCenter2D2cSenderState                                (mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cSenderState),
+    .dbg_mbtrainDataTrainCenter2D2cReceiverState                              (mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cReceiverState),
+    .dbg_mbtrainDataTrainCenter2SweepState                                    (mbTrainFsm_dbg_mbtrainDataTrainCenter2SweepState),
+    .dbg_mbtrainLinkSpeedSenderState                                          (mbTrainFsm_dbg_mbtrainLinkSpeedSenderState),
+    .dbg_mbtrainLinkSpeedReceiverState                                        (mbTrainFsm_dbg_mbtrainLinkSpeedReceiverState),
+    .dbg_mbtrainLinkSpeedD2cSenderState                                       (mbTrainFsm_dbg_mbtrainLinkSpeedD2cSenderState),
+    .dbg_mbtrainLinkSpeedD2cReceiverState                                     (mbTrainFsm_dbg_mbtrainLinkSpeedD2cReceiverState),
     .lastErrorCount                                                           (mbTrainFsm_lastErrorCount),
     .retryCount                                                               (mbTrainFsm_retryCount)
   );
@@ -3303,10 +4676,74 @@ module LinkTrainingFSM #(
     dbg_sbTxValid = sb_tx_valid;
     dbg_sbTxDin = sb_tx_din;
     dbg_flagTrainError = parentTrainError || mbInitFsm_trainError || mbTrainFsm_trainError;
+    // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
     dbg_mbinitSubstate = mbInitFsm_substate;
+    dbg_mbinitParamSenderState = mbInitFsm_dbg_mbinitParamSenderState;
+    dbg_mbinitParamReceiverState = mbInitFsm_dbg_mbinitParamReceiverState;
+    dbg_mbinitCalSenderState = mbInitFsm_dbg_mbinitCalSenderState;
+    dbg_mbinitCalReceiverState = mbInitFsm_dbg_mbinitCalReceiverState;
+    dbg_mbinitRepairClkSenderState = mbInitFsm_dbg_mbinitRepairClkSenderState;
+    dbg_mbinitRepairClkReceiverState = mbInitFsm_dbg_mbinitRepairClkReceiverState;
+    dbg_mbinitRepairValSenderState = mbInitFsm_dbg_mbinitRepairValSenderState;
+    dbg_mbinitRepairValReceiverState = mbInitFsm_dbg_mbinitRepairValReceiverState;
+    dbg_mbinitReversalMbSenderState = mbInitFsm_dbg_mbinitReversalMbSenderState;
+    dbg_mbinitReversalMbReceiverState = mbInitFsm_dbg_mbinitReversalMbReceiverState;
+    dbg_mbinitRepairMbSenderState = mbInitFsm_dbg_mbinitRepairMbSenderState;
+    dbg_mbinitRepairMbReceiverState = mbInitFsm_dbg_mbinitRepairMbReceiverState;
     dbg_mbinitReversalMbReceivedSuccessCount = mbInitFsm_dbg_mbinitReversalMbReceivedSuccessCount;
     dbg_mbtrainState = mbTrainFsm_state;
+    // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     dbg_mbtrainActiveSubstate = mbTrainFsm_activeSubstate;
+    dbg_mbtrainValVrefLocalState = mbTrainFsm_dbg_mbtrainValVrefLocalState;
+    dbg_mbtrainValVrefRemoteState = mbTrainFsm_dbg_mbtrainValVrefRemoteState;
+    dbg_mbtrainValVrefSweepState = mbTrainFsm_dbg_mbtrainValVrefSweepState;
+    dbg_mbtrainValVrefPointInitiatorState = mbTrainFsm_dbg_mbtrainValVrefPointInitiatorState;
+    dbg_mbtrainValVrefPointResponderState = mbTrainFsm_dbg_mbtrainValVrefPointResponderState;
+    dbg_mbtrainDataVrefLocalState = mbTrainFsm_dbg_mbtrainDataVrefLocalState;
+    dbg_mbtrainDataVrefRemoteState = mbTrainFsm_dbg_mbtrainDataVrefRemoteState;
+    dbg_mbtrainDataVrefSweepState = mbTrainFsm_dbg_mbtrainDataVrefSweepState;
+    dbg_mbtrainDataVrefPointInitiatorState = mbTrainFsm_dbg_mbtrainDataVrefPointInitiatorState;
+    dbg_mbtrainDataVrefPointResponderState = mbTrainFsm_dbg_mbtrainDataVrefPointResponderState;
+    dbg_mbtrainSpeedIdleSenderState = mbTrainFsm_dbg_mbtrainSpeedIdleSenderState;
+    dbg_mbtrainSpeedIdleReceiverState = mbTrainFsm_dbg_mbtrainSpeedIdleReceiverState;
+    dbg_mbtrainTxSelfCalSenderState = mbTrainFsm_dbg_mbtrainTxSelfCalSenderState;
+    dbg_mbtrainTxSelfCalReceiverState = mbTrainFsm_dbg_mbtrainTxSelfCalReceiverState;
+    dbg_mbtrainRxClkCalSenderState = mbTrainFsm_dbg_mbtrainRxClkCalSenderState;
+    dbg_mbtrainRxClkCalReceiverState = mbTrainFsm_dbg_mbtrainRxClkCalReceiverState;
+    dbg_mbtrainValTrainCenterSenderState = mbTrainFsm_dbg_mbtrainValTrainCenterSenderState;
+    dbg_mbtrainValTrainCenterReceiverState = mbTrainFsm_dbg_mbtrainValTrainCenterReceiverState;
+    dbg_mbtrainValTrainCenterD2cSenderState = mbTrainFsm_dbg_mbtrainValTrainCenterD2cSenderState;
+    dbg_mbtrainValTrainCenterD2cReceiverState = mbTrainFsm_dbg_mbtrainValTrainCenterD2cReceiverState;
+    dbg_mbtrainValTrainCenterSweepState = mbTrainFsm_dbg_mbtrainValTrainCenterSweepState;
+    dbg_mbtrainValTrainVrefLocalState = mbTrainFsm_dbg_mbtrainValTrainVrefLocalState;
+    dbg_mbtrainValTrainVrefRemoteState = mbTrainFsm_dbg_mbtrainValTrainVrefRemoteState;
+    dbg_mbtrainValTrainVrefSweepState = mbTrainFsm_dbg_mbtrainValTrainVrefSweepState;
+    dbg_mbtrainValTrainVrefPointInitiatorState = mbTrainFsm_dbg_mbtrainValTrainVrefPointInitiatorState;
+    dbg_mbtrainValTrainVrefPointResponderState = mbTrainFsm_dbg_mbtrainValTrainVrefPointResponderState;
+    dbg_mbtrainDataTrainCenter1SenderState = mbTrainFsm_dbg_mbtrainDataTrainCenter1SenderState;
+    dbg_mbtrainDataTrainCenter1ReceiverState = mbTrainFsm_dbg_mbtrainDataTrainCenter1ReceiverState;
+    dbg_mbtrainDataTrainCenter1D2cSenderState = mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cSenderState;
+    dbg_mbtrainDataTrainCenter1D2cReceiverState = mbTrainFsm_dbg_mbtrainDataTrainCenter1D2cReceiverState;
+    dbg_mbtrainDataTrainCenter1SweepState = mbTrainFsm_dbg_mbtrainDataTrainCenter1SweepState;
+    dbg_mbtrainDataTrainVrefLocalState = mbTrainFsm_dbg_mbtrainDataTrainVrefLocalState;
+    dbg_mbtrainDataTrainVrefRemoteState = mbTrainFsm_dbg_mbtrainDataTrainVrefRemoteState;
+    dbg_mbtrainDataTrainVrefSweepState = mbTrainFsm_dbg_mbtrainDataTrainVrefSweepState;
+    dbg_mbtrainDataTrainVrefPointInitiatorState = mbTrainFsm_dbg_mbtrainDataTrainVrefPointInitiatorState;
+    dbg_mbtrainDataTrainVrefPointResponderState = mbTrainFsm_dbg_mbtrainDataTrainVrefPointResponderState;
+    dbg_mbtrainRxDeskewLocalState = mbTrainFsm_dbg_mbtrainRxDeskewLocalState;
+    dbg_mbtrainRxDeskewRemoteState = mbTrainFsm_dbg_mbtrainRxDeskewRemoteState;
+    dbg_mbtrainRxDeskewSweepState = mbTrainFsm_dbg_mbtrainRxDeskewSweepState;
+    dbg_mbtrainRxDeskewPointInitiatorState = mbTrainFsm_dbg_mbtrainRxDeskewPointInitiatorState;
+    dbg_mbtrainRxDeskewPointResponderState = mbTrainFsm_dbg_mbtrainRxDeskewPointResponderState;
+    dbg_mbtrainDataTrainCenter2SenderState = mbTrainFsm_dbg_mbtrainDataTrainCenter2SenderState;
+    dbg_mbtrainDataTrainCenter2ReceiverState = mbTrainFsm_dbg_mbtrainDataTrainCenter2ReceiverState;
+    dbg_mbtrainDataTrainCenter2D2cSenderState = mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cSenderState;
+    dbg_mbtrainDataTrainCenter2D2cReceiverState = mbTrainFsm_dbg_mbtrainDataTrainCenter2D2cReceiverState;
+    dbg_mbtrainDataTrainCenter2SweepState = mbTrainFsm_dbg_mbtrainDataTrainCenter2SweepState;
+    dbg_mbtrainLinkSpeedSenderState = mbTrainFsm_dbg_mbtrainLinkSpeedSenderState;
+    dbg_mbtrainLinkSpeedReceiverState = mbTrainFsm_dbg_mbtrainLinkSpeedReceiverState;
+    dbg_mbtrainLinkSpeedD2cSenderState = mbTrainFsm_dbg_mbtrainLinkSpeedD2cSenderState;
+    dbg_mbtrainLinkSpeedD2cReceiverState = mbTrainFsm_dbg_mbtrainLinkSpeedD2cReceiverState;
     dbg_mbtrainLastErrorCount = mbTrainFsm_lastErrorCount;
     dbg_mbtrainRetryCount = mbTrainFsm_retryCount;
     flagToAnalog_RepairClkState = mbInitFsm_flagToAnalog_RepairClkState;
@@ -3349,68 +4786,24 @@ module LinkTrainingFSM #(
     flagToAnalog_dataVref_resetLocalTxScrambler = mbTrainFsm_flagToAnalog_dataVref_resetLocalTxScrambler;
     flagToAnalog_rxClkCal_doCalibration = mbTrainFsm_flagToAnalog_rxClkCal_doCalibration;
     flagToAnalog_rxClkCal_sendClockTrack = mbTrainFsm_flagToAnalog_rxClkCal_sendClockTrack;
-    flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern = mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern;
-    flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler = mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler;
-    flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase = mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase;
-    flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode = mbTrainFsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode;
-    flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest;
-    flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold;
-    flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode;
-    flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings;
-    flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings;
-    flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings;
-    flagToAnalog_d2cReceiver_valTrainCenter_patternMode = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_patternMode;
-    flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl;
-    flagToAnalog_d2cReceiver_valTrainCenter_validPattern = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_validPattern;
-    flagToAnalog_d2cReceiver_valTrainCenter_dataPattern = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern;
-    flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler = mbTrainFsm_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler;
-    flagToAnalog_valTrainVref_sendPattern = mbTrainFsm_flagToAnalog_valTrainVref_sendPattern;
-    flagToAnalog_valTrainVref_applyRxVref = mbTrainFsm_flagToAnalog_valTrainVref_applyRxVref;
-    flagToAnalog_valTrainVref_rxVrefCode = mbTrainFsm_flagToAnalog_valTrainVref_rxVrefCode;
-    flagToAnalog_valTrainVref_configureRxInitD2CPointTest = mbTrainFsm_flagToAnalog_valTrainVref_configureRxInitD2CPointTest;
-    flagToAnalog_valTrainVref_maximumComparisonErrorThreshold = mbTrainFsm_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold;
-    flagToAnalog_valTrainVref_comparisonMode = mbTrainFsm_flagToAnalog_valTrainVref_comparisonMode;
-    flagToAnalog_valTrainVref_iterationCountSettings = mbTrainFsm_flagToAnalog_valTrainVref_iterationCountSettings;
-    flagToAnalog_valTrainVref_idleCountSettings = mbTrainFsm_flagToAnalog_valTrainVref_idleCountSettings;
-    flagToAnalog_valTrainVref_burstCountSettings = mbTrainFsm_flagToAnalog_valTrainVref_burstCountSettings;
-    flagToAnalog_valTrainVref_patternMode = mbTrainFsm_flagToAnalog_valTrainVref_patternMode;
-    flagToAnalog_valTrainVref_clockPhaseControl = mbTrainFsm_flagToAnalog_valTrainVref_clockPhaseControl;
-    flagToAnalog_valTrainVref_validPattern = mbTrainFsm_flagToAnalog_valTrainVref_validPattern;
-    flagToAnalog_valTrainVref_dataPattern = mbTrainFsm_flagToAnalog_valTrainVref_dataPattern;
-    flagToAnalog_valTrainVref_clearComparisonErrors = mbTrainFsm_flagToAnalog_valTrainVref_clearComparisonErrors;
-    flagToAnalog_valTrainVref_resetLocalTxScrambler = mbTrainFsm_flagToAnalog_valTrainVref_resetLocalTxScrambler;
-    flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern;
-    flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler;
-    flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase;
-    flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode;
-    flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew;
-    flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern;
-    flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler;
-    flagToAnalog_dataTrainVref_sendPattern = mbTrainFsm_flagToAnalog_dataTrainVref_sendPattern;
-    flagToAnalog_dataTrainVref_applyRxVref = mbTrainFsm_flagToAnalog_dataTrainVref_applyRxVref;
-    flagToAnalog_dataTrainVref_rxVrefCodes = mbTrainFsm_flagToAnalog_dataTrainVref_rxVrefCodes;
-    flagToAnalog_dataTrainVref_configureRxInitD2CPointTest = mbTrainFsm_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest;
-    flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold = mbTrainFsm_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold;
-    flagToAnalog_dataTrainVref_comparisonMode = mbTrainFsm_flagToAnalog_dataTrainVref_comparisonMode;
-    flagToAnalog_dataTrainVref_iterationCountSettings = mbTrainFsm_flagToAnalog_dataTrainVref_iterationCountSettings;
-    flagToAnalog_dataTrainVref_idleCountSettings = mbTrainFsm_flagToAnalog_dataTrainVref_idleCountSettings;
-    flagToAnalog_dataTrainVref_burstCountSettings = mbTrainFsm_flagToAnalog_dataTrainVref_burstCountSettings;
-    flagToAnalog_dataTrainVref_patternMode = mbTrainFsm_flagToAnalog_dataTrainVref_patternMode;
-    flagToAnalog_dataTrainVref_clockPhaseControl = mbTrainFsm_flagToAnalog_dataTrainVref_clockPhaseControl;
-    flagToAnalog_dataTrainVref_validPattern = mbTrainFsm_flagToAnalog_dataTrainVref_validPattern;
-    flagToAnalog_dataTrainVref_dataPattern = mbTrainFsm_flagToAnalog_dataTrainVref_dataPattern;
-    flagToAnalog_dataTrainVref_clearComparisonErrors = mbTrainFsm_flagToAnalog_dataTrainVref_clearComparisonErrors;
-    flagToAnalog_dataTrainVref_resetLocalTxScrambler = mbTrainFsm_flagToAnalog_dataTrainVref_resetLocalTxScrambler;
+    flagToAnalog_d2cSender_sendValTrainPattern = mbTrainFsm_flagToAnalog_d2cSender_sendValTrainPattern;
+    flagToAnalog_d2cSender_resetLocalScrambler = mbTrainFsm_flagToAnalog_d2cSender_resetLocalScrambler;
+    flagToAnalog_d2cSender_applyTxClockPhase = mbTrainFsm_flagToAnalog_d2cSender_applyTxClockPhase;
+    flagToAnalog_d2cSender_txClockPhaseCode = mbTrainFsm_flagToAnalog_d2cSender_txClockPhaseCode;
+    flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = mbTrainFsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest;
+    flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = mbTrainFsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold;
+    flagToAnalog_d2cReceiver_comparisonMode = mbTrainFsm_flagToAnalog_d2cReceiver_comparisonMode;
+    flagToAnalog_d2cReceiver_iterationCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_iterationCountSettings;
+    flagToAnalog_d2cReceiver_idleCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_idleCountSettings;
+    flagToAnalog_d2cReceiver_burstCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_burstCountSettings;
+    flagToAnalog_d2cReceiver_patternMode = mbTrainFsm_flagToAnalog_d2cReceiver_patternMode;
+    flagToAnalog_d2cReceiver_clockPhaseControl = mbTrainFsm_flagToAnalog_d2cReceiver_clockPhaseControl;
+    flagToAnalog_d2cReceiver_validPattern = mbTrainFsm_flagToAnalog_d2cReceiver_validPattern;
+    flagToAnalog_d2cReceiver_dataPattern = mbTrainFsm_flagToAnalog_d2cReceiver_dataPattern;
+    flagToAnalog_d2cReceiver_resetLocalRxScrambler = mbTrainFsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler;
+    flagToAnalog_d2cSender_sendLfsrPattern = mbTrainFsm_flagToAnalog_d2cSender_sendLfsrPattern;
+    flagToAnalog_d2cSender_applyTxLaneDeskew = mbTrainFsm_flagToAnalog_d2cSender_applyTxLaneDeskew;
+    flagToAnalog_d2cSender_txLaneDeskewCodes = mbTrainFsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
     flagToAnalog_rxDeskew_sendLfsrPattern = mbTrainFsm_flagToAnalog_rxDeskew_sendLfsrPattern;
     flagToAnalog_rxDeskew_resetLocalTxScrambler = mbTrainFsm_flagToAnalog_rxDeskew_resetLocalTxScrambler;
     flagToAnalog_rxDeskew_applyRxLaneDeskew = mbTrainFsm_flagToAnalog_rxDeskew_applyRxLaneDeskew;
@@ -3426,35 +4819,7 @@ module LinkTrainingFSM #(
     flagToAnalog_rxDeskew_validPattern = mbTrainFsm_flagToAnalog_rxDeskew_validPattern;
     flagToAnalog_rxDeskew_dataPattern = mbTrainFsm_flagToAnalog_rxDeskew_dataPattern;
     flagToAnalog_rxDeskew_clearComparisonErrors = mbTrainFsm_flagToAnalog_rxDeskew_clearComparisonErrors;
-    flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern;
-    flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler;
-    flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase;
-    flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode = mbTrainFsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern;
-    flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler = mbTrainFsm_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler;
     flagToLtsm_linkSpeed_phyInRetrain = mbTrainFsm_flagToLtsm_linkSpeed_phyInRetrain;
-    flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern = mbTrainFsm_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern;
-    flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler = mbTrainFsm_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler;
-    flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest;
-    flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold;
-    flagToAnalog_d2cReceiver_linkSpeed_comparisonMode = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode;
-    flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings;
-    flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings;
-    flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings;
-    flagToAnalog_d2cReceiver_linkSpeed_patternMode = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_patternMode;
-    flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl;
-    flagToAnalog_d2cReceiver_linkSpeed_validPattern = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_validPattern;
-    flagToAnalog_d2cReceiver_linkSpeed_dataPattern = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_dataPattern;
-    flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler = mbTrainFsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler;
   end
 
   always_ff @(posedge clock or negedge reset_n) begin
@@ -3466,7 +4831,7 @@ module LinkTrainingFSM #(
       prevRxValid <= 1'b0;
       flagSbinitFirstClkPatternSeen <= 1'b0;
       flagSbinitSecondClkPatternSeen <= 1'b0;
-      flagSbinitOorSeen <= 1'b0;
+      flagSbinitOorSuccessSeen <= 1'b0;
       flagSbinitReceivedDoneReq <= 1'b0;
       flagSbinitReceivedDoneResp <= 1'b0;
       flagSbinitSentDoneReq <= 1'b0;
@@ -3494,10 +4859,8 @@ module LinkTrainingFSM #(
           flagSbinitFirstClkPatternSeen <= 1'b0;
         end
 
-        // check for OOR msgcode and msgsubcode only
-        if ((sb_rx_dout[21:14] == SBINIT_OOR_SUCCESS[21:14]) &&
-          (sb_rx_dout[39:32] == SBINIT_OOR_SUCCESS[39:32]))
-          flagSbinitOorSeen <= 1'b1;
+        if (sb_rx_dout == SBINIT_OOR_SUCCESS)
+          flagSbinitOorSuccessSeen <= 1'b1;
         if (sb_rx_dout == SBINIT_DONE_REQ)
           flagSbinitReceivedDoneReq <= 1'b1;
         if (sb_rx_dout == SBINIT_DONE_RESP)
@@ -3508,7 +4871,7 @@ module LinkTrainingFSM #(
         LTState_RESET: begin
           flagSbinitFirstClkPatternSeen <= 1'b0;
           flagSbinitSecondClkPatternSeen <= 1'b0;
-          flagSbinitOorSeen <= 1'b0;
+          flagSbinitOorSuccessSeen <= 1'b0;
           flagSbinitReceivedDoneReq <= 1'b0;
           flagSbinitReceivedDoneResp <= 1'b0;
           flagSbinitSentDoneReq <= 1'b0;
@@ -3548,7 +4911,7 @@ module LinkTrainingFSM #(
             sbinitTxDin <= SBINIT_OOR_SUCCESS;
             sbinitTxValid <= 1'b1;
           end
-          if (flagSbinitOorSeen)
+          if (flagSbinitOorSuccessSeen)
             stateReg <= LTState_SBINIT_DONEmsg;
         end
 
@@ -3602,13 +4965,13 @@ endmodule
 
 ```
 
-<a id="LtsmSidebandRxPulseAdapter-sv"></a>
+<a id="src-LtsmSidebandRxPulseAdapter-sv"></a>
 
-## [8] LtsmSidebandRxPulseAdapter.sv
+## [10] src\LtsmSidebandRxPulseAdapter.sv
 
 ```systemverilog
-// FILE_INDEX: 8
-// FILE_PATH : LtsmSidebandRxPulseAdapter.sv
+// FILE_INDEX: 10
+// FILE_PATH : src\LtsmSidebandRxPulseAdapter.sv
 
 // Synthesizable compatibility adapter from valid/ready RX to a one-cycle LTSM pulse.
 // Reset convention: asynchronous active-low reset_n.
@@ -3675,13 +5038,13 @@ endmodule
 
 ```
 
-<a id="LtsmSidebandTxCapture-sv"></a>
+<a id="src-LtsmSidebandTxCapture-sv"></a>
 
-## [9] LtsmSidebandTxCapture.sv
+## [11] src\LtsmSidebandTxCapture.sv
 
 ```systemverilog
-// FILE_INDEX: 9
-// FILE_PATH : LtsmSidebandTxCapture.sv
+// FILE_INDEX: 11
+// FILE_PATH : src\LtsmSidebandTxCapture.sv
 
 // Synthesizable compatibility adapter for the LinkTrainingFSM TX pulse interface.
 // Reset convention: asynchronous active-low reset_n.
@@ -3773,13 +5136,13 @@ endmodule
 
 ```
 
-<a id="MBInitFSM-sv"></a>
+<a id="src-MBInitFSM-sv"></a>
 
-## [10] MBInitFSM.sv
+## [12] src\MBInitFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 10
-// FILE_PATH : MBInitFSM.sv
+// FILE_INDEX: 12
+// FILE_PATH : src\MBInitFSM.sv
 
 // SystemVerilog translation of MBInitFSM.scala.
 `default_nettype none
@@ -3853,11 +5216,21 @@ module MBInitFSM #(
   output var logic           flagToAnalog_RepairMbSetReceiver,
   output var logic           flagToAnalog_ReversalMbSendLaneIDPattern,
   output var logic           flagToAnalog_LaneReversalApplied,
+  // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
   output var logic [2:0]     substate,
+  // Debug: state of every MBINIT sub-FSM (encodings match the *_t enums below).
+  output var logic [1:0]     dbg_mbinitParamSenderState,
+  output var logic [1:0]     dbg_mbinitParamReceiverState,
+  output var logic [1:0]     dbg_mbinitCalSenderState,
+  output var logic [1:0]     dbg_mbinitCalReceiverState,
   output var logic [2:0]     dbg_mbinitRepairClkSenderState,
   output var logic [2:0]     dbg_mbinitRepairClkReceiverState,
   output var logic [2:0]     dbg_mbinitRepairValSenderState,
   output var logic [2:0]     dbg_mbinitRepairValReceiverState,
+  output var logic [3:0]     dbg_mbinitReversalMbSenderState,
+  output var logic [2:0]     dbg_mbinitReversalMbReceiverState,
+  output var logic [4:0]     dbg_mbinitRepairMbSenderState,
+  output var logic [3:0]     dbg_mbinitRepairMbReceiverState,
   output var logic [4:0]     dbg_mbinitReversalMbReceivedSuccessCount
 );
   import SidebandMsgGenerator_pkg::*;
@@ -4249,11 +5622,20 @@ module MBInitFSM #(
       (repairMbReceiverStateReg == RepairMbReceiverState_setReceiver);
     flagToAnalog_LaneReversalApplied = reversalMb_LaneReversalApplied;
 
+    // TODO(debug-review): MBInitFSM.substate (MBINIT main state) kept during the debug-pin cleanup; review naming/need vs the dbg_mbinit*State pins.
     substate = stateReg;
+    dbg_mbinitParamSenderState = paramSenderStateReg;
+    dbg_mbinitParamReceiverState = paramReceiverStateReg;
+    dbg_mbinitCalSenderState = calSenderStateReg;
+    dbg_mbinitCalReceiverState = calReceiverStateReg;
     dbg_mbinitRepairClkSenderState = repairClkSenderStateReg;
     dbg_mbinitRepairClkReceiverState = repairClkReceiverStateReg;
     dbg_mbinitRepairValSenderState = repairValSenderStateReg;
     dbg_mbinitRepairValReceiverState = repairValReceiverStateReg;
+    dbg_mbinitReversalMbSenderState = reversalMbSenderStateReg;
+    dbg_mbinitReversalMbReceiverState = reversalMbReceiverStateReg;
+    dbg_mbinitRepairMbSenderState = repairMbSenderStateReg;
+    dbg_mbinitRepairMbReceiverState = repairMbReceiverStateReg;
     dbg_mbinitReversalMbReceivedSuccessCount = reversalMb_ReceivedSuccessCount;
   end
 
@@ -4581,16 +5963,12 @@ module MBInitFSM #(
         running <= 1'b0;
       end
       if (rxValidRisingEdge) begin
-        //only check msgcode and msgsubcode, more complex should be implemented in the future
-        if ((sb_rx_dout[21:14] == MBINIT_PARAM_REQ[21:14]) &&
-            (sb_rx_dout[39:32] == MBINIT_PARAM_REQ[39:32])) begin
+        if (sb_rx_dout == MBINIT_PARAM_REQ) begin
           flagMbinitParam_ReceivedReqHeader <= 1'b1;
           flagMbinitParam_ReceivedReqPayload <= 1'b1;
           remoteParamReqPayload <= sb_rx_dout[127:64];
         end
-        //only check msgcode and msgsubcode, more complex should be implemented in the future
-        if ((sb_rx_dout[21:14] == MBINIT_PARAM_RESP[21:14]) &&
-            (sb_rx_dout[39:32] == MBINIT_PARAM_RESP[39:32])) begin
+        if (sb_rx_dout == MBINIT_PARAM_RESP) begin
           flagMbinitParam_ReceivedRespHeader <= 1'b1;
           flagMbinitParam_ReceivedRespPayload <= 1'b1;
           remoteParamRespPayload <= sb_rx_dout[127:64];
@@ -4654,7 +6032,10 @@ module MBInitFSM #(
         if (sb_rx_dout == MBINIT_REVERSALMB_RESULT_REQ) begin
           flagMbinitReversalMb_ReceivedResultReq <= 1'b1;
         end
-        if (sb_rx_dout[63:0] == MBINIT_REVERSALMB_RESULT_RESP[63:0]) begin
+        // Payload parity varies with the received lane bitmap; validate it
+        // separately instead of comparing it to the zero-payload template.
+        if ((sb_rx_dout[62:0] == MBINIT_REVERSALMB_RESULT_RESP[62:0]) &&
+            UCIe2_dataParityOk(sb_rx_dout)) begin
           flagMbinitReversalMb_ReceivedResultRespHeader <= 1'b1;
           flagMbinitReversalMb_ReceivedResultRespPayload <= 1'b1;
           reversalMb_ReceivedSuccessCount <= countOnes16(sb_rx_dout[79:64]);
@@ -5694,13 +7075,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_DataTrainCenter1-sv"></a>
+<a id="src-MBTrain_DataTrainCenter1-sv"></a>
 
-## [11] MBTrain_DataTrainCenter1.sv
+## [13] src\MBTrain_DataTrainCenter1.sv
 
 ```systemverilog
-// FILE_INDEX: 11
-// FILE_PATH : MBTrain_DataTrainCenter1.sv
+// FILE_INDEX: 13
+// FILE_PATH : src\MBTrain_DataTrainCenter1.sv
 
 // SystemVerilog translation of MBTrain_DataTrainCenter1.scala.
 `default_nettype none
@@ -5740,6 +7121,7 @@ module MBTrain_DataTrainCenter1 #(
   output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_txClockPhaseCode,
   input wire logic         flagFromAnalog_d2cSender_txClockPhaseApplied,
   output var logic         flagToAnalog_d2cSender_applyTxLaneDeskew,
+  // TX deskew: 20 bits/lane, cell 1 [9:0], cell 2 [19:10]; LSB + 9 thermometer bits/cell.
   output var logic [64*d2cTxDeskewCodeWidth-1:0] flagToAnalog_d2cSender_txLaneDeskewCodes,
   input wire logic         flagFromAnalog_d2cSender_txLaneDeskewApplied,
   output var logic         flagToAnalog_d2cReceiver_configureTxInitD2CPointTest,
@@ -5755,7 +7137,11 @@ module MBTrain_DataTrainCenter1 #(
   output var logic         flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
   input wire logic [63:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
-  output var logic [11:0]  substate,
+  output var logic [3:0]   dbg_senderState,
+  output var logic [2:0]   dbg_receiverState,
+  output var logic [3:0]   dbg_d2cSenderState,
+  output var logic [3:0]   dbg_d2cReceiverState,
+  output var logic [4:0]   dbg_sweepState,
   output var logic [15:0]  lastErrorCount,
   output var logic [15:0]  retryCount
 );
@@ -6032,7 +7418,11 @@ module MBTrain_DataTrainCenter1 #(
     trainError = trainErrorReg || sweepEngine_trainError;
     sb_tx_valid = sbTxValid;
     sb_tx_din = sbTxDin;
-    substate = {senderStateReg[3:0], d2cSender_state, d2cReceiver_state};
+    dbg_senderState = senderStateReg;
+    dbg_receiverState = receiverStateReg;
+    dbg_d2cSenderState = d2cSender_state;
+    dbg_d2cReceiverState = d2cReceiver_state;
+    dbg_sweepState = sweepEngine_state;
     lastErrorCount = sweepEngine_lastFailedComparisons;
     retryCount = sweepEngine_retryCount;
 
@@ -6447,13 +7837,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_DataTrainCenter1SweepEngine-sv"></a>
+<a id="src-MBTrain_DataTrainCenter1SweepEngine-sv"></a>
 
-## [12] MBTrain_DataTrainCenter1SweepEngine.sv
+## [14] src\MBTrain_DataTrainCenter1SweepEngine.sv
 
 ```systemverilog
-// FILE_INDEX: 12
-// FILE_PATH : MBTrain_DataTrainCenter1SweepEngine.sv
+// FILE_INDEX: 14
+// FILE_PATH : src\MBTrain_DataTrainCenter1SweepEngine.sv
 
 // DATATRAINCENTER1 local transmitter linear sweep/deskew controller.
 //
@@ -6466,7 +7856,11 @@ endmodule
 //   lane 0 code is tx_lane_deskew_codes[TX_DESKEW_CODE_WIDTH-1:0]
 //   lane N code is tx_lane_deskew_codes[N*TX_DESKEW_CODE_WIDTH +:
 //                                      TX_DESKEW_CODE_WIDTH]
-// Codes are absolute values.  Inactive UCIe-S lanes [63:16] are held at zero.
+// Each lane exports 20 physical controls: cell 1 [9:0], cell 2 [19:10].
+// Within each cell, bit 0 is the 0.5 ps LSB; bits 1..9 are the 1 ps
+// thermometer switches sw-4..sw4. Cell 1 fills to 9.5 ps before cell 2.
+// Inactive UCIe-S lanes [63:16] are held at zero. Numeric delay calculations
+// use half-ps steps separately from this PHY control-word width.
 //
 // PI phase convention:
 //   0, 1, ... PHASE_COUNT-1 is one linear ordered search range.
@@ -6497,8 +7891,8 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   output var  logic [PI_CODE_WIDTH-1:0] tx_clock_phase_code,
   input  wire logic                     tx_clock_phase_applied,
 
-  // Local per-data-lane TX deskew interface.  apply_tx_lane_deskew remains
-  // asserted with stable absolute codes until tx_lane_deskew_applied is seen.
+  // Local per-data-lane TX deskew interface. apply_tx_lane_deskew remains
+  // asserted with stable two-cell switch words until acknowledged.
   output var  logic                                      apply_tx_lane_deskew,
   output var  logic [64*TX_DESKEW_CODE_WIDTH-1:0]        tx_lane_deskew_codes,
   input  wire logic                                      tx_lane_deskew_applied,
@@ -6517,9 +7911,20 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   output var  logic [PI_CODE_WIDTH-1:0] finalClockPhase
 );
   localparam int unsigned MAX_DATA_LANES   = 64;
+  localparam int unsigned ACTIVE_DATA_LANES = ucieA ? 64 : 16;
+  // Split the target reduction evenly at a register boundary: 4 groups of
+  // 4 lanes (two compare/select levels per cycle), or 8 groups of 8 lanes
+  // (three levels per cycle). No inactive-lane sentinel branches are needed.
+  localparam int unsigned CENTER_GROUP_LANES = ucieA ? 8 : 4;
+  localparam int unsigned CENTER_GROUP_COUNT = ACTIVE_DATA_LANES / CENTER_GROUP_LANES;
   localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
-  localparam int unsigned MAX_DESKEW_CODE_INT =
-    (1 << TX_DESKEW_CODE_WIDTH) - 1;
+  // Length must include the full all-pass range (2**PI_CODE_WIDTH).
+  localparam int unsigned WINDOW_LENGTH_WIDTH = PI_CODE_WIDTH + 1;
+  localparam int unsigned DESKEW_STEP_WIDTH =
+    (DESKEW_STEPS_PER_PI < 2) ? 1 :
+    $clog2({1'b0, DESKEW_STEPS_PER_PI} + 33'd1);
+  localparam int unsigned DESKEW_PRODUCT_WIDTH =
+    PI_CODE_WIDTH + DESKEW_STEP_WIDTH;
 
   localparam logic [63:0] ACTIVE_LANE_MASK =
     ucieA ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
@@ -6544,7 +7949,13 @@ module MBTrain_DataTrainCenter1SweepEngine #(
     SweepState_WAIT_FINAL_TEST       = 5'd16,
     SweepState_CHECK_FINAL_TEST      = 5'd17,
     SweepState_DONE                  = 5'd18,
-    SweepState_ERROR                 = 5'd19
+    SweepState_ERROR                 = 5'd19,
+    SweepState_SELECT_TARGET         = 5'd20,
+    SweepState_CALCULATE_DELTA       = 5'd21,
+    SweepState_SCALE_DESKEW          = 5'd22,
+    SweepState_CHECK_DESKEW          = 5'd23,
+    SweepState_ENCODE_DESKEW         = 5'd24,
+    SweepState_REDUCE_CENTER_GROUPS  = 5'd25
   } SweepState_t;
 
   (* keep = "true" *) SweepState_t stateReg;
@@ -6556,209 +7967,105 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] finalClockPhaseReg;
   (* keep = "true" *) logic [64*TX_DESKEW_CODE_WIDTH-1:0] deskewCodesReg;
 
-  // Pass bitmap captured at every PI code before TX deskew.
-  logic [63:0] initialPassByPhase [0:PHASE_COUNT-1];
+  // Update the longest passing interval as each result arrives. A hardware
+  // loop over the entire stored sweep would unroll into PHASE_COUNT serial
+  // increment/compare/mux stages. These registers reduce that path to one
+  // narrow increment and comparison, independent of the sweep length.
+  logic [PI_CODE_WIDTH-1:0] laneRunStartReg [0:MAX_DATA_LANES-1];
+  logic [WINDOW_LENGTH_WIDTH-1:0] laneRunLengthReg [0:MAX_DATA_LANES-1];
+  logic [PI_CODE_WIDTH-1:0] laneBestStartReg [0:MAX_DATA_LANES-1];
+  logic [WINDOW_LENGTH_WIDTH-1:0] laneBestLengthReg [0:MAX_DATA_LANES-1];
+  logic [PI_CODE_WIDTH-1:0] globalRunStartReg;
+  logic [WINDOW_LENGTH_WIDTH-1:0] globalRunLengthReg;
+  logic [PI_CODE_WIDTH-1:0] globalBestStartReg;
+  logic [WINDOW_LENGTH_WIDTH-1:0] globalBestLengthReg;
 
-  // Aggregate pass/fail captured at every PI code after TX deskew.
-  logic verifyPassByPhase [0:PHASE_COUNT-1];
-
-  // Registered results are useful for waveform/debug inspection.
-  logic [PI_CODE_WIDTH-1:0] laneLeftPhaseReg   [0:MAX_DATA_LANES-1];
-  logic [PI_CODE_WIDTH-1:0] laneRightPhaseReg  [0:MAX_DATA_LANES-1];
+  // Register the arithmetic stages between finding lane centers and applying
+  // deskew: center -> group extrema -> target -> delta -> scale -> range
+  // -> physical switch encoding. The encoder is fed only a 6-bit checked value.
+  logic [PI_CODE_WIDTH-1:0] laneLeftPhaseReg [0:MAX_DATA_LANES-1];
+  logic [PI_CODE_WIDTH-1:0] laneRightPhaseReg [0:MAX_DATA_LANES-1];
   logic [PI_CODE_WIDTH-1:0] laneCenterPhaseReg [0:MAX_DATA_LANES-1];
+  logic [PI_CODE_WIDTH-1:0] groupCenterPhaseReg [0:CENTER_GROUP_COUNT-1];
+  logic [PI_CODE_WIDTH-1:0] targetLaneCenterReg;
+  logic [PI_CODE_WIDTH-1:0] deskewDeltaReg [0:MAX_DATA_LANES-1];
+  logic [DESKEW_PRODUCT_WIDTH-1:0] deskewProductReg [0:MAX_DATA_LANES-1];
+  logic [LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH-1:0]
+    selectedDeskewStepsReg [0:MAX_DATA_LANES-1];
   logic [PI_CODE_WIDTH-1:0] globalLeftPhaseReg;
   logic [PI_CODE_WIDTH-1:0] globalRightPhaseReg;
-
-  logic [PI_CODE_WIDTH-1:0] laneLeftPhaseCalc   [0:MAX_DATA_LANES-1];
-  logic [PI_CODE_WIDTH-1:0] laneRightPhaseCalc  [0:MAX_DATA_LANES-1];
-  logic [PI_CODE_WIDTH-1:0] laneCenterPhaseCalc [0:MAX_DATA_LANES-1];
-  logic [64*TX_DESKEW_CODE_WIDTH-1:0] deskewCodesCalc;
-  logic initialWindowsValidCalc;
-
-  logic globalWindowValidCalc;
-  logic [PI_CODE_WIDTH-1:0] globalLeftPhaseCalc;
-  logic [PI_CODE_WIDTH-1:0] globalRightPhaseCalc;
-  logic [PI_CODE_WIDTH-1:0] globalCenterPhaseCalc;
 
   wire allActiveDataLanesPass = &(point_test_lane_pass | ~ACTIVE_LANE_MASK);
   wire pointTestAllPass = point_test_valid_pass &&
                           point_test_cumulative_pass &&
                           allActiveDataLanesPass;
 
-  function automatic [15:0] countFailedComparisons(
-    input logic [63:0] lanePass,
-    input logic        validPass
-  );
-    integer lane;
-    integer count;
-    begin
-      count = 0;
-      for (lane = 0; lane < MAX_DATA_LANES; lane = lane + 1) begin
-        if (ACTIVE_LANE_MASK[lane] && !lanePass[lane])
-          count = count + 1;
-      end
-      if (!validPass)
-        count = count + 1;
-      countFailedComparisons = count;
-    end
-  endfunction
+  // Explicit balanced reductions avoid serial lane-to-lane dependencies.
+  // Failure counts need only seven bits for 64 data lanes plus Valid.
+  wire [6:0] failedLaneTree [1:2*MAX_DATA_LANES-1];
+  wire [6:0] failedComparisonsCalc =
+    failedLaneTree[1] + {6'b0, !point_test_valid_pass};
+  wire [PI_CODE_WIDTH-1:0] groupCenterResult [0:CENTER_GROUP_COUNT-1];
+  wire [PI_CODE_WIDTH-1:0] targetCenterTree [1:2*CENTER_GROUP_COUNT-1];
+  wire [MAX_DATA_LANES-1:0] laneWindowValid;
+  wire [MAX_DATA_LANES-1:0] deskewCodeFits;
+  wire initialWindowsValidCalc = &laneWindowValid;
+  wire allDeskewCodesFit = &deskewCodeFits;
 
-  // Search each active lane over the implemented PI range exactly once.
-  // Phase code PHASE_COUNT-1 is not adjacent to phase code 0: the two ends
-  // may belong to different UIs and are therefore never merged.
-  integer laneIdx;
-  integer phaseIdx;
-  integer runLength;
-  integer bestLength;
-  integer runStart;
-  integer bestStart;
-  integer laneCenterInt;
-  integer minLaneCenterInt;
-  integer maxLaneCenterInt;
-  integer targetLaneCenterInt;
-  integer deskewDeltaInt;
-  integer deskewCodeInt;
-
-  always_comb begin
-    initialWindowsValidCalc = 1'b1;
-    deskewCodesCalc = '0;
-
-    // Defaults for combinational temporaries.
-    phaseIdx = 0;
-    runLength = 0;
-    bestLength = 0;
-    runStart = 0;
-    bestStart = 0;
-    laneCenterInt = 0;
-    minLaneCenterInt = PHASE_COUNT - 1;
-    maxLaneCenterInt = 0;
-    targetLaneCenterInt = 0;
-    deskewDeltaInt = 0;
-    deskewCodeInt = 0;
-
-    // First find the longest linear passing interval and its center for every
-    // active lane. If two intervals have the same length, the lower-phase
-    // interval is retained because bestLength is updated only on a longer run.
-    for (laneIdx = 0; laneIdx < MAX_DATA_LANES; laneIdx = laneIdx + 1) begin
-      laneLeftPhaseCalc[laneIdx] = '0;
-      laneRightPhaseCalc[laneIdx] = '0;
-      laneCenterPhaseCalc[laneIdx] = '0;
-
-      if (ACTIVE_LANE_MASK[laneIdx]) begin
-        runLength = 0;
-        bestLength = 0;
-        runStart = 0;
-        bestStart = 0;
-
-        for (phaseIdx = 0; phaseIdx < PHASE_COUNT; phaseIdx = phaseIdx + 1) begin
-          if (initialPassByPhase[phaseIdx][laneIdx]) begin
-            if (runLength == 0)
-              runStart = phaseIdx;
-
-            runLength = runLength + 1;
-            if (runLength > bestLength) begin
-              bestLength = runLength;
-              bestStart = runStart;
-            end
-          end else begin
-            runLength = 0;
-          end
-        end
-
-        if (bestLength < MIN_LANE_WINDOW_STEPS) begin
-          initialWindowsValidCalc = 1'b0;
-        end else begin
-          laneCenterInt = bestStart + ((bestLength - 1) >> 1);
-          laneLeftPhaseCalc[laneIdx] = bestStart;
-          laneRightPhaseCalc[laneIdx] = bestStart + bestLength - 1;
-          laneCenterPhaseCalc[laneIdx] = laneCenterInt;
-
-          if (laneCenterInt < minLaneCenterInt)
-            minLaneCenterInt = laneCenterInt;
-          if (laneCenterInt > maxLaneCenterInt)
-            maxLaneCenterInt = laneCenterInt;
-        end
-      end
-    end
-
-    // The local TX deskew can only add delay. Select the latest measured lane
-    // center when added delay moves the eye toward larger PI codes; select the
-    // earliest center for the opposite PHY polarity.
-    if (DESKEW_ADD_DELAY_INCREASES_PHASE)
-      targetLaneCenterInt = maxLaneCenterInt;
-    else
-      targetLaneCenterInt = minLaneCenterInt;
-
-    for (laneIdx = 0; laneIdx < MAX_DATA_LANES; laneIdx = laneIdx + 1) begin
-      if (ACTIVE_LANE_MASK[laneIdx]) begin
-        laneCenterInt = laneCenterPhaseCalc[laneIdx];
-
-        if (DESKEW_ADD_DELAY_INCREASES_PHASE)
-          deskewDeltaInt = targetLaneCenterInt - laneCenterInt;
-        else
-          deskewDeltaInt = laneCenterInt - targetLaneCenterInt;
-
-        deskewCodeInt = deskewDeltaInt * DESKEW_STEPS_PER_PI;
-        if ((deskewCodeInt < 0) ||
-            (deskewCodeInt > MAX_DESKEW_CODE_INT)) begin
-          initialWindowsValidCalc = 1'b0;
-          deskewCodesCalc[
-            laneIdx*TX_DESKEW_CODE_WIDTH +: TX_DESKEW_CODE_WIDTH
-          ] = '0;
-        end else begin
-          deskewCodesCalc[
-            laneIdx*TX_DESKEW_CODE_WIDTH +: TX_DESKEW_CODE_WIDTH
-          ] = deskewCodeInt;
-        end
-      end
+  for (genvar lane = 0; lane < MAX_DATA_LANES; lane++) begin : gen_lane_reductions
+    assign failedLaneTree[MAX_DATA_LANES+lane] =
+      {6'b0, ACTIVE_LANE_MASK[lane] && !point_test_lane_pass[lane]};
+    assign laneWindowValid[lane] = !ACTIVE_LANE_MASK[lane] ||
+      (laneBestLengthReg[lane] >= WINDOW_LENGTH_WIDTH'(MIN_LANE_WINDOW_STEPS));
+    // Twenty control pins provide 39 legal settings, not 2**20 delays.
+    // Narrow products below six bits always fit; larger products must be
+    // checked before narrowing so out-of-range delays cannot wrap or saturate.
+    if (DESKEW_PRODUCT_WIDTH >= LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH) begin : gen_check_range
+      assign deskewCodeFits[lane] = !ACTIVE_LANE_MASK[lane] ||
+        (deskewProductReg[lane] <= DESKEW_PRODUCT_WIDTH'(LtsmParameters_pkg::TX_DESKEW_MAX_HALF_STEPS));
+    end else begin : gen_all_codes_fit
+      assign deskewCodeFits[lane] = 1'b1;
     end
   end
-
-  // Find the longest linear interval in which all active data lanes, Valid,
-  // and the partner's cumulative comparison result pass after TX deskew.
-  integer globalPhaseIdx;
-  integer globalRunLength;
-  integer globalBestLength;
-  integer globalRunStart;
-  integer globalBestStart;
-
-  always_comb begin
-    globalRunLength = 0;
-    globalBestLength = 0;
-    globalRunStart = 0;
-    globalBestStart = 0;
-
-    for (globalPhaseIdx = 0;
-         globalPhaseIdx < PHASE_COUNT;
-         globalPhaseIdx = globalPhaseIdx + 1) begin
-      if (verifyPassByPhase[globalPhaseIdx]) begin
-        if (globalRunLength == 0)
-          globalRunStart = globalPhaseIdx;
-
-        globalRunLength = globalRunLength + 1;
-        if (globalRunLength > globalBestLength) begin
-          globalBestLength = globalRunLength;
-          globalBestStart = globalRunStart;
-        end
-      end else begin
-        globalRunLength = 0;
-      end
-    end
-
-    globalWindowValidCalc =
-      (globalBestLength >= MIN_COMMON_WINDOW_STEPS);
-
-    if (globalBestLength == 0) begin
-      globalLeftPhaseCalc = '0;
-      globalRightPhaseCalc = '0;
-      globalCenterPhaseCalc = '0;
-    end else begin
-      globalLeftPhaseCalc = globalBestStart;
-      globalRightPhaseCalc = globalBestStart + globalBestLength - 1;
-      globalCenterPhaseCalc =
-        globalBestStart + ((globalBestLength - 1) >> 1);
-    end
+  for (genvar node = 1; node < MAX_DATA_LANES; node++) begin : gen_balanced_reductions
+    assign failedLaneTree[node] = failedLaneTree[2*node] + failedLaneTree[2*node+1];
   end
+
+  // Stage 1 reduces only active lanes, in parallel groups. The polarity is
+  // an elaboration-time constant, so each node implements either max or min.
+  for (genvar group = 0; group < CENTER_GROUP_COUNT; group++) begin : gen_center_groups
+    wire [PI_CODE_WIDTH-1:0] centerTree [1:2*CENTER_GROUP_LANES-1];
+    for (genvar lane = 0; lane < CENTER_GROUP_LANES; lane++) begin : gen_leaves
+      assign centerTree[CENTER_GROUP_LANES+lane] =
+        laneCenterPhaseReg[group*CENTER_GROUP_LANES+lane];
+    end
+    for (genvar node = 1; node < CENTER_GROUP_LANES; node++) begin : gen_nodes
+      assign centerTree[node] =
+        (DESKEW_ADD_DELAY_INCREASES_PHASE ?
+          (centerTree[2*node] > centerTree[2*node+1]) :
+          (centerTree[2*node] < centerTree[2*node+1])) ?
+        centerTree[2*node] : centerTree[2*node+1];
+    end
+    assign groupCenterResult[group] = centerTree[1];
+    // Stage 2 starts at the group registers, not at stage 1's combinational
+    // roots. This cuts the complete lane-to-target reduction across two clocks.
+    assign targetCenterTree[CENTER_GROUP_COUNT+group] = groupCenterPhaseReg[group];
+  end
+  for (genvar node = 1; node < CENTER_GROUP_COUNT; node++) begin : gen_target_reduction
+    assign targetCenterTree[node] =
+      (DESKEW_ADD_DELAY_INCREASES_PHASE ?
+        (targetCenterTree[2*node] > targetCenterTree[2*node+1]) :
+        (targetCenterTree[2*node] < targetCenterTree[2*node+1])) ?
+      targetCenterTree[2*node] : targetCenterTree[2*node+1];
+  end
+
+  wire globalWindowValidCalc =
+    globalBestLengthReg >= WINDOW_LENGTH_WIDTH'(MIN_COMMON_WINDOW_STEPS);
+  wire [PI_CODE_WIDTH-1:0] globalLeftPhaseCalc = globalBestStartReg;
+  wire [PI_CODE_WIDTH-1:0] globalRightPhaseCalc =
+    globalBestStartReg + PI_CODE_WIDTH'(globalBestLengthReg - 1'b1);
+  wire [PI_CODE_WIDTH-1:0] globalCenterPhaseCalc =
+    globalBestStartReg + PI_CODE_WIDTH'((globalBestLengthReg - 1'b1) >> 1);
 
   always_comb begin
     busy = (stateReg != SweepState_IDLE) &&
@@ -6789,7 +8096,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
       (stateReg == SweepState_START_FINAL_TEST);
   end
 
-  integer clearLaneIdx;
+  int unsigned clearLaneIdx;
 
   always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
@@ -6803,9 +8110,25 @@ module MBTrain_DataTrainCenter1SweepEngine #(
       deskewCodesReg <= '0;
       globalLeftPhaseReg <= '0;
       globalRightPhaseReg <= '0;
+      globalRunStartReg <= '0;
+      globalRunLengthReg <= '0;
+      globalBestStartReg <= '0;
+      globalBestLengthReg <= '0;
+      targetLaneCenterReg <= '0;
+      for (clearLaneIdx = 0; clearLaneIdx < CENTER_GROUP_COUNT;
+           clearLaneIdx = clearLaneIdx + 1) begin
+        groupCenterPhaseReg[clearLaneIdx] <= '0;
+      end
       for (clearLaneIdx = 0;
            clearLaneIdx < MAX_DATA_LANES;
            clearLaneIdx = clearLaneIdx + 1) begin
+        laneRunStartReg[clearLaneIdx] <= '0;
+        laneRunLengthReg[clearLaneIdx] <= '0;
+        laneBestStartReg[clearLaneIdx] <= '0;
+        laneBestLengthReg[clearLaneIdx] <= '0;
+        deskewDeltaReg[clearLaneIdx] <= '0;
+        deskewProductReg[clearLaneIdx] <= '0;
+        selectedDeskewStepsReg[clearLaneIdx] <= '0;
         laneLeftPhaseReg[clearLaneIdx] <= '0;
         laneRightPhaseReg[clearLaneIdx] <= '0;
         laneCenterPhaseReg[clearLaneIdx] <= '0;
@@ -6824,9 +8147,8 @@ module MBTrain_DataTrainCenter1SweepEngine #(
         deskewCodesReg <= '0;
         globalLeftPhaseReg <= '0;
         globalRightPhaseReg <= '0;
-        // Both sweep memories are completely overwritten before they are read;
-        // avoiding a bulk clear keeps the implementation from inferring a very
-        // large one-cycle reset/clear network.
+        // Streaming window trackers are cleared when zero deskew is accepted;
+        // the same path initializes both a new training run and every retry.
         for (clearLaneIdx = 0;
              clearLaneIdx < MAX_DATA_LANES;
              clearLaneIdx = clearLaneIdx + 1) begin
@@ -6842,6 +8164,13 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           SweepState_APPLY_ZERO_DESKEW: begin
             if (tx_lane_deskew_applied) begin
               phaseIndexReg <= '0;
+              for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+                   clearLaneIdx = clearLaneIdx + 1) begin
+                laneRunStartReg[clearLaneIdx] <= '0;
+                laneRunLengthReg[clearLaneIdx] <= '0;
+                laneBestStartReg[clearLaneIdx] <= '0;
+                laneBestLengthReg[clearLaneIdx] <= '0;
+              end
               stateReg <= SweepState_APPLY_INITIAL_PHASE;
             end
           end
@@ -6861,10 +8190,26 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_STORE_INITIAL_RESULT: begin
-            initialPassByPhase[phaseIndexReg] <= point_test_lane_pass;
-            lastFailedComparisonsReg <= countFailedComparisons(
-              point_test_lane_pass, point_test_valid_pass
-            );
+            for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+                 clearLaneIdx = clearLaneIdx + 1) begin
+              if (ACTIVE_LANE_MASK[clearLaneIdx]) begin
+                if (point_test_lane_pass[clearLaneIdx]) begin
+                  if (laneRunLengthReg[clearLaneIdx] == 0)
+                    laneRunStartReg[clearLaneIdx] <= phaseIndexReg;
+                  laneRunLengthReg[clearLaneIdx] <= laneRunLengthReg[clearLaneIdx] + 1'b1;
+                  // Strictly longer retains the lower interval on ties.
+                  if ((laneRunLengthReg[clearLaneIdx] + 1'b1) > laneBestLengthReg[clearLaneIdx]) begin
+                    laneBestLengthReg[clearLaneIdx] <= laneRunLengthReg[clearLaneIdx] + 1'b1;
+                    laneBestStartReg[clearLaneIdx] <=
+                      (laneRunLengthReg[clearLaneIdx] == 0) ?
+                        phaseIndexReg : laneRunStartReg[clearLaneIdx];
+                  end
+                end else begin
+                  laneRunLengthReg[clearLaneIdx] <= '0;
+                end
+              end
+            end
+            lastFailedComparisonsReg <= {9'b0, failedComparisonsCalc};
             if (phaseIndexReg == {PI_CODE_WIDTH{1'b1}}) begin
               stateReg <= SweepState_CALCULATE_DESKEW;
             end else begin
@@ -6875,25 +8220,90 @@ module MBTrain_DataTrainCenter1SweepEngine #(
 
           SweepState_CALCULATE_DESKEW: begin
             if (initialWindowsValidCalc) begin
-              deskewCodesReg <= deskewCodesCalc;
-              for (clearLaneIdx = 0;
-                   clearLaneIdx < MAX_DATA_LANES;
+              for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
                    clearLaneIdx = clearLaneIdx + 1) begin
-                laneLeftPhaseReg[clearLaneIdx] <= laneLeftPhaseCalc[clearLaneIdx];
-                laneRightPhaseReg[clearLaneIdx] <= laneRightPhaseCalc[clearLaneIdx];
-                laneCenterPhaseReg[clearLaneIdx] <= laneCenterPhaseCalc[clearLaneIdx];
+                if (ACTIVE_LANE_MASK[clearLaneIdx]) begin
+                  laneLeftPhaseReg[clearLaneIdx] <= laneBestStartReg[clearLaneIdx];
+                  laneRightPhaseReg[clearLaneIdx] <= laneBestStartReg[clearLaneIdx] +
+                    PI_CODE_WIDTH'(laneBestLengthReg[clearLaneIdx] - 1'b1);
+                  laneCenterPhaseReg[clearLaneIdx] <= laneBestStartReg[clearLaneIdx] +
+                    PI_CODE_WIDTH'((laneBestLengthReg[clearLaneIdx] - 1'b1) >> 1);
+                end
               end
-              stateReg <= SweepState_APPLY_DESKEW;
+              stateReg <= SweepState_REDUCE_CENTER_GROUPS;
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg <= retryCountReg + 16'd1;
               deskewCodesReg <= '0;
               phaseIndexReg <= '0;
-              // A retry overwrites every phase entry before recalculation.
               stateReg <= SweepState_APPLY_ZERO_DESKEW;
             end else begin
               errorReg <= 1'b1;
               stateReg <= SweepState_ERROR;
             end
+          end
+
+          SweepState_REDUCE_CENTER_GROUPS: begin
+            for (clearLaneIdx = 0; clearLaneIdx < CENTER_GROUP_COUNT;
+                 clearLaneIdx = clearLaneIdx + 1) begin
+              groupCenterPhaseReg[clearLaneIdx] <= groupCenterResult[clearLaneIdx];
+            end
+            stateReg <= SweepState_SELECT_TARGET;
+          end
+
+          SweepState_SELECT_TARGET: begin
+            targetLaneCenterReg <= targetCenterTree[1];
+            stateReg <= SweepState_CALCULATE_DELTA;
+          end
+
+          SweepState_CALCULATE_DELTA: begin
+            for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+                 clearLaneIdx = clearLaneIdx + 1) begin
+              if (ACTIVE_LANE_MASK[clearLaneIdx])
+                deskewDeltaReg[clearLaneIdx] <= DESKEW_ADD_DELAY_INCREASES_PHASE ?
+                  targetLaneCenterReg - laneCenterPhaseReg[clearLaneIdx] :
+                  laneCenterPhaseReg[clearLaneIdx] - targetLaneCenterReg;
+            end
+            stateReg <= SweepState_SCALE_DESKEW;
+          end
+
+          SweepState_SCALE_DESKEW: begin
+            for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+                 clearLaneIdx = clearLaneIdx + 1) begin
+              if (ACTIVE_LANE_MASK[clearLaneIdx])
+                deskewProductReg[clearLaneIdx] <=
+                  DESKEW_PRODUCT_WIDTH'(deskewDeltaReg[clearLaneIdx]) *
+                  DESKEW_PRODUCT_WIDTH'(DESKEW_STEPS_PER_PI);
+            end
+            stateReg <= SweepState_CHECK_DESKEW;
+          end
+
+          SweepState_CHECK_DESKEW: begin
+            if (allDeskewCodesFit) begin
+              for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+                   clearLaneIdx = clearLaneIdx + 1) begin
+                selectedDeskewStepsReg[clearLaneIdx] <= ACTIVE_LANE_MASK[clearLaneIdx] ?
+                  LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH'(deskewProductReg[clearLaneIdx]) :
+                  {LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH{1'b0}};
+              end
+              stateReg <= SweepState_ENCODE_DESKEW;
+            end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
+              retryCountReg <= retryCountReg + 16'd1;
+              deskewCodesReg <= '0;
+              phaseIndexReg <= '0;
+              stateReg <= SweepState_APPLY_ZERO_DESKEW;
+            end else begin
+              errorReg <= 1'b1;
+              stateReg <= SweepState_ERROR;
+            end
+          end
+
+          SweepState_ENCODE_DESKEW: begin
+            for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+                 clearLaneIdx = clearLaneIdx + 1) begin
+              deskewCodesReg[clearLaneIdx*TX_DESKEW_CODE_WIDTH +: TX_DESKEW_CODE_WIDTH] <=
+                LtsmParameters_pkg::encode_tx_deskew(selectedDeskewStepsReg[clearLaneIdx]);
+            end
+            stateReg <= SweepState_APPLY_DESKEW;
           end
 
           SweepState_APPLY_DESKEW: begin
@@ -6902,7 +8312,10 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_CLEAR_VERIFY_RESULTS: begin
-            // The following sweep writes every entry in verifyPassByPhase.
+            globalRunStartReg <= '0;
+            globalRunLengthReg <= '0;
+            globalBestStartReg <= '0;
+            globalBestLengthReg <= '0;
             phaseIndexReg <= '0;
             stateReg <= SweepState_APPLY_VERIFY_PHASE;
           end
@@ -6922,10 +8335,19 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_STORE_VERIFY_RESULT: begin
-            verifyPassByPhase[phaseIndexReg] <= pointTestAllPass;
-            lastFailedComparisonsReg <= countFailedComparisons(
-              point_test_lane_pass, point_test_valid_pass
-            );
+            if (pointTestAllPass) begin
+              if (globalRunLengthReg == 0)
+                globalRunStartReg <= phaseIndexReg;
+              globalRunLengthReg <= globalRunLengthReg + 1'b1;
+              if ((globalRunLengthReg + 1'b1) > globalBestLengthReg) begin
+                globalBestLengthReg <= globalRunLengthReg + 1'b1;
+                globalBestStartReg <= (globalRunLengthReg == 0) ?
+                  phaseIndexReg : globalRunStartReg;
+              end
+            end else begin
+              globalRunLengthReg <= '0;
+            end
+            lastFailedComparisonsReg <= {9'b0, failedComparisonsCalc};
             if (phaseIndexReg == {PI_CODE_WIDTH{1'b1}}) begin
               stateReg <= SweepState_CALCULATE_GLOBAL;
             end else begin
@@ -6945,7 +8367,6 @@ module MBTrain_DataTrainCenter1SweepEngine #(
               retryCountReg <= retryCountReg + 16'd1;
               deskewCodesReg <= '0;
               phaseIndexReg <= '0;
-              // A retry overwrites every phase entry before recalculation.
               stateReg <= SweepState_APPLY_ZERO_DESKEW;
             end else begin
               errorReg <= 1'b1;
@@ -6968,9 +8389,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_CHECK_FINAL_TEST: begin
-            lastFailedComparisonsReg <= countFailedComparisons(
-              point_test_lane_pass, point_test_valid_pass
-            );
+            lastFailedComparisonsReg <= {9'b0, failedComparisonsCalc};
             if (pointTestAllPass) begin
               doneReg <= 1'b1;
               stateReg <= SweepState_DONE;
@@ -6978,7 +8397,6 @@ module MBTrain_DataTrainCenter1SweepEngine #(
               retryCountReg <= retryCountReg + 16'd1;
               deskewCodesReg <= '0;
               phaseIndexReg <= '0;
-              // A retry overwrites every phase entry before recalculation.
               stateReg <= SweepState_APPLY_ZERO_DESKEW;
             end else begin
               errorReg <= 1'b1;
@@ -6998,8 +8416,8 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   initial begin
     if ((PI_CODE_WIDTH < 2) || (PI_CODE_WIDTH > 10))
       $error("PI_CODE_WIDTH must be in the range 2..10");
-    if ((TX_DESKEW_CODE_WIDTH < 1) || (TX_DESKEW_CODE_WIDTH > 16))
-      $error("TX_DESKEW_CODE_WIDTH must be in the range 1..16");
+    if (TX_DESKEW_CODE_WIDTH != LtsmParameters_pkg::TX_DESKEW_CONTROL_WIDTH)
+      $error("TX_DESKEW_CODE_WIDTH must be 20 for the two-cell TX deskew controls");
     if (DESKEW_STEPS_PER_PI < 1)
       $error("DESKEW_STEPS_PER_PI must be at least 1");
     if ((MIN_LANE_WINDOW_STEPS < 1) ||
@@ -7016,13 +8434,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_DataTrainCenter2-sv"></a>
+<a id="src-MBTrain_DataTrainCenter2-sv"></a>
 
-## [13] MBTrain_DataTrainCenter2.sv
+## [15] src\MBTrain_DataTrainCenter2.sv
 
 ```systemverilog
-// FILE_INDEX: 13
-// FILE_PATH : MBTrain_DataTrainCenter2.sv
+// FILE_INDEX: 15
+// FILE_PATH : src\MBTrain_DataTrainCenter2.sv
 
 // UCIe MBTRAIN.DATATRAINCENTER2 wrapper with linear aggregate clock centering.
 // TX lane deskew is intentionally not modified in this state.
@@ -7071,7 +8489,11 @@ module MBTrain_DataTrainCenter2 #(
   output var logic         flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
   input wire logic [63:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
-  output var logic [11:0]  substate,
+  output var logic [3:0]   dbg_senderState,
+  output var logic [2:0]   dbg_receiverState,
+  output var logic [3:0]   dbg_d2cSenderState,
+  output var logic [3:0]   dbg_d2cReceiverState,
+  output var logic [3:0]   dbg_sweepState,
   output var logic [15:0]  lastErrorCount,
   output var logic [15:0]  retryCount
 );
@@ -7342,7 +8764,11 @@ module MBTrain_DataTrainCenter2 #(
     trainError = trainErrorReg || sweepEngine_trainError;
     sb_tx_valid = sbTxValid;
     sb_tx_din = sbTxDin;
-    substate = {senderStateReg[3:0], d2cSender_state, d2cReceiver_state};
+    dbg_senderState = senderStateReg;
+    dbg_receiverState = receiverStateReg;
+    dbg_d2cSenderState = d2cSender_state;
+    dbg_d2cReceiverState = d2cReceiver_state;
+    dbg_sweepState = sweepEngine_state;
     lastErrorCount = sweepEngine_lastFailedComparisons;
     retryCount = sweepEngine_retryCount;
 
@@ -7747,13 +9173,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_DataTrainCenter2SweepEngine-sv"></a>
+<a id="src-MBTrain_DataTrainCenter2SweepEngine-sv"></a>
 
-## [14] MBTrain_DataTrainCenter2SweepEngine.sv
+## [16] src\MBTrain_DataTrainCenter2SweepEngine.sv
 
 ```systemverilog
-// FILE_INDEX: 14
-// FILE_PATH : MBTrain_DataTrainCenter2SweepEngine.sv
+// FILE_INDEX: 16
+// FILE_PATH : src\MBTrain_DataTrainCenter2SweepEngine.sv
 
 // MBTRAIN.DATATRAINCENTER2 local transmitter clock-centering controller.
 //
@@ -7804,6 +9230,8 @@ module MBTrain_DataTrainCenter2SweepEngine #(
 );
   localparam int unsigned MAX_DATA_LANES = 64;
   localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  // A passing run can contain every code, so its length needs one extra bit.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = PI_CODE_WIDTH + 1;
 
   localparam logic [63:0] ACTIVE_LANE_MASK =
     ucieA ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
@@ -7833,7 +9261,12 @@ module MBTrain_DataTrainCenter2SweepEngine #(
   (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] globalLeftPhaseReg;
   (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] globalRightPhaseReg;
 
-  logic passByPhase [0:PHASE_COUNT-1];
+  // Accumulate the longest interval as samples arrive. The old bitmap scan
+  // unrolled PHASE_COUNT dependent add/compare/mux steps into one clock path.
+  // These registers limit each sample update to one narrow increment/compare.
+  logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg, bestLengthReg;
+  logic [PI_CODE_WIDTH-1:0] runStartReg, bestStartReg;
+  wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength = runLengthReg + 1'b1;
 
   wire allActiveDataLanesPass =
     &(point_test_lane_pass | ~ACTIVE_LANE_MASK);
@@ -7841,68 +9274,45 @@ module MBTrain_DataTrainCenter2SweepEngine #(
                           point_test_cumulative_pass &&
                           allActiveDataLanesPass;
 
-  function automatic [15:0] countFailedComparisons(
-    input logic [63:0] lanePass,
-    input logic        validPass,
-    input logic        cumulativePass
-  );
-    integer lane;
-    integer count;
-    begin
-      count = 0;
-      for (lane = 0; lane < MAX_DATA_LANES; lane = lane + 1) begin
-        if (ACTIVE_LANE_MASK[lane] && !lanePass[lane])
-          count = count + 1;
+  // Balanced population count: six adder levels for 64 lanes, with only
+  // enough bits at each level for its partial count. Inactive lanes are zero.
+  for (genvar level = 0; level <= 6; level = level + 1) begin : genFailureCount
+    wire [level:0] count [0:(MAX_DATA_LANES >> level)-1];
+    for (genvar node = 0; node < (MAX_DATA_LANES >> level); node = node + 1) begin : genNode
+      if (level == 0) begin : genLeaf
+        assign count[node] = ACTIVE_LANE_MASK[node] && !point_test_lane_pass[node];
+      end else begin : genSum
+        assign count[node] =
+          {1'b0, genFailureCount[level-1].count[2*node]} +
+          {1'b0, genFailureCount[level-1].count[2*node+1]};
       end
-      if (!validPass)
-        count = count + 1;
-      if (!cumulativePass && (count == 0))
-        count = 1;
-      countFailedComparisons = count;
     end
-  endfunction
-
-  integer phaseIdx;
-  integer runLength;
-  integer bestLength;
-  integer runStart;
-  integer bestStart;
+  end
+  wire [6:0] failedLaneAndValidCount =
+    genFailureCount[6].count[0] + {6'b0, !point_test_valid_pass};
+  wire [15:0] failedComparisons =
+    (!point_test_cumulative_pass && (failedLaneAndValidCount == 0)) ?
+    16'd1 : {9'b0, failedLaneAndValidCount};
 
   logic globalWindowValidCalc;
   logic [PI_CODE_WIDTH-1:0] globalLeftPhaseCalc;
   logic [PI_CODE_WIDTH-1:0] globalRightPhaseCalc;
   logic [PI_CODE_WIDTH-1:0] globalCenterPhaseCalc;
 
+  // Strictly-longer updates below retain the first (lowest-code) equal run.
+  // Subtract before narrowing so the full-range passing window is preserved.
   always_comb begin
-    runLength = 0;
-    bestLength = 0;
-    runStart = 0;
-    bestStart = 0;
-
-    for (phaseIdx = 0; phaseIdx < PHASE_COUNT; phaseIdx = phaseIdx + 1) begin
-      if (passByPhase[phaseIdx]) begin
-        if (runLength == 0)
-          runStart = phaseIdx;
-        runLength = runLength + 1;
-        if (runLength > bestLength) begin
-          bestLength = runLength;
-          bestStart = runStart;
-        end
-      end else begin
-        runLength = 0;
-      end
-    end
-
-    globalWindowValidCalc = (bestLength >= MIN_COMMON_WINDOW_STEPS);
-
-    if (bestLength == 0) begin
+    globalWindowValidCalc =
+      (bestLengthReg >= WINDOW_LENGTH_WIDTH'(MIN_COMMON_WINDOW_STEPS));
+    if (bestLengthReg == 0) begin
       globalLeftPhaseCalc = '0;
       globalRightPhaseCalc = '0;
       globalCenterPhaseCalc = '0;
     end else begin
-      globalLeftPhaseCalc = bestStart;
-      globalRightPhaseCalc = bestStart + bestLength - 1;
-      globalCenterPhaseCalc = bestStart + ((bestLength - 1) >> 1);
+      globalLeftPhaseCalc = bestStartReg;
+      globalRightPhaseCalc = bestStartReg + PI_CODE_WIDTH'(bestLengthReg - 1'b1);
+      globalCenterPhaseCalc =
+        bestStartReg + PI_CODE_WIDTH'((bestLengthReg - 1'b1) >> 1);
     end
   end
 
@@ -7938,6 +9348,10 @@ module MBTrain_DataTrainCenter2SweepEngine #(
       lastFailedComparisonsReg <= 16'b0;
       retryCountReg <= 16'b0;
       phaseIndexReg <= '0;
+      runLengthReg <= '0;
+      bestLengthReg <= '0;
+      runStartReg <= '0;
+      bestStartReg <= '0;
       finalClockPhaseReg <= '0;
       globalLeftPhaseReg <= '0;
       globalRightPhaseReg <= '0;
@@ -7951,6 +9365,10 @@ module MBTrain_DataTrainCenter2SweepEngine #(
         lastFailedComparisonsReg <= 16'b0;
         retryCountReg <= 16'b0;
         phaseIndexReg <= '0;
+        runLengthReg <= '0;
+        bestLengthReg <= '0;
+        runStartReg <= '0;
+        bestStartReg <= '0;
         finalClockPhaseReg <= '0;
         globalLeftPhaseReg <= '0;
         globalRightPhaseReg <= '0;
@@ -7974,12 +9392,18 @@ module MBTrain_DataTrainCenter2SweepEngine #(
           end
 
           SweepState_STORE_SWEEP_RESULT: begin
-            passByPhase[phaseIndexReg] <= pointTestAllPass;
-            lastFailedComparisonsReg <= countFailedComparisons(
-              point_test_lane_pass,
-              point_test_valid_pass,
-              point_test_cumulative_pass
-            );
+            if (pointTestAllPass) begin
+              if (runLengthReg == 0)
+                runStartReg <= phaseIndexReg;
+              runLengthReg <= extendedRunLength;
+              if (extendedRunLength > bestLengthReg) begin
+                bestLengthReg <= extendedRunLength;
+                bestStartReg <= (runLengthReg == 0) ? phaseIndexReg : runStartReg;
+              end
+            end else begin
+              runLengthReg <= '0;
+            end
+            lastFailedComparisonsReg <= failedComparisons;
 
             if (phaseIndexReg == {PI_CODE_WIDTH{1'b1}}) begin
               stateReg <= SweepState_CALCULATE_GLOBAL;
@@ -7999,6 +9423,10 @@ module MBTrain_DataTrainCenter2SweepEngine #(
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg <= retryCountReg + 16'd1;
               phaseIndexReg <= '0;
+              runLengthReg <= '0;
+              bestLengthReg <= '0;
+              runStartReg <= '0;
+              bestStartReg <= '0;
               finalClockPhaseReg <= '0;
               globalLeftPhaseReg <= '0;
               globalRightPhaseReg <= '0;
@@ -8024,11 +9452,7 @@ module MBTrain_DataTrainCenter2SweepEngine #(
           end
 
           SweepState_CHECK_FINAL_TEST: begin
-            lastFailedComparisonsReg <= countFailedComparisons(
-              point_test_lane_pass,
-              point_test_valid_pass,
-              point_test_cumulative_pass
-            );
+            lastFailedComparisonsReg <= failedComparisons;
 
             if (pointTestAllPass) begin
               doneReg <= 1'b1;
@@ -8036,6 +9460,10 @@ module MBTrain_DataTrainCenter2SweepEngine #(
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg <= retryCountReg + 16'd1;
               phaseIndexReg <= '0;
+              runLengthReg <= '0;
+              bestLengthReg <= '0;
+              runStartReg <= '0;
+              bestStartReg <= '0;
               finalClockPhaseReg <= '0;
               globalLeftPhaseReg <= '0;
               globalRightPhaseReg <= '0;
@@ -8069,13 +9497,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_DataTrainVrefFSM-sv"></a>
+<a id="src-MBTrain_DataTrainVrefFSM-sv"></a>
 
-## [15] MBTrain_DataTrainVrefFSM.sv
+## [17] src\MBTrain_DataTrainVrefFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 15
-// FILE_PATH : MBTrain_DataTrainVrefFSM.sv
+// FILE_INDEX: 17
+// FILE_PATH : src\MBTrain_DataTrainVrefFSM.sv
 
 // UCIe MBTRAIN.DATATRAINVREF.
 //
@@ -8148,7 +9576,11 @@ module MBTrainDataTrainVrefFSM #(
   input  wire logic flagFromAnalog_dataTrainVrefFinishedPattern,
   output      logic flagToAnalog_dataTrainVrefResetLocalTxScrambler,
 
-  output      logic [11:0] substate,
+  output      logic [3:0]  dbg_localState,
+  output      logic [2:0]  dbg_remoteState,
+  output      logic [3:0]  dbg_sweepState,
+  output      logic [3:0]  dbg_pointInitiatorState,
+  output      logic [3:0]  dbg_pointResponderState,
   output      logic [15:0] lastErrorCount,
   output      logic [15:0] retryCount,
   output      logic [dataLaneCount*dataVrefCodeWidth-1:0]
@@ -8228,7 +9660,11 @@ module MBTrainDataTrainVrefFSM #(
     .flagToAnalog_resetLocalTxScrambler(
       flagToAnalog_dataTrainVrefResetLocalTxScrambler
     ),
-    .substate(substate),
+    .dbg_localState(dbg_localState),
+    .dbg_remoteState(dbg_remoteState),
+    .dbg_sweepState(dbg_sweepState),
+    .dbg_pointInitiatorState(dbg_pointInitiatorState),
+    .dbg_pointResponderState(dbg_pointResponderState),
     .lastErrorCount(lastErrorCount),
     .retryCount(retryCount),
     .selectedVrefCodes(selectedVrefCodes),
@@ -8248,13 +9684,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_DataVrefFSM-sv"></a>
+<a id="src-MBTrain_DataVrefFSM-sv"></a>
 
-## [16] MBTrain_DataVrefFSM.sv
+## [18] src\MBTrain_DataVrefFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 16
-// FILE_PATH : MBTrain_DataVrefFSM.sv
+// FILE_INDEX: 18
+// FILE_PATH : src\MBTrain_DataVrefFSM.sv
 
 // UCIe MBTRAIN.DATAVREF.
 //
@@ -8326,7 +9762,11 @@ module MBTrainDataVrefFSM #(
   input  wire logic flagFromAnalog_dataVrefFinishedPattern,
   output      logic flagToAnalog_dataVrefResetLocalTxScrambler,
 
-  output      logic [11:0] substate,
+  output      logic [3:0]  dbg_localState,
+  output      logic [2:0]  dbg_remoteState,
+  output      logic [3:0]  dbg_sweepState,
+  output      logic [3:0]  dbg_pointInitiatorState,
+  output      logic [3:0]  dbg_pointResponderState,
   output      logic [15:0] lastErrorCount,
   output      logic [15:0] retryCount,
   output      logic [dataLaneCount*dataVrefCodeWidth-1:0]
@@ -8400,7 +9840,11 @@ module MBTrainDataVrefFSM #(
     .flagToAnalog_resetLocalTxScrambler(
       flagToAnalog_dataVrefResetLocalTxScrambler
     ),
-    .substate(substate),
+    .dbg_localState(dbg_localState),
+    .dbg_remoteState(dbg_remoteState),
+    .dbg_sweepState(dbg_sweepState),
+    .dbg_pointInitiatorState(dbg_pointInitiatorState),
+    .dbg_pointResponderState(dbg_pointResponderState),
     .lastErrorCount(lastErrorCount),
     .retryCount(retryCount),
     .selectedVrefCodes(selectedVrefCodes),
@@ -8420,13 +9864,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_DataVrefStateCore-sv"></a>
+<a id="src-MBTrain_DataVrefStateCore-sv"></a>
 
-## [17] MBTrain_DataVrefStateCore.sv
+## [19] src\MBTrain_DataVrefStateCore.sv
 
 ```systemverilog
-// FILE_INDEX: 17
-// FILE_PATH : MBTrain_DataVrefStateCore.sv
+// FILE_INDEX: 19
+// FILE_PATH : src\MBTrain_DataVrefStateCore.sv
 
 // Shared implementation for UCIe MBTRAIN.DATAVREF and MBTRAIN.DATATRAINVREF.
 //
@@ -8493,7 +9937,11 @@ module MBTrain_DataVrefStateCore #(
   input  wire logic                         flagFromAnalog_lfsrPatternSent,
   output      logic                         flagToAnalog_resetLocalTxScrambler,
 
-  output      logic [11:0]                  substate,
+  output      logic [3:0]                   dbg_localState,
+  output      logic [2:0]                   dbg_remoteState,
+  output      logic [3:0]                   dbg_sweepState,
+  output      logic [3:0]                   dbg_pointInitiatorState,
+  output      logic [3:0]                   dbg_pointResponderState,
   output      logic [15:0]                  lastErrorCount,
   output      logic [15:0]                  retryCount,
   output      logic [DATA_LANE_COUNT*VREF_CODE_WIDTH-1:0] selectedVrefCodes,
@@ -8811,7 +10259,11 @@ module MBTrain_DataVrefStateCore #(
     flagToAnalog_resetLocalTxScrambler = runningReg &&
                                          responderResetTxScrambler;
 
-    substate = {localStateReg, initiatorState, responderState};
+    dbg_localState = localStateReg;
+    dbg_remoteState = remoteStateReg;
+    dbg_sweepState = sweepState;
+    dbg_pointInitiatorState = initiatorState;
+    dbg_pointResponderState = responderState;
     lastErrorCount = sweepFailedLaneCount;
     retryCount = sweepRetryCount;
     selectedVrefCodes = sweepFinalCodes;
@@ -9007,18 +10459,18 @@ endmodule
 
 ```
 
-<a id="MBTrain_DataVrefSweepEngine-sv"></a>
+<a id="src-MBTrain_DataVrefSweepEngine-sv"></a>
 
-## [18] MBTrain_DataVrefSweepEngine.sv
+## [20] src\MBTrain_DataVrefSweepEngine.sv
 
 ```systemverilog
-// FILE_INDEX: 18
-// FILE_PATH : MBTrain_DataVrefSweepEngine.sv
+// FILE_INDEX: 20
+// FILE_PATH : src\MBTrain_DataVrefSweepEngine.sv
 
 // Parameterized linear receiver-Vref sweep for the UCIe Data lanes.
 //
 // One receiver-initiated point test is performed at each Vref code.  The
-// per-lane result vector is retained, and every active lane independently
+// per-lane longest interval is tracked as results arrive.  Every active lane
 // selects the lower midpoint of its longest non-wrapping passing interval.
 // All selected per-lane codes are then applied together and verified by one
 // final point test.
@@ -9073,8 +10525,21 @@ module MBTrain_DataVrefSweepEngine #(
   } SweepState_t;
 
   (* keep = "true" *) SweepState_t stateReg;
-  (* keep = "true" *) logic [VREF_VALUE_COUNT-1:0]
-    passBitmapReg [0:DATA_LANE_COUNT-1];
+  // Keep a bounded running summary instead of rescanning a full pass bitmap.
+  // This replaces VREF_VALUE_COUNT serial compare/mux stages with one narrow
+  // increment/compare per accepted result.  COUNT+1 represents an all-pass run.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(VREF_VALUE_COUNT + 1);
+  localparam int unsigned FAILED_COUNT_WIDTH =
+    (DATA_LANE_COUNT < 2) ? 1 : $clog2(DATA_LANE_COUNT + 1);
+  localparam int unsigned COUNT_TREE_LEAVES = 1 << $clog2(DATA_LANE_COUNT);
+  logic [VREF_CODE_WIDTH-1:0] runStartReg [0:DATA_LANE_COUNT-1];
+  logic [VREF_CODE_WIDTH-1:0] bestStartReg [0:DATA_LANE_COUNT-1];
+  logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg [0:DATA_LANE_COUNT-1];
+  logic [WINDOW_LENGTH_WIDTH-1:0] bestLengthReg [0:DATA_LANE_COUNT-1];
+  wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength [0:DATA_LANE_COUNT-1];
+  wire [WINDOW_LENGTH_WIDTH-1:0] bestSpan [0:DATA_LANE_COUNT-1];
+  wire [DATA_LANE_COUNT-1:0] laneHasWindow;
+  wire [FAILED_COUNT_WIDTH-1:0] failedCountTree [1:2*COUNT_TREE_LEAVES-1];
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] currentCodeReg;
   (* keep = "true" *) logic [DATA_LANE_COUNT*VREF_CODE_WIDTH-1:0]
     finalCodeVectorReg;
@@ -9085,65 +10550,29 @@ module MBTrain_DataVrefSweepEngine #(
   (* keep = "true" *) logic [15:0] failedLaneCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
 
-  // These combinational analysis arrays are assigned by one process only.
-  integer runStartInt [0:DATA_LANE_COUNT-1];
-  integer runLengthInt [0:DATA_LANE_COUNT-1];
-  integer bestStartInt [0:DATA_LANE_COUNT-1];
-  integer bestLengthInt [0:DATA_LANE_COUNT-1];
-  integer scanLane;
-  integer scanCode;
-  logic allActiveLanesHaveWindow;
-  logic allActiveLanesPassFinal;
+  wire allActiveLanesHaveWindow = &laneHasWindow;
+  wire allActiveLanesPassFinal =
+    ((point_test_pass & ACTIVE_DATA_LANE_MASK) == ACTIVE_DATA_LANE_MASK);
 
-  function automatic logic [15:0] count_failed_active_lanes(
-    input logic [DATA_LANE_COUNT-1:0] pass_vector
-  );
-    integer count_lane;
-    begin
-      count_failed_active_lanes = 16'd0;
-      for (count_lane = 0; count_lane < DATA_LANE_COUNT;
-           count_lane = count_lane + 1) begin
-        if (ACTIVE_DATA_LANE_MASK[count_lane] && !pass_vector[count_lane])
-          count_failed_active_lanes = count_failed_active_lanes + 16'd1;
-      end
+  for (genvar lane = 0; lane < DATA_LANE_COUNT; lane = lane + 1) begin : g_window
+    assign extendedRunLength[lane] = runLengthReg[lane] + 1'b1;
+    assign bestSpan[lane] = bestLengthReg[lane] - 1'b1;
+    assign laneHasWindow[lane] = !ACTIVE_DATA_LANE_MASK[lane] ||
+      (bestLengthReg[lane] >= WINDOW_LENGTH_WIDTH'(MIN_PASSING_WINDOW_VALUES));
+  end
+
+  // Balanced population count: logarithmic lane depth, rather than a serial
+  // chain of 16-bit increments through every active lane.
+  for (genvar leaf = 0; leaf < COUNT_TREE_LEAVES; leaf = leaf + 1) begin : g_count_leaf
+    if (leaf < DATA_LANE_COUNT) begin : g_lane
+      assign failedCountTree[COUNT_TREE_LEAVES + leaf] =
+        FAILED_COUNT_WIDTH'(ACTIVE_DATA_LANE_MASK[leaf] && !point_test_pass[leaf]);
+    end else begin : g_padding
+      assign failedCountTree[COUNT_TREE_LEAVES + leaf] = '0;
     end
-  endfunction
-
-  // Find each active lane's longest linear passing interval.  Strictly-greater
-  // replacement preserves the lower-code interval when two windows tie and
-  // deliberately does not join the first and last Vref codes.
-  always_comb begin
-    allActiveLanesHaveWindow = 1'b1;
-
-    for (scanLane = 0; scanLane < DATA_LANE_COUNT;
-         scanLane = scanLane + 1) begin
-      runStartInt[scanLane]   = 0;
-      runLengthInt[scanLane]  = 0;
-      bestStartInt[scanLane]  = 0;
-      bestLengthInt[scanLane] = 0;
-
-      for (scanCode = 0; scanCode < VREF_VALUE_COUNT;
-           scanCode = scanCode + 1) begin
-        if (passBitmapReg[scanLane][scanCode]) begin
-          if (runLengthInt[scanLane] == 0)
-            runStartInt[scanLane] = scanCode;
-          runLengthInt[scanLane] = runLengthInt[scanLane] + 1;
-          if (runLengthInt[scanLane] > bestLengthInt[scanLane]) begin
-            bestLengthInt[scanLane] = runLengthInt[scanLane];
-            bestStartInt[scanLane]  = runStartInt[scanLane];
-          end
-        end else begin
-          runLengthInt[scanLane] = 0;
-        end
-      end
-
-      if (ACTIVE_DATA_LANE_MASK[scanLane] &&
-          (bestLengthInt[scanLane] < MIN_PASSING_WINDOW_VALUES))
-        allActiveLanesHaveWindow = 1'b0;
-    end
-
-    allActiveLanesPassFinal =
-      ((point_test_pass & ACTIVE_DATA_LANE_MASK) == ACTIVE_DATA_LANE_MASK);
+  end
+  for (genvar node = 1; node < COUNT_TREE_LEAVES; node = node + 1) begin : g_count_node
+    assign failedCountTree[node] = failedCountTree[2*node] + failedCountTree[2*node+1];
   end
 
   always_comb begin
@@ -9193,8 +10622,12 @@ module MBTrain_DataVrefSweepEngine #(
       retryCountReg       <= 16'd0;
       for (int unsigned reset_lane = 0;
            reset_lane < DATA_LANE_COUNT;
-           reset_lane = reset_lane + 1)
-        passBitmapReg[reset_lane] <= '0;
+           reset_lane = reset_lane + 1) begin
+        runStartReg[reset_lane] <= '0;
+        runLengthReg[reset_lane] <= '0;
+        bestStartReg[reset_lane] <= '0;
+        bestLengthReg[reset_lane] <= '0;
+      end
     end else begin
       if (start && ((stateReg == SweepState_idle) ||
                     (stateReg == SweepState_done) ||
@@ -9208,8 +10641,12 @@ module MBTrain_DataVrefSweepEngine #(
         retryCountReg      <= 16'd0;
         for (int unsigned start_lane = 0;
              start_lane < DATA_LANE_COUNT;
-             start_lane = start_lane + 1)
-          passBitmapReg[start_lane] <= '0;
+             start_lane = start_lane + 1) begin
+          runStartReg[start_lane] <= '0;
+          runLengthReg[start_lane] <= '0;
+          bestStartReg[start_lane] <= '0;
+          bestLengthReg[start_lane] <= '0;
+        end
       end else begin
         unique case (stateReg)
           SweepState_idle: ;
@@ -9227,13 +10664,26 @@ module MBTrain_DataVrefSweepEngine #(
               for (int unsigned capture_lane = 0;
                    capture_lane < DATA_LANE_COUNT;
                    capture_lane = capture_lane + 1) begin
-                passBitmapReg[capture_lane][currentCodeReg] <=
-                  point_test_pass[capture_lane];
+                if (ACTIVE_DATA_LANE_MASK[capture_lane]) begin
+                  if (point_test_pass[capture_lane]) begin
+                    if (runLengthReg[capture_lane] == '0)
+                      runStartReg[capture_lane] <= currentCodeReg;
+                    runLengthReg[capture_lane] <= extendedRunLength[capture_lane];
+                    // Strict comparison preserves the lower interval on ties.
+                    if (extendedRunLength[capture_lane] > bestLengthReg[capture_lane]) begin
+                      bestLengthReg[capture_lane] <= extendedRunLength[capture_lane];
+                      bestStartReg[capture_lane] <= (runLengthReg[capture_lane] == '0) ?
+                                                   currentCodeReg : runStartReg[capture_lane];
+                    end
+                  end else begin
+                    runLengthReg[capture_lane] <= '0;
+                  end
+                end
               end
               failedLaneCountReg <= failedLaneCountReg +
-                                    count_failed_active_lanes(point_test_pass);
+                                    16'(failedCountTree[1]);
 
-              if (currentCodeReg == (VREF_VALUE_COUNT - 1)) begin
+              if (currentCodeReg == VREF_CODE_WIDTH'(VREF_VALUE_COUNT - 1)) begin
                 stateReg <= SweepState_analyze;
               end else begin
                 currentCodeReg <= currentCodeReg + 1'b1;
@@ -9250,15 +10700,15 @@ module MBTrain_DataVrefSweepEngine #(
                 if (ACTIVE_DATA_LANE_MASK[select_lane]) begin
                   finalCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
-                  ] <= bestStartInt[select_lane] +
-                       ((bestLengthInt[select_lane] - 1) / 2);
+                  ] <= bestStartReg[select_lane] +
+                       VREF_CODE_WIDTH'(bestSpan[select_lane] >> 1);
                   leftCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
-                  ] <= bestStartInt[select_lane];
+                  ] <= bestStartReg[select_lane];
                   rightCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
-                  ] <= bestStartInt[select_lane] +
-                       bestLengthInt[select_lane] - 1;
+                  ] <= bestStartReg[select_lane] +
+                       VREF_CODE_WIDTH'(bestSpan[select_lane]);
                 end else begin
                   finalCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
@@ -9278,8 +10728,12 @@ module MBTrain_DataVrefSweepEngine #(
               failedLaneCountReg  <= 16'd0;
               for (int unsigned retry_lane = 0;
                    retry_lane < DATA_LANE_COUNT;
-                   retry_lane = retry_lane + 1)
-                passBitmapReg[retry_lane] <= '0;
+                   retry_lane = retry_lane + 1) begin
+                runStartReg[retry_lane] <= '0;
+                runLengthReg[retry_lane] <= '0;
+                bestStartReg[retry_lane] <= '0;
+                bestLengthReg[retry_lane] <= '0;
+              end
               stateReg <= SweepState_applySweepCode;
             end else begin
               stateReg <= SweepState_error;
@@ -9304,12 +10758,16 @@ module MBTrain_DataVrefSweepEngine #(
                 failedLaneCountReg  <= 16'd0;
                 for (int unsigned verify_retry_lane = 0;
                      verify_retry_lane < DATA_LANE_COUNT;
-                     verify_retry_lane = verify_retry_lane + 1)
-                  passBitmapReg[verify_retry_lane] <= '0;
+                     verify_retry_lane = verify_retry_lane + 1) begin
+                  runStartReg[verify_retry_lane] <= '0;
+                  runLengthReg[verify_retry_lane] <= '0;
+                  bestStartReg[verify_retry_lane] <= '0;
+                  bestLengthReg[verify_retry_lane] <= '0;
+                end
                 stateReg <= SweepState_applySweepCode;
               end else begin
                 failedLaneCountReg <= failedLaneCountReg +
-                                      count_failed_active_lanes(point_test_pass);
+                                      16'(failedCountTree[1]);
                 stateReg <= SweepState_error;
               end
             end
@@ -9344,13 +10802,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_LinkSpeed-sv"></a>
+<a id="src-MBTrain_LinkSpeed-sv"></a>
 
-## [19] MBTrain_LinkSpeed.sv
+## [21] src\MBTrain_LinkSpeed.sv
 
 ```systemverilog
-// FILE_INDEX: 19
-// FILE_PATH : MBTrain_LinkSpeed.sv
+// FILE_INDEX: 21
+// FILE_PATH : src\MBTrain_LinkSpeed.sv
 
 // SystemVerilog translation of MBTrain_LinkSpeed.scala.
 `default_nettype none
@@ -9391,7 +10849,10 @@ module MBTrain_LinkSpeed #(
   output var logic [2:0]   flagToAnalog_d2cReceiver_dataPattern,
   output var logic         flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]  flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
-  output var logic [11:0]  substate,
+  output var logic [3:0]   dbg_senderState,
+  output var logic [2:0]   dbg_receiverState,
+  output var logic [3:0]   dbg_d2cSenderState,
+  output var logic [3:0]   dbg_d2cReceiverState,
   output var logic [15:0]  lastErrorCount,
   output var logic [15:0]  retryCount
 );
@@ -9627,7 +11088,10 @@ module MBTrain_LinkSpeed #(
     trainError = trainErrorReg;
     sb_tx_valid = sbTxValid;
     sb_tx_din = sbTxDin;
-    substate = {senderStateReg[3:0], d2cSender_state, d2cReceiver_state};
+    dbg_senderState = senderStateReg;
+    dbg_receiverState = receiverStateReg;
+    dbg_d2cSenderState = d2cSender_state;
+    dbg_d2cReceiverState = d2cReceiver_state;
     lastErrorCount = logErrorCountReg;
     retryCount = retryCountReg;
     flagToLtsm_phyInRetrain = phyInRetrainReg;
@@ -10041,13 +11505,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_RxClkCalFSM-sv"></a>
+<a id="src-MBTrain_RxClkCalFSM-sv"></a>
 
-## [20] MBTrain_RxClkCalFSM.sv
+## [22] src\MBTrain_RxClkCalFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 20
-// FILE_PATH : MBTrain_RxClkCalFSM.sv
+// FILE_INDEX: 22
+// FILE_PATH : src\MBTrain_RxClkCalFSM.sv
 
 // SystemVerilog translation of MBTrain_RxClkCalFSM.scala.
 `default_nettype none
@@ -10075,7 +11539,8 @@ module MBTrainRxClkCalFSM #(
   output var logic         flagToAnalog_rxClkCalDoCalibration,
   input wire logic         flagFromAnalog_rxClkCalDone,
   output var logic         flagToAnalog_rxClkCalSendClockTrack,
-  output var logic [7:0]   substate
+  output var logic [2:0]   dbg_senderState,
+  output var logic [2:0]   dbg_receiverState
 );
   import SidebandMsgGenerator_pkg::*;
 
@@ -10156,7 +11621,8 @@ module MBTrainRxClkCalFSM #(
     trainError  = trainErrorReg;
 
     // Chisel assigned a 10-bit Cat into an 8-bit output. Preserve the low 8 bits.
-    substate = {2'b0, rxClkCalReceiverStateReg, rxClkCalSenderStateReg};
+    dbg_senderState = rxClkCalSenderStateReg;
+    dbg_receiverState = rxClkCalReceiverStateReg;
 
     flagToAnalog_rxClkCalDoCalibration = running &&
       ((rxClkCalSenderStateReg == RxClkCalSenderState_startAnalogCal) ||
@@ -10280,13 +11746,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_RxDeskewFSM-sv"></a>
+<a id="src-MBTrain_RxDeskewFSM-sv"></a>
 
-## [21] MBTrain_RxDeskewFSM.sv
+## [23] src\MBTrain_RxDeskewFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 21
-// FILE_PATH : MBTrain_RxDeskewFSM.sv
+// FILE_INDEX: 23
+// FILE_PATH : src\MBTrain_RxDeskewFSM.sv
 
 // UCIe 2.0 MBTRAIN.RXDESKEW implementation.
 //
@@ -10364,7 +11830,11 @@ module MBTrainRxDeskewFSM #(
   input  wire logic                         flagFromAnalog_rxDeskewLfsrPatternSent,
   output      logic                         flagToAnalog_rxDeskewResetLocalTxScrambler,
 
-  output      logic [11:0]                  substate,
+  output      logic [3:0]                   dbg_localState,
+  output      logic [2:0]                   dbg_remoteState,
+  output      logic [3:0]                   dbg_sweepState,
+  output      logic [3:0]                   dbg_pointInitiatorState,
+  output      logic [3:0]                   dbg_pointResponderState,
   output      logic [15:0]                  lastErrorCount,
   output      logic [15:0]                  retryCount,
   output      logic [dataLaneCount*rxDeskewCodeWidth-1:0] selectedRxDeskewCodes,
@@ -10683,7 +12153,11 @@ module MBTrainRxDeskewFSM #(
     flagToAnalog_rxDeskewResetLocalTxScrambler = runningReg &&
                                          responderResetTxScrambler;
 
-    substate = {localStateReg, initiatorState, responderState};
+    dbg_localState = localStateReg;
+    dbg_remoteState = remoteStateReg;
+    dbg_sweepState = sweepState;
+    dbg_pointInitiatorState = initiatorState;
+    dbg_pointResponderState = responderState;
     lastErrorCount = sweepFailedLaneCount;
     retryCount = sweepRetryCount;
     selectedRxDeskewCodes = sweepFinalDeskewCodes;
@@ -10879,13 +12353,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_RxDeskewSweepEngine-sv"></a>
+<a id="src-MBTrain_RxDeskewSweepEngine-sv"></a>
 
-## [22] MBTrain_RxDeskewSweepEngine.sv
+## [24] src\MBTrain_RxDeskewSweepEngine.sv
 
 ```systemverilog
-// FILE_INDEX: 22
-// FILE_PATH : MBTrain_RxDeskewSweepEngine.sv
+// FILE_INDEX: 24
+// FILE_PATH : src\MBTrain_RxDeskewSweepEngine.sv
 
 // Parameterized linear receiver lane-deskew sweep for UCIe MBTRAIN.RXDESKEW.
 //
@@ -10950,8 +12424,16 @@ module MBTrain_RxDeskewSweepEngine #(
   } SweepState_t;
 
   (* keep = "true" *) SweepState_t stateReg;
-  (* keep = "true" *) logic [RX_DESKEW_VALUE_COUNT-1:0]
-    passBitmapReg [0:DATA_LANE_COUNT-1];
+  // Track one accepted sample per cycle instead of rescanning the complete
+  // bitmap combinationally.  The extra length bit represents an all-pass sweep.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(RX_DESKEW_VALUE_COUNT + 1);
+  typedef logic [RX_DESKEW_CODE_WIDTH-1:0] code_t;
+  typedef logic [WINDOW_LENGTH_WIDTH-1:0] window_length_t;
+  code_t runStartReg [0:DATA_LANE_COUNT-1];
+  code_t bestStartReg [0:DATA_LANE_COUNT-1];
+  window_length_t runLengthReg [0:DATA_LANE_COUNT-1];
+  window_length_t bestLengthReg [0:DATA_LANE_COUNT-1];
+  window_length_t nextRunLength [0:DATA_LANE_COUNT-1];
   (* keep = "true" *) logic [RX_DESKEW_CODE_WIDTH-1:0] currentCodeReg;
   (* keep = "true" *) logic [DATA_LANE_COUNT*RX_DESKEW_CODE_WIDTH-1:0]
     finalCodeVectorReg;
@@ -10962,65 +12444,31 @@ module MBTrain_RxDeskewSweepEngine #(
   (* keep = "true" *) logic [15:0] failedLaneCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
 
-  // Combinational longest-window analysis.  These variables are owned only by
-  // this always_comb process, avoiding procedural multi-driver issues.
-  integer runStartInt [0:DATA_LANE_COUNT-1];
-  integer runLengthInt [0:DATA_LANE_COUNT-1];
-  integer bestStartInt [0:DATA_LANE_COUNT-1];
-  integer bestLengthInt [0:DATA_LANE_COUNT-1];
-  integer scanLane;
-  integer scanCode;
-  logic allActiveLanesHaveWindow;
-  logic allActiveLanesPassFinal;
+  logic [DATA_LANE_COUNT-1:0] laneHasWindow;
+  wire allActiveLanesHaveWindow = &laneHasWindow;
+  wire allActiveLanesPassFinal =
+    ((point_test_pass & ACTIVE_DATA_LANE_MASK) == ACTIVE_DATA_LANE_MASK);
 
-  function automatic logic [15:0] count_failed_active_lanes(
-    input logic [DATA_LANE_COUNT-1:0] pass_vector
-  );
-    integer count_lane;
-    begin
-      count_failed_active_lanes = 16'd0;
-      for (count_lane = 0; count_lane < DATA_LANE_COUNT;
-           count_lane = count_lane + 1) begin
-        if (ACTIVE_DATA_LANE_MASK[count_lane] && !pass_vector[count_lane])
-          count_failed_active_lanes = count_failed_active_lanes + 16'd1;
-      end
+  for (genvar lane = 0; lane < DATA_LANE_COUNT; lane++) begin : windowStatus
+    assign nextRunLength[lane] = runLengthReg[lane] + window_length_t'(1);
+    assign laneHasWindow[lane] = !ACTIVE_DATA_LANE_MASK[lane] ||
+      (bestLengthReg[lane] >= window_length_t'(MIN_PASSING_WINDOW_VALUES));
+  end
+
+  // A balanced reduction avoids a lane-by-lane chain of 16-bit additions.
+  localparam int unsigned COUNT_LEAVES = 1 << $clog2(DATA_LANE_COUNT);
+  localparam int unsigned FAIL_COUNT_WIDTH = $clog2(DATA_LANE_COUNT + 1);
+  wire [FAIL_COUNT_WIDTH-1:0] failedCountTree [1:2*COUNT_LEAVES-1];
+  for (genvar leaf = 0; leaf < COUNT_LEAVES; leaf++) begin : failedCountLeaves
+    if (leaf < DATA_LANE_COUNT) begin : activeLeaf
+      assign failedCountTree[COUNT_LEAVES+leaf] =
+        FAIL_COUNT_WIDTH'(ACTIVE_DATA_LANE_MASK[leaf] && !point_test_pass[leaf]);
+    end else begin : paddingLeaf
+      assign failedCountTree[COUNT_LEAVES+leaf] = '0;
     end
-  endfunction
-
-  // Strictly-greater replacement keeps the lower-code interval when equal
-  // windows tie.  Code zero and the highest code are not treated as adjacent.
-  always_comb begin
-    allActiveLanesHaveWindow = 1'b1;
-
-    for (scanLane = 0; scanLane < DATA_LANE_COUNT;
-         scanLane = scanLane + 1) begin
-      runStartInt[scanLane]   = 0;
-      runLengthInt[scanLane]  = 0;
-      bestStartInt[scanLane]  = 0;
-      bestLengthInt[scanLane] = 0;
-
-      for (scanCode = 0; scanCode < RX_DESKEW_VALUE_COUNT;
-           scanCode = scanCode + 1) begin
-        if (passBitmapReg[scanLane][scanCode]) begin
-          if (runLengthInt[scanLane] == 0)
-            runStartInt[scanLane] = scanCode;
-          runLengthInt[scanLane] = runLengthInt[scanLane] + 1;
-          if (runLengthInt[scanLane] > bestLengthInt[scanLane]) begin
-            bestLengthInt[scanLane] = runLengthInt[scanLane];
-            bestStartInt[scanLane]  = runStartInt[scanLane];
-          end
-        end else begin
-          runLengthInt[scanLane] = 0;
-        end
-      end
-
-      if (ACTIVE_DATA_LANE_MASK[scanLane] &&
-          (bestLengthInt[scanLane] < MIN_PASSING_WINDOW_VALUES))
-        allActiveLanesHaveWindow = 1'b0;
-    end
-
-    allActiveLanesPassFinal =
-      ((point_test_pass & ACTIVE_DATA_LANE_MASK) == ACTIVE_DATA_LANE_MASK);
+  end
+  for (genvar node = 1; node < COUNT_LEAVES; node++) begin : failedCountBranches
+    assign failedCountTree[node] = failedCountTree[2*node] + failedCountTree[2*node+1];
   end
 
   always_comb begin
@@ -11071,8 +12519,12 @@ module MBTrain_RxDeskewSweepEngine #(
       retryCountReg      <= 16'd0;
       for (int unsigned reset_lane = 0;
            reset_lane < DATA_LANE_COUNT;
-           reset_lane = reset_lane + 1)
-        passBitmapReg[reset_lane] <= '0;
+           reset_lane = reset_lane + 1) begin
+        runStartReg[reset_lane] <= '0;
+        bestStartReg[reset_lane] <= '0;
+        runLengthReg[reset_lane] <= '0;
+        bestLengthReg[reset_lane] <= '0;
+      end
     end else begin
       if (start && ((stateReg == SweepState_idle) ||
                     (stateReg == SweepState_done) ||
@@ -11086,8 +12538,12 @@ module MBTrain_RxDeskewSweepEngine #(
         retryCountReg      <= 16'd0;
         for (int unsigned start_lane = 0;
              start_lane < DATA_LANE_COUNT;
-             start_lane = start_lane + 1)
-          passBitmapReg[start_lane] <= '0;
+             start_lane = start_lane + 1) begin
+          runStartReg[start_lane] <= '0;
+          bestStartReg[start_lane] <= '0;
+          runLengthReg[start_lane] <= '0;
+          bestLengthReg[start_lane] <= '0;
+        end
       end else begin
         unique case (stateReg)
           SweepState_idle: ;
@@ -11105,11 +12561,25 @@ module MBTrain_RxDeskewSweepEngine #(
               for (int unsigned capture_lane = 0;
                    capture_lane < DATA_LANE_COUNT;
                    capture_lane = capture_lane + 1) begin
-                passBitmapReg[capture_lane][currentCodeReg] <=
-                  point_test_pass[capture_lane];
+                if (ACTIVE_DATA_LANE_MASK[capture_lane]) begin
+                  if (point_test_pass[capture_lane]) begin
+                    if (runLengthReg[capture_lane] == '0)
+                      runStartReg[capture_lane] <= currentCodeReg;
+                    runLengthReg[capture_lane] <= nextRunLength[capture_lane];
+                    // Strict > keeps the first (lowest-code) window on ties.
+                    if (nextRunLength[capture_lane] > bestLengthReg[capture_lane]) begin
+                      bestLengthReg[capture_lane] <= nextRunLength[capture_lane];
+                      bestStartReg[capture_lane] <=
+                        (runLengthReg[capture_lane] == '0) ?
+                        currentCodeReg : runStartReg[capture_lane];
+                    end
+                  end else begin
+                    runLengthReg[capture_lane] <= '0;
+                  end
+                end
               end
               failedLaneCountReg <= failedLaneCountReg +
-                                    count_failed_active_lanes(point_test_pass);
+                                    16'(failedCountTree[1]);
 
               if (currentCodeReg == (RX_DESKEW_VALUE_COUNT - 1)) begin
                 stateReg <= SweepState_analyze;
@@ -11120,6 +12590,8 @@ module MBTrain_RxDeskewSweepEngine #(
             end
           end
 
+          // The final sample has updated the window registers before this
+          // state selects endpoints and the lower midpoint.
           SweepState_analyze: begin
             if (allActiveLanesHaveWindow) begin
               for (int unsigned select_lane = 0;
@@ -11129,17 +12601,17 @@ module MBTrain_RxDeskewSweepEngine #(
                   finalCodeVectorReg[
                     select_lane*RX_DESKEW_CODE_WIDTH +:
                     RX_DESKEW_CODE_WIDTH
-                  ] <= bestStartInt[select_lane] +
-                       ((bestLengthInt[select_lane] - 1) / 2);
+                  ] <= bestStartReg[select_lane] +
+                       code_t'((bestLengthReg[select_lane] - window_length_t'(1)) >> 1);
                   leftCodeVectorReg[
                     select_lane*RX_DESKEW_CODE_WIDTH +:
                     RX_DESKEW_CODE_WIDTH
-                  ] <= bestStartInt[select_lane];
+                  ] <= bestStartReg[select_lane];
                   rightCodeVectorReg[
                     select_lane*RX_DESKEW_CODE_WIDTH +:
                     RX_DESKEW_CODE_WIDTH
-                  ] <= bestStartInt[select_lane] +
-                       bestLengthInt[select_lane] - 1;
+                  ] <= bestStartReg[select_lane] +
+                       code_t'(bestLengthReg[select_lane] - window_length_t'(1));
                 end else begin
                   finalCodeVectorReg[
                     select_lane*RX_DESKEW_CODE_WIDTH +:
@@ -11162,8 +12634,12 @@ module MBTrain_RxDeskewSweepEngine #(
               failedLaneCountReg <= 16'd0;
               for (int unsigned retry_lane = 0;
                    retry_lane < DATA_LANE_COUNT;
-                   retry_lane = retry_lane + 1)
-                passBitmapReg[retry_lane] <= '0;
+                   retry_lane = retry_lane + 1) begin
+                runStartReg[retry_lane] <= '0;
+                bestStartReg[retry_lane] <= '0;
+                runLengthReg[retry_lane] <= '0;
+                bestLengthReg[retry_lane] <= '0;
+              end
               stateReg <= SweepState_applySweepCode;
             end else begin
               stateReg <= SweepState_error;
@@ -11188,12 +12664,16 @@ module MBTrain_RxDeskewSweepEngine #(
                 failedLaneCountReg <= 16'd0;
                 for (int unsigned verify_retry_lane = 0;
                      verify_retry_lane < DATA_LANE_COUNT;
-                     verify_retry_lane = verify_retry_lane + 1)
-                  passBitmapReg[verify_retry_lane] <= '0;
+                     verify_retry_lane = verify_retry_lane + 1) begin
+                  runStartReg[verify_retry_lane] <= '0;
+                  bestStartReg[verify_retry_lane] <= '0;
+                  runLengthReg[verify_retry_lane] <= '0;
+                  bestLengthReg[verify_retry_lane] <= '0;
+                end
                 stateReg <= SweepState_applySweepCode;
               end else begin
                 failedLaneCountReg <= failedLaneCountReg +
-                                      count_failed_active_lanes(point_test_pass);
+                                      16'(failedCountTree[1]);
                 stateReg <= SweepState_error;
               end
             end
@@ -11228,13 +12708,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_SpeedIdleFSM-sv"></a>
+<a id="src-MBTrain_SpeedIdleFSM-sv"></a>
 
-## [23] MBTrain_SpeedIdleFSM.sv
+## [25] src\MBTrain_SpeedIdleFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 23
-// FILE_PATH : MBTrain_SpeedIdleFSM.sv
+// FILE_INDEX: 25
+// FILE_PATH : src\MBTrain_SpeedIdleFSM.sv
 
 // SystemVerilog translation of MBTrain_SpeedIdleFSM.scala.
 `default_nettype none
@@ -11259,7 +12739,8 @@ module MBTrainSpeedIdleFSM #(
   output var logic [127:0] sb_tx_din,
   input wire logic         sb_rx_valid,
   input wire logic [127:0] sb_rx_dout,
-  output var logic [7:0]   substate
+  output var logic [1:0]   dbg_senderState,
+  output var logic [1:0]   dbg_receiverState
 );
   import SidebandMsgGenerator_pkg::*;
 
@@ -11317,7 +12798,8 @@ module MBTrainSpeedIdleFSM #(
     busy        = running && !doneReg;
     done        = doneReg;
     trainError  = trainErrorReg;
-    substate    = {4'b0, speedIdleReceiverStateReg, speedIdleSenderStateReg};
+    dbg_senderState = speedIdleSenderStateReg;
+    dbg_receiverState = speedIdleReceiverStateReg;
   end
 
   always_ff @(posedge clock or negedge reset_n) begin
@@ -11395,13 +12877,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_TxSelfCalFSM-sv"></a>
+<a id="src-MBTrain_TxSelfCalFSM-sv"></a>
 
-## [24] MBTrain_TxSelfCalFSM.sv
+## [26] src\MBTrain_TxSelfCalFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 24
-// FILE_PATH : MBTrain_TxSelfCalFSM.sv
+// FILE_INDEX: 26
+// FILE_PATH : src\MBTrain_TxSelfCalFSM.sv
 
 // SystemVerilog translation of MBTrain_TxSelfCalFSM.scala.
 `default_nettype none
@@ -11426,7 +12908,8 @@ module MBTrainTxSelfCalFSM #(
   output var logic [127:0] sb_tx_din,
   input wire logic         sb_rx_valid,
   input wire logic [127:0] sb_rx_dout,
-  output var logic [7:0]   substate
+  output var logic [1:0]   dbg_senderState,
+  output var logic [1:0]   dbg_receiverState
 );
   import SidebandMsgGenerator_pkg::*;
 
@@ -11484,7 +12967,8 @@ module MBTrainTxSelfCalFSM #(
     busy        = running && !doneReg;
     done        = doneReg;
     trainError  = trainErrorReg;
-    substate    = {4'b0, txSelfCalReceiverStateReg, txSelfCalSenderStateReg};
+    dbg_senderState = txSelfCalSenderStateReg;
+    dbg_receiverState = txSelfCalReceiverStateReg;
   end
 
   always_ff @(posedge clock or negedge reset_n) begin
@@ -11562,13 +13046,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_ValidVrefStateCore-sv"></a>
+<a id="src-MBTrain_ValidVrefStateCore-sv"></a>
 
-## [25] MBTrain_ValidVrefStateCore.sv
+## [27] src\MBTrain_ValidVrefStateCore.sv
 
 ```systemverilog
-// FILE_INDEX: 25
-// FILE_PATH : MBTrain_ValidVrefStateCore.sv
+// FILE_INDEX: 27
+// FILE_PATH : src\MBTrain_ValidVrefStateCore.sv
 
 // Shared implementation for UCIe MBTRAIN.VALVREF and MBTRAIN.VALTRAINVREF.
 //
@@ -11632,7 +13116,11 @@ module MBTrain_ValidVrefStateCore #(
   input  wire logic                         flagFromAnalog_valTrainPatternSent,
   output      logic                         flagToAnalog_resetLocalTxScrambler,
 
-  output      logic [11:0]                  substate,
+  output      logic [3:0]                   dbg_localState,
+  output      logic [2:0]                   dbg_remoteState,
+  output      logic [3:0]                   dbg_sweepState,
+  output      logic [3:0]                   dbg_pointInitiatorState,
+  output      logic [3:0]                   dbg_pointResponderState,
   output      logic [15:0]                  lastErrorCount,
   output      logic [15:0]                  retryCount,
   output      logic [VREF_CODE_WIDTH-1:0]   selectedVrefCode,
@@ -11947,7 +13435,11 @@ module MBTrain_ValidVrefStateCore #(
     flagToAnalog_resetLocalTxScrambler = runningReg &&
                                          responderResetTxScrambler;
 
-    substate = {localStateReg, initiatorState, responderState};
+    dbg_localState = localStateReg;
+    dbg_remoteState = remoteStateReg;
+    dbg_sweepState = sweepState;
+    dbg_pointInitiatorState = initiatorState;
+    dbg_pointResponderState = responderState;
     lastErrorCount = sweepFailedPointCount;
     retryCount = sweepRetryCount;
     selectedVrefCode = sweepFinalCode;
@@ -12143,13 +13635,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_ValidVrefSweepEngine-sv"></a>
+<a id="src-MBTrain_ValidVrefSweepEngine-sv"></a>
 
-## [26] MBTrain_ValidVrefSweepEngine.sv
+## [28] src\MBTrain_ValidVrefSweepEngine.sv
 
 ```systemverilog
-// FILE_INDEX: 26
-// FILE_PATH : MBTrain_ValidVrefSweepEngine.sv
+// FILE_INDEX: 28
+// FILE_PATH : src\MBTrain_ValidVrefSweepEngine.sv
 
 // Linear receiver-Vref sweep used by MBTRAIN.VALVREF and
 // MBTRAIN.VALTRAINVREF.
@@ -12206,43 +13698,20 @@ module MBTrain_ValidVrefSweepEngine #(
   } SweepState_t;
 
   (* keep = "true" *) SweepState_t stateReg;
-  (* keep = "true" *) logic [VREF_VALUE_COUNT-1:0] passBitmapReg;
+  // Track each window as its test results arrive.  A combinational scan of a
+  // complete bitmap unrolls into VREF_VALUE_COUNT dependent compare/mux stages.
+  // The length needs one extra value for an all-passing, full-range window.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(VREF_VALUE_COUNT + 1);
+  logic [VREF_CODE_WIDTH-1:0] runStartReg, bestStartReg;
+  logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg, bestLengthReg;
+  wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength = runLengthReg + 1'b1;
+  wire [WINDOW_LENGTH_WIDTH-1:0] bestSpan = bestLengthReg - 1'b1;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] currentCodeReg;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] finalCodeReg;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] leftCodeReg;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] rightCodeReg;
   (* keep = "true" *) logic [15:0] failedPointCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
-
-  integer scanIndex;
-  integer runStartInt;
-  integer runLengthInt;
-  integer bestStartInt;
-  integer bestLengthInt;
-
-  // Longest linear passing interval.  The strict greater-than comparison gives
-  // deterministic lower-code tie breaking and intentionally does not join the
-  // first and last Vref codes.
-  always_comb begin
-    runStartInt   = 0;
-    runLengthInt  = 0;
-    bestStartInt  = 0;
-    bestLengthInt = 0;
-
-    for (scanIndex = 0; scanIndex < VREF_VALUE_COUNT; scanIndex = scanIndex + 1) begin
-      if (passBitmapReg[scanIndex]) begin
-        if (runLengthInt == 0)
-          runStartInt = scanIndex;
-        runLengthInt = runLengthInt + 1;
-        if (runLengthInt > bestLengthInt) begin
-          bestLengthInt = runLengthInt;
-          bestStartInt  = runStartInt;
-        end
-      end else begin
-        runLengthInt = 0;
-      end
-    end
-  end
 
   always_comb begin
     busy                 = (stateReg != SweepState_idle) &&
@@ -12274,7 +13743,10 @@ module MBTrain_ValidVrefSweepEngine #(
   always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
       stateReg             <= SweepState_idle;
-      passBitmapReg        <= '0;
+      runStartReg         <= '0;
+      runLengthReg        <= '0;
+      bestStartReg        <= '0;
+      bestLengthReg       <= '0;
       currentCodeReg       <= '0;
       finalCodeReg         <= '0;
       leftCodeReg          <= '0;
@@ -12286,7 +13758,10 @@ module MBTrain_ValidVrefSweepEngine #(
                     (stateReg == SweepState_done) ||
                     (stateReg == SweepState_error))) begin
         stateReg            <= SweepState_applySweepCode;
-        passBitmapReg       <= '0;
+        runStartReg         <= '0;
+        runLengthReg        <= '0;
+        bestStartReg        <= '0;
+        bestLengthReg       <= '0;
         currentCodeReg      <= '0;
         finalCodeReg        <= '0;
         leftCodeReg         <= '0;
@@ -12307,11 +13782,24 @@ module MBTrain_ValidVrefSweepEngine #(
 
           SweepState_waitSweepPoint: begin
             if (point_test_done) begin
-              passBitmapReg[currentCodeReg] <= point_test_pass;
+              // Strictly greater replacement keeps the first (lowest-code)
+              // interval on a tie.  A failure ends the run; endpoints do not wrap.
+              if (point_test_pass) begin
+                if (runLengthReg == '0)
+                  runStartReg         <= currentCodeReg;
+                runLengthReg        <= extendedRunLength;
+                if (extendedRunLength > bestLengthReg) begin
+                  bestLengthReg       <= extendedRunLength;
+                  bestStartReg        <= (runLengthReg == '0) ?
+                                  currentCodeReg : runStartReg;
+                end
+              end else begin
+                runLengthReg        <= '0;
+              end
               if (!point_test_pass)
                 failedPointCountReg <= failedPointCountReg + 16'd1;
 
-              if (currentCodeReg == (VREF_VALUE_COUNT - 1)) begin
+              if (currentCodeReg == VREF_CODE_WIDTH'(VREF_VALUE_COUNT - 1)) begin
                 stateReg <= SweepState_analyze;
               end else begin
                 currentCodeReg <= currentCodeReg + 1'b1;
@@ -12321,15 +13809,18 @@ module MBTrain_ValidVrefSweepEngine #(
           end
 
           SweepState_analyze: begin
-            if (bestLengthInt >= MIN_PASSING_WINDOW_VALUES) begin
+            if (bestLengthReg >= WINDOW_LENGTH_WIDTH'(MIN_PASSING_WINDOW_VALUES)) begin
               // Lower midpoint for an even-width window.
-              finalCodeReg <= bestStartInt + ((bestLengthInt - 1) / 2);
-              leftCodeReg  <= bestStartInt;
-              rightCodeReg <= bestStartInt + bestLengthInt - 1;
+              finalCodeReg <= bestStartReg + VREF_CODE_WIDTH'(bestSpan >> 1);
+              leftCodeReg  <= bestStartReg;
+              rightCodeReg <= bestStartReg + VREF_CODE_WIDTH'(bestSpan);
               stateReg     <= SweepState_applyFinalCode;
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg        <= retryCountReg + 16'd1;
-              passBitmapReg        <= '0;
+              runStartReg         <= '0;
+              runLengthReg        <= '0;
+              bestStartReg        <= '0;
+              bestLengthReg       <= '0;
               currentCodeReg       <= '0;
               failedPointCountReg  <= 16'd0;
               stateReg             <= SweepState_applySweepCode;
@@ -12352,7 +13843,10 @@ module MBTrain_ValidVrefSweepEngine #(
                 stateReg <= SweepState_done;
               end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
                 retryCountReg        <= retryCountReg + 16'd1;
-                passBitmapReg        <= '0;
+                runStartReg         <= '0;
+                runLengthReg        <= '0;
+                bestStartReg        <= '0;
+                bestLengthReg       <= '0;
                 currentCodeReg       <= '0;
                 failedPointCountReg  <= 16'd0;
                 stateReg             <= SweepState_applySweepCode;
@@ -12388,13 +13882,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_ValTrainCenterFSM-sv"></a>
+<a id="src-MBTrain_ValTrainCenterFSM-sv"></a>
 
-## [27] MBTrain_ValTrainCenterFSM.sv
+## [29] src\MBTrain_ValTrainCenterFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 27
-// FILE_PATH : MBTrain_ValTrainCenterFSM.sv
+// FILE_INDEX: 29
+// FILE_PATH : src\MBTrain_ValTrainCenterFSM.sv
 
 // UCIe MBTRAIN.VALTRAINCENTER wrapper with linear Valid-to-clock centering.
 // Only the Valid lane is evaluated. Data and Track transmitters are expected
@@ -12444,7 +13938,11 @@ module MBTrain_ValTrainCenter #(
   output var logic         flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
   input wire logic [63:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
-  output var logic [11:0]  substate,
+  output var logic [3:0]   dbg_senderState,
+  output var logic [2:0]   dbg_receiverState,
+  output var logic [3:0]   dbg_d2cSenderState,
+  output var logic [3:0]   dbg_d2cReceiverState,
+  output var logic [3:0]   dbg_sweepState,
   output var logic [15:0]  lastErrorCount,
   output var logic [15:0]  retryCount
 );
@@ -12714,7 +14212,11 @@ module MBTrain_ValTrainCenter #(
     trainError = trainErrorReg || sweepEngine_trainError;
     sb_tx_valid = sbTxValid;
     sb_tx_din = sbTxDin;
-    substate = {senderStateReg[3:0], d2cSender_state, d2cReceiver_state};
+    dbg_senderState = senderStateReg;
+    dbg_receiverState = receiverStateReg;
+    dbg_d2cSenderState = d2cSender_state;
+    dbg_d2cReceiverState = d2cReceiver_state;
+    dbg_sweepState = sweepEngine_state;
     lastErrorCount = sweepEngine_lastFailedComparisons;
     retryCount = sweepEngine_retryCount;
 
@@ -13116,13 +14618,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_ValTrainCenterSweepEngine-sv"></a>
+<a id="src-MBTrain_ValTrainCenterSweepEngine-sv"></a>
 
-## [28] MBTrain_ValTrainCenterSweepEngine.sv
+## [30] src\MBTrain_ValTrainCenterSweepEngine.sv
 
 ```systemverilog
-// FILE_INDEX: 28
-// FILE_PATH : MBTrain_ValTrainCenterSweepEngine.sv
+// FILE_INDEX: 30
+// FILE_PATH : src\MBTrain_ValTrainCenterSweepEngine.sv
 
 // MBTRAIN.VALTRAINCENTER local transmitter Valid-to-clock centering engine.
 //
@@ -13168,6 +14670,8 @@ module MBTrain_ValTrainCenterSweepEngine #(
   output var logic [PI_CODE_WIDTH-1:0] validRightPhase
 );
   localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  // A passing run can contain every code, so its length needs one extra bit.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = PI_CODE_WIDTH + 1;
 
   typedef enum logic [3:0] {
     SweepState_IDLE               = 4'd0,
@@ -13194,51 +14698,32 @@ module MBTrain_ValTrainCenterSweepEngine #(
   (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] validLeftPhaseReg;
   (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] validRightPhaseReg;
 
-  logic passByPhase [0:PHASE_COUNT-1];
-
-  integer phaseIdx;
-  integer runLength;
-  integer bestLength;
-  integer runStart;
-  integer bestStart;
+  // Accumulate the longest interval as samples arrive. The old bitmap scan
+  // unrolled PHASE_COUNT dependent add/compare/mux steps into one clock path.
+  // These registers limit each sample update to one narrow increment/compare.
+  logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg, bestLengthReg;
+  logic [PI_CODE_WIDTH-1:0] runStartReg, bestStartReg;
+  wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength = runLengthReg + 1'b1;
 
   logic validWindowFoundCalc;
   logic [PI_CODE_WIDTH-1:0] validLeftPhaseCalc;
   logic [PI_CODE_WIDTH-1:0] validRightPhaseCalc;
   logic [PI_CODE_WIDTH-1:0] validCenterPhaseCalc;
 
-  // Find the longest non-wrapping run of passing Valid samples. For an even
-  // number of codes, select the lower of the two center codes.
+  // Strictly-longer updates below retain the first (lowest-code) equal run.
+  // Subtract before narrowing so the full-range passing window is preserved.
   always_comb begin
-    runLength = 0;
-    bestLength = 0;
-    runStart = 0;
-    bestStart = 0;
-
-    for (phaseIdx = 0; phaseIdx < PHASE_COUNT; phaseIdx = phaseIdx + 1) begin
-      if (passByPhase[phaseIdx]) begin
-        if (runLength == 0)
-          runStart = phaseIdx;
-        runLength = runLength + 1;
-        if (runLength > bestLength) begin
-          bestLength = runLength;
-          bestStart = runStart;
-        end
-      end else begin
-        runLength = 0;
-      end
-    end
-
-    validWindowFoundCalc = (bestLength >= MIN_VALID_WINDOW_STEPS);
-
-    if (bestLength == 0) begin
+    validWindowFoundCalc =
+      (bestLengthReg >= WINDOW_LENGTH_WIDTH'(MIN_VALID_WINDOW_STEPS));
+    if (bestLengthReg == 0) begin
       validLeftPhaseCalc = '0;
       validRightPhaseCalc = '0;
       validCenterPhaseCalc = '0;
     end else begin
-      validLeftPhaseCalc = bestStart;
-      validRightPhaseCalc = bestStart + bestLength - 1;
-      validCenterPhaseCalc = bestStart + ((bestLength - 1) >> 1);
+      validLeftPhaseCalc = bestStartReg;
+      validRightPhaseCalc = bestStartReg + PI_CODE_WIDTH'(bestLengthReg - 1'b1);
+      validCenterPhaseCalc =
+        bestStartReg + PI_CODE_WIDTH'((bestLengthReg - 1'b1) >> 1);
     end
   end
 
@@ -13274,6 +14759,10 @@ module MBTrain_ValTrainCenterSweepEngine #(
       lastFailedComparisonsReg <= 16'b0;
       retryCountReg <= 16'b0;
       phaseIndexReg <= '0;
+      runLengthReg <= '0;
+      bestLengthReg <= '0;
+      runStartReg <= '0;
+      bestStartReg <= '0;
       finalClockPhaseReg <= '0;
       validLeftPhaseReg <= '0;
       validRightPhaseReg <= '0;
@@ -13287,6 +14776,10 @@ module MBTrain_ValTrainCenterSweepEngine #(
         lastFailedComparisonsReg <= 16'b0;
         retryCountReg <= 16'b0;
         phaseIndexReg <= '0;
+        runLengthReg <= '0;
+        bestLengthReg <= '0;
+        runStartReg <= '0;
+        bestStartReg <= '0;
         finalClockPhaseReg <= '0;
         validLeftPhaseReg <= '0;
         validRightPhaseReg <= '0;
@@ -13310,7 +14803,17 @@ module MBTrain_ValTrainCenterSweepEngine #(
           end
 
           SweepState_STORE_SWEEP_RESULT: begin
-            passByPhase[phaseIndexReg] <= point_test_valid_pass;
+            if (point_test_valid_pass) begin
+              if (runLengthReg == 0)
+                runStartReg <= phaseIndexReg;
+              runLengthReg <= extendedRunLength;
+              if (extendedRunLength > bestLengthReg) begin
+                bestLengthReg <= extendedRunLength;
+                bestStartReg <= (runLengthReg == 0) ? phaseIndexReg : runStartReg;
+              end
+            end else begin
+              runLengthReg <= '0;
+            end
             lastFailedComparisonsReg <=
               point_test_valid_pass ? 16'd0 : 16'd1;
 
@@ -13333,6 +14836,10 @@ module MBTrain_ValTrainCenterSweepEngine #(
               lastFailedComparisonsReg <= 16'd1;
               retryCountReg <= retryCountReg + 16'd1;
               phaseIndexReg <= '0;
+              runLengthReg <= '0;
+              bestLengthReg <= '0;
+              runStartReg <= '0;
+              bestStartReg <= '0;
               finalClockPhaseReg <= '0;
               validLeftPhaseReg <= '0;
               validRightPhaseReg <= '0;
@@ -13368,6 +14875,10 @@ module MBTrain_ValTrainCenterSweepEngine #(
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg <= retryCountReg + 16'd1;
               phaseIndexReg <= '0;
+              runLengthReg <= '0;
+              bestLengthReg <= '0;
+              runStartReg <= '0;
+              bestStartReg <= '0;
               finalClockPhaseReg <= '0;
               validLeftPhaseReg <= '0;
               validRightPhaseReg <= '0;
@@ -13401,13 +14912,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_ValTrainVrefFSM-sv"></a>
+<a id="src-MBTrain_ValTrainVrefFSM-sv"></a>
 
-## [29] MBTrain_ValTrainVrefFSM.sv
+## [31] src\MBTrain_ValTrainVrefFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 29
-// FILE_PATH : MBTrain_ValTrainVrefFSM.sv
+// FILE_INDEX: 31
+// FILE_PATH : src\MBTrain_ValTrainVrefFSM.sv
 
 // UCIe MBTRAIN.VALTRAINVREF.
 //
@@ -13473,7 +14984,11 @@ module MBTrainValTrainVrefFSM #(
   input  wire logic                         flagFromAnalog_valTrainVrefFinishedPattern,
   output      logic                         flagToAnalog_valTrainVrefResetLocalTxScrambler,
 
-  output      logic [11:0]                  substate,
+  output      logic [3:0]                   dbg_localState,
+  output      logic [2:0]                   dbg_remoteState,
+  output      logic [3:0]                   dbg_sweepState,
+  output      logic [3:0]                   dbg_pointInitiatorState,
+  output      logic [3:0]                   dbg_pointResponderState,
   output      logic [15:0]                  lastErrorCount,
   output      logic [15:0]                  retryCount,
   output      logic [validVrefCodeWidth-1:0] selectedVrefCode,
@@ -13523,7 +15038,11 @@ module MBTrainValTrainVrefFSM #(
     .flagToAnalog_sendValTrainPattern(flagToAnalog_valTrainVrefSendPattern),
     .flagFromAnalog_valTrainPatternSent(flagFromAnalog_valTrainVrefFinishedPattern),
     .flagToAnalog_resetLocalTxScrambler(flagToAnalog_valTrainVrefResetLocalTxScrambler),
-    .substate(substate),
+    .dbg_localState(dbg_localState),
+    .dbg_remoteState(dbg_remoteState),
+    .dbg_sweepState(dbg_sweepState),
+    .dbg_pointInitiatorState(dbg_pointInitiatorState),
+    .dbg_pointResponderState(dbg_pointResponderState),
     .lastErrorCount(lastErrorCount),
     .retryCount(retryCount),
     .selectedVrefCode(selectedVrefCode),
@@ -13543,13 +15062,13 @@ endmodule
 
 ```
 
-<a id="MBTrain_ValVrefFSM-sv"></a>
+<a id="src-MBTrain_ValVrefFSM-sv"></a>
 
-## [30] MBTrain_ValVrefFSM.sv
+## [32] src\MBTrain_ValVrefFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 30
-// FILE_PATH : MBTrain_ValVrefFSM.sv
+// FILE_INDEX: 32
+// FILE_PATH : src\MBTrain_ValVrefFSM.sv
 
 // UCIe MBTRAIN.VALVREF.
 //
@@ -13613,7 +15132,11 @@ module MBTrainValVrefFSM #(
   input  wire logic                         flagFromAnalog_valRefFinishedPattern,
   output      logic                         flagToAnalog_valRefResetLocalTxScrambler,
 
-  output      logic [11:0]                  substate,
+  output      logic [3:0]                   dbg_localState,
+  output      logic [2:0]                   dbg_remoteState,
+  output      logic [3:0]                   dbg_sweepState,
+  output      logic [3:0]                   dbg_pointInitiatorState,
+  output      logic [3:0]                   dbg_pointResponderState,
   output      logic [15:0]                  lastErrorCount,
   output      logic [15:0]                  retryCount,
   output      logic [validVrefCodeWidth-1:0] selectedVrefCode,
@@ -13665,7 +15188,11 @@ module MBTrainValVrefFSM #(
     .flagToAnalog_sendValTrainPattern(flagToAnalog_valRefSendPattern),
     .flagFromAnalog_valTrainPatternSent(flagFromAnalog_valRefFinishedPattern),
     .flagToAnalog_resetLocalTxScrambler(flagToAnalog_valRefResetLocalTxScrambler),
-    .substate(substate),
+    .dbg_localState(dbg_localState),
+    .dbg_remoteState(dbg_remoteState),
+    .dbg_sweepState(dbg_sweepState),
+    .dbg_pointInitiatorState(dbg_pointInitiatorState),
+    .dbg_pointResponderState(dbg_pointResponderState),
     .lastErrorCount(lastErrorCount),
     .retryCount(retryCount),
     .selectedVrefCode(selectedVrefCode),
@@ -13685,13 +15212,13 @@ endmodule
 
 ```
 
-<a id="MBTrainFSM-sv"></a>
+<a id="src-MBTrainFSM-sv"></a>
 
-## [31] MBTrainFSM.sv
+## [33] src\MBTrainFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 31
-// FILE_PATH : MBTrainFSM.sv
+// FILE_INDEX: 33
+// FILE_PATH : src\MBTrainFSM.sv
 
 // SystemVerilog translation of MBTrainFSM.scala.
 `default_nettype none
@@ -13802,83 +15329,31 @@ module MBTrainFSM #(
   output var logic           flagToAnalog_rxClkCal_doCalibration,
   input wire logic           flagFromAnalog_rxClkCal_done,
   output var logic           flagToAnalog_rxClkCal_sendClockTrack,
-  output var logic           flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern,
-  input wire logic           flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent,
-  output var logic           flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode,
-  input wire logic            flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_valTrainCenter_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_valTrainCenter_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload,
-  output var logic           flagToAnalog_valTrainVref_sendPattern,
-  input wire logic           flagFromAnalog_valTrainVref_detectedValPattern,
-  input wire logic           flagFromAnalog_valTrainVref_finishedPattern,
-  output var logic           flagToAnalog_valTrainVref_applyRxVref,
-  output var logic [validVrefCodeWidth-1:0] flagToAnalog_valTrainVref_rxVrefCode,
-  input wire logic           flagFromAnalog_valTrainVref_rxVrefApplied,
-  output var logic           flagToAnalog_valTrainVref_configureRxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_valTrainVref_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_valTrainVref_comparisonMode,
-  output var logic [15:0]    flagToAnalog_valTrainVref_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_valTrainVref_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_valTrainVref_burstCountSettings,
-  output var logic           flagToAnalog_valTrainVref_patternMode,
-  output var logic [3:0]     flagToAnalog_valTrainVref_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_valTrainVref_validPattern,
-  output var logic [2:0]     flagToAnalog_valTrainVref_dataPattern,
-  output var logic           flagToAnalog_valTrainVref_clearComparisonErrors,
-  output var logic           flagToAnalog_valTrainVref_resetLocalTxScrambler,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew,
-  output var logic [64*d2cTxDeskewCodeWidth-1:0] flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload,
-  output var logic           flagToAnalog_dataTrainVref_sendPattern,
-  input wire logic [dataLaneCount-1:0] flagFromAnalog_dataTrainVref_detectedDataPattern,
-  input wire logic           flagFromAnalog_dataTrainVref_finishedPattern,
-  output var logic           flagToAnalog_dataTrainVref_applyRxVref,
-  output var logic [dataLaneCount*dataVrefCodeWidth-1:0] flagToAnalog_dataTrainVref_rxVrefCodes,
-  input wire logic           flagFromAnalog_dataTrainVref_rxVrefApplied,
-  output var logic           flagToAnalog_dataTrainVref_configureRxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_dataTrainVref_comparisonMode,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_dataTrainVref_burstCountSettings,
-  output var logic           flagToAnalog_dataTrainVref_patternMode,
-  output var logic [3:0]     flagToAnalog_dataTrainVref_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_dataTrainVref_validPattern,
-  output var logic [2:0]     flagToAnalog_dataTrainVref_dataPattern,
-  output var logic           flagToAnalog_dataTrainVref_clearComparisonErrors,
-  output var logic           flagToAnalog_dataTrainVref_resetLocalTxScrambler,
+  output var logic           flagToAnalog_d2cSender_sendValTrainPattern,
+  input wire logic           flagFromAnalog_d2cSender_valTrainPatternSent,
+  output var logic           flagToAnalog_d2cSender_resetLocalScrambler,
+  output var logic           flagToAnalog_d2cSender_applyTxClockPhase,
+  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_txClockPhaseCode,
+  input wire logic            flagFromAnalog_d2cSender_txClockPhaseApplied,
+  output var logic           flagToAnalog_d2cReceiver_configureTxInitD2CPointTest,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold,
+  output var logic           flagToAnalog_d2cReceiver_comparisonMode,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_iterationCountSettings,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_idleCountSettings,
+  output var logic [15:0]    flagToAnalog_d2cReceiver_burstCountSettings,
+  output var logic           flagToAnalog_d2cReceiver_patternMode,
+  output var logic [3:0]     flagToAnalog_d2cReceiver_clockPhaseControl,
+  output var logic [2:0]     flagToAnalog_d2cReceiver_validPattern,
+  output var logic [2:0]     flagToAnalog_d2cReceiver_dataPattern,
+  output var logic           flagToAnalog_d2cReceiver_resetLocalRxScrambler,
+  input wire logic [15:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
+  input wire logic [63:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  output var logic           flagToAnalog_d2cSender_sendLfsrPattern,
+  input wire logic           flagFromAnalog_d2cSender_lfsrPatternSent,
+  output var logic           flagToAnalog_d2cSender_applyTxLaneDeskew,
+  // TX deskew: 20 bits/lane, cell 1 [9:0], cell 2 [19:10]; LSB + 9 thermometer bits/cell.
+  output var logic [64*d2cTxDeskewCodeWidth-1:0] flagToAnalog_d2cSender_txLaneDeskewCodes,
+  input wire logic           flagFromAnalog_d2cSender_txLaneDeskewApplied,
   output var logic           flagToAnalog_rxDeskew_sendLfsrPattern,
   input wire logic           flagFromAnalog_rxDeskew_lfsrPatternSent,
   output var logic           flagToAnalog_rxDeskew_resetLocalTxScrambler,
@@ -13897,43 +15372,61 @@ module MBTrainFSM #(
   output var logic [2:0]     flagToAnalog_rxDeskew_dataPattern,
   output var logic           flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] flagFromAnalog_rxDeskew_detectedDataPattern,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern,
-  input wire logic           flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase,
-  output var logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode,
-  input wire logic            flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload,
   output var logic           flagToLtsm_linkSpeed_phyInRetrain,
-  output var logic           flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern,
-  input wire logic           flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent,
-  output var logic           flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_comparisonMode,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings,
-  output var logic [15:0]    flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_patternMode,
-  output var logic [3:0]     flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_linkSpeed_validPattern,
-  output var logic [2:0]     flagToAnalog_d2cReceiver_linkSpeed_dataPattern,
-  output var logic           flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler,
-  input wire logic [15:0]    flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful,
+  input wire logic [15:0]    flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
   output var logic [3:0]     state,
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    activeSubstate,
+  output var logic [3:0]     dbg_mbtrainValVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainValVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainValVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainValVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainValVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainDataVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainDataVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainDataVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainDataVrefPointResponderState,
+  output var logic [1:0]     dbg_mbtrainSpeedIdleSenderState,
+  output var logic [1:0]     dbg_mbtrainSpeedIdleReceiverState,
+  output var logic [1:0]     dbg_mbtrainTxSelfCalSenderState,
+  output var logic [1:0]     dbg_mbtrainTxSelfCalReceiverState,
+  output var logic [2:0]     dbg_mbtrainRxClkCalSenderState,
+  output var logic [2:0]     dbg_mbtrainRxClkCalReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterSenderState,
+  output var logic [2:0]     dbg_mbtrainValTrainCenterReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterD2cSenderState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterD2cReceiverState,
+  output var logic [3:0]     dbg_mbtrainValTrainCenterSweepState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainValTrainVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainValTrainVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1SenderState,
+  output var logic [2:0]     dbg_mbtrainDataTrainCenter1ReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1D2cSenderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter1D2cReceiverState,
+  output var logic [4:0]     dbg_mbtrainDataTrainCenter1SweepState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefLocalState,
+  output var logic [2:0]     dbg_mbtrainDataTrainVrefRemoteState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefSweepState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainDataTrainVrefPointResponderState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewLocalState,
+  output var logic [2:0]     dbg_mbtrainRxDeskewRemoteState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewSweepState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewPointInitiatorState,
+  output var logic [3:0]     dbg_mbtrainRxDeskewPointResponderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2SenderState,
+  output var logic [2:0]     dbg_mbtrainDataTrainCenter2ReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2D2cSenderState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2D2cReceiverState,
+  output var logic [3:0]     dbg_mbtrainDataTrainCenter2SweepState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedSenderState,
+  output var logic [2:0]     dbg_mbtrainLinkSpeedReceiverState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedD2cSenderState,
+  output var logic [3:0]     dbg_mbtrainLinkSpeedD2cReceiverState,
   output var logic [15:0]    lastErrorCount,
   output var logic [15:0]    retryCount
 );
@@ -13959,12 +15452,416 @@ module MBTrainFSM #(
   (* keep = "true" *) State_t stateReg;
   (* keep = "true" *) logic errorReg;
 
+  // Private sub-FSM interfaces: only the selected state owns the PHY ports.
+  logic stage_flagToAnalog_valVref_sendPattern;
+  logic stage_flagFromAnalog_valVref_detectedValPattern;
+  logic stage_flagFromAnalog_valVref_finishedPattern;
+  logic stage_flagToAnalog_valVref_applyRxVref;
+  logic [validVrefCodeWidth-1:0] stage_flagToAnalog_valVref_rxVrefCode;
+  logic stage_flagFromAnalog_valVref_rxVrefApplied;
+  logic stage_flagToAnalog_valVref_configureRxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_valVref_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_valVref_comparisonMode;
+  logic [15:0] stage_flagToAnalog_valVref_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_valVref_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_valVref_burstCountSettings;
+  logic stage_flagToAnalog_valVref_patternMode;
+  logic [3:0] stage_flagToAnalog_valVref_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_valVref_validPattern;
+  logic [2:0] stage_flagToAnalog_valVref_dataPattern;
+  logic stage_flagToAnalog_valVref_clearComparisonErrors;
+  logic stage_flagToAnalog_valVref_resetLocalTxScrambler;
+  logic stage_flagToAnalog_dataVref_sendPattern;
+  logic [dataLaneCount-1:0] stage_flagFromAnalog_dataVref_detectedDataPattern;
+  logic stage_flagFromAnalog_dataVref_finishedPattern;
+  logic stage_flagToAnalog_dataVref_applyRxVref;
+  logic [dataLaneCount*dataVrefCodeWidth-1:0] stage_flagToAnalog_dataVref_rxVrefCodes;
+  logic stage_flagFromAnalog_dataVref_rxVrefApplied;
+  logic stage_flagToAnalog_dataVref_configureRxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_dataVref_comparisonMode;
+  logic [15:0] stage_flagToAnalog_dataVref_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_dataVref_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_dataVref_burstCountSettings;
+  logic stage_flagToAnalog_dataVref_patternMode;
+  logic [3:0] stage_flagToAnalog_dataVref_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_dataVref_validPattern;
+  logic [2:0] stage_flagToAnalog_dataVref_dataPattern;
+  logic stage_flagToAnalog_dataVref_clearComparisonErrors;
+  logic stage_flagToAnalog_dataVref_resetLocalTxScrambler;
+  logic stage_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern;
+  logic stage_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent;
+  logic stage_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler;
+  logic stage_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase;
+  logic [d2cPiCodeWidth-1:0] stage_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode;
+  logic stage_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied;
+  logic stage_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings;
+  logic stage_flagToAnalog_d2cReceiver_valTrainCenter_patternMode;
+  logic [3:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_validPattern;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern;
+  logic stage_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler;
+  logic [15:0] stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo;
+  logic [63:0] stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload;
+  logic stage_flagToAnalog_valTrainVref_sendPattern;
+  logic stage_flagFromAnalog_valTrainVref_detectedValPattern;
+  logic stage_flagFromAnalog_valTrainVref_finishedPattern;
+  logic stage_flagToAnalog_valTrainVref_applyRxVref;
+  logic [validVrefCodeWidth-1:0] stage_flagToAnalog_valTrainVref_rxVrefCode;
+  logic stage_flagFromAnalog_valTrainVref_rxVrefApplied;
+  logic stage_flagToAnalog_valTrainVref_configureRxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_valTrainVref_comparisonMode;
+  logic [15:0] stage_flagToAnalog_valTrainVref_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_valTrainVref_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_valTrainVref_burstCountSettings;
+  logic stage_flagToAnalog_valTrainVref_patternMode;
+  logic [3:0] stage_flagToAnalog_valTrainVref_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_valTrainVref_validPattern;
+  logic [2:0] stage_flagToAnalog_valTrainVref_dataPattern;
+  logic stage_flagToAnalog_valTrainVref_clearComparisonErrors;
+  logic stage_flagToAnalog_valTrainVref_resetLocalTxScrambler;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase;
+  logic [d2cPiCodeWidth-1:0] stage_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew;
+  logic [64*d2cTxDeskewCodeWidth-1:0] stage_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode;
+  logic [3:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler;
+  logic [15:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo;
+  logic [63:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload;
+  logic stage_flagToAnalog_dataTrainVref_sendPattern;
+  logic [dataLaneCount-1:0] stage_flagFromAnalog_dataTrainVref_detectedDataPattern;
+  logic stage_flagFromAnalog_dataTrainVref_finishedPattern;
+  logic stage_flagToAnalog_dataTrainVref_applyRxVref;
+  logic [dataLaneCount*dataVrefCodeWidth-1:0] stage_flagToAnalog_dataTrainVref_rxVrefCodes;
+  logic stage_flagFromAnalog_dataTrainVref_rxVrefApplied;
+  logic stage_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_dataTrainVref_comparisonMode;
+  logic [15:0] stage_flagToAnalog_dataTrainVref_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_dataTrainVref_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_dataTrainVref_burstCountSettings;
+  logic stage_flagToAnalog_dataTrainVref_patternMode;
+  logic [3:0] stage_flagToAnalog_dataTrainVref_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_dataTrainVref_validPattern;
+  logic [2:0] stage_flagToAnalog_dataTrainVref_dataPattern;
+  logic stage_flagToAnalog_dataTrainVref_clearComparisonErrors;
+  logic stage_flagToAnalog_dataTrainVref_resetLocalTxScrambler;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler;
+  logic stage_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase;
+  logic [d2cPiCodeWidth-1:0] stage_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode;
+  logic stage_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode;
+  logic [3:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern;
+  logic stage_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler;
+  logic [15:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo;
+  logic [63:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload;
+  logic stage_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern;
+  logic stage_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent;
+  logic stage_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler;
+  logic stage_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold;
+  logic stage_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings;
+  logic [15:0] stage_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings;
+  logic stage_flagToAnalog_d2cReceiver_linkSpeed_patternMode;
+  logic [3:0] stage_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_linkSpeed_validPattern;
+  logic [2:0] stage_flagToAnalog_d2cReceiver_linkSpeed_dataPattern;
+  logic stage_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler;
+  logic [15:0] stage_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful;
+  assign stage_flagFromAnalog_valVref_detectedValPattern =
+    (reset_n && (stateReg == State_VALVREF)) ? flagFromAnalog_valVref_detectedValPattern : '0;
+  assign stage_flagFromAnalog_valVref_finishedPattern =
+    (reset_n && (stateReg == State_VALVREF)) ? flagFromAnalog_valVref_finishedPattern : '0;
+  assign stage_flagFromAnalog_valVref_rxVrefApplied =
+    (reset_n && (stateReg == State_VALVREF)) ? flagFromAnalog_valVref_rxVrefApplied : '0;
+  assign stage_flagFromAnalog_dataVref_detectedDataPattern =
+    (reset_n && (stateReg == State_DATAVREF)) ? flagFromAnalog_dataVref_detectedDataPattern : '0;
+  assign stage_flagFromAnalog_dataVref_finishedPattern =
+    (reset_n && (stateReg == State_DATAVREF)) ? flagFromAnalog_dataVref_finishedPattern : '0;
+  assign stage_flagFromAnalog_dataVref_rxVrefApplied =
+    (reset_n && (stateReg == State_DATAVREF)) ? flagFromAnalog_dataVref_rxVrefApplied : '0;
+  assign stage_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent =
+    (reset_n && (stateReg == State_VALTRAINCENTER)) ? flagFromAnalog_d2cSender_valTrainPatternSent : '0;
+  assign stage_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied =
+    (reset_n && (stateReg == State_VALTRAINCENTER)) ? flagFromAnalog_d2cSender_txClockPhaseApplied : '0;
+  assign stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo =
+    (reset_n && (stateReg == State_VALTRAINCENTER)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : '0;
+  assign stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload =
+    (reset_n && (stateReg == State_VALTRAINCENTER)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : '0;
+  assign stage_flagFromAnalog_valTrainVref_detectedValPattern =
+    (reset_n && (stateReg == State_VALTRAINVREF)) ? flagFromAnalog_valVref_detectedValPattern : '0;
+  assign stage_flagFromAnalog_valTrainVref_finishedPattern =
+    (reset_n && (stateReg == State_VALTRAINVREF)) ? flagFromAnalog_valVref_finishedPattern : '0;
+  assign stage_flagFromAnalog_valTrainVref_rxVrefApplied =
+    (reset_n && (stateReg == State_VALTRAINVREF)) ? flagFromAnalog_valVref_rxVrefApplied : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cSender_lfsrPatternSent : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cSender_txClockPhaseApplied : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cSender_txLaneDeskewApplied : '0;
+  assign stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : '0;
+  assign stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload =
+    (reset_n && (stateReg == State_DATATRAINCENTER1)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : '0;
+  assign stage_flagFromAnalog_dataTrainVref_detectedDataPattern =
+    (reset_n && (stateReg == State_DATATRAINVREF)) ? flagFromAnalog_dataVref_detectedDataPattern : '0;
+  assign stage_flagFromAnalog_dataTrainVref_finishedPattern =
+    (reset_n && (stateReg == State_DATATRAINVREF)) ? flagFromAnalog_dataVref_finishedPattern : '0;
+  assign stage_flagFromAnalog_dataTrainVref_rxVrefApplied =
+    (reset_n && (stateReg == State_DATATRAINVREF)) ? flagFromAnalog_dataVref_rxVrefApplied : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent =
+    (reset_n && (stateReg == State_DATATRAINCENTER2)) ? flagFromAnalog_d2cSender_lfsrPatternSent : '0;
+  assign stage_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied =
+    (reset_n && (stateReg == State_DATATRAINCENTER2)) ? flagFromAnalog_d2cSender_txClockPhaseApplied : '0;
+  assign stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo =
+    (reset_n && (stateReg == State_DATATRAINCENTER2)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : '0;
+  assign stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload =
+    (reset_n && (stateReg == State_DATATRAINCENTER2)) ? flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : '0;
+  assign stage_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent =
+    (reset_n && (stateReg == State_LINKSPEED)) ? flagFromAnalog_d2cSender_lfsrPatternSent : '0;
+  assign stage_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful =
+    (reset_n && (stateReg == State_LINKSPEED)) ? flagFromAnalog_d2cReceiver_laneComparisonSuccessful : '0;
+
+  // Shared analog controls. Data/configuration buses are valid with their
+  // corresponding apply/configure/send request; the PHY retains applied values.
+  // No command is issued in unrelated states or during reset. Center2 has no
+  // TX lane-deskew engine: Center1 alone owns applyTxLaneDeskew.
+  always_comb begin
+    flagToAnalog_valVref_sendPattern = '0;
+    flagToAnalog_valVref_applyRxVref = '0;
+    flagToAnalog_valVref_rxVrefCode = '0;
+    flagToAnalog_valVref_configureRxInitD2CPointTest = '0;
+    flagToAnalog_valVref_maximumComparisonErrorThreshold = '0;
+    flagToAnalog_valVref_comparisonMode = '0;
+    flagToAnalog_valVref_iterationCountSettings = '0;
+    flagToAnalog_valVref_idleCountSettings = '0;
+    flagToAnalog_valVref_burstCountSettings = '0;
+    flagToAnalog_valVref_patternMode = '0;
+    flagToAnalog_valVref_clockPhaseControl = '0;
+    flagToAnalog_valVref_validPattern = '0;
+    flagToAnalog_valVref_dataPattern = '0;
+    flagToAnalog_valVref_clearComparisonErrors = '0;
+    flagToAnalog_valVref_resetLocalTxScrambler = '0;
+    flagToAnalog_dataVref_sendPattern = '0;
+    flagToAnalog_dataVref_applyRxVref = '0;
+    flagToAnalog_dataVref_rxVrefCodes = '0;
+    flagToAnalog_dataVref_configureRxInitD2CPointTest = '0;
+    flagToAnalog_dataVref_maximumComparisonErrorThreshold = '0;
+    flagToAnalog_dataVref_comparisonMode = '0;
+    flagToAnalog_dataVref_iterationCountSettings = '0;
+    flagToAnalog_dataVref_idleCountSettings = '0;
+    flagToAnalog_dataVref_burstCountSettings = '0;
+    flagToAnalog_dataVref_patternMode = '0;
+    flagToAnalog_dataVref_clockPhaseControl = '0;
+    flagToAnalog_dataVref_validPattern = '0;
+    flagToAnalog_dataVref_dataPattern = '0;
+    flagToAnalog_dataVref_clearComparisonErrors = '0;
+    flagToAnalog_dataVref_resetLocalTxScrambler = '0;
+    flagToAnalog_d2cSender_sendValTrainPattern = '0;
+    flagToAnalog_d2cSender_resetLocalScrambler = '0;
+    flagToAnalog_d2cSender_applyTxClockPhase = '0;
+    flagToAnalog_d2cSender_txClockPhaseCode = '0;
+    flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = '0;
+    flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = '0;
+    flagToAnalog_d2cReceiver_comparisonMode = '0;
+    flagToAnalog_d2cReceiver_iterationCountSettings = '0;
+    flagToAnalog_d2cReceiver_idleCountSettings = '0;
+    flagToAnalog_d2cReceiver_burstCountSettings = '0;
+    flagToAnalog_d2cReceiver_patternMode = '0;
+    flagToAnalog_d2cReceiver_clockPhaseControl = '0;
+    flagToAnalog_d2cReceiver_validPattern = '0;
+    flagToAnalog_d2cReceiver_dataPattern = '0;
+    flagToAnalog_d2cReceiver_resetLocalRxScrambler = '0;
+    flagToAnalog_d2cSender_sendLfsrPattern = '0;
+    flagToAnalog_d2cSender_applyTxLaneDeskew = '0;
+    flagToAnalog_d2cSender_txLaneDeskewCodes = '0;
+    if (reset_n) begin
+      case (stateReg)
+        State_VALVREF: begin
+          flagToAnalog_valVref_sendPattern = stage_flagToAnalog_valVref_sendPattern;
+          flagToAnalog_valVref_applyRxVref = stage_flagToAnalog_valVref_applyRxVref;
+          flagToAnalog_valVref_rxVrefCode = stage_flagToAnalog_valVref_rxVrefCode;
+          flagToAnalog_valVref_configureRxInitD2CPointTest = stage_flagToAnalog_valVref_configureRxInitD2CPointTest;
+          flagToAnalog_valVref_maximumComparisonErrorThreshold = stage_flagToAnalog_valVref_maximumComparisonErrorThreshold;
+          flagToAnalog_valVref_comparisonMode = stage_flagToAnalog_valVref_comparisonMode;
+          flagToAnalog_valVref_iterationCountSettings = stage_flagToAnalog_valVref_iterationCountSettings;
+          flagToAnalog_valVref_idleCountSettings = stage_flagToAnalog_valVref_idleCountSettings;
+          flagToAnalog_valVref_burstCountSettings = stage_flagToAnalog_valVref_burstCountSettings;
+          flagToAnalog_valVref_patternMode = stage_flagToAnalog_valVref_patternMode;
+          flagToAnalog_valVref_clockPhaseControl = stage_flagToAnalog_valVref_clockPhaseControl;
+          flagToAnalog_valVref_validPattern = stage_flagToAnalog_valVref_validPattern;
+          flagToAnalog_valVref_dataPattern = stage_flagToAnalog_valVref_dataPattern;
+          flagToAnalog_valVref_clearComparisonErrors = stage_flagToAnalog_valVref_clearComparisonErrors;
+          flagToAnalog_valVref_resetLocalTxScrambler = stage_flagToAnalog_valVref_resetLocalTxScrambler;
+        end
+        State_VALTRAINVREF: begin
+          flagToAnalog_valVref_sendPattern = stage_flagToAnalog_valTrainVref_sendPattern;
+          flagToAnalog_valVref_applyRxVref = stage_flagToAnalog_valTrainVref_applyRxVref;
+          flagToAnalog_valVref_rxVrefCode = stage_flagToAnalog_valTrainVref_rxVrefCode;
+          flagToAnalog_valVref_configureRxInitD2CPointTest = stage_flagToAnalog_valTrainVref_configureRxInitD2CPointTest;
+          flagToAnalog_valVref_maximumComparisonErrorThreshold = stage_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold;
+          flagToAnalog_valVref_comparisonMode = stage_flagToAnalog_valTrainVref_comparisonMode;
+          flagToAnalog_valVref_iterationCountSettings = stage_flagToAnalog_valTrainVref_iterationCountSettings;
+          flagToAnalog_valVref_idleCountSettings = stage_flagToAnalog_valTrainVref_idleCountSettings;
+          flagToAnalog_valVref_burstCountSettings = stage_flagToAnalog_valTrainVref_burstCountSettings;
+          flagToAnalog_valVref_patternMode = stage_flagToAnalog_valTrainVref_patternMode;
+          flagToAnalog_valVref_clockPhaseControl = stage_flagToAnalog_valTrainVref_clockPhaseControl;
+          flagToAnalog_valVref_validPattern = stage_flagToAnalog_valTrainVref_validPattern;
+          flagToAnalog_valVref_dataPattern = stage_flagToAnalog_valTrainVref_dataPattern;
+          flagToAnalog_valVref_clearComparisonErrors = stage_flagToAnalog_valTrainVref_clearComparisonErrors;
+          flagToAnalog_valVref_resetLocalTxScrambler = stage_flagToAnalog_valTrainVref_resetLocalTxScrambler;
+        end
+        State_DATAVREF: begin
+          flagToAnalog_dataVref_sendPattern = stage_flagToAnalog_dataVref_sendPattern;
+          flagToAnalog_dataVref_applyRxVref = stage_flagToAnalog_dataVref_applyRxVref;
+          flagToAnalog_dataVref_rxVrefCodes = stage_flagToAnalog_dataVref_rxVrefCodes;
+          flagToAnalog_dataVref_configureRxInitD2CPointTest = stage_flagToAnalog_dataVref_configureRxInitD2CPointTest;
+          flagToAnalog_dataVref_maximumComparisonErrorThreshold = stage_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+          flagToAnalog_dataVref_comparisonMode = stage_flagToAnalog_dataVref_comparisonMode;
+          flagToAnalog_dataVref_iterationCountSettings = stage_flagToAnalog_dataVref_iterationCountSettings;
+          flagToAnalog_dataVref_idleCountSettings = stage_flagToAnalog_dataVref_idleCountSettings;
+          flagToAnalog_dataVref_burstCountSettings = stage_flagToAnalog_dataVref_burstCountSettings;
+          flagToAnalog_dataVref_patternMode = stage_flagToAnalog_dataVref_patternMode;
+          flagToAnalog_dataVref_clockPhaseControl = stage_flagToAnalog_dataVref_clockPhaseControl;
+          flagToAnalog_dataVref_validPattern = stage_flagToAnalog_dataVref_validPattern;
+          flagToAnalog_dataVref_dataPattern = stage_flagToAnalog_dataVref_dataPattern;
+          flagToAnalog_dataVref_clearComparisonErrors = stage_flagToAnalog_dataVref_clearComparisonErrors;
+          flagToAnalog_dataVref_resetLocalTxScrambler = stage_flagToAnalog_dataVref_resetLocalTxScrambler;
+        end
+        State_DATATRAINVREF: begin
+          flagToAnalog_dataVref_sendPattern = stage_flagToAnalog_dataTrainVref_sendPattern;
+          flagToAnalog_dataVref_applyRxVref = stage_flagToAnalog_dataTrainVref_applyRxVref;
+          flagToAnalog_dataVref_rxVrefCodes = stage_flagToAnalog_dataTrainVref_rxVrefCodes;
+          flagToAnalog_dataVref_configureRxInitD2CPointTest = stage_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest;
+          flagToAnalog_dataVref_maximumComparisonErrorThreshold = stage_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold;
+          flagToAnalog_dataVref_comparisonMode = stage_flagToAnalog_dataTrainVref_comparisonMode;
+          flagToAnalog_dataVref_iterationCountSettings = stage_flagToAnalog_dataTrainVref_iterationCountSettings;
+          flagToAnalog_dataVref_idleCountSettings = stage_flagToAnalog_dataTrainVref_idleCountSettings;
+          flagToAnalog_dataVref_burstCountSettings = stage_flagToAnalog_dataTrainVref_burstCountSettings;
+          flagToAnalog_dataVref_patternMode = stage_flagToAnalog_dataTrainVref_patternMode;
+          flagToAnalog_dataVref_clockPhaseControl = stage_flagToAnalog_dataTrainVref_clockPhaseControl;
+          flagToAnalog_dataVref_validPattern = stage_flagToAnalog_dataTrainVref_validPattern;
+          flagToAnalog_dataVref_dataPattern = stage_flagToAnalog_dataTrainVref_dataPattern;
+          flagToAnalog_dataVref_clearComparisonErrors = stage_flagToAnalog_dataTrainVref_clearComparisonErrors;
+          flagToAnalog_dataVref_resetLocalTxScrambler = stage_flagToAnalog_dataTrainVref_resetLocalTxScrambler;
+        end
+        State_VALTRAINCENTER: begin
+          flagToAnalog_d2cSender_sendValTrainPattern = stage_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern;
+          flagToAnalog_d2cSender_resetLocalScrambler = stage_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler;
+          flagToAnalog_d2cSender_applyTxClockPhase = stage_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase;
+          flagToAnalog_d2cSender_txClockPhaseCode = stage_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode;
+          flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = stage_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest;
+          flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = stage_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold;
+          flagToAnalog_d2cReceiver_comparisonMode = stage_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode;
+          flagToAnalog_d2cReceiver_iterationCountSettings = stage_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings;
+          flagToAnalog_d2cReceiver_idleCountSettings = stage_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings;
+          flagToAnalog_d2cReceiver_burstCountSettings = stage_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings;
+          flagToAnalog_d2cReceiver_patternMode = stage_flagToAnalog_d2cReceiver_valTrainCenter_patternMode;
+          flagToAnalog_d2cReceiver_clockPhaseControl = stage_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl;
+          flagToAnalog_d2cReceiver_validPattern = stage_flagToAnalog_d2cReceiver_valTrainCenter_validPattern;
+          flagToAnalog_d2cReceiver_dataPattern = stage_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern;
+          flagToAnalog_d2cReceiver_resetLocalRxScrambler = stage_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler;
+        end
+        State_DATATRAINCENTER1: begin
+          flagToAnalog_d2cSender_sendLfsrPattern = stage_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern;
+          flagToAnalog_d2cSender_resetLocalScrambler = stage_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler;
+          flagToAnalog_d2cSender_applyTxClockPhase = stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase;
+          flagToAnalog_d2cSender_txClockPhaseCode = stage_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode;
+          flagToAnalog_d2cSender_applyTxLaneDeskew = stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew;
+          flagToAnalog_d2cSender_txLaneDeskewCodes = stage_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes;
+          flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest;
+          flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold;
+          flagToAnalog_d2cReceiver_comparisonMode = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode;
+          flagToAnalog_d2cReceiver_iterationCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings;
+          flagToAnalog_d2cReceiver_idleCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings;
+          flagToAnalog_d2cReceiver_burstCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings;
+          flagToAnalog_d2cReceiver_patternMode = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode;
+          flagToAnalog_d2cReceiver_clockPhaseControl = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl;
+          flagToAnalog_d2cReceiver_validPattern = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern;
+          flagToAnalog_d2cReceiver_dataPattern = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern;
+          flagToAnalog_d2cReceiver_resetLocalRxScrambler = stage_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler;
+        end
+        State_DATATRAINCENTER2: begin
+          flagToAnalog_d2cSender_sendLfsrPattern = stage_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern;
+          flagToAnalog_d2cSender_resetLocalScrambler = stage_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler;
+          flagToAnalog_d2cSender_applyTxClockPhase = stage_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase;
+          flagToAnalog_d2cSender_txClockPhaseCode = stage_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode;
+          flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest;
+          flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold;
+          flagToAnalog_d2cReceiver_comparisonMode = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode;
+          flagToAnalog_d2cReceiver_iterationCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings;
+          flagToAnalog_d2cReceiver_idleCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings;
+          flagToAnalog_d2cReceiver_burstCountSettings = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings;
+          flagToAnalog_d2cReceiver_patternMode = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode;
+          flagToAnalog_d2cReceiver_clockPhaseControl = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl;
+          flagToAnalog_d2cReceiver_validPattern = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern;
+          flagToAnalog_d2cReceiver_dataPattern = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern;
+          flagToAnalog_d2cReceiver_resetLocalRxScrambler = stage_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler;
+        end
+        State_LINKSPEED: begin
+          flagToAnalog_d2cSender_sendLfsrPattern = stage_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern;
+          flagToAnalog_d2cSender_resetLocalScrambler = stage_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler;
+          flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = stage_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest;
+          flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = stage_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold;
+          flagToAnalog_d2cReceiver_comparisonMode = stage_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode;
+          flagToAnalog_d2cReceiver_iterationCountSettings = stage_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings;
+          flagToAnalog_d2cReceiver_idleCountSettings = stage_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings;
+          flagToAnalog_d2cReceiver_burstCountSettings = stage_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings;
+          flagToAnalog_d2cReceiver_patternMode = stage_flagToAnalog_d2cReceiver_linkSpeed_patternMode;
+          flagToAnalog_d2cReceiver_clockPhaseControl = stage_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl;
+          flagToAnalog_d2cReceiver_validPattern = stage_flagToAnalog_d2cReceiver_linkSpeed_validPattern;
+          flagToAnalog_d2cReceiver_dataPattern = stage_flagToAnalog_d2cReceiver_linkSpeed_dataPattern;
+          flagToAnalog_d2cReceiver_resetLocalRxScrambler = stage_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler;
+        end
+        default: begin end
+      endcase
+    end
+  end
+
+
   logic valVref_busy;
   logic valVref_done;
   logic valVref_trainError;
   logic valVref_sb_tx_valid;
   logic [127:0] valVref_sb_tx_din;
-  logic [11:0] valVref_substate;
+  logic [3:0] valVref_dbg_localState;
+  logic [2:0] valVref_dbg_remoteState;
+  logic [3:0] valVref_dbg_sweepState;
+  logic [3:0] valVref_dbg_pointInitiatorState;
+  logic [3:0] valVref_dbg_pointResponderState;
   logic [15:0] valVref_lastErrorCount;
   logic [15:0] valVref_retryCount;
   logic [validVrefCodeWidth-1:0] valVref_selectedCode;
@@ -13975,7 +15872,11 @@ module MBTrainFSM #(
   logic dataVref_trainError;
   logic dataVref_sb_tx_valid;
   logic [127:0] dataVref_sb_tx_din;
-  logic [11:0] dataVref_substate;
+  logic [3:0] dataVref_dbg_localState;
+  logic [2:0] dataVref_dbg_remoteState;
+  logic [3:0] dataVref_dbg_sweepState;
+  logic [3:0] dataVref_dbg_pointInitiatorState;
+  logic [3:0] dataVref_dbg_pointResponderState;
   logic [15:0] dataVref_lastErrorCount;
   logic [15:0] dataVref_retryCount;
   logic [dataLaneCount*dataVrefCodeWidth-1:0] dataVref_selectedCodes;
@@ -13986,25 +15887,32 @@ module MBTrainFSM #(
   logic speedIdle_trainError;
   logic speedIdle_sb_tx_valid;
   logic [127:0] speedIdle_sb_tx_din;
-  logic [7:0] speedIdle_substate;
+  logic [1:0] speedIdle_dbg_senderState;
+  logic [1:0] speedIdle_dbg_receiverState;
   logic txSelfCal_busy;
   logic txSelfCal_done;
   logic txSelfCal_trainError;
   logic txSelfCal_sb_tx_valid;
   logic [127:0] txSelfCal_sb_tx_din;
-  logic [7:0] txSelfCal_substate;
+  logic [1:0] txSelfCal_dbg_senderState;
+  logic [1:0] txSelfCal_dbg_receiverState;
   logic rxClkCal_busy;
   logic rxClkCal_done;
   logic rxClkCal_trainError;
   logic rxClkCal_sb_tx_valid;
   logic [127:0] rxClkCal_sb_tx_din;
-  logic [7:0] rxClkCal_substate;
+  logic [2:0] rxClkCal_dbg_senderState;
+  logic [2:0] rxClkCal_dbg_receiverState;
   logic valTrainCenter_busy;
   logic valTrainCenter_done;
   logic valTrainCenter_trainError;
   logic valTrainCenter_sb_tx_valid;
   logic [127:0] valTrainCenter_sb_tx_din;
-  logic [11:0] valTrainCenter_substate;
+  logic [3:0] valTrainCenter_dbg_senderState;
+  logic [2:0] valTrainCenter_dbg_receiverState;
+  logic [3:0] valTrainCenter_dbg_d2cSenderState;
+  logic [3:0] valTrainCenter_dbg_d2cReceiverState;
+  logic [3:0] valTrainCenter_dbg_sweepState;
   logic [15:0] valTrainCenter_lastErrorCount;
   logic [15:0] valTrainCenter_retryCount;
   logic valTrainVref_busy;
@@ -14012,7 +15920,11 @@ module MBTrainFSM #(
   logic valTrainVref_trainError;
   logic valTrainVref_sb_tx_valid;
   logic [127:0] valTrainVref_sb_tx_din;
-  logic [11:0] valTrainVref_substate;
+  logic [3:0] valTrainVref_dbg_localState;
+  logic [2:0] valTrainVref_dbg_remoteState;
+  logic [3:0] valTrainVref_dbg_sweepState;
+  logic [3:0] valTrainVref_dbg_pointInitiatorState;
+  logic [3:0] valTrainVref_dbg_pointResponderState;
   logic [15:0] valTrainVref_lastErrorCount;
   logic [15:0] valTrainVref_retryCount;
   logic [validVrefCodeWidth-1:0] valTrainVref_selectedCode;
@@ -14023,7 +15935,11 @@ module MBTrainFSM #(
   logic dataTrainCenter1_trainError;
   logic dataTrainCenter1_sb_tx_valid;
   logic [127:0] dataTrainCenter1_sb_tx_din;
-  logic [11:0] dataTrainCenter1_substate;
+  logic [3:0] dataTrainCenter1_dbg_senderState;
+  logic [2:0] dataTrainCenter1_dbg_receiverState;
+  logic [3:0] dataTrainCenter1_dbg_d2cSenderState;
+  logic [3:0] dataTrainCenter1_dbg_d2cReceiverState;
+  logic [4:0] dataTrainCenter1_dbg_sweepState;
   logic [15:0] dataTrainCenter1_lastErrorCount;
   logic [15:0] dataTrainCenter1_retryCount;
   logic dataTrainVref_busy;
@@ -14031,7 +15947,11 @@ module MBTrainFSM #(
   logic dataTrainVref_trainError;
   logic dataTrainVref_sb_tx_valid;
   logic [127:0] dataTrainVref_sb_tx_din;
-  logic [11:0] dataTrainVref_substate;
+  logic [3:0] dataTrainVref_dbg_localState;
+  logic [2:0] dataTrainVref_dbg_remoteState;
+  logic [3:0] dataTrainVref_dbg_sweepState;
+  logic [3:0] dataTrainVref_dbg_pointInitiatorState;
+  logic [3:0] dataTrainVref_dbg_pointResponderState;
   logic [15:0] dataTrainVref_lastErrorCount;
   logic [15:0] dataTrainVref_retryCount;
   logic [dataLaneCount*dataVrefCodeWidth-1:0] dataTrainVref_selectedCodes;
@@ -14042,7 +15962,11 @@ module MBTrainFSM #(
   logic rxDeskew_trainError;
   logic rxDeskew_sb_tx_valid;
   logic [127:0] rxDeskew_sb_tx_din;
-  logic [11:0] rxDeskew_substate;
+  logic [3:0] rxDeskew_dbg_localState;
+  logic [2:0] rxDeskew_dbg_remoteState;
+  logic [3:0] rxDeskew_dbg_sweepState;
+  logic [3:0] rxDeskew_dbg_pointInitiatorState;
+  logic [3:0] rxDeskew_dbg_pointResponderState;
   logic [15:0] rxDeskew_lastErrorCount;
   logic [15:0] rxDeskew_retryCount;
   logic [dataLaneCount*rxDeskewCodeWidth-1:0] rxDeskew_selectedCodes;
@@ -14053,7 +15977,11 @@ module MBTrainFSM #(
   logic dataTrainCenter2_trainError;
   logic dataTrainCenter2_sb_tx_valid;
   logic [127:0] dataTrainCenter2_sb_tx_din;
-  logic [11:0] dataTrainCenter2_substate;
+  logic [3:0] dataTrainCenter2_dbg_senderState;
+  logic [2:0] dataTrainCenter2_dbg_receiverState;
+  logic [3:0] dataTrainCenter2_dbg_d2cSenderState;
+  logic [3:0] dataTrainCenter2_dbg_d2cReceiverState;
+  logic [3:0] dataTrainCenter2_dbg_sweepState;
   logic [15:0] dataTrainCenter2_lastErrorCount;
   logic [15:0] dataTrainCenter2_retryCount;
   logic linkSpeed_busy;
@@ -14061,7 +15989,10 @@ module MBTrainFSM #(
   logic linkSpeed_trainError;
   logic linkSpeed_sb_tx_valid;
   logic [127:0] linkSpeed_sb_tx_din;
-  logic [11:0] linkSpeed_substate;
+  logic [3:0] linkSpeed_dbg_senderState;
+  logic [2:0] linkSpeed_dbg_receiverState;
+  logic [3:0] linkSpeed_dbg_d2cSenderState;
+  logic [3:0] linkSpeed_dbg_d2cReceiverState;
   logic [15:0] linkSpeed_lastErrorCount;
   logic [15:0] linkSpeed_retryCount;
 
@@ -14092,25 +16023,29 @@ module MBTrainFSM #(
     .sb_tx_din(valVref_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_VALVREF)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_valRefApplyRxVref(flagToAnalog_valVref_applyRxVref),
-    .flagToAnalog_valRefRxVrefCode(flagToAnalog_valVref_rxVrefCode),
-    .flagFromAnalog_valRefRxVrefApplied(flagFromAnalog_valVref_rxVrefApplied),
-    .flagToAnalog_valRefConfigureRxInitD2CPointTest(flagToAnalog_valVref_configureRxInitD2CPointTest),
-    .flagToAnalog_valRefMaximumComparisonErrorThreshold(flagToAnalog_valVref_maximumComparisonErrorThreshold),
-    .flagToAnalog_valRefComparisonMode(flagToAnalog_valVref_comparisonMode),
-    .flagToAnalog_valRefIterationCountSettings(flagToAnalog_valVref_iterationCountSettings),
-    .flagToAnalog_valRefIdleCountSettings(flagToAnalog_valVref_idleCountSettings),
-    .flagToAnalog_valRefBurstCountSettings(flagToAnalog_valVref_burstCountSettings),
-    .flagToAnalog_valRefPatternMode(flagToAnalog_valVref_patternMode),
-    .flagToAnalog_valRefClockPhaseControl(flagToAnalog_valVref_clockPhaseControl),
-    .flagToAnalog_valRefValidPattern(flagToAnalog_valVref_validPattern),
-    .flagToAnalog_valRefDataPattern(flagToAnalog_valVref_dataPattern),
-    .flagToAnalog_valRefClearComparisonErrors(flagToAnalog_valVref_clearComparisonErrors),
-    .flagFromAnalog_valRefDetectedValPattern(flagFromAnalog_valVref_detectedValPattern),
-    .flagToAnalog_valRefSendPattern(flagToAnalog_valVref_sendPattern),
-    .flagFromAnalog_valRefFinishedPattern(flagFromAnalog_valVref_finishedPattern),
-    .flagToAnalog_valRefResetLocalTxScrambler(flagToAnalog_valVref_resetLocalTxScrambler),
-    .substate(valVref_substate),
+    .flagToAnalog_valRefApplyRxVref(stage_flagToAnalog_valVref_applyRxVref),
+    .flagToAnalog_valRefRxVrefCode(stage_flagToAnalog_valVref_rxVrefCode),
+    .flagFromAnalog_valRefRxVrefApplied(stage_flagFromAnalog_valVref_rxVrefApplied),
+    .flagToAnalog_valRefConfigureRxInitD2CPointTest(stage_flagToAnalog_valVref_configureRxInitD2CPointTest),
+    .flagToAnalog_valRefMaximumComparisonErrorThreshold(stage_flagToAnalog_valVref_maximumComparisonErrorThreshold),
+    .flagToAnalog_valRefComparisonMode(stage_flagToAnalog_valVref_comparisonMode),
+    .flagToAnalog_valRefIterationCountSettings(stage_flagToAnalog_valVref_iterationCountSettings),
+    .flagToAnalog_valRefIdleCountSettings(stage_flagToAnalog_valVref_idleCountSettings),
+    .flagToAnalog_valRefBurstCountSettings(stage_flagToAnalog_valVref_burstCountSettings),
+    .flagToAnalog_valRefPatternMode(stage_flagToAnalog_valVref_patternMode),
+    .flagToAnalog_valRefClockPhaseControl(stage_flagToAnalog_valVref_clockPhaseControl),
+    .flagToAnalog_valRefValidPattern(stage_flagToAnalog_valVref_validPattern),
+    .flagToAnalog_valRefDataPattern(stage_flagToAnalog_valVref_dataPattern),
+    .flagToAnalog_valRefClearComparisonErrors(stage_flagToAnalog_valVref_clearComparisonErrors),
+    .flagFromAnalog_valRefDetectedValPattern(stage_flagFromAnalog_valVref_detectedValPattern),
+    .flagToAnalog_valRefSendPattern(stage_flagToAnalog_valVref_sendPattern),
+    .flagFromAnalog_valRefFinishedPattern(stage_flagFromAnalog_valVref_finishedPattern),
+    .flagToAnalog_valRefResetLocalTxScrambler(stage_flagToAnalog_valVref_resetLocalTxScrambler),
+    .dbg_localState(valVref_dbg_localState),
+    .dbg_remoteState(valVref_dbg_remoteState),
+    .dbg_sweepState(valVref_dbg_sweepState),
+    .dbg_pointInitiatorState(valVref_dbg_pointInitiatorState),
+    .dbg_pointResponderState(valVref_dbg_pointResponderState),
     .lastErrorCount(valVref_lastErrorCount),
     .retryCount(valVref_retryCount),
     .selectedVrefCode(valVref_selectedCode),
@@ -14148,45 +16083,49 @@ module MBTrainFSM #(
     .sb_tx_din(dataVref_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_DATAVREF)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_dataVrefApplyRxVref(flagToAnalog_dataVref_applyRxVref),
-    .flagToAnalog_dataVrefRxVrefCodes(flagToAnalog_dataVref_rxVrefCodes),
-    .flagFromAnalog_dataVrefRxVrefApplied(flagFromAnalog_dataVref_rxVrefApplied),
+    .flagToAnalog_dataVrefApplyRxVref(stage_flagToAnalog_dataVref_applyRxVref),
+    .flagToAnalog_dataVrefRxVrefCodes(stage_flagToAnalog_dataVref_rxVrefCodes),
+    .flagFromAnalog_dataVrefRxVrefApplied(stage_flagFromAnalog_dataVref_rxVrefApplied),
     .flagToAnalog_dataVrefConfigureRxInitD2CPointTest(
-      flagToAnalog_dataVref_configureRxInitD2CPointTest
+      stage_flagToAnalog_dataVref_configureRxInitD2CPointTest
     ),
     .flagToAnalog_dataVrefMaximumComparisonErrorThreshold(
-      flagToAnalog_dataVref_maximumComparisonErrorThreshold
+      stage_flagToAnalog_dataVref_maximumComparisonErrorThreshold
     ),
-    .flagToAnalog_dataVrefComparisonMode(flagToAnalog_dataVref_comparisonMode),
+    .flagToAnalog_dataVrefComparisonMode(stage_flagToAnalog_dataVref_comparisonMode),
     .flagToAnalog_dataVrefIterationCountSettings(
-      flagToAnalog_dataVref_iterationCountSettings
+      stage_flagToAnalog_dataVref_iterationCountSettings
     ),
     .flagToAnalog_dataVrefIdleCountSettings(
-      flagToAnalog_dataVref_idleCountSettings
+      stage_flagToAnalog_dataVref_idleCountSettings
     ),
     .flagToAnalog_dataVrefBurstCountSettings(
-      flagToAnalog_dataVref_burstCountSettings
+      stage_flagToAnalog_dataVref_burstCountSettings
     ),
-    .flagToAnalog_dataVrefPatternMode(flagToAnalog_dataVref_patternMode),
+    .flagToAnalog_dataVrefPatternMode(stage_flagToAnalog_dataVref_patternMode),
     .flagToAnalog_dataVrefClockPhaseControl(
-      flagToAnalog_dataVref_clockPhaseControl
+      stage_flagToAnalog_dataVref_clockPhaseControl
     ),
-    .flagToAnalog_dataVrefValidPattern(flagToAnalog_dataVref_validPattern),
-    .flagToAnalog_dataVrefDataPattern(flagToAnalog_dataVref_dataPattern),
+    .flagToAnalog_dataVrefValidPattern(stage_flagToAnalog_dataVref_validPattern),
+    .flagToAnalog_dataVrefDataPattern(stage_flagToAnalog_dataVref_dataPattern),
     .flagToAnalog_dataVrefClearComparisonErrors(
-      flagToAnalog_dataVref_clearComparisonErrors
+      stage_flagToAnalog_dataVref_clearComparisonErrors
     ),
     .flagFromAnalog_dataVrefDetectedDataPattern(
-      flagFromAnalog_dataVref_detectedDataPattern
+      stage_flagFromAnalog_dataVref_detectedDataPattern
     ),
-    .flagToAnalog_dataVrefSendPattern(flagToAnalog_dataVref_sendPattern),
+    .flagToAnalog_dataVrefSendPattern(stage_flagToAnalog_dataVref_sendPattern),
     .flagFromAnalog_dataVrefFinishedPattern(
-      flagFromAnalog_dataVref_finishedPattern
+      stage_flagFromAnalog_dataVref_finishedPattern
     ),
     .flagToAnalog_dataVrefResetLocalTxScrambler(
-      flagToAnalog_dataVref_resetLocalTxScrambler
+      stage_flagToAnalog_dataVref_resetLocalTxScrambler
     ),
-    .substate(dataVref_substate),
+    .dbg_localState(dataVref_dbg_localState),
+    .dbg_remoteState(dataVref_dbg_remoteState),
+    .dbg_sweepState(dataVref_dbg_sweepState),
+    .dbg_pointInitiatorState(dataVref_dbg_pointInitiatorState),
+    .dbg_pointResponderState(dataVref_dbg_pointResponderState),
     .lastErrorCount(dataVref_lastErrorCount),
     .retryCount(dataVref_retryCount),
     .selectedVrefCodes(dataVref_selectedCodes),
@@ -14213,7 +16152,8 @@ module MBTrainFSM #(
     .sb_tx_din(speedIdle_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_SPEEDIDLE)),
     .sb_rx_dout(sb_rx_dout),
-    .substate(speedIdle_substate)
+    .dbg_senderState(speedIdle_dbg_senderState),
+    .dbg_receiverState(speedIdle_dbg_receiverState)
   );
   MBTrainTxSelfCalFSM #(
     .sbFeatureExtension(sbFeatureExtension),
@@ -14235,7 +16175,8 @@ module MBTrainFSM #(
     .sb_tx_din(txSelfCal_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_TXSELFCAL)),
     .sb_rx_dout(sb_rx_dout),
-    .substate(txSelfCal_substate)
+    .dbg_senderState(txSelfCal_dbg_senderState),
+    .dbg_receiverState(txSelfCal_dbg_receiverState)
   );
   MBTrainRxClkCalFSM #(
     .sbFeatureExtension(sbFeatureExtension),
@@ -14260,7 +16201,8 @@ module MBTrainFSM #(
     .flagToAnalog_rxClkCalDoCalibration(flagToAnalog_rxClkCal_doCalibration),
     .flagFromAnalog_rxClkCalDone(flagFromAnalog_rxClkCal_done),
     .flagToAnalog_rxClkCalSendClockTrack(flagToAnalog_rxClkCal_sendClockTrack),
-    .substate(rxClkCal_substate)
+    .dbg_senderState(rxClkCal_dbg_senderState),
+    .dbg_receiverState(rxClkCal_dbg_receiverState)
   );
   MBTrain_ValTrainCenter #(
     .sbFeatureExtension(sbFeatureExtension),
@@ -14286,26 +16228,30 @@ module MBTrainFSM #(
     .sb_tx_din(valTrainCenter_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_VALTRAINCENTER)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_d2cSender_sendValTrainPattern(flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern),
-    .flagFromAnalog_d2cSender_valTrainPatternSent(flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent),
-    .flagToAnalog_d2cSender_resetLocalScrambler(flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler),
-    .flagToAnalog_d2cSender_applyTxClockPhase(flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase),
-    .flagToAnalog_d2cSender_txClockPhaseCode(flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_txClockPhaseApplied(flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied),
-    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_comparisonMode(flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode),
-    .flagToAnalog_d2cReceiver_iterationCountSettings(flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_idleCountSettings(flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings),
-    .flagToAnalog_d2cReceiver_burstCountSettings(flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings),
-    .flagToAnalog_d2cReceiver_patternMode(flagToAnalog_d2cReceiver_valTrainCenter_patternMode),
-    .flagToAnalog_d2cReceiver_clockPhaseControl(flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_validPattern(flagToAnalog_d2cReceiver_valTrainCenter_validPattern),
-    .flagToAnalog_d2cReceiver_dataPattern(flagToAnalog_d2cReceiver_valTrainCenter_dataPattern),
-    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload),
-    .substate(valTrainCenter_substate),
+    .flagToAnalog_d2cSender_sendValTrainPattern(stage_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern),
+    .flagFromAnalog_d2cSender_valTrainPatternSent(stage_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler(stage_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler),
+    .flagToAnalog_d2cSender_applyTxClockPhase(stage_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase),
+    .flagToAnalog_d2cSender_txClockPhaseCode(stage_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode),
+    .flagFromAnalog_d2cSender_txClockPhaseApplied(stage_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(stage_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(stage_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode(stage_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings(stage_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings(stage_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings(stage_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode(stage_flagToAnalog_d2cReceiver_valTrainCenter_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl(stage_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern(stage_flagToAnalog_d2cReceiver_valTrainCenter_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern(stage_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(stage_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload),
+    .dbg_senderState(valTrainCenter_dbg_senderState),
+    .dbg_receiverState(valTrainCenter_dbg_receiverState),
+    .dbg_d2cSenderState(valTrainCenter_dbg_d2cSenderState),
+    .dbg_d2cReceiverState(valTrainCenter_dbg_d2cReceiverState),
+    .dbg_sweepState(valTrainCenter_dbg_sweepState),
     .lastErrorCount(valTrainCenter_lastErrorCount),
     .retryCount(valTrainCenter_retryCount)
   );
@@ -14337,25 +16283,29 @@ module MBTrainFSM #(
     .sb_tx_din(valTrainVref_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_VALTRAINVREF)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_valTrainVrefApplyRxVref(flagToAnalog_valTrainVref_applyRxVref),
-    .flagToAnalog_valTrainVrefRxVrefCode(flagToAnalog_valTrainVref_rxVrefCode),
-    .flagFromAnalog_valTrainVrefRxVrefApplied(flagFromAnalog_valTrainVref_rxVrefApplied),
-    .flagToAnalog_valTrainVrefConfigureRxInitD2CPointTest(flagToAnalog_valTrainVref_configureRxInitD2CPointTest),
-    .flagToAnalog_valTrainVrefMaximumComparisonErrorThreshold(flagToAnalog_valTrainVref_maximumComparisonErrorThreshold),
-    .flagToAnalog_valTrainVrefComparisonMode(flagToAnalog_valTrainVref_comparisonMode),
-    .flagToAnalog_valTrainVrefIterationCountSettings(flagToAnalog_valTrainVref_iterationCountSettings),
-    .flagToAnalog_valTrainVrefIdleCountSettings(flagToAnalog_valTrainVref_idleCountSettings),
-    .flagToAnalog_valTrainVrefBurstCountSettings(flagToAnalog_valTrainVref_burstCountSettings),
-    .flagToAnalog_valTrainVrefPatternMode(flagToAnalog_valTrainVref_patternMode),
-    .flagToAnalog_valTrainVrefClockPhaseControl(flagToAnalog_valTrainVref_clockPhaseControl),
-    .flagToAnalog_valTrainVrefValidPattern(flagToAnalog_valTrainVref_validPattern),
-    .flagToAnalog_valTrainVrefDataPattern(flagToAnalog_valTrainVref_dataPattern),
-    .flagToAnalog_valTrainVrefClearComparisonErrors(flagToAnalog_valTrainVref_clearComparisonErrors),
-    .flagFromAnalog_valTrainVrefDetectedValPattern(flagFromAnalog_valTrainVref_detectedValPattern),
-    .flagToAnalog_valTrainVrefSendPattern(flagToAnalog_valTrainVref_sendPattern),
-    .flagFromAnalog_valTrainVrefFinishedPattern(flagFromAnalog_valTrainVref_finishedPattern),
-    .flagToAnalog_valTrainVrefResetLocalTxScrambler(flagToAnalog_valTrainVref_resetLocalTxScrambler),
-    .substate(valTrainVref_substate),
+    .flagToAnalog_valTrainVrefApplyRxVref(stage_flagToAnalog_valTrainVref_applyRxVref),
+    .flagToAnalog_valTrainVrefRxVrefCode(stage_flagToAnalog_valTrainVref_rxVrefCode),
+    .flagFromAnalog_valTrainVrefRxVrefApplied(stage_flagFromAnalog_valTrainVref_rxVrefApplied),
+    .flagToAnalog_valTrainVrefConfigureRxInitD2CPointTest(stage_flagToAnalog_valTrainVref_configureRxInitD2CPointTest),
+    .flagToAnalog_valTrainVrefMaximumComparisonErrorThreshold(stage_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold),
+    .flagToAnalog_valTrainVrefComparisonMode(stage_flagToAnalog_valTrainVref_comparisonMode),
+    .flagToAnalog_valTrainVrefIterationCountSettings(stage_flagToAnalog_valTrainVref_iterationCountSettings),
+    .flagToAnalog_valTrainVrefIdleCountSettings(stage_flagToAnalog_valTrainVref_idleCountSettings),
+    .flagToAnalog_valTrainVrefBurstCountSettings(stage_flagToAnalog_valTrainVref_burstCountSettings),
+    .flagToAnalog_valTrainVrefPatternMode(stage_flagToAnalog_valTrainVref_patternMode),
+    .flagToAnalog_valTrainVrefClockPhaseControl(stage_flagToAnalog_valTrainVref_clockPhaseControl),
+    .flagToAnalog_valTrainVrefValidPattern(stage_flagToAnalog_valTrainVref_validPattern),
+    .flagToAnalog_valTrainVrefDataPattern(stage_flagToAnalog_valTrainVref_dataPattern),
+    .flagToAnalog_valTrainVrefClearComparisonErrors(stage_flagToAnalog_valTrainVref_clearComparisonErrors),
+    .flagFromAnalog_valTrainVrefDetectedValPattern(stage_flagFromAnalog_valTrainVref_detectedValPattern),
+    .flagToAnalog_valTrainVrefSendPattern(stage_flagToAnalog_valTrainVref_sendPattern),
+    .flagFromAnalog_valTrainVrefFinishedPattern(stage_flagFromAnalog_valTrainVref_finishedPattern),
+    .flagToAnalog_valTrainVrefResetLocalTxScrambler(stage_flagToAnalog_valTrainVref_resetLocalTxScrambler),
+    .dbg_localState(valTrainVref_dbg_localState),
+    .dbg_remoteState(valTrainVref_dbg_remoteState),
+    .dbg_sweepState(valTrainVref_dbg_sweepState),
+    .dbg_pointInitiatorState(valTrainVref_dbg_pointInitiatorState),
+    .dbg_pointResponderState(valTrainVref_dbg_pointResponderState),
     .lastErrorCount(valTrainVref_lastErrorCount),
     .retryCount(valTrainVref_retryCount),
     .selectedVrefCode(valTrainVref_selectedCode),
@@ -14390,29 +16340,33 @@ module MBTrainFSM #(
     .sb_tx_din(dataTrainCenter1_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_DATATRAINCENTER1)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_d2cSender_sendLfsrPattern(flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_lfsrPatternSent(flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent),
-    .flagToAnalog_d2cSender_resetLocalScrambler(flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler),
-    .flagToAnalog_d2cSender_applyTxClockPhase(flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase),
-    .flagToAnalog_d2cSender_txClockPhaseCode(flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_txClockPhaseApplied(flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied),
-    .flagToAnalog_d2cSender_applyTxLaneDeskew(flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew),
-    .flagToAnalog_d2cSender_txLaneDeskewCodes(flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes),
-    .flagFromAnalog_d2cSender_txLaneDeskewApplied(flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied),
-    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_comparisonMode(flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode),
-    .flagToAnalog_d2cReceiver_iterationCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_idleCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings),
-    .flagToAnalog_d2cReceiver_burstCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings),
-    .flagToAnalog_d2cReceiver_patternMode(flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode),
-    .flagToAnalog_d2cReceiver_clockPhaseControl(flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_validPattern(flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern),
-    .flagToAnalog_d2cReceiver_dataPattern(flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern),
-    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload),
-    .substate(dataTrainCenter1_substate),
+    .flagToAnalog_d2cSender_sendLfsrPattern(stage_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern),
+    .flagFromAnalog_d2cSender_lfsrPatternSent(stage_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler(stage_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler),
+    .flagToAnalog_d2cSender_applyTxClockPhase(stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase),
+    .flagToAnalog_d2cSender_txClockPhaseCode(stage_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode),
+    .flagFromAnalog_d2cSender_txClockPhaseApplied(stage_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied),
+    .flagToAnalog_d2cSender_applyTxLaneDeskew(stage_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew),
+    .flagToAnalog_d2cSender_txLaneDeskewCodes(stage_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes),
+    .flagFromAnalog_d2cSender_txLaneDeskewApplied(stage_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(stage_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload),
+    .dbg_senderState(dataTrainCenter1_dbg_senderState),
+    .dbg_receiverState(dataTrainCenter1_dbg_receiverState),
+    .dbg_d2cSenderState(dataTrainCenter1_dbg_d2cSenderState),
+    .dbg_d2cReceiverState(dataTrainCenter1_dbg_d2cReceiverState),
+    .dbg_sweepState(dataTrainCenter1_dbg_sweepState),
     .lastErrorCount(dataTrainCenter1_lastErrorCount),
     .retryCount(dataTrainCenter1_retryCount)
   );
@@ -14449,60 +16403,64 @@ module MBTrainFSM #(
     .sb_rx_valid(sb_rx_valid && (stateReg == State_DATATRAINVREF)),
     .sb_rx_dout(sb_rx_dout),
     .flagToAnalog_dataTrainVrefApplyRxVref(
-      flagToAnalog_dataTrainVref_applyRxVref
+      stage_flagToAnalog_dataTrainVref_applyRxVref
     ),
     .flagToAnalog_dataTrainVrefRxVrefCodes(
-      flagToAnalog_dataTrainVref_rxVrefCodes
+      stage_flagToAnalog_dataTrainVref_rxVrefCodes
     ),
     .flagFromAnalog_dataTrainVrefRxVrefApplied(
-      flagFromAnalog_dataTrainVref_rxVrefApplied
+      stage_flagFromAnalog_dataTrainVref_rxVrefApplied
     ),
     .flagToAnalog_dataTrainVrefConfigureRxInitD2CPointTest(
-      flagToAnalog_dataTrainVref_configureRxInitD2CPointTest
+      stage_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest
     ),
     .flagToAnalog_dataTrainVrefMaximumComparisonErrorThreshold(
-      flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold
+      stage_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold
     ),
     .flagToAnalog_dataTrainVrefComparisonMode(
-      flagToAnalog_dataTrainVref_comparisonMode
+      stage_flagToAnalog_dataTrainVref_comparisonMode
     ),
     .flagToAnalog_dataTrainVrefIterationCountSettings(
-      flagToAnalog_dataTrainVref_iterationCountSettings
+      stage_flagToAnalog_dataTrainVref_iterationCountSettings
     ),
     .flagToAnalog_dataTrainVrefIdleCountSettings(
-      flagToAnalog_dataTrainVref_idleCountSettings
+      stage_flagToAnalog_dataTrainVref_idleCountSettings
     ),
     .flagToAnalog_dataTrainVrefBurstCountSettings(
-      flagToAnalog_dataTrainVref_burstCountSettings
+      stage_flagToAnalog_dataTrainVref_burstCountSettings
     ),
     .flagToAnalog_dataTrainVrefPatternMode(
-      flagToAnalog_dataTrainVref_patternMode
+      stage_flagToAnalog_dataTrainVref_patternMode
     ),
     .flagToAnalog_dataTrainVrefClockPhaseControl(
-      flagToAnalog_dataTrainVref_clockPhaseControl
+      stage_flagToAnalog_dataTrainVref_clockPhaseControl
     ),
     .flagToAnalog_dataTrainVrefValidPattern(
-      flagToAnalog_dataTrainVref_validPattern
+      stage_flagToAnalog_dataTrainVref_validPattern
     ),
     .flagToAnalog_dataTrainVrefDataPattern(
-      flagToAnalog_dataTrainVref_dataPattern
+      stage_flagToAnalog_dataTrainVref_dataPattern
     ),
     .flagToAnalog_dataTrainVrefClearComparisonErrors(
-      flagToAnalog_dataTrainVref_clearComparisonErrors
+      stage_flagToAnalog_dataTrainVref_clearComparisonErrors
     ),
     .flagFromAnalog_dataTrainVrefDetectedDataPattern(
-      flagFromAnalog_dataTrainVref_detectedDataPattern
+      stage_flagFromAnalog_dataTrainVref_detectedDataPattern
     ),
     .flagToAnalog_dataTrainVrefSendPattern(
-      flagToAnalog_dataTrainVref_sendPattern
+      stage_flagToAnalog_dataTrainVref_sendPattern
     ),
     .flagFromAnalog_dataTrainVrefFinishedPattern(
-      flagFromAnalog_dataTrainVref_finishedPattern
+      stage_flagFromAnalog_dataTrainVref_finishedPattern
     ),
     .flagToAnalog_dataTrainVrefResetLocalTxScrambler(
-      flagToAnalog_dataTrainVref_resetLocalTxScrambler
+      stage_flagToAnalog_dataTrainVref_resetLocalTxScrambler
     ),
-    .substate(dataTrainVref_substate),
+    .dbg_localState(dataTrainVref_dbg_localState),
+    .dbg_remoteState(dataTrainVref_dbg_remoteState),
+    .dbg_sweepState(dataTrainVref_dbg_sweepState),
+    .dbg_pointInitiatorState(dataTrainVref_dbg_pointInitiatorState),
+    .dbg_pointResponderState(dataTrainVref_dbg_pointResponderState),
     .lastErrorCount(dataTrainVref_lastErrorCount),
     .retryCount(dataTrainVref_retryCount),
     .selectedVrefCodes(dataTrainVref_selectedCodes),
@@ -14574,7 +16532,11 @@ module MBTrainFSM #(
       flagFromAnalog_rxDeskew_lfsrPatternSent),
     .flagToAnalog_rxDeskewResetLocalTxScrambler(
       flagToAnalog_rxDeskew_resetLocalTxScrambler),
-    .substate(rxDeskew_substate),
+    .dbg_localState(rxDeskew_dbg_localState),
+    .dbg_remoteState(rxDeskew_dbg_remoteState),
+    .dbg_sweepState(rxDeskew_dbg_sweepState),
+    .dbg_pointInitiatorState(rxDeskew_dbg_pointInitiatorState),
+    .dbg_pointResponderState(rxDeskew_dbg_pointResponderState),
     .lastErrorCount(rxDeskew_lastErrorCount),
     .retryCount(rxDeskew_retryCount),
     .selectedRxDeskewCodes(rxDeskew_selectedCodes),
@@ -14605,26 +16567,30 @@ module MBTrainFSM #(
     .sb_tx_din(dataTrainCenter2_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_DATATRAINCENTER2)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToAnalog_d2cSender_sendLfsrPattern(flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_lfsrPatternSent(flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent),
-    .flagToAnalog_d2cSender_resetLocalScrambler(flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler),
-    .flagToAnalog_d2cSender_applyTxClockPhase(flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase),
-    .flagToAnalog_d2cSender_txClockPhaseCode(flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode),
-    .flagFromAnalog_d2cSender_txClockPhaseApplied(flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied),
-    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_comparisonMode(flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode),
-    .flagToAnalog_d2cReceiver_iterationCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_idleCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings),
-    .flagToAnalog_d2cReceiver_burstCountSettings(flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings),
-    .flagToAnalog_d2cReceiver_patternMode(flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode),
-    .flagToAnalog_d2cReceiver_clockPhaseControl(flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_validPattern(flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern),
-    .flagToAnalog_d2cReceiver_dataPattern(flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern),
-    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo),
-    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload),
-    .substate(dataTrainCenter2_substate),
+    .flagToAnalog_d2cSender_sendLfsrPattern(stage_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern),
+    .flagFromAnalog_d2cSender_lfsrPatternSent(stage_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler(stage_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler),
+    .flagToAnalog_d2cSender_applyTxClockPhase(stage_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase),
+    .flagToAnalog_d2cSender_txClockPhaseCode(stage_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode),
+    .flagFromAnalog_d2cSender_txClockPhaseApplied(stage_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(stage_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo),
+    .flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload),
+    .dbg_senderState(dataTrainCenter2_dbg_senderState),
+    .dbg_receiverState(dataTrainCenter2_dbg_receiverState),
+    .dbg_d2cSenderState(dataTrainCenter2_dbg_d2cSenderState),
+    .dbg_d2cReceiverState(dataTrainCenter2_dbg_d2cReceiverState),
+    .dbg_sweepState(dataTrainCenter2_dbg_sweepState),
     .lastErrorCount(dataTrainCenter2_lastErrorCount),
     .retryCount(dataTrainCenter2_retryCount)
   );
@@ -14649,22 +16615,25 @@ module MBTrainFSM #(
     .sb_rx_valid(sb_rx_valid && (stateReg == State_LINKSPEED)),
     .sb_rx_dout(sb_rx_dout),
     .flagToLtsm_phyInRetrain(flagToLtsm_linkSpeed_phyInRetrain),
-    .flagToAnalog_d2cSender_sendLfsrPattern(flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern),
-    .flagFromAnalog_d2cSender_lfsrPatternSent(flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent),
-    .flagToAnalog_d2cSender_resetLocalScrambler(flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler),
-    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest),
-    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold),
-    .flagToAnalog_d2cReceiver_comparisonMode(flagToAnalog_d2cReceiver_linkSpeed_comparisonMode),
-    .flagToAnalog_d2cReceiver_iterationCountSettings(flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings),
-    .flagToAnalog_d2cReceiver_idleCountSettings(flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings),
-    .flagToAnalog_d2cReceiver_burstCountSettings(flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings),
-    .flagToAnalog_d2cReceiver_patternMode(flagToAnalog_d2cReceiver_linkSpeed_patternMode),
-    .flagToAnalog_d2cReceiver_clockPhaseControl(flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl),
-    .flagToAnalog_d2cReceiver_validPattern(flagToAnalog_d2cReceiver_linkSpeed_validPattern),
-    .flagToAnalog_d2cReceiver_dataPattern(flagToAnalog_d2cReceiver_linkSpeed_dataPattern),
-    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler),
-    .flagFromAnalog_d2cReceiver_laneComparisonSuccessful(flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful),
-    .substate(linkSpeed_substate),
+    .flagToAnalog_d2cSender_sendLfsrPattern(stage_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern),
+    .flagFromAnalog_d2cSender_lfsrPatternSent(stage_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent),
+    .flagToAnalog_d2cSender_resetLocalScrambler(stage_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler),
+    .flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(stage_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest),
+    .flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(stage_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold),
+    .flagToAnalog_d2cReceiver_comparisonMode(stage_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode),
+    .flagToAnalog_d2cReceiver_iterationCountSettings(stage_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings),
+    .flagToAnalog_d2cReceiver_idleCountSettings(stage_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings),
+    .flagToAnalog_d2cReceiver_burstCountSettings(stage_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings),
+    .flagToAnalog_d2cReceiver_patternMode(stage_flagToAnalog_d2cReceiver_linkSpeed_patternMode),
+    .flagToAnalog_d2cReceiver_clockPhaseControl(stage_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl),
+    .flagToAnalog_d2cReceiver_validPattern(stage_flagToAnalog_d2cReceiver_linkSpeed_validPattern),
+    .flagToAnalog_d2cReceiver_dataPattern(stage_flagToAnalog_d2cReceiver_linkSpeed_dataPattern),
+    .flagToAnalog_d2cReceiver_resetLocalRxScrambler(stage_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler),
+    .flagFromAnalog_d2cReceiver_laneComparisonSuccessful(stage_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful),
+    .dbg_senderState(linkSpeed_dbg_senderState),
+    .dbg_receiverState(linkSpeed_dbg_receiverState),
+    .dbg_d2cSenderState(linkSpeed_dbg_d2cSenderState),
+    .dbg_d2cReceiverState(linkSpeed_dbg_d2cReceiverState),
     .lastErrorCount(linkSpeed_lastErrorCount),
     .retryCount(linkSpeed_retryCount)
   );
@@ -14734,67 +16703,118 @@ module MBTrainFSM #(
 
   always_comb begin
     state = stateReg;
+    dbg_mbtrainValVrefLocalState = valVref_dbg_localState;
+    dbg_mbtrainValVrefRemoteState = valVref_dbg_remoteState;
+    dbg_mbtrainValVrefSweepState = valVref_dbg_sweepState;
+    dbg_mbtrainValVrefPointInitiatorState = valVref_dbg_pointInitiatorState;
+    dbg_mbtrainValVrefPointResponderState = valVref_dbg_pointResponderState;
+    dbg_mbtrainDataVrefLocalState = dataVref_dbg_localState;
+    dbg_mbtrainDataVrefRemoteState = dataVref_dbg_remoteState;
+    dbg_mbtrainDataVrefSweepState = dataVref_dbg_sweepState;
+    dbg_mbtrainDataVrefPointInitiatorState = dataVref_dbg_pointInitiatorState;
+    dbg_mbtrainDataVrefPointResponderState = dataVref_dbg_pointResponderState;
+    dbg_mbtrainSpeedIdleSenderState = speedIdle_dbg_senderState;
+    dbg_mbtrainSpeedIdleReceiverState = speedIdle_dbg_receiverState;
+    dbg_mbtrainTxSelfCalSenderState = txSelfCal_dbg_senderState;
+    dbg_mbtrainTxSelfCalReceiverState = txSelfCal_dbg_receiverState;
+    dbg_mbtrainRxClkCalSenderState = rxClkCal_dbg_senderState;
+    dbg_mbtrainRxClkCalReceiverState = rxClkCal_dbg_receiverState;
+    dbg_mbtrainValTrainCenterSenderState = valTrainCenter_dbg_senderState;
+    dbg_mbtrainValTrainCenterReceiverState = valTrainCenter_dbg_receiverState;
+    dbg_mbtrainValTrainCenterD2cSenderState = valTrainCenter_dbg_d2cSenderState;
+    dbg_mbtrainValTrainCenterD2cReceiverState = valTrainCenter_dbg_d2cReceiverState;
+    dbg_mbtrainValTrainCenterSweepState = valTrainCenter_dbg_sweepState;
+    dbg_mbtrainValTrainVrefLocalState = valTrainVref_dbg_localState;
+    dbg_mbtrainValTrainVrefRemoteState = valTrainVref_dbg_remoteState;
+    dbg_mbtrainValTrainVrefSweepState = valTrainVref_dbg_sweepState;
+    dbg_mbtrainValTrainVrefPointInitiatorState = valTrainVref_dbg_pointInitiatorState;
+    dbg_mbtrainValTrainVrefPointResponderState = valTrainVref_dbg_pointResponderState;
+    dbg_mbtrainDataTrainCenter1SenderState = dataTrainCenter1_dbg_senderState;
+    dbg_mbtrainDataTrainCenter1ReceiverState = dataTrainCenter1_dbg_receiverState;
+    dbg_mbtrainDataTrainCenter1D2cSenderState = dataTrainCenter1_dbg_d2cSenderState;
+    dbg_mbtrainDataTrainCenter1D2cReceiverState = dataTrainCenter1_dbg_d2cReceiverState;
+    dbg_mbtrainDataTrainCenter1SweepState = dataTrainCenter1_dbg_sweepState;
+    dbg_mbtrainDataTrainVrefLocalState = dataTrainVref_dbg_localState;
+    dbg_mbtrainDataTrainVrefRemoteState = dataTrainVref_dbg_remoteState;
+    dbg_mbtrainDataTrainVrefSweepState = dataTrainVref_dbg_sweepState;
+    dbg_mbtrainDataTrainVrefPointInitiatorState = dataTrainVref_dbg_pointInitiatorState;
+    dbg_mbtrainDataTrainVrefPointResponderState = dataTrainVref_dbg_pointResponderState;
+    dbg_mbtrainRxDeskewLocalState = rxDeskew_dbg_localState;
+    dbg_mbtrainRxDeskewRemoteState = rxDeskew_dbg_remoteState;
+    dbg_mbtrainRxDeskewSweepState = rxDeskew_dbg_sweepState;
+    dbg_mbtrainRxDeskewPointInitiatorState = rxDeskew_dbg_pointInitiatorState;
+    dbg_mbtrainRxDeskewPointResponderState = rxDeskew_dbg_pointResponderState;
+    dbg_mbtrainDataTrainCenter2SenderState = dataTrainCenter2_dbg_senderState;
+    dbg_mbtrainDataTrainCenter2ReceiverState = dataTrainCenter2_dbg_receiverState;
+    dbg_mbtrainDataTrainCenter2D2cSenderState = dataTrainCenter2_dbg_d2cSenderState;
+    dbg_mbtrainDataTrainCenter2D2cReceiverState = dataTrainCenter2_dbg_d2cReceiverState;
+    dbg_mbtrainDataTrainCenter2SweepState = dataTrainCenter2_dbg_sweepState;
+    dbg_mbtrainLinkSpeedSenderState = linkSpeed_dbg_senderState;
+    dbg_mbtrainLinkSpeedReceiverState = linkSpeed_dbg_receiverState;
+    dbg_mbtrainLinkSpeedD2cSenderState = linkSpeed_dbg_d2cSenderState;
+    dbg_mbtrainLinkSpeedD2cReceiverState = linkSpeed_dbg_d2cReceiverState;
     busy = (stateReg != State_IDLE) &&
            (stateReg != State_COMPLETE) &&
            (stateReg != State_ERROR);
     done = (stateReg == State_COMPLETE);
     trainError = errorReg || (stateReg == State_ERROR);
 
+    // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     activeSubstate = 12'b0;
     lastErrorCount = 16'b0;
     retryCount = 16'b0;
     unique case (stateReg)
       State_VALVREF: begin
-        activeSubstate = valVref_substate;
+        activeSubstate = {valVref_dbg_localState, valVref_dbg_pointInitiatorState, valVref_dbg_pointResponderState};
         lastErrorCount = valVref_lastErrorCount;
         retryCount = valVref_retryCount;
       end
       State_DATAVREF: begin
-        activeSubstate = dataVref_substate;
+        activeSubstate = {dataVref_dbg_localState, dataVref_dbg_pointInitiatorState, dataVref_dbg_pointResponderState};
         lastErrorCount = dataVref_lastErrorCount;
         retryCount = dataVref_retryCount;
       end
       State_SPEEDIDLE: begin
-        activeSubstate = {4'b0, speedIdle_substate};
+        activeSubstate = {8'b0, speedIdle_dbg_receiverState, speedIdle_dbg_senderState};
       end
       State_TXSELFCAL: begin
-        activeSubstate = {4'b0, txSelfCal_substate};
+        activeSubstate = {8'b0, txSelfCal_dbg_receiverState, txSelfCal_dbg_senderState};
       end
       State_RXCLKCAL: begin
-        activeSubstate = {4'b0, rxClkCal_substate};
+        activeSubstate = {6'b0, rxClkCal_dbg_receiverState, rxClkCal_dbg_senderState};
       end
       State_VALTRAINCENTER: begin
-        activeSubstate = valTrainCenter_substate;
+        activeSubstate = {valTrainCenter_dbg_senderState, valTrainCenter_dbg_d2cSenderState, valTrainCenter_dbg_d2cReceiverState};
         lastErrorCount = valTrainCenter_lastErrorCount;
         retryCount = valTrainCenter_retryCount;
       end
       State_VALTRAINVREF: begin
-        activeSubstate = valTrainVref_substate;
+        activeSubstate = {valTrainVref_dbg_localState, valTrainVref_dbg_pointInitiatorState, valTrainVref_dbg_pointResponderState};
         lastErrorCount = valTrainVref_lastErrorCount;
         retryCount = valTrainVref_retryCount;
       end
       State_DATATRAINCENTER1: begin
-        activeSubstate = dataTrainCenter1_substate;
+        activeSubstate = {dataTrainCenter1_dbg_senderState, dataTrainCenter1_dbg_d2cSenderState, dataTrainCenter1_dbg_d2cReceiverState};
         lastErrorCount = dataTrainCenter1_lastErrorCount;
         retryCount = dataTrainCenter1_retryCount;
       end
       State_DATATRAINVREF: begin
-        activeSubstate = dataTrainVref_substate;
+        activeSubstate = {dataTrainVref_dbg_localState, dataTrainVref_dbg_pointInitiatorState, dataTrainVref_dbg_pointResponderState};
         lastErrorCount = dataTrainVref_lastErrorCount;
         retryCount = dataTrainVref_retryCount;
       end
       State_RXDESKEW: begin
-        activeSubstate = rxDeskew_substate;
+        activeSubstate = {rxDeskew_dbg_localState, rxDeskew_dbg_pointInitiatorState, rxDeskew_dbg_pointResponderState};
         lastErrorCount = rxDeskew_lastErrorCount;
         retryCount = rxDeskew_retryCount;
       end
       State_DATATRAINCENTER2: begin
-        activeSubstate = dataTrainCenter2_substate;
+        activeSubstate = {dataTrainCenter2_dbg_senderState, dataTrainCenter2_dbg_d2cSenderState, dataTrainCenter2_dbg_d2cReceiverState};
         lastErrorCount = dataTrainCenter2_lastErrorCount;
         retryCount = dataTrainCenter2_retryCount;
       end
       State_LINKSPEED: begin
-        activeSubstate = linkSpeed_substate;
+        activeSubstate = {linkSpeed_dbg_senderState, linkSpeed_dbg_d2cSenderState, linkSpeed_dbg_d2cReceiverState};
         lastErrorCount = linkSpeed_lastErrorCount;
         retryCount = linkSpeed_retryCount;
       end
@@ -14887,13 +16907,13 @@ endmodule
 
 ```
 
-<a id="Parameters-sv"></a>
+<a id="src-Parameters-sv"></a>
 
-## [32] Parameters.sv
+## [34] src\Parameters.sv
 
 ```systemverilog
-// FILE_INDEX: 32
-// FILE_PATH : Parameters.sv
+// FILE_INDEX: 34
+// FILE_PATH : src\Parameters.sv
 
 // Synthesizable SystemVerilog representation of Parameters.scala.
 // The Chisel case class is elaboration-time configuration, so it becomes module parameters.
@@ -14912,8 +16932,48 @@ package LtsmParameters_pkg;
   // The PI and deskew resolutions are implementation parameters rather than
   // UCIe protocol encodings.
   parameter int unsigned DEFAULT_D2C_PI_CODE_WIDTH = 6;
-  parameter int unsigned DEFAULT_D2C_TX_DESKEW_CODE_WIDTH = 6;
+  // TX deskew is a physical switch word, not a binary delay code. Each lane
+  // has two cascaded cells. Cell 1 is [9:0], cell 2 is [19:10]; within a cell
+  // bit 0 selects 0.5 ps and bits 1..9 select 1 ps each (sw-4 through sw4).
+  // Fill cell 1 to 9.5 ps before adding delay in cell 2: 0..19 ps total.
+  localparam int unsigned TX_DESKEW_CONTROL_WIDTH = 20;
+  localparam int unsigned TX_DESKEW_HALF_STEP_WIDTH = 6;
+  localparam int unsigned TX_DESKEW_CELL_MAX_HALF_STEPS = 19;
+  localparam int unsigned TX_DESKEW_MAX_HALF_STEPS = 38;
+  parameter int unsigned DEFAULT_D2C_TX_DESKEW_CODE_WIDTH = TX_DESKEW_CONTROL_WIDTH;
+  // Number of 0.5 ps TX delay steps corresponding to one forwarded-clock PI
+  // step. Set this ratio to the actual PHY PI resolution; the default is 1.
   parameter int unsigned DEFAULT_D2C_DESKEW_STEPS_PER_PI = 1;
+
+  // The comparisons in this loop are independent thermometer-bit decoders,
+  // not a loop-carried search. Numeric range checking is done by the training
+  // engine before it calls this function; the function defensively saturates
+  // out-of-range 6-bit inputs, but training never applies a saturated result.
+  function automatic logic [TX_DESKEW_CONTROL_WIDTH-1:0] encode_tx_deskew(
+    input logic [TX_DESKEW_HALF_STEP_WIDTH-1:0] half_steps
+  );
+    logic [4:0] first_cell_steps;
+    logic [4:0] second_cell_steps;
+    begin
+      if (half_steps >= 6'd38) begin
+        first_cell_steps = 5'd19;
+        second_cell_steps = 5'd19;
+      end else if (half_steps > 6'd19) begin
+        first_cell_steps = 5'd19;
+        second_cell_steps = 5'(half_steps - 6'd19);
+      end else begin
+        first_cell_steps = half_steps[4:0];
+        second_cell_steps = '0;
+      end
+      encode_tx_deskew = '0;
+      encode_tx_deskew[0] = first_cell_steps[0];
+      encode_tx_deskew[10] = second_cell_steps[0];
+      for (int unsigned sw = 0; sw < 9; sw++) begin
+        encode_tx_deskew[1+sw] = (first_cell_steps >= 5'(2*(sw+1)));
+        encode_tx_deskew[11+sw] = (second_cell_steps >= 5'(2*(sw+1)));
+      end
+    end
+  endfunction
   parameter bit DEFAULT_D2C_DESKEW_ADD_DELAY_INCREASES_PHASE = 1'b1;
   parameter logic [15:0] DEFAULT_D2C_MAX_COMPARISON_ERROR_THRESHOLD = 16'd0;
   parameter int unsigned DEFAULT_D2C_MIN_LANE_WINDOW_STEPS = 1;
@@ -14932,11 +16992,9 @@ package LtsmParameters_pkg;
   // UCIe makes the operating-rate VALTRAINVREF optimization optional.
   parameter bit DEFAULT_VALTRAIN_VREF_ENABLE = 1'b1;
 
-  // MBTRAIN.RXDESKEW defaults.  The RX delay control intentionally uses the
-  // same unsigned per-lane code convention and default resolution as TX
-  // deskew.  Code-to-time mapping remains an analog PHY responsibility.
-  parameter int unsigned DEFAULT_RX_DESKEW_CODE_WIDTH =
-    DEFAULT_D2C_TX_DESKEW_CODE_WIDTH;
+  // MBTRAIN.RXDESKEW keeps its existing independent 6-bit unsigned binary
+  // delay code and 64-value range. It does not use the TX switch encoding.
+  parameter int unsigned DEFAULT_RX_DESKEW_CODE_WIDTH = 6;
   parameter int unsigned DEFAULT_RX_DESKEW_VALUE_COUNT =
     (1 << DEFAULT_RX_DESKEW_CODE_WIDTH);
   parameter logic [15:0] DEFAULT_RX_DESKEW_MAX_COMPARISON_ERROR_THRESHOLD =
@@ -14951,13 +17009,13 @@ endpackage
 
 ```
 
-<a id="Rdi-sv"></a>
+<a id="src-Rdi-sv"></a>
 
-## [33] Rdi.sv
+## [35] src\Rdi.sv
 
 ```systemverilog
-// FILE_INDEX: 33
-// FILE_PATH : Rdi.sv
+// FILE_INDEX: 35
+// FILE_PATH : src\Rdi.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: Rdi(2).scala
@@ -14975,13 +17033,13 @@ endpackage
 
 ```
 
-<a id="RdiLinkManagementConstants-sv"></a>
+<a id="src-RdiLinkManagementConstants-sv"></a>
 
-## [34] RdiLinkManagementConstants.sv
+## [36] src\RdiLinkManagementConstants.sv
 
 ```systemverilog
-// FILE_INDEX: 34
-// FILE_PATH : RdiLinkManagementConstants.sv
+// FILE_INDEX: 36
+// FILE_PATH : src\RdiLinkManagementConstants.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: RdiLinkManagementConstants(5).scala
@@ -15002,13 +17060,13 @@ endpackage
 
 ```
 
-<a id="RdiLinkManagementController-sv"></a>
+<a id="src-RdiLinkManagementController-sv"></a>
 
-## [35] RdiLinkManagementController.sv
+## [37] src\RdiLinkManagementController.sv
 
 ```systemverilog
-// FILE_INDEX: 35
-// FILE_PATH : RdiLinkManagementController.sv
+// FILE_INDEX: 37
+// FILE_PATH : src\RdiLinkManagementController.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: RdiLinkManagementController(20260805-195425).scala
@@ -15051,6 +17109,7 @@ module RdiLinkManagementController (
   input  wire logic lp_linkerror,
 
   output var logic        pl_phyinrecenter,
+  input wire logic timeout_disable,
   input  wire logic [31:0] cycles_1us
 );
   import UcieUPM_interfaces_pkg::*;
@@ -15202,6 +17261,7 @@ module RdiLinkManagementController (
   RdiTimeoutController rdi_timeout (
     .clock                     (clock),
     .reset_n                   (reset_n),
+    .timeout_disable (timeout_disable),
     .cycles1us                 (cycles_1us),
     .startSidebandReqTimer     (local_req_sent),
     .sidebandRspReceived       (expected_remote_rsp_received),
@@ -15932,13 +17992,13 @@ endmodule
 
 ```
 
-<a id="RdiTimeoutController-sv"></a>
+<a id="src-RdiTimeoutController-sv"></a>
 
-## [36] RdiTimeoutController.sv
+## [38] src\RdiTimeoutController.sv
 
 ```systemverilog
-// FILE_INDEX: 36
-// FILE_PATH : RdiTimeoutController.sv
+// FILE_INDEX: 38
+// FILE_PATH : src\RdiTimeoutController.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: RdiTimeoutController(3).scala
@@ -15951,6 +18011,8 @@ module RdiTimeoutController (
   input  wire logic        reset_n,
 
   input  wire logic [31:0] cycles1us,
+  // Suppress request-timeout errors; recovery/stall timers remain operational.
+  input  wire logic        timeout_disable,
 
   input  wire logic startSidebandReqTimer,
   input  wire logic sidebandRspReceived,
@@ -15968,88 +18030,149 @@ module RdiTimeoutController (
   input  wire logic inLinkError,
   output var logic linkErrorResidencyDone
 );
-  logic [63:0] timeout4ms;
-  logic [63:0] timeout8ms;
-  logic [63:0] timeout16ms;
+  logic configReady;
+  logic [43:0] configuredLast4ms;
+  logic [44:0] configuredLast8ms;
+  logic [45:0] configuredLast16ms;
+  logic [43:0] unusedTimeout4ms;
+  logic [44:0] unusedTimeout8ms;
+  logic [45:0] unusedTimeout16ms;
+  LinkMgmtTimeoutConfig timeoutConfig (
+    .clock(clock), .reset_n(reset_n), .cycles_1us(cycles1us),
+    .config_ready(configReady),
+    .timeout_4ms(unusedTimeout4ms), .timeout_8ms(unusedTimeout8ms),
+    .timeout_16ms(unusedTimeout16ms),
+    .last_4ms(configuredLast4ms), .last_8ms(configuredLast8ms),
+    .last_16ms(configuredLast16ms)
+  );
 
-  assign timeout4ms  = {32'b0, cycles1us} * 64'd4000;
-  assign timeout8ms  = {32'b0, cycles1us} * 64'd8000;
-  assign timeout16ms = {32'b0, cycles1us} * 64'd16000;
-
-  function automatic logic [63:0] lastCycle(input logic [63:0] limit);
-    lastCycle = (limit == 64'd0) ? 64'd0 : (limit - 64'd1);
-  endfunction
+  // Each interval owns a stable threshold. Configuration changes affect the
+  // next start/restart, including a STALL response or re-enabling timeouts.
+  logic [44:0] sbLast;
+  logic [43:0] stallLast;
+  logic [45:0] linkErrorLast;
+  logic sbLimitValid, stallLimitValid, linkErrorLimitValid;
 
   (* keep = "true" *) logic        sbBusy;
-  (* keep = "true" *) logic [63:0] sbCounter;
+  (* keep = "true" *) logic [44:0] sbCounter;
   (* keep = "true" *) logic        sbTimeoutFlag;
 
-  (* keep = "true" *) logic [63:0] stallCounter;
+  (* keep = "true" *) logic [43:0] stallCounter;
   (* keep = "true" *) logic        stallDue;
 
-  (* keep = "true" *) logic [63:0] linkErrorCounter;
+  (* keep = "true" *) logic [45:0] linkErrorCounter;
   (* keep = "true" *) logic        linkErrorDone;
 
   assign sidebandReqTimerBusy   = sbBusy;
-  assign sidebandReqTimeoutFlag = sbTimeoutFlag;
+  assign sidebandReqTimeoutFlag = sbTimeoutFlag && !timeout_disable;
   assign stallRefreshDue        = stallDue;
   assign linkErrorResidencyDone = linkErrorDone;
 
   always_ff @(negedge reset_n or posedge clock) begin
     if (!reset_n) begin
       sbBusy          <= 1'b0;
-      sbCounter       <= 64'd0;
+      sbCounter       <= 45'd0;
       sbTimeoutFlag   <= 1'b0;
-      stallCounter    <= 64'd0;
+      stallCounter    <= 44'd0;
       stallDue        <= 1'b0;
-      linkErrorCounter <= 64'd0;
+      linkErrorCounter <= 46'd0;
       linkErrorDone   <= 1'b0;
+      sbLast <= 45'd0;
+      stallLast <= 44'd0;
+      linkErrorLast <= 46'd0;
+      sbLimitValid <= 1'b0;
+      stallLimitValid <= 1'b0;
+      linkErrorLimitValid <= 1'b0;
     end else begin
       // This separate clear precedes the timer logic, matching the Chisel
       // connection priority: a timeout set below wins if both occur together.
-      if (clearTimeoutFlag)
+      if (clearTimeoutFlag || timeout_disable)
         sbTimeoutFlag <= 1'b0;
 
       if (clearSidebandReqTimer || sidebandRspReceived) begin
         sbBusy    <= 1'b0;
-        sbCounter <= 64'd0;
+        sbCounter <= 45'd0;
+        sbLimitValid <= 1'b0;
       end else if (startSidebandReqTimer) begin
         sbBusy    <= 1'b1;
-        sbCounter <= 64'd0;
+        sbCounter <= 45'd0;
+        sbLast <= configuredLast8ms;
+        sbLimitValid <= configReady && !timeout_disable;
       end else if (sbBusy && sidebandStallReceived) begin
-        sbCounter <= 64'd0;
+        sbCounter <= 45'd0;
+        sbLast <= configuredLast8ms;
+        sbLimitValid <= configReady && !timeout_disable;
       end else if (sbBusy) begin
-        if (sbCounter >= lastCycle(timeout8ms)) begin
+        if (timeout_disable) begin
+          sbCounter <= 45'd0;
+          sbLimitValid <= 1'b0;
+        end else if (!sbLimitValid) begin
+          // A request may precede configuration readiness after reset/update.
+          // Its interval begins when a coherent threshold is available.
+          if (configReady) begin
+            sbLast <= configuredLast8ms;
+            sbLimitValid <= 1'b1;
+            if (configuredLast8ms == 45'd0) begin
+              sbTimeoutFlag <= 1'b1;
+              sbBusy <= 1'b0;
+              sbCounter <= 45'd0;
+            end else begin
+              sbCounter <= 45'd1;
+            end
+          end
+        end else if (sbCounter >= sbLast) begin
           sbTimeoutFlag <= 1'b1;
           sbBusy        <= 1'b0;
-          sbCounter     <= 64'd0;
+          sbCounter     <= 45'd0;
         end else begin
-          sbCounter <= sbCounter + 64'd1;
+          sbCounter <= sbCounter + 45'd1;
         end
       end
 
       if (!stallResponseActive) begin
-        stallCounter <= 64'd0;
+        stallCounter <= 44'd0;
         stallDue     <= 1'b0;
+        stallLimitValid <= 1'b0;
       end else if (stallSent) begin
-        stallCounter <= 64'd0;
+        stallCounter <= 44'd0;
         stallDue     <= 1'b0;
+        stallLast <= configuredLast4ms;
+        stallLimitValid <= configReady;
       end else if (!stallDue) begin
-        if (stallCounter >= lastCycle(timeout4ms)) begin
+        if (!stallLimitValid) begin
+          if (configReady) begin
+            stallLast <= configuredLast4ms;
+            stallLimitValid <= 1'b1;
+            if (configuredLast4ms == 44'd0)
+              stallDue <= 1'b1;
+            else
+              stallCounter <= 44'd1;
+          end
+        end else if (stallCounter >= stallLast) begin
           stallDue <= 1'b1;
         end else begin
-          stallCounter <= stallCounter + 64'd1;
+          stallCounter <= stallCounter + 44'd1;
         end
       end
 
       if (!inLinkError) begin
-        linkErrorCounter <= 64'd0;
+        linkErrorCounter <= 46'd0;
         linkErrorDone    <= 1'b0;
+        linkErrorLimitValid <= 1'b0;
       end else if (!linkErrorDone) begin
-        if (linkErrorCounter >= lastCycle(timeout16ms)) begin
+        if (!linkErrorLimitValid) begin
+          if (configReady) begin
+            linkErrorLast <= configuredLast16ms;
+            linkErrorLimitValid <= 1'b1;
+            if (configuredLast16ms == 46'd0)
+              linkErrorDone <= 1'b1;
+            else
+              linkErrorCounter <= 46'd1;
+          end
+        end else if (linkErrorCounter >= linkErrorLast) begin
           linkErrorDone <= 1'b1;
         end else begin
-          linkErrorCounter <= linkErrorCounter + 64'd1;
+          linkErrorCounter <= linkErrorCounter + 46'd1;
         end
       end
     end
@@ -16060,13 +18183,13 @@ endmodule
 
 ```
 
-<a id="RxInitD2CPointTestReceiverFSM-sv"></a>
+<a id="src-RxInitD2CPointTestReceiverFSM-sv"></a>
 
-## [37] RxInitD2CPointTestReceiverFSM.sv
+## [39] src\RxInitD2CPointTestReceiverFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 37
-// FILE_PATH : RxInitD2CPointTestReceiverFSM.sv
+// FILE_INDEX: 39
+// FILE_PATH : src\RxInitD2CPointTestReceiverFSM.sv
 
 // Receiver-side controller for a UCIe receiver-initiated D2C point test.
 //
@@ -16229,13 +18352,13 @@ endmodule
 
 ```
 
-<a id="RxInitD2CPointTestSenderFSM-sv"></a>
+<a id="src-RxInitD2CPointTestSenderFSM-sv"></a>
 
-## [38] RxInitD2CPointTestSenderFSM.sv
+## [40] src\RxInitD2CPointTestSenderFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 38
-// FILE_PATH : RxInitD2CPointTestSenderFSM.sv
+// FILE_INDEX: 40
+// FILE_PATH : src\RxInitD2CPointTestSenderFSM.sv
 
 // Transmitter-side responder for a UCIe receiver-initiated D2C point test.
 //
@@ -16379,14 +18502,15 @@ endmodule
 
 ```
 
-<a id="SideBandModule-sv"></a>
+<a id="src-SideBandModule-sv"></a>
 
-## [39] SideBandModule.sv
+## [41] src\SideBandModule.sv
 
 ```systemverilog
-// FILE_INDEX: 39
-// FILE_PATH : SideBandModule.sv
+// FILE_INDEX: 41
+// FILE_PATH : src\SideBandModule.sv
 
+`default_nettype none
 module SideBandModule #(
   parameter int unsigned TX_FIFO_ENTRIES = 4
 ) (
@@ -16399,7 +18523,6 @@ module SideBandModule #(
   output var  logic         tx_clk,
   output var  logic [127:0] rx_dout,
   output var  logic         rx_valid,
-
   input  wire logic         rxReset,
   input  wire logic         rx_din,
   input  wire logic         rx_clk
@@ -16418,6 +18541,13 @@ module SideBandModule #(
 
   logic [127:0] rxDoutAsync;
   logic         rxValidAsync;
+  logic         rxCompletionToggle;
+  wire logic    rxCdcReset = rxReset || !reset_n;
+
+  (* ASYNC_REG = "TRUE" *) logic rxEventSync1;
+  (* ASYNC_REG = "TRUE" *) logic rxEventSync2;
+  (* ASYNC_REG = "TRUE" *) logic rxEventSync3;
+  logic rxEventSeen;
 
   assign tx_ready       = (txCount < TX_FIFO_ENTRIES);
   assign txFifoDout     = txFifo[txReadPtr];
@@ -16461,45 +18591,68 @@ module SideBandModule #(
     .dbg_payloadPending ()
   );
 
-  // SidebandRx remains entirely in the incoming-clock domain.
-  // ~rx_clk means serial data is sampled on the falling edge of rx_clk.
+  // The receiver samples the falling edge of the forwarded clock. Its data
+  // register and completion toggle update together on the final bit, before
+  // the forwarded clock stops. Do not re-register its valid in this domain:
+  // doing so would require a sampling edge from the next packet.
   SidebandRx rx (
     .clock            (~rx_clk),
-    .reset            (rxReset),
+    .reset            (rxCdcReset),
     .din              (rx_din),
     .dout             (rxDoutAsync),
     .valid            (rxValidAsync),
     .dbg_shiftReg     (),
     .dbg_bitCount     (),
-    .dbg_prevBitCount ()
+    .dbg_prevBitCount (),
+    .completion_toggle(rxCompletionToggle)
   );
 
-  // The CDC is centralized here. Every module connected to SideBandModule's
-  // rx_dout/rx_valid ports sees signals synchronous to the main clock.
-  SidebandRxCdc #(
-    .DATA_WIDTH (128)
-  ) rx_cdc (
-    .src_clock  (~rx_clk),
-    .src_reset  (rxReset),
-    .src_data   (rxDoutAsync),
-    .src_valid  (rxValidAsync),
-    .dst_clock  (clock),
-    .dst_reset_n(reset_n),
-    .dst_data   (rx_dout),
-    .dst_valid  (rx_valid)
-  );
-
+  // Bundled-data CDC: the receiver holds rxDoutAsync until the next complete
+  // message. Only the event passes through synchronizer flops. The controller
+  // captures the held bus after three stages, then emits exactly one pulse.
+  // Contract: consecutive message completions must be at least six controller
+  // clock periods apart, and the controller clock must keep running. Serial
+  // words and gaps alone do not guarantee this for arbitrary clock ratios.
+  // Constrain the held-data path to settle before the event is consumed.
+  // The existing receive interface has no ready input: its consumer must be
+  // able to accept the rx_valid pulse.
+  //
+  // Either reset flushes the partial frame, held message and event history in
+  // both domains, avoiding replay/spurious events after a one-sided reset.
+  // Release reset before the first serial edge, meeting recovery/removal;
+  // do not consume initial packet bits to clock a receive reset synchronizer.
+  always_ff @(posedge clock or posedge rxCdcReset) begin
+    if (rxCdcReset) begin
+      rxEventSync1 <= 1'b0;
+      rxEventSync2 <= 1'b0;
+      rxEventSync3 <= 1'b0;
+      rxEventSeen  <= 1'b0;
+      rx_dout      <= 128'b0;
+      rx_valid     <= 1'b0;
+    end else begin
+      rxEventSync1 <= rxCompletionToggle;
+      rxEventSync2 <= rxEventSync1;
+      rxEventSync3 <= rxEventSync2;
+      rxEventSeen  <= rxEventSync3;
+      rx_valid    <= 1'b0;
+      if (rxEventSync3 != rxEventSeen) begin
+        rx_dout  <= rxDoutAsync;
+        rx_valid <= 1'b1;
+      end
+    end
+  end
 endmodule
+`default_nettype wire
 
 ```
 
-<a id="SidebandMsgGenerator_corregido-sv"></a>
+<a id="src-SidebandMsgGenerator_corregido-sv"></a>
 
-## [40] SidebandMsgGenerator_corregido.sv
+## [42] src\SidebandMsgGenerator_corregido.sv
 
 ```systemverilog
-// FILE_INDEX: 40
-// FILE_PATH : SidebandMsgGenerator_corregido.sv
+// FILE_INDEX: 42
+// FILE_PATH : src\SidebandMsgGenerator_corregido.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: SidebandMsgGenerator(4).scala
@@ -16600,12 +18753,18 @@ package SidebandMsgGenerator_pkg;
   // -------------------------------------------------------------------------------------------------------
   // SBINIT messages.
   // -------------------------------------------------------------------------------------------------------
-  function automatic logic [127:0] msgSbinitOutOfReset(
-    input logic        success,
+  function automatic logic [127:0] msgSbinitOutOfResetSuccess(//mirar, pasar bit de success como parametro
     input logic [2:0] src_id,
     input logic [2:0] dst_id
   );
-    msgSbinitOutOfReset = msgWithoutPayloadBase({15'b0, success}, 8'h91, 8'h00, src_id, dst_id);
+    msgSbinitOutOfResetSuccess = msgWithoutPayloadBase(16'b0000000000000001, 8'h91, 8'h00, src_id, dst_id);
+  endfunction
+
+  function automatic logic [127:0] msgSbinitOutOfResetFailure(//mirar, pasar bit de success como parametro
+    input logic [2:0] src_id,
+    input logic [2:0] dst_id
+  );
+    msgSbinitOutOfResetFailure = msgWithoutPayloadBase(16'b0000000000000000, 8'h91, 8'h00, src_id, dst_id);
   endfunction
 
   function automatic logic [127:0] msgSbinitDoneReq(//correto
@@ -17839,13 +19998,13 @@ endpackage
 
 ```
 
-<a id="sidebandNode-sv"></a>
+<a id="src-sidebandNode-sv"></a>
 
-## [41] sidebandNode.sv
+## [43] src\sidebandNode.sv
 
 ```systemverilog
-// FILE_INDEX: 41
-// FILE_PATH : sidebandNode.sv
+// FILE_INDEX: 43
+// FILE_PATH : src\sidebandNode.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: sidebandNode(2).scala
@@ -17862,13 +20021,13 @@ endpackage
 
 ```
 
-<a id="SidebandRx-sv"></a>
+<a id="src-SidebandRx-sv"></a>
 
-## [42] SidebandRx.sv
+## [44] src\SidebandRx.sv
 
 ```systemverilog
-// FILE_INDEX: 42
-// FILE_PATH : SidebandRx.sv
+// FILE_INDEX: 44
+// FILE_PATH : src\SidebandRx.sv
 
 `default_nettype none
 module SidebandRx (
@@ -17879,7 +20038,10 @@ module SidebandRx (
   output var  logic         valid,
   output var  logic [127:0] dbg_shiftReg,
   output var  logic [7:0]   dbg_bitCount,
-  output var  logic [7:0]   dbg_prevBitCount
+  output var  logic [7:0]   dbg_prevBitCount,
+  // Changes on the same sampling edge that publishes a complete message.
+  // A consumer can synchronize it without another incoming clock edge.
+  output var  logic         completion_toggle
 );
   localparam logic [4:0] OPCODE_MSG_WITH_DATA = 5'b11011;
 
@@ -17920,6 +20082,7 @@ module SidebandRx (
       prevBitCount    <= 8'b0;
       waitingPayload  <= 1'b0;
       validReg        <= 1'b0;
+      completion_toggle <= 1'b0;
     end else begin
       prevBitCount    <= bitCount;
       validReg        <= 1'b0;
@@ -17931,6 +20094,7 @@ module SidebandRx (
         if (waitingPayload) begin
           outputReg      <= {receivedWord, headerReg};
           validReg       <= 1'b1;
+          completion_toggle <= ~completion_toggle;
           waitingPayload <= 1'b0;
         end else if (receivedWord[4:0] == OPCODE_MSG_WITH_DATA) begin
           headerReg       <= receivedWord;
@@ -17938,6 +20102,7 @@ module SidebandRx (
         end else begin
           outputReg <= {64'b0, receivedWord};
           validReg  <= 1'b1;
+          completion_toggle <= ~completion_toggle;
         end
       end else begin
         bitCount <= bitCount + 8'd1;
@@ -17949,94 +20114,13 @@ endmodule
 
 ```
 
-<a id="SidebandRxCdc-sv"></a>
+<a id="src-SidebandTx-sv"></a>
 
-## [43] SidebandRxCdc.sv
-
-```systemverilog
-// FILE_INDEX: 43
-// FILE_PATH : SidebandRxCdc.sv
-
-module SidebandRxCdc #(
-  parameter int unsigned DATA_WIDTH = 128
-) (
-  // Source domain: same effective clock used by SidebandRx.
-  input  wire logic                  src_clock,
-  input  wire logic                  src_reset,
-  input  wire logic [DATA_WIDTH-1:0] src_data,
-  input  wire logic                  src_valid,
-
-  // Destination domain: link-management/controller clock.
-  input  wire logic                  dst_clock,
-  input  wire logic                  dst_reset_n,
-  output var  logic [DATA_WIDTH-1:0] dst_data,
-  output var  logic                  dst_valid
-);
-  logic [DATA_WIDTH-1:0] src_data_hold;
-  logic                  src_event_toggle;
-
-  // The source data is held unchanged until the next received message.
-  // The destination receives notification through the synchronized toggle.
-  always_ff @(posedge src_clock or posedge src_reset) begin
-    if (src_reset) begin
-      src_data_hold    <= '0;
-      src_event_toggle <= 1'b0;
-    end else if (src_valid) begin
-      src_data_hold    <= src_data;
-      src_event_toggle <= ~src_event_toggle;
-    end
-  end
-
-  // Only the single-bit event crosses through synchronizer flip-flops.
-  // Do not independently synchronize every bit of src_data_hold.
-  (* ASYNC_REG = "TRUE" *) logic event_sync_ff1;
-  (* ASYNC_REG = "TRUE" *) logic event_sync_ff2;
-  (* ASYNC_REG = "TRUE" *) logic event_sync_ff3;
-  logic event_sync_ff3_q;
-
-  always_ff @(posedge dst_clock or negedge dst_reset_n) begin
-    if (!dst_reset_n) begin
-      event_sync_ff1  <= 1'b0;
-      event_sync_ff2  <= 1'b0;
-      event_sync_ff3  <= 1'b0;
-      event_sync_ff3_q <= 1'b0;
-    end else begin
-      event_sync_ff1   <= src_event_toggle;
-      event_sync_ff2   <= event_sync_ff1;
-      event_sync_ff3   <= event_sync_ff2;
-      event_sync_ff3_q <= event_sync_ff3;
-    end
-  end
-
-  wire logic new_message;
-  assign new_message = event_sync_ff3 ^ event_sync_ff3_q;
-
-  // Bundled-data capture. By the time the event passes through three FFs,
-  // src_data_hold has been stable for several destination-clock cycles.
-  always_ff @(posedge dst_clock or negedge dst_reset_n) begin
-    if (!dst_reset_n) begin
-      dst_data  <= '0;
-      dst_valid <= 1'b0;
-    end else begin
-      dst_valid <= 1'b0;
-      if (new_message) begin
-        dst_data  <= src_data_hold;
-        dst_valid <= 1'b1;
-      end
-    end
-  end
-
-endmodule
-
-```
-
-<a id="SidebandTx-sv"></a>
-
-## [44] SidebandTx.sv
+## [45] src\SidebandTx.sv
 
 ```systemverilog
-// FILE_INDEX: 44
-// FILE_PATH : SidebandTx.sv
+// FILE_INDEX: 45
+// FILE_PATH : src\SidebandTx.sv
 
 `default_nettype none
 
@@ -18270,13 +20354,302 @@ endmodule
 
 ```
 
-<a id="StallController-sv"></a>
+<a id="src-SidebandWrapper-sv"></a>
 
-## [45] StallController.sv
+## [46] src\SidebandWrapper.sv
 
 ```systemverilog
-// FILE_INDEX: 45
-// FILE_PATH : StallController.sv
+// FILE_INDEX: 46
+// FILE_PATH : src\SidebandWrapper.sv
+
+`default_nettype none
+
+// ============================================================================
+// SidebandWrapper
+// Complete sideband path of the UCIe D2D adapter: the three sideband clients
+// (ltsm, fdi, rdi) on one side, the serial sideband pins on the other.
+//
+// What was done:
+//   The sideband modules and glue logic that used to sit directly in
+//   D2DAdapterLinkMgmtLtsmSBTop were moved here unchanged, so the top only
+//   instantiates the clients and this wrapper. Moved pieces:
+//     ltsmTxCapture  LtsmSidebandTxCapture          Queue: ltsm pulse TX -> arb.
+//     ltsmRxPulse    LtsmSidebandRxPulseAdapter     arb valid/ready RX -> ltsm pulse RX.
+//     arb            LinkMgmtSidebandPacketArbiter  Merges ltsm/fdi/rdi TX messages into
+//                                                   one stream; routes RX messages back.
+//     (always_ff)    RX holding register            u_sideband_phy pulse RX -> arb
+//                                                   valid/ready; sticky debug_sb_rx_overflow.
+//     u_sideband_phy SideBandModule                 128-bit messages <-> serial sb_* pins.
+//   Behaviour is identical to the previous in-top version. The only
+//   additions are the LTSM_TX_CAPTURE_ENTRIES parameter (was hardcoded to 4)
+//   and the arbiter round-robin debug outputs, now exposed as ports.
+//
+// Sideband message path:
+//   TX: ltsm_tx_* -> ltsmTxCapture -+
+//       fdi_tx_*  ------------------+-> arb -> u_sideband_phy -> sb_tx_dout / sb_tx_clk
+//       rdi_tx_*  ------------------+
+//   RX: sb_rx_din / sb_rx_clk -> u_sideband_phy -> RX holding reg -> arb
+//       arb -> ltsmRxPulse -> ltsm_rx_*,  arb -> fdi_rx_*,  arb -> rdi_rx_*
+//
+// Ports (grouped by the module they connect to outside the wrapper, and the
+// internal module that drives or consumes them):
+//   Clock and reset
+//     clock, reset_n            To every internal module. reset_n is also
+//                               inverted into SideBandModule.rxReset.
+//   LTSM client  (LinkTrainingFSM, pulse interface, no RX ready)
+//     ltsm_tx_valid/msg/ready   <-> LinkTrainingFSM.sb_tx_valid/din/ready;
+//                               internally ltsmTxCapture.raw_*.
+//     ltsm_rx_valid/msg         --> LinkTrainingFSM.sb_rx_valid/dout;
+//                               internally ltsmRxPulse.out_*.
+//   FDI client   (LinkManagementController, valid/ready)
+//     fdi_tx_valid/msg/ready    <-> LinkManagementController.sb_snd_*;
+//                               internally arb.fdi_tx_*.
+//     fdi_rx_valid/msg/ready    <-> LinkManagementController.sb_rcv_*;
+//                               internally arb.fdi_rx_*.
+//   RDI client   (RdiLinkManagementController, valid/ready)
+//     rdi_tx_valid/msg/ready    <-> RdiLinkManagementController.sb_snd_*;
+//                               internally arb.rdi_tx_*.
+//     rdi_rx_valid/msg/ready    <-> RdiLinkManagementController.sb_rcv_*;
+//                               internally arb.rdi_rx_*.
+//   Serial sideband pins  (remote die)
+//     sb_tx_dout, sb_tx_clk     From u_sideband_phy.tx_dout/tx_clk.
+//     sb_rx_din, sb_rx_clk      To u_sideband_phy.rx_din/rx_clk.
+//   Debug
+//     debug_arb_grant_ltsm/fdi/rdi, debug_arb_tx_locked,
+//     debug_arb_rr_last_source, debug_arb_rr_last_granted_rdi,
+//     debug_arb_tx_fire         From arb TX-side status (grant_*, tx_locked,
+//                               rr_last_source, rr_last_granted_rdi, tx_fire).
+//     debug_rx_route_ltsm/fdi/rdi, debug_rx_drop_unknown,
+//     debug_rx_fire             From arb RX-side status (rx_route_*,
+//                               rx_drop_unknown, rx_fire).
+//     debug_sb_rx_overflow      From the RX holding register. Sticky until
+//                               reset: a PHY message arrived while the
+//                               holding register was still full.
+// ============================================================================
+
+module SidebandWrapper #(
+  parameter int unsigned SB_TX_FIFO_ENTRIES      = 4,
+  parameter int unsigned LTSM_TX_CAPTURE_ENTRIES = 4
+) (
+  // ==========================================================================
+  // CLOCK AND RESET
+  // ==========================================================================
+  input  wire logic         clock,
+  input  wire logic         reset_n,
+
+  // ==========================================================================
+  // LTSM CLIENT (LinkTrainingFSM pulse interface)
+  // ==========================================================================
+  input  wire logic         ltsm_tx_valid,
+  input  wire logic [127:0] ltsm_tx_msg,
+  output var  logic         ltsm_tx_ready,
+  output var  logic         ltsm_rx_valid,
+  output var  logic [127:0] ltsm_rx_msg,
+
+  // ==========================================================================
+  // FDI CLIENT (LinkManagementController valid/ready)
+  // ==========================================================================
+  input  wire logic         fdi_tx_valid,
+  input  wire logic [127:0] fdi_tx_msg,
+  output var  logic         fdi_tx_ready,
+  output var  logic         fdi_rx_valid,
+  output var  logic [127:0] fdi_rx_msg,
+  input  wire logic         fdi_rx_ready,
+
+  // ==========================================================================
+  // RDI CLIENT (RdiLinkManagementController valid/ready)
+  // ==========================================================================
+  input  wire logic         rdi_tx_valid,
+  input  wire logic [127:0] rdi_tx_msg,
+  output var  logic         rdi_tx_ready,
+  output var  logic         rdi_rx_valid,
+  output var  logic [127:0] rdi_rx_msg,
+  input  wire logic         rdi_rx_ready,
+
+  // ==========================================================================
+  // SERIAL SIDEBAND PINS (remote die)
+  // ==========================================================================
+  output var  logic         sb_tx_dout,
+  output var  logic         sb_tx_clk,
+  input  wire logic         sb_rx_din,
+  input  wire logic         sb_rx_clk,
+
+  // ==========================================================================
+  // DEBUG
+  // ==========================================================================
+  output var  logic         debug_arb_grant_ltsm,
+  output var  logic         debug_arb_grant_fdi,
+  output var  logic         debug_arb_grant_rdi,
+  output var  logic         debug_arb_tx_locked,
+  output var  logic [1:0]   debug_arb_rr_last_source,
+  output var  logic         debug_arb_rr_last_granted_rdi,
+  output var  logic         debug_arb_tx_fire,
+  output var  logic         debug_rx_route_ltsm,
+  output var  logic         debug_rx_route_fdi,
+  output var  logic         debug_rx_route_rdi,
+  output var  logic         debug_rx_drop_unknown,
+  output var  logic         debug_rx_fire,
+  // Sideband receive-buffer status. Sticky until reset.
+  output var  logic         debug_sb_rx_overflow
+);
+
+  // --------------------------------------------------------------------------
+  // Internal nets
+  // --------------------------------------------------------------------------
+  // ltsmTxCapture -> arb.
+  wire logic         ltsm_queue_tx_valid;
+  wire logic [127:0] ltsm_queue_tx_msg;
+  wire logic         ltsm_queue_tx_ready;
+
+  // arb -> ltsmRxPulse.
+  wire logic         ltsm_stream_rx_valid;
+  wire logic [127:0] ltsm_stream_rx_msg;
+  wire logic         ltsm_stream_rx_ready;
+
+  // Arbiter <-> sideband PHY (message level).
+  logic         sb_msg_tx_valid;
+  logic [127:0] sb_msg_tx_msg;
+  logic         sb_msg_tx_ready;
+  logic         sb_phy_rx_valid;
+  logic [127:0] sb_phy_rx_msg;
+  logic         sb_msg_rx_valid;
+  logic [127:0] sb_msg_rx_msg;
+  logic         sb_msg_rx_ready;
+
+  // --------------------------------------------------------------------------
+  // LTSM sideband adapters
+  // --------------------------------------------------------------------------
+  LtsmSidebandTxCapture #(
+    .ENTRIES (LTSM_TX_CAPTURE_ENTRIES)
+  ) ltsmTxCapture (
+    .clock     (clock),
+    .reset_n   (reset_n),
+    .raw_valid (ltsm_tx_valid),
+    .raw_msg   (ltsm_tx_msg),
+    .raw_ready (ltsm_tx_ready),
+    .out_valid (ltsm_queue_tx_valid),
+    .out_msg   (ltsm_queue_tx_msg),
+    .out_ready (ltsm_queue_tx_ready)
+  );
+
+  LtsmSidebandRxPulseAdapter ltsmRxPulse (
+    .clock     (clock),
+    .reset_n   (reset_n),
+    .in_valid  (ltsm_stream_rx_valid),
+    .in_msg    (ltsm_stream_rx_msg),
+    .in_ready  (ltsm_stream_rx_ready),
+    .out_valid (ltsm_rx_valid),
+    .out_msg   (ltsm_rx_msg)
+  );
+
+  // --------------------------------------------------------------------------
+  // Sideband packet arbiter (ltsm / fdi / rdi <-> one message stream)
+  // --------------------------------------------------------------------------
+  LinkMgmtSidebandPacketArbiter arb (
+    .clock                 (clock),
+    .reset_n               (reset_n),
+
+    .ltsm_tx_valid         (ltsm_queue_tx_valid),
+    .ltsm_tx_msg           (ltsm_queue_tx_msg),
+    .ltsm_tx_ready         (ltsm_queue_tx_ready),
+
+    .fdi_tx_valid          (fdi_tx_valid),
+    .fdi_tx_msg            (fdi_tx_msg),
+    .fdi_tx_ready          (fdi_tx_ready),
+
+    .rdi_tx_valid          (rdi_tx_valid),
+    .rdi_tx_msg            (rdi_tx_msg),
+    .rdi_tx_ready          (rdi_tx_ready),
+
+    .tx_out_valid          (sb_msg_tx_valid),
+    .tx_out_msg            (sb_msg_tx_msg),
+    .tx_out_ready          (sb_msg_tx_ready),
+
+    .rx_in_valid           (sb_msg_rx_valid),
+    .rx_in_msg             (sb_msg_rx_msg),
+    .rx_in_ready           (sb_msg_rx_ready),
+
+    .ltsm_rx_valid         (ltsm_stream_rx_valid),
+    .ltsm_rx_msg           (ltsm_stream_rx_msg),
+    .ltsm_rx_ready         (ltsm_stream_rx_ready),
+
+    .fdi_rx_valid          (fdi_rx_valid),
+    .fdi_rx_msg            (fdi_rx_msg),
+    .fdi_rx_ready          (fdi_rx_ready),
+
+    .rdi_rx_valid          (rdi_rx_valid),
+    .rdi_rx_msg            (rdi_rx_msg),
+    .rdi_rx_ready          (rdi_rx_ready),
+
+    .grant_ltsm            (debug_arb_grant_ltsm),
+    .grant_fdi             (debug_arb_grant_fdi),
+    .grant_rdi             (debug_arb_grant_rdi),
+    .tx_locked             (debug_arb_tx_locked),
+    .rr_last_source        (debug_arb_rr_last_source),
+    .rr_last_granted_rdi   (debug_arb_rr_last_granted_rdi),
+    .tx_fire               (debug_arb_tx_fire),
+
+    .rx_route_ltsm         (debug_rx_route_ltsm),
+    .rx_route_fdi          (debug_rx_route_fdi),
+    .rx_route_rdi          (debug_rx_route_rdi),
+    .rx_drop_unknown       (debug_rx_drop_unknown),
+    .rx_fire               (debug_rx_fire)
+  );
+
+  // --------------------------------------------------------------------------
+  // Sideband PHY
+  // --------------------------------------------------------------------------
+  // One-entry holding register converts the pulse-only PHY RX interface into
+  // a valid/ready interface. This prevents loss when the integrated top stalls.
+  always_ff @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      sb_msg_rx_valid      <= 1'b0;
+      sb_msg_rx_msg        <= 128'b0;
+      debug_sb_rx_overflow <= 1'b0;
+    end else begin
+      if (sb_phy_rx_valid) begin
+        if (!sb_msg_rx_valid || sb_msg_rx_ready) begin
+          sb_msg_rx_msg   <= sb_phy_rx_msg;
+          sb_msg_rx_valid <= 1'b1;
+        end else begin
+          debug_sb_rx_overflow <= 1'b1;
+        end
+      end else if (sb_msg_rx_valid && sb_msg_rx_ready) begin
+        sb_msg_rx_valid <= 1'b0;
+      end
+    end
+  end
+
+  SideBandModule #(
+    .TX_FIFO_ENTRIES (SB_TX_FIFO_ENTRIES)
+  ) u_sideband_phy (
+    .clock    (clock),
+    .reset_n  (reset_n),
+    .tx_din   (sb_msg_tx_msg),
+    .tx_valid (sb_msg_tx_valid),
+    .tx_ready (sb_msg_tx_ready),
+    .tx_dout  (sb_tx_dout),
+    .tx_clk   (sb_tx_clk),
+    .rx_dout  (sb_phy_rx_msg),
+    .rx_valid (sb_phy_rx_valid),
+    .rxReset  (!reset_n),
+    .rx_din   (sb_rx_din),
+    .rx_clk   (sb_rx_clk)
+  );
+
+endmodule
+
+`default_nettype wire
+
+```
+
+<a id="src-StallController-sv"></a>
+
+## [47] src\StallController.sv
+
+```systemverilog
+// FILE_INDEX: 47
+// FILE_PATH : src\StallController.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: StallController(3).scala
@@ -18357,41 +20730,13 @@ endmodule
 
 ```
 
-<a id="States-sv"></a>
+<a id="src-TxInitD2CPointTestReceiverFSM-sv"></a>
 
-## [46] States.sv
-
-```systemverilog
-// FILE_INDEX: 46
-// FILE_PATH : States.sv
-
-// SystemVerilog translation of States.scala.
-`default_nettype none
-
-package LinkTrainingState_pkg;
-  typedef enum logic [2:0] {
-    LinkTrainingState_reset     = 3'd0,
-    LinkTrainingState_sbInit    = 3'd1,
-    LinkTrainingState_mbInit    = 3'd2,
-    LinkTrainingState_mbTrain   = 3'd3,
-    LinkTrainingState_linkInit  = 3'd4,
-    LinkTrainingState_active    = 3'd5,
-    LinkTrainingState_linkError = 3'd6,
-    LinkTrainingState_retrain   = 3'd7
-  } LinkTrainingState_t;
-endpackage
-
-`default_nettype wire
-
-```
-
-<a id="TxInitD2CPointTestReceiverFSM-sv"></a>
-
-## [47] TxInitD2CPointTestReceiverFSM.sv
+## [48] src\TxInitD2CPointTestReceiverFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 47
-// FILE_PATH : TxInitD2CPointTestReceiverFSM.sv
+// FILE_INDEX: 48
+// FILE_PATH : src\TxInitD2CPointTestReceiverFSM.sv
 
 // SystemVerilog translation of TxInitD2CPointTestReceiverFSM.scala.
 // All state-holding elements use the project-wide active-low asynchronous reset_n.
@@ -18576,13 +20921,13 @@ endmodule
 
 ```
 
-<a id="TxInitD2CPointTestSenderFSM-sv"></a>
+<a id="src-TxInitD2CPointTestSenderFSM-sv"></a>
 
-## [48] TxInitD2CPointTestSenderFSM.sv
+## [49] src\TxInitD2CPointTestSenderFSM.sv
 
 ```systemverilog
-// FILE_INDEX: 48
-// FILE_PATH : TxInitD2CPointTestSenderFSM.sv
+// FILE_INDEX: 49
+// FILE_PATH : src\TxInitD2CPointTestSenderFSM.sv
 
 // SystemVerilog translation of TxInitD2CPointTestSenderFSM.scala.
 // All state-holding elements use the project-wide active-low asynchronous reset_n.
@@ -18777,13 +21122,13 @@ endmodule
 
 ```
 
-<a id="Types-sv"></a>
+<a id="src-Types-sv"></a>
 
-## [49] Types.sv
+## [50] src\Types.sv
 
 ```systemverilog
-// FILE_INDEX: 49
-// FILE_PATH : Types.sv
+// FILE_INDEX: 50
+// FILE_PATH : src\Types.sv
 
 // Hand-translated synthesizable SystemVerilog.
 // Source: Types(3).scala
@@ -18821,305 +21166,4677 @@ endpackage
 
 ```
 
-<a id="UCIePhyRegisterBlock-sv"></a>
+<a id="test-D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb-sv"></a>
 
-## [50] UCIePhyRegisterBlock.sv
+## [51] test\D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb.sv
 
 ```systemverilog
-// FILE_INDEX: 50
-// FILE_PATH : UCIePhyRegisterBlock.sv
+// FILE_INDEX: 51
+// FILE_PATH : test\D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb.sv
 
-// Twelve writable 32-bit registers and two 64-bit registers, using UCIe layouts.
-// This simple bank does not enforce RO, reserved-bit, W1C or capability rules:
-// software and local hardware are responsible for the values they write.
-// Link DVSEC uses 0x00C/0x010/0x014; PHY uses full addresses from 0x1000.
-// Reads are combinational; writes occur on rising edges, with local priority.
-module UCIePhyRegisterBlock (
-    input  logic        clk_i,
-    input  logic        rst_ni,
+// Complete UCIe LTSM/RDI/FDI bring-up through two D2DAdapterLinkMgmtLtsmSBTops.
+// Directed stalls apply inside each integrated serializer at FIFO admission;
+// passive hierarchical monitors check packet stability and stall recovery.
+// Die ports carry one serial data wire and one forwarded clock per direction.
+// Reset convention: asynchronous active-low reset_n; there is no reset signal.
 
-    // Local port: write one 32-bit word when we=1.
-    input  logic        local_we_i,
-    input  logic [31:0] local_addr_i,
-    input  logic [31:0] local_wdata_i,
-    output logic [31:0] local_rdata_o,
+`timescale 1ns/1ps
+`default_nettype none
 
-    // SB port: keep we/address/data/BE stable until an edge with waccepted=1.
-    input  logic        sb_we_i,
-    input  logic [31:0] sb_addr_i,
-    input  logic [31:0] sb_wdata_i,
-    input  logic [3:0]  sb_be_i,
-    output logic [31:0] sb_rdata_o,
-    output logic        sb_waccepted_o,
-    output logic [31:0] phy_control_o
+module D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb #(
+  parameter int unsigned MAX_CYCLES = 12_000_000,
+  parameter int unsigned STEP_CHUNK = 25,
+  parameter int unsigned NO_PROGRESS_CYCLES = 500_000,
+  parameter int unsigned STALL_CYCLES = 300,
+  parameter int unsigned SERIAL_DRAIN_CYCLES = 32
 );
-    // UCIe Link Capability, address 0x00C (9.5.1.4, Table 9-8).
-    // Advertises Link and Adapter capabilities to software. Writable here like the
-    // existing registers; RO, HWInit and reserved-field rules are not enforced.
-    // [0] Raw Format; [3:1] max width: 0=x16, 1=x32, 2=x64, 3=x128, 4=x256, 7=x8;
-    // [7:4] max speed: 0=4, 1=8, 2=12, 3=16, 4=24, 5=32 GT/s; [8] Retimer;
-    // [9] multi-protocol; [10] Advanced Package; [15:11] Streaming Flit Formats;
-    // [16] enhanced multi-protocol; [17] PCIe standard start header;
-    // [18] PCIe latency-optimized optional bytes; [19] parity error signaling;
-    // [20] Advanced module width: 1=x32, 0=x64; [21] x32 support in x64 module;
-    // [22] Standard module width: 1=x8, 0=x16; [23] sideband PMO; [31:24] reserved.
-    logic [31:0] ucie_link_capability_q;
+  import UcieUPM_interfaces_pkg::*;
+  import UcieUPM_d2dadapter_pkg::*;
 
-    // UCIe Link Control, address 0x010 (9.5.1.5, Table 9-9).
-    // Stores requested settings. This bank does not start training, automatically
-    // clear command bits, or constrain values against Link Capability.
-    // [0] Raw enable; [1] multi-protocol; [5:2] target width; [9:6] target speed;
-    // [10] start training; [11] retrain; [12] unused; [17:13] Streaming formats;
-    // [18] enhanced multi-protocol; [19] PCIe standard start header;
-    // [20] PCIe latency-optimized optional bytes; [21] sideband PMO; [31:22] reserved.
-    logic [31:0] ucie_link_control_q;
+  localparam int unsigned CYCLE_WIDTH =
+    (MAX_CYCLES + 2 <= 2) ? 1 : $clog2(MAX_CYCLES + 2);
+  localparam logic [15:0] REQUIRED_MBTRAIN_STATE_MASK = 16'h5FFE;
 
-    // UCIe Link Status, address 0x014 (9.5.1.6, Table 9-10).
-    // Stores observed Link results. This bank does not implement RO, RW1C/RW1CS,
-    // mirroring, or automatic event/status updates.
-    // [0] Raw enabled; [1] multi-protocol; [2] enhanced multi-protocol;
-    // [3] x32 Advanced module; [6:4] reserved; [10:7] active width;
-    // [14:11] active speed; [15] Link up; [16] training; [17] status changed;
-    // [18] bandwidth changed; [19] correctable error; [20] non-fatal error;
-    // [21] fatal error; [25:22] Flit Format; [26] sideband PMO; [31:27] reserved.
-    logic [31:0] ucie_link_status_q;
+  logic clock = 1'b0;
+  logic reset_n = 1'b1;
+  logic [31:0] cycles_1us;
 
-    // PHY Capability, address 0x1000 (UCIe Table 9-47).
-    // Describes the PHY's supported features. Initialize it to match the hardware;
-    // consumers read it before choosing settings. Writable here like any register.
-    // [2:0] reserved; [3] RX termination support; [4] TX equalization support;
-    // [9:5] TX swing code: 1=0.40 V, 2=0.45 V, ... 16=1.15 V;
-    // [10] reserved; [12:11] RX clock: 00=strobe/free-running, 10=free-running only;
-    // [14:13] phase: 00=differential, 01/10=quadrature at 24/32 GT/s and
-    // differential up to 16 GT/s; [15] package: 1=Standard, 0=Advanced;
-    // [16] TCM support; [31:17] reserved. Other field encodings are reserved.
-    logic [31:0] phy_capability_q;
+  logic done;
+  logic protocol_active_issued;
+  logic [5:0] stalled_source_mask;
+  logic [5:0] resumed_source_mask;
+  logic backpressure_injection_error;
+  logic message_stability_error;
+  logic train_error;
+  logic no_progress_timeout;
+  logic cycle_timeout;
+  logic [CYCLE_WIDTH-1:0] cycle_count;
+  logic serial_idle;
+  logic serial_error;
+  logic sb_rx_overflow_error;
+  logic [31:0] wire_completed_0_to_1;
+  logic [31:0] wire_completed_1_to_0;
+  logic [3:0] die0_ltsm_state;
+  logic [3:0] die1_ltsm_state;
+  logic [3:0] die0_mbtrain_state;
+  logic [3:0] die1_mbtrain_state;
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
+  logic [11:0] die0_mbtrain_active_substate;
+  logic [11:0] die1_mbtrain_active_substate;
+  logic [15:0] die0_ltsm_visited_mask;
+  logic [15:0] die1_ltsm_visited_mask;
+  logic [15:0] die0_mbtrain_visited_mask;
+  logic [15:0] die1_mbtrain_visited_mask;
+  logic unknown_drop_error;
+  PhyState_t die0_rdi_state;
+  PhyState_t die1_rdi_state;
+  PhyState_t die0_fdi_state;
+  PhyState_t die1_fdi_state;
+  LinkInitState_t die0_fdi_init_state;
+  LinkInitState_t die1_fdi_init_state;
 
-    // PHY Control, address 0x1004 (UCIe Table 9-48).
-    // Stores requested settings. The PHY controller reads phy_control_o and
-    // applies them; writing Control does not automatically change Status.
-    // [2:0] reserved; [3] RX termination enable; [4] TX equalization enable;
-    // [5] RX clock: 0=strobe, 1=free-running; [6] phase: 0=differential only,
-    // 1=quadrature at 24/32 GT/s and differential up to 16 GT/s;
-    // [7] force x32 in Advanced x64 (not applicable to Standard Package);
-    // [8] force x8 in Standard x16 for debug, only without lane reversal;
-    // [31:9] reserved. The caller must select supported settings.
-    logic [31:0] phy_control_q;
+  always #5ns clock = ~clock;
 
-    // PHY Status, address 0x1008 (UCIe Table 9-49).
-    // Stores observed results provided by PHY hardware, for external monitoring.
-    // Both ports can overwrite it; callers must avoid replacing real status with
-    // requested settings. Clock fields describe the REMOTE partner, not Control.
-    // [2:0] reserved; [3] actual local RX termination; [4] actual local TX EQ;
-    // [5] remote RX clock mode: 0=strobe, 1=free-running;
-    // [6] remote phase: 0=differential, 1=quadrature at 24/32 GT/s;
-    // [7] lane reversal within the module; [31:8] reserved.
-    logic [31:0] phy_status_q;
+  task automatic step(input int unsigned cycles);
+    repeat (cycles) begin
+      @(posedge clock);
+      #1ps;
+    end
+  endtask
 
-    // PHY Initialization and Debug, address 0x100C (9.5.3.25, Table 9-50).
-    // NOT USED IN THE CURRENT VERSION: storage only; no LTSM pause/resume logic.
-    // Software can select a training pause point for future debug integration.
-    // [2:0] initialization control: 000=normal training to ACTIVE;
-    // 001=pause after MBINIT.PARAM step 2; 010=after MBTRAIN.VALVREF step 1;
-    // 011=after MBTRAIN.RXDESKEW step 1; 100=after MBTRAIN.DATATRAINCENTER2
-    // step 1 (the last two apply to initial training and retraining).
-    // Other codes reserved. [4:3] reserved; [5] Resume Training: a 0->1
-    // transition requests continuation; [31:6] reserved. Reset: zero.
-    // Future LTSM integration must disable the relevant timeouts while paused;
-    // a corresponding remote sideband message can also allow training to resume.
-    // This register does not automatically start training or clear Resume Training.
-    logic [31:0] phy_init_debug_q;
+  D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
+    .STALL_CYCLES(STALL_CYCLES),
+    .MAX_CYCLES(MAX_CYCLES),
+    .NO_PROGRESS_CYCLES(NO_PROGRESS_CYCLES),
+    .SERIAL_DRAIN_CYCLES(SERIAL_DRAIN_CYCLES)
+  ) dut (
+    .clock(clock),
+    .reset_n(reset_n),
+    .cycles_1us(cycles_1us),
+    .done(done),
+    .protocol_active_issued(protocol_active_issued),
+    .stalled_source_mask(stalled_source_mask),
+    .resumed_source_mask(resumed_source_mask),
+    .backpressure_injection_error(backpressure_injection_error),
+    .message_stability_error(message_stability_error),
+    .train_error(train_error),
+    .no_progress_timeout(no_progress_timeout),
+    .cycle_timeout(cycle_timeout),
+    .cycle_count(cycle_count),
+    .serial_idle(serial_idle),
+    .serial_error(serial_error),
+    .sb_rx_overflow_error(sb_rx_overflow_error),
+    .wire_completed_0_to_1(wire_completed_0_to_1),
+    .wire_completed_1_to_0(wire_completed_1_to_0),
+    .die0_ltsm_state(die0_ltsm_state),
+    .die1_ltsm_state(die1_ltsm_state),
+    .die0_mbtrain_state(die0_mbtrain_state),
+    .die1_mbtrain_state(die1_mbtrain_state),
+    .die0_mbtrain_active_substate(die0_mbtrain_active_substate),
+    .die1_mbtrain_active_substate(die1_mbtrain_active_substate),
+    .die0_ltsm_visited_mask(die0_ltsm_visited_mask),
+    .die1_ltsm_visited_mask(die1_ltsm_visited_mask),
+    .die0_mbtrain_visited_mask(die0_mbtrain_visited_mask),
+    .die1_mbtrain_visited_mask(die1_mbtrain_visited_mask),
+    .unknown_drop_error(unknown_drop_error),
+    .die0_rdi_state(die0_rdi_state),
+    .die1_rdi_state(die1_rdi_state),
+    .die0_fdi_state(die0_fdi_state),
+    .die1_fdi_state(die1_fdi_state),
+    .die0_fdi_init_state(die0_fdi_init_state),
+    .die1_fdi_init_state(die1_fdi_init_state)
+  );
 
-    // Training Setup 1, module 0, address 0x1010 (9.5.3.26, Table 9-51).
-    // Configuration for the pattern generator/training controller, not results.
-    // Software/FW may program it via SB before a test; local PHY may configure it
-    // if the integration assigns ownership to hardware. No automatic updates here.
-    // [2:0] data pattern: 000=per-lane LFSR, 001=per-lane ID;
-    // PHY-Compliance only: 010=AA clock, 011=all zeros, 100=all ones,
-    // 101=inverted clock. Other codes reserved.
-    // [5:3] valid pattern: 000=functional 1111 0000 (LSB first); others reserved.
-    // [9:6] clock phase: 0=TX-found clock PI center, 1=left training edge,
-    // 2=right training edge; others reserved. [10] mode: 0=continuous, 1=burst.
-    // [26:11] burst duration in UI (not bank clock cycles), default 4.
-    // [31:27] reserved. Other fields default zero: reset word = 0x00002000.
-    logic [31:0] training_setup1_q;
+  initial begin : run_test
+    int unsigned stepped;
+    int unsigned this_chunk;
+    int unsigned chunk_cycles;
+    logic finished;
+    logic fatal_monitor;
 
-    // Training Setup 2, module 0, address 0x1020 (9.5.3.27, Table 9-52).
-    // Complements Setup 1: the pattern controller executes burst/idle iterations.
-    // [15:0] idle count: low duration after a burst in UI, default 4.
-    // [31:16] iterations of burst followed by idle, default 4.
-    // Reset = 0x00040004. RW configuration; counters live outside this bank.
-    logic [31:0] training_setup2_q;
+    if (STEP_CHUNK < 1)
+      $fatal(1, "STEP_CHUNK must be at least one");
 
-    // Training Setup 3, module 0, addresses 0x1030/0x1034 (9.5.3.28, Table 9-53).
-    // RX comparison lane mask: bit n=1 excludes lane n from comparison;
-    // bit n=0 does not mask it. It does not turn lanes off or mark them failed.
-    // [63:0] lane mask, reset zero (none masked). The RX comparator consumes it.
-    // 0x1030 accesses [31:0]; 0x1034 accesses [63:32]. Writes preserve the other
-    // half; two accesses are not atomic. Program while idle or coordinate use.
-    logic [63:0] training_setup3_q;
+    chunk_cycles = STEP_CHUNK;
+    void'($value$plusargs("STEP_CHUNK=%d", chunk_cycles));
+    if (chunk_cycles < 1)
+      $fatal(1, "+STEP_CHUNK must be at least one");
 
-    // Training Setup 4, module 0, address 0x1050 (9.5.3.29, Table 9-54).
-    // RX comparison configuration, not an error counter. Reset: zero.
-    // [3:0] redundant repair-lane mask: bit 0 masks RD0, bit 1 masks RD1, etc.
-    // [15:4] per-lane comparison error threshold for counting to start.
-    // [31:16] aggregate comparison error threshold for counting to start.
-    // Threshold zero counts all errors. Repair-lane applicability depends on PHY.
-    // Thresholds are carried in the corresponding TX/RX-initiated Data-to-Clock
-    // point-test and eye-sweep SB messages: remote uses them for TX-initiated
-    // tests; RX uses them locally and informs the remote for RX-initiated tests.
-    // Caller controls settings; comparison and message generation are external.
-    logic [31:0] training_setup4_q;
-
-    // Current Lane Map Module 0, addresses 0x1060/0x1064 (UCIe 9.5.3.30,
-    // Table 9-55, D2D/PHY offset 0x1060). Reset: all zero.
-    // Bit n indicates physical RX lane n is operational. PHY training logic
-    // supplies the map; writing it does not activate or repair physical lanes.
-    // Standard Package uses [15:0]; [63:16] do not apply and callers should keep
-    // them zero. This simple RW bank does not enforce that restriction.
-    // 0x1060 accesses [31:0]; 0x1064 accesses [63:32]. Each write preserves the
-    // other half. Two accesses are not atomic; coordinate snapshots externally.
-    logic [63:0] current_lane_map_module0_q;
-
-    // Error Log 0, address 0x1080 (UCIe Table 9-59, module 0).
-    // Training history for diagnosis. The LTSM builds and writes this word;
-    // this bank does not shift states or detect training failures automatically.
-    // [7:0] latest state N; [8] lane reversal; [9] width degradation (Standard);
-    // [15:10] reserved; [23:16] state N-1; [31:24] state N-2.
-    // State encodings (hex), also used by N-3 in Log 1:
-    // 00 RESET, 01 SBINIT, 02 MBINIT.PARAM, 03 MBINIT.CAL, 04 MBINIT.REPAIRCLK,
-    // 05 MBINIT.REPAIRVAL, 06 MBINIT.REVERSALMB, 07 MBINIT.REPAIRMB,
-    // 08 MBTRAIN.VALVREF, 09 MBTRAIN.DATAVREF, 0A MBTRAIN.SPEEDIDLE,
-    // 0B MBTRAIN.TXSELFCAL, 0C MBTRAIN.RXSELFCAL, 0D MBTRAIN.VALTRAINCENTER,
-    // 0E MBTRAIN.VALTRAINVREF, 0F MBTRAIN.DATATRAINCENTER1,
-    // 10 MBTRAIN.DATATRAINVREF, 11 MBTRAIN.RXDESKEW, 12 MBTRAIN.DATATRAINCENTER2,
-    // 13 MBTRAIN.LINKSPEED, 14 MBTRAIN.REPAIR, 15 PHYRETRAIN, 16 LINKINIT,
-    // 17 ACTIVE, 18 TRAINERROR, 19 L1/L2; other encodings reserved.
-    logic [31:0] error_log0_q;
-
-    // Error Log 1, address 0x1090 (UCIe Table 9-60, module 0).
-    // Additional history and PHY error flags, supplied explicitly by the caller.
-    // [7:0] state N-3; [8] training timeout escalated to fatal;
-    // [9] sideband handshake timeout, excluding training messages;
-    // [10] remote LinkError request over RDI sideband; [11] internal PHY error;
-    // [31:12] reserved. All bits are ordinary RW in this simplified bank:
-    // writing 1 stores 1, writing 0 stores 0. No automatic events or W1C/W1S.
-    // Callers coordinate updates and preserve any history/errors they want to keep.
-    logic [31:0] error_log1_q;
-
-    // Two independent combinational read ports; unknown addresses return zero.
-    always_comb begin
-        case (local_addr_i)
-            32'h00C: local_rdata_o = ucie_link_capability_q;
-            32'h010: local_rdata_o = ucie_link_control_q;
-            32'h014: local_rdata_o = ucie_link_status_q;
-            32'h1000: local_rdata_o = phy_capability_q;
-            32'h1004: local_rdata_o = phy_control_q;
-            32'h1008: local_rdata_o = phy_status_q;
-            32'h100C: local_rdata_o = phy_init_debug_q;
-            32'h1010: local_rdata_o = training_setup1_q;
-            32'h1020: local_rdata_o = training_setup2_q;
-            32'h1030: local_rdata_o = training_setup3_q[31:0];
-            32'h1034: local_rdata_o = training_setup3_q[63:32];
-            32'h1050: local_rdata_o = training_setup4_q;
-            32'h1060: local_rdata_o = current_lane_map_module0_q[31:0];
-            32'h1064: local_rdata_o = current_lane_map_module0_q[63:32];
-            32'h1080: local_rdata_o = error_log0_q;
-            32'h1090: local_rdata_o = error_log1_q;
-            default: local_rdata_o = 32'b0;
-        endcase
-        case (sb_addr_i)
-            32'h00C: sb_rdata_o = ucie_link_capability_q;
-            32'h010: sb_rdata_o = ucie_link_control_q;
-            32'h014: sb_rdata_o = ucie_link_status_q;
-            32'h1000: sb_rdata_o = phy_capability_q;
-            32'h1004: sb_rdata_o = phy_control_q;
-            32'h1008: sb_rdata_o = phy_status_q;
-            32'h100C: sb_rdata_o = phy_init_debug_q;
-            32'h1010: sb_rdata_o = training_setup1_q;
-            32'h1020: sb_rdata_o = training_setup2_q;
-            32'h1030: sb_rdata_o = training_setup3_q[31:0];
-            32'h1034: sb_rdata_o = training_setup3_q[63:32];
-            32'h1050: sb_rdata_o = training_setup4_q;
-            32'h1060: sb_rdata_o = current_lane_map_module0_q[31:0];
-            32'h1064: sb_rdata_o = current_lane_map_module0_q[63:32];
-            32'h1080: sb_rdata_o = error_log0_q;
-            32'h1090: sb_rdata_o = error_log1_q;
-            default: sb_rdata_o = 32'b0;
-        endcase
+    if ($test$plusargs("VCD")) begin
+      $dumpfile("D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb.vcd");
+      $dumpvars(0, D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb);
     end
 
-    assign phy_control_o = phy_control_q;
-    // Combinational acceptance at the clock edge, not a delayed completion pulse.
-    // Continuous local writes defer SB. Unmapped SB writes are acknowledged no-ops.
-    assign sb_waccepted_o = rst_ni && sb_we_i && !local_we_i;
+    cycles_1us = 32'd1000;
+    reset_n = 1'b0;
+    step(3);
+    @(negedge clock);
+    #1ps;
+    reset_n = 1'b1;
 
-    // Register updates. Keep the previous example reset values explicitly.
-    // Domain Reset clears history; Link Down alone must not assert this reset.
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (!rst_ni) begin
-            ucie_link_capability_q <= 32'h0000_0001;
-            ucie_link_control_q    <= 32'h0000_0000;
-            ucie_link_status_q     <= 32'h0000_0000;
-            phy_capability_q <= 32'h0000_8028;
-            phy_control_q    <= 32'h0000_0008;
-            phy_status_q     <= 32'h0000_0008;
-            phy_init_debug_q <= 32'h0000_0000;
-            training_setup1_q <= 32'h0000_2000;
-            training_setup2_q <= 32'h0004_0004;
-            training_setup3_q <= 64'h0000_0000_0000_0000;
-            training_setup4_q <= 32'h0000_0000;
-            current_lane_map_module0_q <= 64'h0000_0000_0000_0000;
-            error_log0_q     <= 32'h0000_0000;
-            error_log1_q     <= 32'h0000_0000;
-        end else if (local_we_i) begin
-            case (local_addr_i)
-                32'h00C: ucie_link_capability_q <= local_wdata_i;
-                32'h010: ucie_link_control_q    <= local_wdata_i;
-                32'h014: ucie_link_status_q     <= local_wdata_i;
-                32'h1000: phy_capability_q <= local_wdata_i;
-                32'h1004: phy_control_q    <= local_wdata_i;
-                32'h1008: phy_status_q     <= local_wdata_i;
-                32'h100C: phy_init_debug_q <= local_wdata_i;
-                32'h1010: training_setup1_q <= local_wdata_i;
-                32'h1020: training_setup2_q <= local_wdata_i;
-                32'h1030: training_setup3_q[31:0] <= local_wdata_i;
-                32'h1034: training_setup3_q[63:32] <= local_wdata_i;
-                32'h1050: training_setup4_q <= local_wdata_i;
-                32'h1060: current_lane_map_module0_q[31:0]  <= local_wdata_i;
-                32'h1064: current_lane_map_module0_q[63:32] <= local_wdata_i;
-                32'h1080: error_log0_q     <= local_wdata_i;
-                32'h1090: error_log1_q     <= local_wdata_i;
-                default: begin end
-            endcase
-        end else if (sb_waccepted_o) begin
-            // BE selects bytes only
-            for (int b = 0; b < 4; b++) begin
-                if (sb_be_i[b]) begin
-                    case (sb_addr_i)
-                        32'h00C: ucie_link_capability_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h010: ucie_link_control_q[b*8 +: 8]    <= sb_wdata_i[b*8 +: 8];
-                        32'h014: ucie_link_status_q[b*8 +: 8]     <= sb_wdata_i[b*8 +: 8];
-                        32'h1000: phy_capability_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h1004: phy_control_q[b*8 +: 8]    <= sb_wdata_i[b*8 +: 8];
-                        32'h1008: phy_status_q[b*8 +: 8]     <= sb_wdata_i[b*8 +: 8];
-                        32'h100C: phy_init_debug_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h1010: training_setup1_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h1020: training_setup2_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h1030: training_setup3_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h1034: training_setup3_q[32+b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h1050: training_setup4_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h1060: current_lane_map_module0_q[b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h1064: current_lane_map_module0_q[32+b*8 +: 8] <= sb_wdata_i[b*8 +: 8];
-                        32'h1080: error_log0_q[b*8 +: 8]     <= sb_wdata_i[b*8 +: 8];
-                        32'h1090: error_log1_q[b*8 +: 8]     <= sb_wdata_i[b*8 +: 8];
-                        default: begin end
-                    endcase
-                end
-            end
-        end
+    stepped = 0;
+    finished = 1'b0;
+    fatal_monitor = 1'b0;
+
+    while (stepped < MAX_CYCLES && !finished && !fatal_monitor) begin
+      this_chunk = ((MAX_CYCLES - stepped) < chunk_cycles) ?
+                   (MAX_CYCLES - stepped) : chunk_cycles;
+      step(this_chunk);
+      stepped += this_chunk;
+
+      finished = (done === 1'b1);
+      fatal_monitor = message_stability_error || train_error ||
+                      unknown_drop_error || no_progress_timeout ||
+                      cycle_timeout || serial_error ||
+                      sb_rx_overflow_error || backpressure_injection_error;
     end
+
+    if (backpressure_injection_error)
+      $fatal(1, "Directed FIFO-input stall did not hold valid high and ready low: cycle=%0d stalledMask=%06b resumedMask=%06b",
+             cycle_count, stalled_source_mask, resumed_source_mask);
+    if (message_stability_error)
+      $fatal(1, "A 128-bit message changed or valid dropped while backpressured: cycle=%0d LTSM=(%0d,%0d) RDI=(%0d,%0d) FDI=(%0d,%0d) FDI_INIT=(%0d,%0d) stalledMask=%06b",
+             cycle_count, die0_ltsm_state, die1_ltsm_state, die0_rdi_state,
+             die1_rdi_state, die0_fdi_state, die1_fdi_state,
+             die0_fdi_init_state, die1_fdi_init_state, stalled_source_mask);
+    if (train_error)
+      $fatal(1, "One of the LTSMs entered TRAIN_ERROR: cycle=%0d states=(%0d,%0d) MBTRAIN=(%0h,%0h) substate=(0x%03h,0x%03h)",
+             cycle_count, die0_ltsm_state, die1_ltsm_state,
+             die0_mbtrain_state, die1_mbtrain_state,
+             die0_mbtrain_active_substate, die1_mbtrain_active_substate);
+    if (sb_rx_overflow_error)
+      $fatal(1, "D2DAdapterLinkMgmtLtsmSBTop receive holding register overflowed during backpressure: cycle=%0d",
+             cycle_count);
+    if (serial_error)
+      $fatal(1, "Serial packet scoreboard failed: completed 0->1=%0d 1->0=%0d",
+             wire_completed_0_to_1, wire_completed_1_to_0);
+    if (unknown_drop_error)
+      $fatal(1, "The integrated sideband router dropped an unknown packet during LTSM/RDI/FDI traffic");
+    if (no_progress_timeout)
+      $fatal(1, "No state change, packet acceptance, or serial wire activity for %0d cycles: cycle=%0d",
+             NO_PROGRESS_CYCLES, cycle_count);
+    if (cycle_timeout)
+      $fatal(1, "Full bring-up exceeded %0d cycles", MAX_CYCLES);
+    if (protocol_active_issued !== 1'b1)
+      $fatal(1, "Both FDIs never completed Parameter Exchange");
+    if ((die0_ltsm_visited_mask & 16'h01FF) !== 16'h01FF ||
+        (die1_ltsm_visited_mask & 16'h01FF) !== 16'h01FF)
+      $fatal(1, "LTSM state coverage mismatch: die0=0x%04h die1=0x%04h",
+             die0_ltsm_visited_mask, die1_ltsm_visited_mask);
+    if ((die0_mbtrain_visited_mask & REQUIRED_MBTRAIN_STATE_MASK) !==
+          REQUIRED_MBTRAIN_STATE_MASK ||
+        (die1_mbtrain_visited_mask & REQUIRED_MBTRAIN_STATE_MASK) !==
+          REQUIRED_MBTRAIN_STATE_MASK)
+      $fatal(1, "MBTRAIN state coverage mismatch: die0=0x%04h die1=0x%04h required=0x%04h",
+             die0_mbtrain_visited_mask, die1_mbtrain_visited_mask,
+             REQUIRED_MBTRAIN_STATE_MASK);
+    if (stalled_source_mask !== 6'b111111)
+      $fatal(1, "Did not backpressure LTSM, RDI and FDI in both directions: mask=%06b",
+             stalled_source_mask);
+    if (resumed_source_mask !== 6'b111111)
+      $fatal(1, "Not every stalled LTSM/RDI/FDI packet was accepted after release: mask=%06b",
+             resumed_source_mask);
+    if (done !== 1'b1)
+      $fatal(1, "Both dies did not reach Active and drain their serial links by cycle %0d", cycle_count);
+    if ((serial_idle !== 1'b1) ||
+        (wire_completed_0_to_1 == 0) || (wire_completed_1_to_0 == 0))
+      $fatal(1, "Serial completion coverage failed: idle=%b completed 0->1=%0d 1->0=%0d",
+             serial_idle, wire_completed_0_to_1, wire_completed_1_to_0);
+
+    $display("[backpressure] PASS: cycle=%0d LTSM=(%0d,%0d) RDI=(%0d,%0d) FDI=(%0d,%0d) FDI_INIT=(%0d,%0d) stalledMask=%06b resumedMask=%06b",
+             cycle_count, die0_ltsm_state, die1_ltsm_state, die0_rdi_state,
+             die1_rdi_state, die0_fdi_state, die1_fdi_state,
+             die0_fdi_init_state, die1_fdi_init_state, stalled_source_mask,
+             resumed_source_mask);
+    $display("[backpressure] PASS: LTSM masks=(0x%04h,0x%04h) MBTRAIN masks=(0x%04h,0x%04h)",
+             die0_ltsm_visited_mask, die1_ltsm_visited_mask,
+             die0_mbtrain_visited_mask, die1_mbtrain_visited_mask);
+    $display("[backpressure] PASS: one-bit wire packets 0->1=%0d 1->0=%0d; serial paths drained",
+             wire_completed_0_to_1, wire_completed_1_to_0);
+    $finish;
+  end
 endmodule
+
+`default_nettype wire
+
+```
+
+<a id="test-D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb-sv"></a>
+
+## [52] test\D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb.sv
+
+```systemverilog
+// FILE_INDEX: 52
+// FILE_PATH : test\D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb.sv
+
+// Two-die Reset-to-Active test of D2DAdapterLinkMgmtLtsmSBTop, including
+// its integrated serializers, deserializers, CDC and RX holding mailboxes.
+// The dies exchange only one-bit sideband data and forwarded clocks. Parallel
+// packet signals below are local observation points, never a die-to-die bypass.
+// Reset convention: asynchronous active-low reset_n; there is no reset signal.
+
+`timescale 1ns/1ps
+`default_nettype none
+
+module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
+  // Include serialization of all training and adapter-management packets.
+  parameter int unsigned MAX_LTSM_BRINGUP_CYCLES = 12_000_000,
+  parameter int unsigned MAX_LINKMGMT_CYCLES = 250_000,
+  parameter int unsigned SERIAL_DRAIN_CYCLES = 32
+);
+  import UcieUPM_interfaces_pkg::*;
+  import UcieUPM_d2dadapter_pkg::*;
+
+  localparam logic [3:0] LTSM_RESET  = 4'd0;
+  localparam logic [3:0] LTSM_ACTIVE = 4'd8;
+
+  // New MBTRAIN sequence in the revised LinkTrainingFSM.  Every executable
+  // stage (1 through C) and the COMPLETE state (E) must be visited.  State D
+  // is the unimplemented repair state and state F is the error state.
+  localparam logic [15:0] REQUIRED_MBTRAIN_STATE_MASK = 16'h5FFE;
+
+  logic clock = 1'b0;
+  logic reset_n = 1'b1;
+
+  logic start;
+  logic stable_clk;
+  logic pll_locked;
+  logic stable_supply;
+  logic [31:0] cycles_1us;
+  logic protocol_request_active;
+  logic link_0_to_1_enable;
+  logic link_1_to_0_enable;
+
+  logic [3:0] die0_ltsm_state;
+  logic [3:0] die1_ltsm_state;
+  PhyState_t die0_rdi_state;
+  PhyState_t die1_rdi_state;
+  PhyState_t die0_fdi_state;
+  PhyState_t die1_fdi_state;
+  LinkInitState_t die0_fdi_init_state;
+  LinkInitState_t die1_fdi_init_state;
+  logic [2:0] die0_mbinit_substate;
+  logic [2:0] die1_mbinit_substate;
+  logic [3:0] die0_mbtrain_state;
+  logic [3:0] die1_mbtrain_state;
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
+  logic [11:0] die0_mbtrain_active_substate;
+  logic [11:0] die1_mbtrain_active_substate;
+  logic die0_ltsm_train_error;
+  logic die1_ltsm_train_error;
+  logic die0_grant_ltsm;
+  logic die0_grant_rdi;
+  logic die0_grant_fdi;
+  logic die1_grant_ltsm;
+  logic die1_grant_rdi;
+  logic die1_grant_fdi;
+  logic die0_tx_fire;
+  logic die1_tx_fire;
+  logic die0_rx_fire;
+  logic die1_rx_fire;
+  logic die0_tx_locked;
+  logic die1_tx_locked;
+  logic die0_rx_drop_unknown;
+  logic die1_rx_drop_unknown;
+  logic [127:0] progress_signature;
+  logic [5:0] grant_mask;
+  logic both_ltsm_active;
+  logic both_fdi_wait_protocol;
+  logic any_internal_transfer;
+  logic any_train_error;
+  logic any_unknown_drop;
+  logic all_active;
+  logic serial_idle;
+  logic serial_error;
+  logic any_sb_rx_overflow;
+  logic serial_wire_activity;
+  logic [31:0] wire_completed_0_to_1;
+  logic [31:0] wire_completed_1_to_0;
+
+  always #5ns clock = ~clock;
+
+  task automatic step(input int unsigned cycles);
+    repeat (cycles) begin
+      @(posedge clock);
+      #1ps;
+    end
+  endtask
+
+  D2DAdapterLinkMgmtLtsmDualDieHarness dut (
+    .clock(clock),
+    .reset_n(reset_n),
+    .start(start),
+    .stable_clk(stable_clk),
+    .pll_locked(pll_locked),
+    .stable_supply(stable_supply),
+    .cycles_1us(cycles_1us),
+    .protocol_request_active(protocol_request_active),
+    .link_0_to_1_enable(link_0_to_1_enable),
+    .link_1_to_0_enable(link_1_to_0_enable),
+    .die0_ltsm_state(die0_ltsm_state),
+    .die1_ltsm_state(die1_ltsm_state),
+    .die0_rdi_state(die0_rdi_state),
+    .die1_rdi_state(die1_rdi_state),
+    .die0_fdi_state(die0_fdi_state),
+    .die1_fdi_state(die1_fdi_state),
+    .die0_fdi_init_state(die0_fdi_init_state),
+    .die1_fdi_init_state(die1_fdi_init_state),
+    .die0_mbinit_substate(die0_mbinit_substate),
+    .die1_mbinit_substate(die1_mbinit_substate),
+    .die0_mbtrain_state(die0_mbtrain_state),
+    .die1_mbtrain_state(die1_mbtrain_state),
+    .die0_mbtrain_active_substate(die0_mbtrain_active_substate),
+    .die1_mbtrain_active_substate(die1_mbtrain_active_substate),
+    .die0_ltsm_train_error(die0_ltsm_train_error),
+    .die1_ltsm_train_error(die1_ltsm_train_error),
+    .die0_grant_ltsm(die0_grant_ltsm),
+    .die0_grant_rdi(die0_grant_rdi),
+    .die0_grant_fdi(die0_grant_fdi),
+    .die1_grant_ltsm(die1_grant_ltsm),
+    .die1_grant_rdi(die1_grant_rdi),
+    .die1_grant_fdi(die1_grant_fdi),
+    .die0_tx_fire(die0_tx_fire),
+    .die1_tx_fire(die1_tx_fire),
+    .die0_rx_fire(die0_rx_fire),
+    .die1_rx_fire(die1_rx_fire),
+    .die0_tx_locked(die0_tx_locked),
+    .die1_tx_locked(die1_tx_locked),
+    .die0_rx_drop_unknown(die0_rx_drop_unknown),
+    .die1_rx_drop_unknown(die1_rx_drop_unknown),
+    .progress_signature(progress_signature),
+    .grant_mask(grant_mask),
+    .both_ltsm_active(both_ltsm_active),
+    .both_fdi_wait_protocol(both_fdi_wait_protocol),
+    .any_internal_transfer(any_internal_transfer),
+    .any_train_error(any_train_error),
+    .any_unknown_drop(any_unknown_drop),
+    .all_active(all_active),
+    .serial_wire_activity(serial_wire_activity),
+    .serial_idle(serial_idle),
+    .serial_error(serial_error),
+    .any_sb_rx_overflow(any_sb_rx_overflow),
+    .wire_completed_0_to_1(wire_completed_0_to_1),
+    .wire_completed_1_to_0(wire_completed_1_to_0)
+  );
+
+  // Keep the error checks running during all phases, including final drain.
+  always @(posedge clock) begin
+    if (reset_n) begin
+      if (any_sb_rx_overflow)
+        $fatal(1, "Integrated serial RX mailbox overflowed during bring-up");
+      if (serial_error)
+        $fatal(1, "Serial packet scoreboard failed: completed 0->1=%0d 1->0=%0d",
+               wire_completed_0_to_1, wire_completed_1_to_0);
+      if (any_train_error)
+        $fatal(1, "Training error: LTSM=(%0d,%0d) MBTRAIN=(%0h,%0h) substate=(0x%03h,0x%03h)",
+               die0_ltsm_state, die1_ltsm_state, die0_mbtrain_state, die1_mbtrain_state,
+               die0_mbtrain_active_substate, die1_mbtrain_active_substate);
+      if (any_unknown_drop)
+        $fatal(1, "The sideband router dropped an unknown serially received message");
+    end
+  end
+
+  initial begin : run_test
+    int unsigned cycle;
+    int unsigned quiet_cycles;
+    logic sawDie0LtsmGrant;
+    logic sawDie1LtsmGrant;
+    logic sawDie0RdiGrant;
+    logic sawDie1RdiGrant;
+    logic sawDie0FdiGrant;
+    logic sawDie1FdiGrant;
+    logic sawAnyInternalTransfer;
+    logic sawUnknownDrop;
+    logic [15:0] die0LtsmVisited;
+    logic [15:0] die1LtsmVisited;
+    logic [15:0] die0RdiVisited;
+    logic [15:0] die1RdiVisited;
+    logic [15:0] die0MbtrainVisited;
+    logic [15:0] die1MbtrainVisited;
+    logic [15:0] die0FdiVisited;
+    logic [15:0] die1FdiVisited;
+    logic [7:0] die0FdiInitVisited;
+    logic [7:0] die1FdiInitVisited;
+
+    if (MAX_LTSM_BRINGUP_CYCLES < 1 || MAX_LINKMGMT_CYCLES < 1 ||
+        SERIAL_DRAIN_CYCLES < 1)
+      $fatal(1, "Cycle limits and SERIAL_DRAIN_CYCLES must be positive");
+
+    if ($test$plusargs("VCD")) begin
+      $dumpfile("D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb.vcd");
+      $dumpvars(0, D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb);
+    end
+
+    start = 1'b0;
+    stable_clk = 1'b0;
+    pll_locked = 1'b0;
+    stable_supply = 1'b0;
+    // Deliberately stretch protocol timers for a one-bit serialized link:
+    // a complete 128-bit message takes at least 128 controller cycles.
+    cycles_1us = 32'd1000;
+    protocol_request_active = 1'b0;
+    link_0_to_1_enable = 1'b1;
+    link_1_to_0_enable = 1'b1;
+
+    reset_n = 1'b0;
+    step(3);
+    @(negedge clock);
+    #1ps;
+    reset_n = 1'b1;
+    step(1);
+
+    if (die0_ltsm_state !== LTSM_RESET || die1_ltsm_state !== LTSM_RESET)
+      $fatal(1, "Post-reset LTSM state mismatch: die0=%0d die1=%0d", die0_ltsm_state, die1_ltsm_state);
+    if (die0_rdi_state !== PhyState_reset || die1_rdi_state !== PhyState_reset)
+      $fatal(1, "Post-reset RDI state mismatch");
+    if (die0_fdi_state !== PhyState_reset || die1_fdi_state !== PhyState_reset)
+      $fatal(1, "Post-reset FDI state mismatch");
+
+    start = 1'b1;
+    stable_clk = 1'b1;
+    pll_locked = 1'b1;
+    stable_supply = 1'b1;
+
+    sawDie0LtsmGrant = 1'b0;
+    sawDie1LtsmGrant = 1'b0;
+    sawDie0RdiGrant = 1'b0;
+    sawDie1RdiGrant = 1'b0;
+    sawDie0FdiGrant = 1'b0;
+    sawDie1FdiGrant = 1'b0;
+    sawAnyInternalTransfer = 1'b0;
+    sawUnknownDrop = 1'b0;
+
+    die0LtsmVisited = 16'h0001 << die0_ltsm_state;
+    die1LtsmVisited = 16'h0001 << die1_ltsm_state;
+    die0RdiVisited = 16'h0001 << die0_rdi_state;
+    die1RdiVisited = 16'h0001 << die1_rdi_state;
+    die0FdiVisited = 16'h0001 << die0_fdi_state;
+    die1FdiVisited = 16'h0001 << die1_fdi_state;
+    die0FdiInitVisited = 8'h01 << die0_fdi_init_state;
+    die1FdiInitVisited = 8'h01 << die1_fdi_init_state;
+    die0MbtrainVisited = 16'h0001 << die0_mbtrain_state;
+    die1MbtrainVisited = 16'h0001 << die1_mbtrain_state;
+
+    // Phase 1: both physical LTSMs complete SBINIT, MBINIT and MBTRAIN.
+    cycle = 0;
+    while (cycle < MAX_LTSM_BRINGUP_CYCLES &&
+           (die0_ltsm_state != LTSM_ACTIVE || die1_ltsm_state != LTSM_ACTIVE)) begin
+      sawDie0LtsmGrant |= die0_grant_ltsm;
+      sawDie1LtsmGrant |= die1_grant_ltsm;
+      sawDie0RdiGrant |= die0_grant_rdi;
+      sawDie1RdiGrant |= die1_grant_rdi;
+      sawDie0FdiGrant |= die0_grant_fdi;
+      sawDie1FdiGrant |= die1_grant_fdi;
+      sawAnyInternalTransfer |= any_internal_transfer;
+      sawUnknownDrop |= any_unknown_drop;
+
+      die0LtsmVisited |= 16'h0001 << die0_ltsm_state;
+      die1LtsmVisited |= 16'h0001 << die1_ltsm_state;
+      die0RdiVisited |= 16'h0001 << die0_rdi_state;
+      die1RdiVisited |= 16'h0001 << die1_rdi_state;
+      die0FdiVisited |= 16'h0001 << die0_fdi_state;
+      die1FdiVisited |= 16'h0001 << die1_fdi_state;
+      die0FdiInitVisited |= 8'h01 << die0_fdi_init_state;
+      die1FdiInitVisited |= 8'h01 << die1_fdi_init_state;
+      die0MbtrainVisited |= 16'h0001 << die0_mbtrain_state;
+      die1MbtrainVisited |= 16'h0001 << die1_mbtrain_state;
+
+      if (die0_ltsm_train_error || die1_ltsm_train_error)
+        $fatal(1, "LTSM training error during phase 1 at cycle %0d", cycle);
+      step(1);
+      cycle++;
+    end
+    if (cycle >= MAX_LTSM_BRINGUP_CYCLES)
+      $fatal(1, "Timed out waiting for both LTSMs Active: die0=%0d die1=%0d", die0_ltsm_state, die1_ltsm_state);
+
+    // Phase 2: RDI Active and FDI parameter exchange while protocol remains NOP.
+    cycle = 0;
+    while (cycle < MAX_LINKMGMT_CYCLES &&
+           (die0_fdi_init_state != LinkInitState_FDI_WAIT_LP_REQ_ACTIVE ||
+            die1_fdi_init_state != LinkInitState_FDI_WAIT_LP_REQ_ACTIVE)) begin
+      sawDie0LtsmGrant |= die0_grant_ltsm;
+      sawDie1LtsmGrant |= die1_grant_ltsm;
+      sawDie0RdiGrant |= die0_grant_rdi;
+      sawDie1RdiGrant |= die1_grant_rdi;
+      sawDie0FdiGrant |= die0_grant_fdi;
+      sawDie1FdiGrant |= die1_grant_fdi;
+      sawAnyInternalTransfer |= any_internal_transfer;
+      sawUnknownDrop |= any_unknown_drop;
+
+      die0LtsmVisited |= 16'h0001 << die0_ltsm_state;
+      die1LtsmVisited |= 16'h0001 << die1_ltsm_state;
+      die0RdiVisited |= 16'h0001 << die0_rdi_state;
+      die1RdiVisited |= 16'h0001 << die1_rdi_state;
+      die0FdiVisited |= 16'h0001 << die0_fdi_state;
+      die1FdiVisited |= 16'h0001 << die1_fdi_state;
+      die0FdiInitVisited |= 8'h01 << die0_fdi_init_state;
+      die1FdiInitVisited |= 8'h01 << die1_fdi_init_state;
+      die0MbtrainVisited |= 16'h0001 << die0_mbtrain_state;
+      die1MbtrainVisited |= 16'h0001 << die1_mbtrain_state;
+
+      step(1);
+      cycle++;
+    end
+    if (cycle >= MAX_LINKMGMT_CYCLES)
+      $fatal(1, "Timed out waiting for FDI parameter exchange: init=(%0d,%0d) RDI=(%0d,%0d)",
+             die0_fdi_init_state, die1_fdi_init_state, die0_rdi_state, die1_rdi_state);
+    if (die0_rdi_state !== PhyState_active || die1_rdi_state !== PhyState_active)
+      $fatal(1, "RDI did not reach Active before protocol request");
+    if (die0_fdi_state !== PhyState_reset || die1_fdi_state !== PhyState_reset)
+      $fatal(1, "FDI left Reset before protocol request");
+
+    // Phase 3: issue one NOP-to-Active edge on both protocol interfaces.
+    protocol_request_active = 1'b1;
+    cycle = 0;
+    while (cycle < MAX_LINKMGMT_CYCLES && !all_active) begin
+      sawDie0LtsmGrant |= die0_grant_ltsm;
+      sawDie1LtsmGrant |= die1_grant_ltsm;
+      sawDie0RdiGrant |= die0_grant_rdi;
+      sawDie1RdiGrant |= die1_grant_rdi;
+      sawDie0FdiGrant |= die0_grant_fdi;
+      sawDie1FdiGrant |= die1_grant_fdi;
+      sawAnyInternalTransfer |= any_internal_transfer;
+      sawUnknownDrop |= any_unknown_drop;
+
+      die0LtsmVisited |= 16'h0001 << die0_ltsm_state;
+      die1LtsmVisited |= 16'h0001 << die1_ltsm_state;
+      die0RdiVisited |= 16'h0001 << die0_rdi_state;
+      die1RdiVisited |= 16'h0001 << die1_rdi_state;
+      die0FdiVisited |= 16'h0001 << die0_fdi_state;
+      die1FdiVisited |= 16'h0001 << die1_fdi_state;
+      die0FdiInitVisited |= 8'h01 << die0_fdi_init_state;
+      die1FdiInitVisited |= 8'h01 << die1_fdi_init_state;
+      die0MbtrainVisited |= 16'h0001 << die0_mbtrain_state;
+      die1MbtrainVisited |= 16'h0001 << die1_mbtrain_state;
+
+      step(1);
+      cycle++;
+    end
+    if (cycle >= MAX_LINKMGMT_CYCLES)
+      $fatal(1, "Timed out waiting for all state machines Active: LTSM=(%0d,%0d) RDI=(%0d,%0d) FDI=(%0d,%0d)",
+             die0_ltsm_state, die1_ltsm_state, die0_rdi_state, die1_rdi_state,
+             die0_fdi_state, die1_fdi_state);
+
+    // Active state alone is insufficient: a final response can still be in a
+    // serializer FIFO or on the one-bit wire. Require both links drained and
+    // quiet, while the shared scoreboards keep checking all received packets.
+    cycle = 0;
+    quiet_cycles = 0;
+    while (cycle < MAX_LINKMGMT_CYCLES && quiet_cycles < SERIAL_DRAIN_CYCLES) begin
+      step(1);
+      cycle++;
+      if (all_active && serial_idle && !serial_error)
+        quiet_cycles++;
+      else
+        quiet_cycles = 0;
+    end
+    if (quiet_cycles < SERIAL_DRAIN_CYCLES)
+      $fatal(1, "Timed out draining serial links: idle=%b completed 0->1=%0d 1->0=%0d",
+             serial_idle, wire_completed_0_to_1, wire_completed_1_to_0);
+    if ((wire_completed_0_to_1 == 0) || (wire_completed_1_to_0 == 0))
+      $fatal(1, "No completed one-bit packet was observed in one or both directions");
+
+    if (!all_active || die0_ltsm_state != LTSM_ACTIVE || die1_ltsm_state != LTSM_ACTIVE ||
+        die0_rdi_state != PhyState_active || die1_rdi_state != PhyState_active ||
+        die0_fdi_state != PhyState_active || die1_fdi_state != PhyState_active)
+      $fatal(1, "Final Active-state check failed");
+    if (die0_ltsm_train_error || die1_ltsm_train_error)
+      $fatal(1, "LTSM training error at completion");
+
+    sawAnyInternalTransfer |= any_internal_transfer;
+    sawUnknownDrop |= any_unknown_drop;
+
+    die0LtsmVisited |= 16'h0001 << die0_ltsm_state;
+    die1LtsmVisited |= 16'h0001 << die1_ltsm_state;
+    die0RdiVisited |= 16'h0001 << die0_rdi_state;
+    die1RdiVisited |= 16'h0001 << die1_rdi_state;
+    die0FdiVisited |= 16'h0001 << die0_fdi_state;
+    die1FdiVisited |= 16'h0001 << die1_fdi_state;
+    die0FdiInitVisited |= 8'h01 << die0_fdi_init_state;
+    die1FdiInitVisited |= 8'h01 << die1_fdi_init_state;
+    die0MbtrainVisited |= 16'h0001 << die0_mbtrain_state;
+    die1MbtrainVisited |= 16'h0001 << die1_mbtrain_state;
+
+    if ((die0LtsmVisited & 16'h01ff) != 16'h01ff)
+      $fatal(1, "Die0 LTSM missed states, visited mask=0x%04h", die0LtsmVisited);
+    if ((die1LtsmVisited & 16'h01ff) != 16'h01ff)
+      $fatal(1, "Die1 LTSM missed states, visited mask=0x%04h", die1LtsmVisited);
+    if ((die0MbtrainVisited & REQUIRED_MBTRAIN_STATE_MASK) !=
+        REQUIRED_MBTRAIN_STATE_MASK)
+      $fatal(1, "Die0 MBTRAIN missed revised states, visited mask=0x%04h required=0x%04h",
+             die0MbtrainVisited, REQUIRED_MBTRAIN_STATE_MASK);
+    if ((die1MbtrainVisited & REQUIRED_MBTRAIN_STATE_MASK) !=
+        REQUIRED_MBTRAIN_STATE_MASK)
+      $fatal(1, "Die1 MBTRAIN missed revised states, visited mask=0x%04h required=0x%04h",
+             die1MbtrainVisited, REQUIRED_MBTRAIN_STATE_MASK);
+    if ((die0FdiInitVisited & 8'h3f) != 8'h3f)
+      $fatal(1, "Die0 FDI init missed states, visited mask=0x%02h", die0FdiInitVisited);
+    if ((die1FdiInitVisited & 8'h3f) != 8'h3f)
+      $fatal(1, "Die1 FDI init missed states, visited mask=0x%02h", die1FdiInitVisited);
+    if ((die0RdiVisited & 16'h0003) != 16'h0003 ||
+        (die1RdiVisited & 16'h0003) != 16'h0003)
+      $fatal(1, "An RDI did not visit both Reset and Active");
+    if ((die0FdiVisited & 16'h0003) != 16'h0003 ||
+        (die1FdiVisited & 16'h0003) != 16'h0003)
+      $fatal(1, "An FDI did not visit both Reset and Active");
+
+    if (!sawAnyInternalTransfer)
+      $fatal(1, "No sideband transfer was observed through the integrated top");
+    if (sawUnknownDrop)
+      $fatal(1, "The top-level sideband router dropped an unknown message");
+
+    if (!(sawDie0LtsmGrant && sawDie1LtsmGrant))
+      $fatal(1, "The shared arbiter never granted one of the LTSM producers");
+    if (!(sawDie0RdiGrant && sawDie1RdiGrant))
+      $fatal(1, "The shared arbiter never granted one of the RDI producers");
+    if (!(sawDie0FdiGrant && sawDie1FdiGrant))
+      $fatal(1, "The shared arbiter never granted one of the FDI producers");
+
+    $display("PASS: D2DAdapterLinkMgmtLtsmDualDieBringUpSpec");
+    $display("PASS: revised MBTRAIN states visited: die0=0x%04h die1=0x%04h",
+             die0MbtrainVisited, die1MbtrainVisited);
+    $display("PASS: one-bit wire packets 0->1=%0d 1->0=%0d; serial paths drained",
+             wire_completed_0_to_1, wire_completed_1_to_0);
+    $finish;
+  end
+endmodule
+
+`default_nettype wire
+
+```
+
+<a id="test-D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness-sv"></a>
+
+## [53] test\D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness.sv
+
+```systemverilog
+// FILE_INDEX: 53
+// FILE_PATH : test\D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness.sv
+
+// Directed two-die bring-up through D2DAdapterLinkMgmtLtsmSBTop on each die.
+// Stall packet acceptance at the serializer FIFO input; the forwarded serial
+// clocks and data wires are never gated by the testbench.
+// Reset convention: asynchronous active-low reset_n.
+
+`timescale 1ns/1ps
+`default_nettype none
+
+module D2DAdapterLinkMgmtLtsmDualDieDirectedBackpressureHarness #(
+  // Only behavior-control parameters belong at this level.  FDI/RDI widths
+  // are internal DUT defaults and are not part of the backpressure harness.
+  parameter int unsigned STALL_CYCLES       = 300,
+  parameter int unsigned MAX_CYCLES         = 12_000_000,
+  parameter int unsigned NO_PROGRESS_CYCLES = 500_000,
+  parameter int unsigned SERIAL_DRAIN_CYCLES = 32,
+  parameter int unsigned CYCLE_WIDTH =
+    (MAX_CYCLES + 2 <= 2) ? 1 : $clog2(MAX_CYCLES + 2)
+) (
+  input wire logic clock,
+  input wire logic reset_n,
+  input wire logic [31:0] cycles_1us,
+
+  output var logic done,
+  output var logic protocol_active_issued,
+  output var logic [5:0] stalled_source_mask,
+  output var logic [5:0] resumed_source_mask,
+  output var logic backpressure_injection_error,
+  output var logic message_stability_error,
+  output var logic train_error,
+  output var logic no_progress_timeout,
+  output var logic cycle_timeout,
+  output var logic [CYCLE_WIDTH-1:0] cycle_count,
+  output var logic serial_idle,
+  output var logic serial_error,
+  output var logic sb_rx_overflow_error,
+  output var logic [31:0] wire_completed_0_to_1,
+  output var logic [31:0] wire_completed_1_to_0,
+
+  output var logic [3:0] die0_ltsm_state,
+  output var logic [3:0] die1_ltsm_state,
+  output var logic [3:0] die0_mbtrain_state,
+  output var logic [3:0] die1_mbtrain_state,
+  output var logic [11:0] die0_mbtrain_active_substate,
+  output var logic [11:0] die1_mbtrain_active_substate,
+  output var logic [15:0] die0_ltsm_visited_mask,
+  output var logic [15:0] die1_ltsm_visited_mask,
+  output var logic [15:0] die0_mbtrain_visited_mask,
+  output var logic [15:0] die1_mbtrain_visited_mask,
+  output var logic unknown_drop_error,
+  output var UcieUPM_interfaces_pkg::PhyState_t die0_rdi_state,
+  output var UcieUPM_interfaces_pkg::PhyState_t die1_rdi_state,
+  output var UcieUPM_interfaces_pkg::PhyState_t die0_fdi_state,
+  output var UcieUPM_interfaces_pkg::PhyState_t die1_fdi_state,
+  output var UcieUPM_d2dadapter_pkg::LinkInitState_t die0_fdi_init_state,
+  output var UcieUPM_d2dadapter_pkg::LinkInitState_t die1_fdi_init_state
+);
+  import UcieUPM_interfaces_pkg::*;
+  import UcieUPM_d2dadapter_pkg::*;
+
+  initial begin
+    if (STALL_CYCLES < 1)       $fatal(1, "STALL_CYCLES must be at least one");
+    if (MAX_CYCLES < 1)         $fatal(1, "MAX_CYCLES must be positive");
+    if (NO_PROGRESS_CYCLES < 1) $fatal(1, "NO_PROGRESS_CYCLES must be positive");
+    if (SERIAL_DRAIN_CYCLES < 1) $fatal(1, "SERIAL_DRAIN_CYCLES must be positive");
+  end
+
+  localparam int unsigned NO_PROGRESS_WIDTH =
+    (NO_PROGRESS_CYCLES + 2 <= 2) ? 1 : $clog2(NO_PROGRESS_CYCLES + 2);
+  localparam int unsigned STALL_COUNT_WIDTH =
+    (STALL_CYCLES + 1 <= 2) ? 1 : $clog2(STALL_CYCLES + 1);
+  localparam int unsigned DRAIN_COUNT_WIDTH =
+    (SERIAL_DRAIN_CYCLES + 1 <= 2) ? 1 : $clog2(SERIAL_DRAIN_CYCLES + 1);
+
+  logic core_start;
+  logic core_protocol_request_active;
+  logic core_link_0_to_1_enable;
+  logic core_link_1_to_0_enable;
+
+  logic [3:0] core_die0_ltsm_state;
+  logic [3:0] core_die1_ltsm_state;
+  logic [3:0] core_die0_mbtrain_state;
+  logic [3:0] core_die1_mbtrain_state;
+  logic [11:0] core_die0_mbtrain_active_substate;
+  logic [11:0] core_die1_mbtrain_active_substate;
+  logic [127:0] core_progress_signature;
+  logic core_any_unknown_drop;
+  PhyState_t core_die0_rdi_state;
+  PhyState_t core_die1_rdi_state;
+  PhyState_t core_die0_fdi_state;
+  PhyState_t core_die1_fdi_state;
+  LinkInitState_t core_die0_fdi_init_state;
+  LinkInitState_t core_die1_fdi_init_state;
+
+  logic core_die0_grant_ltsm;
+  logic core_die0_grant_rdi;
+  logic core_die0_grant_fdi;
+  logic core_die1_grant_ltsm;
+  logic core_die1_grant_rdi;
+  logic core_die1_grant_fdi;
+
+  // Passive observations of each integrated serializer's packet input.
+  // These are checker-only hierarchical taps, never die-interface signals:
+  // both dies communicate exclusively through one-bit data/clock pins.
+  wire logic mon_die0_tx_valid = core.mon_die0_tx_valid;
+  wire logic [127:0] mon_die0_tx_msg = core.mon_die0_tx_msg;
+  wire logic mon_die0_tx_ready = core.mon_die0_tx_ready;
+  wire logic mon_die1_tx_valid = core.mon_die1_tx_valid;
+  wire logic [127:0] mon_die1_tx_msg = core.mon_die1_tx_msg;
+  wire logic mon_die1_tx_ready = core.mon_die1_tx_ready;
+
+  logic core_die0_ltsm_train_error;
+  logic core_die1_ltsm_train_error;
+  logic core_all_active;
+  logic core_serial_idle;
+  logic core_serial_error;
+  logic core_any_sb_rx_overflow;
+  logic core_serial_wire_activity;
+  logic [31:0] core_wire_completed_0_to_1;
+  logic [31:0] core_wire_completed_1_to_0;
+  logic [DRAIN_COUNT_WIDTH-1:0] serialDrainCount;
+
+  logic started;
+  logic protocolActiveIssued;
+  logic bothWaitingForProtocol;
+
+  logic [2:0] source01;
+  logic [2:0] source10;
+  logic [2:0] stalled01Seen;
+  logic [2:0] stalled10Seen;
+  logic [2:0] resumed01Seen;
+  logic [2:0] resumed10Seen;
+  logic backpressureInjectionError;
+  logic [STALL_COUNT_WIDTH-1:0] stall01Remaining;
+  logic [STALL_COUNT_WIDTH-1:0] stall10Remaining;
+  logic [2:0] untested01;
+  logic [2:0] untested10;
+  logic startStall01;
+  logic startStall10;
+  logic block01;
+  logic block10;
+
+  logic holding0;
+  logic [127:0] heldMessage0;
+  logic [2:0] heldSource0;
+  logic holding1;
+  logic [127:0] heldMessage1;
+  logic [2:0] heldSource1;
+  logic messageStabilityError;
+
+  logic [CYCLE_WIDTH-1:0] cycleCount;
+  logic [198:0] progressSignature;
+  logic [198:0] previousProgressSignature;
+  logic acceptedMessage;
+  logic forwardProgress;
+  logic [NO_PROGRESS_WIDTH-1:0] noProgressCount;
+  logic [15:0] die0LtsmVisited;
+  logic [15:0] die1LtsmVisited;
+  logic [15:0] die0MbtrainVisited;
+  logic [15:0] die1MbtrainVisited;
+  logic unknownDropError;
+
+  always_comb begin
+    source01 = 3'b000;
+    if (core_die0_grant_ltsm)
+      source01 = 3'b001;
+    else if (core_die0_grant_rdi)
+      source01 = 3'b010;
+    else if (core_die0_grant_fdi)
+      source01 = 3'b100;
+
+    source10 = 3'b000;
+    if (core_die1_grant_ltsm)
+      source10 = 3'b001;
+    else if (core_die1_grant_rdi)
+      source10 = 3'b010;
+    else if (core_die1_grant_fdi)
+      source10 = 3'b100;
+
+    untested01 = source01 & ~stalled01Seen;
+    untested10 = source10 & ~stalled10Seen;
+
+    startStall01 = (stall01Remaining == '0) && mon_die0_tx_valid && (|untested01);
+    startStall10 = (stall10Remaining == '0) && mon_die1_tx_valid && (|untested10);
+
+    block01 = startStall01 || (stall01Remaining != '0);
+    block10 = startStall10 || (stall10Remaining != '0);
+
+    bothWaitingForProtocol =
+      (core_die0_fdi_init_state == LinkInitState_FDI_WAIT_LP_REQ_ACTIVE) &&
+      (core_die1_fdi_init_state == LinkInitState_FDI_WAIT_LP_REQ_ACTIVE);
+
+    // The core signature includes MBINIT, MBTRAIN, the active MBTRAIN
+    // substate, and message fields. Wire completion counters also recognize
+    // progress independently of the phase of the forwarded-clock observation.
+    progressSignature = {
+      core_progress_signature,
+      core_wire_completed_0_to_1,
+      core_wire_completed_1_to_0,
+      stalled01Seen,
+      stalled10Seen,
+      protocolActiveIssued
+    };
+
+    acceptedMessage =
+      (mon_die0_tx_valid && mon_die0_tx_ready) ||
+      (mon_die1_tx_valid && mon_die1_tx_ready);
+
+    forwardProgress =
+      (progressSignature != previousProgressSignature) ||
+      acceptedMessage || core_serial_wire_activity ||
+      startStall01 || startStall10;
+
+    core_start = started;
+    core_protocol_request_active = protocolActiveIssued;
+    core_link_0_to_1_enable = !block01;
+    core_link_1_to_0_enable = !block10;
+  end
+
+  always_ff @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      started <= 1'b0;
+      protocolActiveIssued <= 1'b0;
+      stalled01Seen <= 3'b000;
+      stalled10Seen <= 3'b000;
+      resumed01Seen <= 3'b000;
+      resumed10Seen <= 3'b000;
+      backpressureInjectionError <= 1'b0;
+      stall01Remaining <= '0;
+      stall10Remaining <= '0;
+      holding0 <= 1'b0;
+      heldMessage0 <= 128'b0;
+      heldSource0 <= 3'b000;
+      holding1 <= 1'b0;
+      heldMessage1 <= 128'b0;
+      heldSource1 <= 3'b000;
+      messageStabilityError <= 1'b0;
+      cycleCount <= '0;
+      previousProgressSignature <= '0;
+      noProgressCount <= '0;
+      die0LtsmVisited <= 16'h0001;
+      die1LtsmVisited <= 16'h0001;
+      die0MbtrainVisited <= 16'h0001;
+      die1MbtrainVisited <= 16'h0001;
+      unknownDropError <= 1'b0;
+      serialDrainCount <= '0;
+    end else begin
+      started <= 1'b1;
+
+      if (!protocolActiveIssued && bothWaitingForProtocol)
+        protocolActiveIssued <= 1'b1;
+
+      if (startStall01) begin
+        if (mon_die0_tx_ready === 1'b0)
+          stalled01Seen <= stalled01Seen | source01;
+        stall01Remaining <= STALL_CYCLES - 1;
+      end else if (stall01Remaining != '0) begin
+        stall01Remaining <= stall01Remaining - 1'b1;
+      end
+
+      if (startStall10) begin
+        if (mon_die1_tx_ready === 1'b0)
+          stalled10Seen <= stalled10Seen | source10;
+        stall10Remaining <= STALL_CYCLES - 1;
+      end else if (stall10Remaining != '0) begin
+        stall10Remaining <= stall10Remaining - 1'b1;
+      end
+
+      // Coverage must reflect real FIFO-input backpressure, not just the
+      // requested enable value. Every directed blocked cycle must retain
+      // the packet, and the integrated PHY must not acknowledge it.
+      if (block01 && ((mon_die0_tx_valid !== 1'b1) ||
+                      (mon_die0_tx_ready !== 1'b0)))
+        backpressureInjectionError <= 1'b1;
+      if (block10 && ((mon_die1_tx_valid !== 1'b1) ||
+                      (mon_die1_tx_ready !== 1'b0)))
+        backpressureInjectionError <= 1'b1;
+
+      if (!holding0) begin
+        if (mon_die0_tx_valid && !mon_die0_tx_ready) begin
+          holding0 <= 1'b1;
+          heldMessage0 <= mon_die0_tx_msg;
+          heldSource0 <= source01;
+        end
+      end else begin
+        // Check the acceptance edge too: the message remains the pending
+        // message until valid AND ready are sampled high together.
+        if ((mon_die0_tx_valid !== 1'b1) || (mon_die0_tx_msg !== heldMessage0))
+          messageStabilityError <= 1'b1;
+        if (mon_die0_tx_valid && mon_die0_tx_ready) begin
+          holding0 <= 1'b0;
+          resumed01Seen <= resumed01Seen | (heldSource0 & stalled01Seen);
+        end
+      end
+
+      if (!holding1) begin
+        if (mon_die1_tx_valid && !mon_die1_tx_ready) begin
+          holding1 <= 1'b1;
+          heldMessage1 <= mon_die1_tx_msg;
+          heldSource1 <= source10;
+        end
+      end else begin
+        if ((mon_die1_tx_valid !== 1'b1) || (mon_die1_tx_msg !== heldMessage1))
+          messageStabilityError <= 1'b1;
+        if (mon_die1_tx_valid && mon_die1_tx_ready) begin
+          holding1 <= 1'b0;
+          resumed10Seen <= resumed10Seen | (heldSource1 & stalled10Seen);
+        end
+      end
+
+      if (!done && cycleCount < MAX_CYCLES)
+        cycleCount <= cycleCount + 1'b1;
+
+      previousProgressSignature <= progressSignature;
+      die0LtsmVisited <= die0LtsmVisited | (16'h0001 << core_die0_ltsm_state);
+      die1LtsmVisited <= die1LtsmVisited | (16'h0001 << core_die1_ltsm_state);
+      die0MbtrainVisited <= die0MbtrainVisited |
+                            (16'h0001 << core_die0_mbtrain_state);
+      die1MbtrainVisited <= die1MbtrainVisited |
+                            (16'h0001 << core_die1_mbtrain_state);
+      if (core_any_unknown_drop)
+        unknownDropError <= 1'b1;
+
+      // Active can precede delivery of the last queued response. Wait for
+      // actual serial completion and a quiet interval before reporting done.
+      if (core_all_active && core_serial_idle && !core_serial_error &&
+          !core_any_sb_rx_overflow &&
+          (core_wire_completed_0_to_1 != 0) &&
+          (core_wire_completed_1_to_0 != 0)) begin
+        if (serialDrainCount < SERIAL_DRAIN_CYCLES)
+          serialDrainCount <= serialDrainCount + 1'b1;
+      end else begin
+        serialDrainCount <= '0;
+      end
+
+      if (done || forwardProgress)
+        noProgressCount <= '0;
+      else if (noProgressCount < NO_PROGRESS_CYCLES)
+        noProgressCount <= noProgressCount + 1'b1;
+    end
+  end
+
+  // The shared harness has no data-width parameters: the instantiated DUTs
+  // take FDI/RDI/sideband widths from their RTL package defaults.
+  D2DAdapterLinkMgmtLtsmDualDieHarness core (
+    .clock(clock),
+    .reset_n(reset_n),
+    .start(core_start),
+    .stable_clk(core_start),
+    .pll_locked(core_start),
+    .stable_supply(core_start),
+    .cycles_1us(cycles_1us),
+    .protocol_request_active(core_protocol_request_active),
+    .link_0_to_1_enable(core_link_0_to_1_enable),
+    .link_1_to_0_enable(core_link_1_to_0_enable),
+
+    .die0_ltsm_state(core_die0_ltsm_state),
+    .die1_ltsm_state(core_die1_ltsm_state),
+    .die0_rdi_state(core_die0_rdi_state),
+    .die1_rdi_state(core_die1_rdi_state),
+    .die0_fdi_state(core_die0_fdi_state),
+    .die1_fdi_state(core_die1_fdi_state),
+    .die0_fdi_init_state(core_die0_fdi_init_state),
+    .die1_fdi_init_state(core_die1_fdi_init_state),
+
+    .die0_mbinit_substate(),
+    .die1_mbinit_substate(),
+    .die0_mbtrain_state(core_die0_mbtrain_state),
+    .die1_mbtrain_state(core_die1_mbtrain_state),
+    .die0_mbtrain_active_substate(core_die0_mbtrain_active_substate),
+    .die1_mbtrain_active_substate(core_die1_mbtrain_active_substate),
+    .die0_ltsm_train_error(core_die0_ltsm_train_error),
+    .die1_ltsm_train_error(core_die1_ltsm_train_error),
+
+    .die0_grant_ltsm(core_die0_grant_ltsm),
+    .die0_grant_rdi(core_die0_grant_rdi),
+    .die0_grant_fdi(core_die0_grant_fdi),
+    .die1_grant_ltsm(core_die1_grant_ltsm),
+    .die1_grant_rdi(core_die1_grant_rdi),
+    .die1_grant_fdi(core_die1_grant_fdi),
+
+    .die0_tx_fire(),
+    .die1_tx_fire(),
+    .die0_rx_fire(),
+    .die1_rx_fire(),
+    .die0_tx_locked(),
+    .die1_tx_locked(),
+    .die0_rx_drop_unknown(),
+    .die1_rx_drop_unknown(),
+    .progress_signature(core_progress_signature),
+    .grant_mask(),
+    .both_ltsm_active(),
+    .both_fdi_wait_protocol(),
+    .any_internal_transfer(),
+    .any_train_error(),
+    .any_unknown_drop(core_any_unknown_drop),
+    .all_active(core_all_active),
+    .serial_wire_activity(core_serial_wire_activity),
+    .serial_idle(core_serial_idle),
+    .serial_error(core_serial_error),
+    .any_sb_rx_overflow(core_any_sb_rx_overflow),
+    .wire_completed_0_to_1(core_wire_completed_0_to_1),
+    .wire_completed_1_to_0(core_wire_completed_1_to_0)
+  );
+
+  always_comb begin
+    done = core_all_active && core_serial_idle && !core_serial_error &&
+           !core_any_sb_rx_overflow &&
+           (serialDrainCount >= SERIAL_DRAIN_CYCLES);
+    protocol_active_issued = protocolActiveIssued;
+    stalled_source_mask = {stalled10Seen, stalled01Seen};
+    resumed_source_mask = {resumed10Seen, resumed01Seen};
+    backpressure_injection_error = backpressureInjectionError;
+    message_stability_error = messageStabilityError;
+    train_error = core_die0_ltsm_train_error || core_die1_ltsm_train_error;
+    no_progress_timeout = noProgressCount >= NO_PROGRESS_CYCLES;
+    cycle_timeout = !done && (cycleCount >= MAX_CYCLES);
+    cycle_count = cycleCount;
+    serial_idle = core_serial_idle;
+    serial_error = core_serial_error;
+    sb_rx_overflow_error = core_any_sb_rx_overflow;
+    wire_completed_0_to_1 = core_wire_completed_0_to_1;
+    wire_completed_1_to_0 = core_wire_completed_1_to_0;
+
+    die0_ltsm_state = core_die0_ltsm_state;
+    die1_ltsm_state = core_die1_ltsm_state;
+    die0_mbtrain_state = core_die0_mbtrain_state;
+    die1_mbtrain_state = core_die1_mbtrain_state;
+    die0_mbtrain_active_substate = core_die0_mbtrain_active_substate;
+    die1_mbtrain_active_substate = core_die1_mbtrain_active_substate;
+    die0_ltsm_visited_mask = die0LtsmVisited;
+    die1_ltsm_visited_mask = die1LtsmVisited;
+    die0_mbtrain_visited_mask = die0MbtrainVisited;
+    die1_mbtrain_visited_mask = die1MbtrainVisited;
+    unknown_drop_error = unknownDropError;
+    die0_rdi_state = core_die0_rdi_state;
+    die1_rdi_state = core_die1_rdi_state;
+    die0_fdi_state = core_die0_fdi_state;
+    die1_fdi_state = core_die1_fdi_state;
+    die0_fdi_init_state = core_die0_fdi_init_state;
+    die1_fdi_init_state = core_die1_fdi_init_state;
+  end
+endmodule
+
+`default_nettype wire
+
+```
+
+<a id="test-D2DAdapterLinkMgmtLtsmDualDieHarness-sv"></a>
+
+## [54] test\D2DAdapterLinkMgmtLtsmDualDieHarness.sv
+
+```systemverilog
+// FILE_INDEX: 54
+// FILE_PATH : test\D2DAdapterLinkMgmtLtsmDualDieHarness.sv
+
+// Dual-die integration harness for D2DAdapterLinkMgmtLtsmSBTop.
+// link_*_enable is a simulation-only serializer admission stall; it never
+// gates a forwarded clock or bypasses the integrated sideband PHY.
+//
+// The analog models are derived from the supplied full LinkTrainingFSM
+// sideband tests.  They acknowledge every new PHY-control handshake, model
+// passing Vref/RX-deskew windows, and return cross-die Tx Init D2C point-test
+// results through the real sideband path. No internal FSM state is forced.
+
+`timescale 1ns/1ps
+`default_nettype none
+
+// Each die instantiates the production top with its integrated SideBandModule
+// and RX mailbox. Only one data bit and its forwarded clock cross each link.
+
+// Valid-lane phase-eye model used by VALTRAINCENTER.
+module D2DAdapterLinkMgmtTbValTrainResultModel #(
+  parameter int unsigned PI_CODE_WIDTH = 4,
+  parameter int unsigned WINDOW_LEFT   = 2,
+  parameter int unsigned WINDOW_RIGHT  = 7
+) (
+  input  wire logic [PI_CODE_WIDTH-1:0] remote_tx_phase,
+  output      logic [15:0]              local_result_info,
+  output      logic [63:0]              local_result_payload
+);
+  localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  integer phase_int;
+  logic valid_pass;
+
+  always_comb begin
+    phase_int = remote_tx_phase;
+    valid_pass =
+      (WINDOW_LEFT <= WINDOW_RIGHT) &&
+      (WINDOW_RIGHT < PHASE_COUNT) &&
+      (phase_int >= WINDOW_LEFT) &&
+      (phase_int <= WINDOW_RIGHT);
+
+    local_result_info       = '0;
+    local_result_info[5]    = valid_pass;
+    local_result_info[4]    = !valid_pass;
+    local_result_payload    = valid_pass ? 64'b0 : 64'hFFFF_FFFF_FFFF_FFFF;
+  end
+endmodule
+
+// Per-lane phase/deskew eye model used by DATATRAINCENTER1.
+module D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
+  parameter bit          UCIE_A                         = 1'b0,
+  parameter int unsigned PI_CODE_WIDTH                  = 4,
+  parameter int unsigned TX_DESKEW_CODE_WIDTH           = 4,
+  parameter int unsigned DESKEW_STEPS_PER_PI            = 1,
+  parameter bit          DESKEW_ADDED_DELAY_MOVES_UP    = 1'b1,
+  parameter int unsigned BASE_CENTER                    = 6,
+  parameter int unsigned HALF_EYE_WIDTH                 = 2
+) (
+  input  wire logic [PI_CODE_WIDTH-1:0] remote_tx_phase,
+  input  wire logic [64*TX_DESKEW_CODE_WIDTH-1:0] remote_tx_deskew_codes,
+  output      logic [15:0] local_result_info,
+  output      logic [63:0] local_result_payload
+);
+  localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  localparam logic [63:0] ACTIVE_LANE_MASK =
+    UCIE_A ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
+
+  integer lane;
+  integer phase_int;
+  integer base_center_int;
+  integer deskew_code_int;
+  integer deskew_phase_steps_int;
+  integer shifted_center_int;
+  integer lower_edge_int;
+  integer upper_edge_int;
+  logic lane_pass;
+  logic all_active_lanes_pass;
+
+  always_comb begin
+    local_result_info     = '0;
+    local_result_payload  = '0;
+    all_active_lanes_pass = 1'b1;
+    phase_int             = remote_tx_phase;
+    base_center_int       = 0;
+    deskew_code_int       = 0;
+    deskew_phase_steps_int = 0;
+    shifted_center_int    = 0;
+    lower_edge_int        = 0;
+    upper_edge_int        = 0;
+    lane_pass             = 1'b0;
+
+    for (lane = 0; lane < 64; lane = lane + 1) begin
+      if (ACTIVE_LANE_MASK[lane]) begin
+        base_center_int = BASE_CENTER + (lane % 4);
+        deskew_code_int = remote_tx_deskew_codes[
+          lane*TX_DESKEW_CODE_WIDTH +: TX_DESKEW_CODE_WIDTH
+        ];
+        deskew_phase_steps_int = deskew_code_int / DESKEW_STEPS_PER_PI;
+
+        if (DESKEW_ADDED_DELAY_MOVES_UP)
+          shifted_center_int = base_center_int + deskew_phase_steps_int;
+        else
+          shifted_center_int = base_center_int - deskew_phase_steps_int;
+
+        lower_edge_int = shifted_center_int - HALF_EYE_WIDTH;
+        upper_edge_int = shifted_center_int + HALF_EYE_WIDTH;
+        lane_pass =
+          (shifted_center_int >= 0) &&
+          (shifted_center_int < PHASE_COUNT) &&
+          (phase_int >= lower_edge_int) &&
+          (phase_int <= upper_edge_int);
+
+        local_result_payload[lane] = lane_pass;
+        if (!lane_pass)
+          all_active_lanes_pass = 1'b0;
+      end
+    end
+
+    local_result_info[5] = 1'b1;
+    local_result_info[4] = all_active_lanes_pass;
+  end
+endmodule
+
+// Aggregate post-Vref/post-RX-deskew phase-eye model for DATATRAINCENTER2.
+module D2DAdapterLinkMgmtTbDataTrainCenter2ResultModel #(
+  parameter bit          UCIE_A        = 1'b0,
+  parameter int unsigned PI_CODE_WIDTH = 4,
+  parameter int unsigned WINDOW_LEFT   = 4,
+  parameter int unsigned WINDOW_RIGHT  = 7
+) (
+  input  wire logic [PI_CODE_WIDTH-1:0] remote_tx_phase,
+  output      logic [15:0]              local_result_info,
+  output      logic [63:0]              local_result_payload
+);
+  localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  localparam logic [63:0] ACTIVE_LANE_MASK =
+    UCIE_A ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
+  integer phase_int;
+  logic aggregate_pass;
+
+  always_comb begin
+    phase_int = remote_tx_phase;
+    aggregate_pass =
+      (WINDOW_LEFT <= WINDOW_RIGHT) &&
+      (WINDOW_RIGHT < PHASE_COUNT) &&
+      (phase_int >= WINDOW_LEFT) &&
+      (phase_int <= WINDOW_RIGHT);
+
+    local_result_info       = '0;
+    local_result_info[5]    = 1'b1;
+    local_result_info[4]    = aggregate_pass;
+    local_result_payload    = aggregate_pass ? ACTIVE_LANE_MASK : 64'b0;
+  end
+endmodule
+module D2DAdapterLinkMgmtLtsmSerialDieModel #(
+  // FDI, RDI, and sideband widths are not part of this PHY-training model's
+  // interface.  The integrated DUT therefore uses its own package defaults.
+  parameter bit          UCIE_A                           = 1'b0,
+  parameter int unsigned PI_CODE_WIDTH                    = 4,
+  parameter int unsigned TX_DESKEW_CODE_WIDTH             = 4,
+  parameter int unsigned DESKEW_STEPS_PER_PI              = 1,
+  parameter bit          DESKEW_ADD_DELAY_INCREASES_PHASE = 1'b1,
+  parameter int unsigned MIN_LANE_WINDOW_STEPS            = 3,
+  parameter int unsigned MIN_COMMON_WINDOW_STEPS          = 3,
+  parameter int unsigned MAX_TRAINING_RETRIES             = 1,
+  parameter int unsigned VREF_VALUE_COUNT                 = 16,
+  parameter int unsigned VREF_CODE_WIDTH =
+    (VREF_VALUE_COUNT <= 1) ? 1 : $clog2(VREF_VALUE_COUNT),
+  parameter int unsigned DATA_LANE_COUNT                  = 16,
+  parameter int unsigned RX_DESKEW_VALUE_COUNT            = 16,
+  parameter int unsigned RX_DESKEW_CODE_WIDTH =
+    (RX_DESKEW_VALUE_COUNT <= 1) ? 1 : $clog2(RX_DESKEW_VALUE_COUNT),
+  parameter int unsigned VAL_VREF_LEFT                    = 2,
+  parameter int unsigned VAL_VREF_RIGHT                   = 7,
+  parameter int unsigned VALTRAIN_VREF_LEFT               = 4,
+  parameter int unsigned VALTRAIN_VREF_RIGHT              = 9,
+  parameter int unsigned DATA_VREF_LEFT_BASE              = 0,
+  parameter int unsigned DATA_VREF_LANE_PERIOD            = 4,
+  parameter int unsigned DATA_VREF_WINDOW_VALUES          = 5,
+  parameter int unsigned DATATRAIN_VREF_LEFT_BASE         = 2,
+  parameter int unsigned DATATRAIN_VREF_LANE_PERIOD       = 5,
+  parameter int unsigned DATATRAIN_VREF_WINDOW_VALUES     = 6,
+  parameter int unsigned RX_DESKEW_LEFT_BASE              = 1,
+  parameter int unsigned RX_DESKEW_LANE_PERIOD            = 5,
+  parameter int unsigned RX_DESKEW_WINDOW_VALUES          = 6
+) (
+  input wire logic clock,
+  input wire logic reset_n,
+  input wire logic ltsm_start,
+  input wire logic ltsm_stable_clk,
+  input wire logic ltsm_pll_locked,
+  input wire logic ltsm_stable_supply,
+  input wire logic protocol_request_active,
+  // Set external_fdi_control for directed link-management tests.  When it is
+  // clear, the original bring-up behavior automatically requests Active and
+  // acknowledges the FDI RX-active, clock, and stall handshakes.
+  input wire logic external_fdi_control,
+  input wire UcieUPM_interfaces_pkg::PhyStateReq_t external_fdi_lp_state_req,
+  input wire logic external_fdi_lp_linkerror,
+  input wire logic external_fdi_lp_rx_active_sts,
+  input wire logic external_fdi_lp_wake_req,
+  input wire logic external_fdi_lp_clk_ack,
+  input wire logic external_fdi_lp_stall_ack,
+  input wire logic [31:0] cycles_1us,
+  // Physical sideband interface: one data bit and forwarded clock each way.
+  // Packet-level monitors live outside this die model and read hierarchy only.
+  input  wire logic sb_tx_enable,
+  output wire logic sb_tx_dout,
+  output wire logic sb_tx_clk,
+  input  wire logic sb_rx_din,
+  input  wire logic sb_rx_clk,
+  output wire logic sb_tx_idle,
+  output wire logic sb_rx_overflow,
+  input wire logic [15:0] ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo,
+  input wire logic [63:0] ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload,
+  input wire logic [15:0] ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo,
+  input wire logic [63:0] ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload,
+  input wire logic [15:0] ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo,
+  input wire logic [63:0] ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload,
+  output wire logic [PI_CODE_WIDTH-1:0] ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode,
+  output wire logic [PI_CODE_WIDTH-1:0] ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode,
+  output wire logic [64*TX_DESKEW_CODE_WIDTH-1:0] ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes,
+  output wire logic [PI_CODE_WIDTH-1:0] ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode,
+  output wire logic [3:0] ltsm_state,
+  output wire UcieUPM_interfaces_pkg::PhyState_t fdi_pl_state_sts,
+  output wire logic fdi_pl_rx_active_req,
+  output wire logic fdi_pl_inband_pres,
+  output wire logic fdi_pl_wake_ack,
+  output wire logic fdi_pl_clk_req,
+  output wire logic fdi_pl_stall_req,
+  output wire UcieUPM_d2dadapter_pkg::LinkInitState_t debug_fdi_link_init_state,
+  output wire UcieUPM_interfaces_pkg::PhyState_t debug_rdi_state,
+  output wire logic [2:0] ltsm_dbg_mbinitSubstate,
+  output wire logic [3:0] ltsm_dbg_mbtrainState,
+  output wire logic [11:0] ltsm_dbg_mbtrainActiveSubstate,
+  output wire logic ltsm_dbg_flagTrainError,
+  output wire logic debug_arb_grant_ltsm,
+  output wire logic debug_arb_grant_fdi,
+  output wire logic debug_arb_grant_rdi,
+  output wire logic debug_arb_tx_locked,
+  output wire logic debug_arb_tx_fire,
+  output wire logic debug_rx_drop_unknown,
+  output wire logic debug_rx_fire
+);
+  import UcieUPM_interfaces_pkg::*;
+
+  // Signals for every remaining DUT port.  Declaring and explicitly
+  // connecting all ports makes interface drift visible at compile time.
+  UcieUPM_interfaces_pkg::PhyStateReq_t fdi_lp_state_req;
+  logic fdi_lp_linkerror;
+  logic fdi_lp_rx_active_sts;
+  logic auto_fdi_lp_rx_active_sts;
+  logic fdi_lp_wake_req;
+  logic fdi_lp_clk_ack;
+  logic fdi_lp_stall_ack;
+  logic ltsm_flagFromAnalog_ReadyToExchangeClkPatterns;
+  logic ltsm_flagFromAnalog_FinishedClkPatterns;
+  logic ltsm_flagFromAnalog_FinishedValTrainPattern;
+  logic ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern;
+  logic ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern;
+  logic ltsm_flagFromAnalog_clkPatternReceivedRTRK_L;
+  logic ltsm_flagFromAnalog_clkPatternReceivedRCKN_L;
+  logic ltsm_flagFromAnalog_clkPatternReceivedRCKP_L;
+  logic ltsm_flagFromAnalog_ValTrainPatternReceived;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14;
+  logic ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14;
+  logic ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15;
+  wire logic ltsm_flagToAnalog_RepairClkState;
+  wire logic ltsm_flagToAnalog_SendClkPatterns;
+  wire logic ltsm_flagToAnalog_RepairValState;
+  wire logic ltsm_flagToAnalog_SendValTrainPattern;
+  wire logic ltsm_flagToAnalog_ReversalMbSendLaneIDPattern;
+  wire logic ltsm_flagToAnalog_RepairMbSendLaneIDPattern;
+  wire logic ltsm_flagToAnalog_RepairMbSetReceiver;
+  wire logic ltsm_flagToAnalog_LaneReversalApplied;
+  wire logic ltsm_flagToAnalog_linkInit_resetLfsrScrambler;
+  wire logic ltsm_dbg_flagSbinitFirstClkPatternSeen;
+  wire logic ltsm_dbg_rxValidRisingEdge;
+  wire logic [2:0] ltsm_dbg_sbinitSendCount;
+  wire logic ltsm_dbg_sbTxValid;
+  wire logic [127:0] ltsm_dbg_sbTxDin;
+  wire logic [4:0] ltsm_dbg_mbinitReversalMbReceivedSuccessCount;
+  wire logic ltsm_flagToAnalog_valVref_sendPattern;
+  logic ltsm_flagFromAnalog_valVref_detectedValPattern;
+  logic ltsm_flagFromAnalog_valVref_finishedPattern;
+  wire logic ltsm_flagToAnalog_valVref_applyRxVref;
+  wire logic [VREF_CODE_WIDTH-1:0] ltsm_flagToAnalog_valVref_rxVrefCode;
+  logic ltsm_flagFromAnalog_valVref_rxVrefApplied;
+  wire logic ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest;
+  wire logic [15:0] ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold;
+  wire logic ltsm_flagToAnalog_valVref_comparisonMode;
+  wire logic [15:0] ltsm_flagToAnalog_valVref_iterationCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_valVref_idleCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_valVref_burstCountSettings;
+  wire logic ltsm_flagToAnalog_valVref_patternMode;
+  wire logic [3:0] ltsm_flagToAnalog_valVref_clockPhaseControl;
+  wire logic [2:0] ltsm_flagToAnalog_valVref_validPattern;
+  wire logic [2:0] ltsm_flagToAnalog_valVref_dataPattern;
+  wire logic ltsm_flagToAnalog_valVref_clearComparisonErrors;
+  wire logic ltsm_flagToAnalog_valVref_resetLocalTxScrambler;
+  wire logic ltsm_flagToAnalog_dataVref_sendPattern;
+  logic [DATA_LANE_COUNT-1:0] ltsm_flagFromAnalog_dataVref_detectedDataPattern;
+  logic ltsm_flagFromAnalog_dataVref_finishedPattern;
+  wire logic ltsm_flagToAnalog_dataVref_applyRxVref;
+  wire logic [DATA_LANE_COUNT*VREF_CODE_WIDTH-1:0] ltsm_flagToAnalog_dataVref_rxVrefCodes;
+  logic ltsm_flagFromAnalog_dataVref_rxVrefApplied;
+  wire logic ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest;
+  wire logic [15:0] ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+  wire logic ltsm_flagToAnalog_dataVref_comparisonMode;
+  wire logic [15:0] ltsm_flagToAnalog_dataVref_iterationCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_dataVref_idleCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_dataVref_burstCountSettings;
+  wire logic ltsm_flagToAnalog_dataVref_patternMode;
+  wire logic [3:0] ltsm_flagToAnalog_dataVref_clockPhaseControl;
+  wire logic [2:0] ltsm_flagToAnalog_dataVref_validPattern;
+  wire logic [2:0] ltsm_flagToAnalog_dataVref_dataPattern;
+  wire logic ltsm_flagToAnalog_dataVref_clearComparisonErrors;
+  wire logic ltsm_flagToAnalog_dataVref_resetLocalTxScrambler;
+  wire logic ltsm_flagToAnalog_rxClkCal_doCalibration;
+  logic ltsm_flagFromAnalog_rxClkCal_done;
+  wire logic ltsm_flagToAnalog_rxClkCal_sendClockTrack;
+  wire logic ltsm_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern;
+  logic ltsm_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent;
+  wire logic ltsm_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler;
+  wire logic ltsm_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase;
+  logic ltsm_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied;
+  wire logic ltsm_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold;
+  wire logic ltsm_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings;
+  wire logic ltsm_flagToAnalog_d2cReceiver_valTrainCenter_patternMode;
+  wire logic [3:0] ltsm_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl;
+  wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_valTrainCenter_validPattern;
+  wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern;
+  wire logic ltsm_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler;
+  wire logic ltsm_flagToAnalog_valTrainVref_sendPattern;
+  logic ltsm_flagFromAnalog_valTrainVref_detectedValPattern;
+  logic ltsm_flagFromAnalog_valTrainVref_finishedPattern;
+  wire logic ltsm_flagToAnalog_valTrainVref_applyRxVref;
+  wire logic [VREF_CODE_WIDTH-1:0] ltsm_flagToAnalog_valTrainVref_rxVrefCode;
+  logic ltsm_flagFromAnalog_valTrainVref_rxVrefApplied;
+  wire logic ltsm_flagToAnalog_valTrainVref_configureRxInitD2CPointTest;
+  wire logic [15:0] ltsm_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold;
+  wire logic ltsm_flagToAnalog_valTrainVref_comparisonMode;
+  wire logic [15:0] ltsm_flagToAnalog_valTrainVref_iterationCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_valTrainVref_idleCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_valTrainVref_burstCountSettings;
+  wire logic ltsm_flagToAnalog_valTrainVref_patternMode;
+  wire logic [3:0] ltsm_flagToAnalog_valTrainVref_clockPhaseControl;
+  wire logic [2:0] ltsm_flagToAnalog_valTrainVref_validPattern;
+  wire logic [2:0] ltsm_flagToAnalog_valTrainVref_dataPattern;
+  wire logic ltsm_flagToAnalog_valTrainVref_clearComparisonErrors;
+  wire logic ltsm_flagToAnalog_valTrainVref_resetLocalTxScrambler;
+  wire logic ltsm_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern;
+  logic ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent;
+  wire logic ltsm_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler;
+  wire logic ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase;
+  logic ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied;
+  wire logic ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew;
+  logic ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied;
+  wire logic ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold;
+  wire logic ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings;
+  wire logic ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode;
+  wire logic [3:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl;
+  wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern;
+  wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern;
+  wire logic ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler;
+  wire logic ltsm_flagToAnalog_dataTrainVref_sendPattern;
+  logic [DATA_LANE_COUNT-1:0] ltsm_flagFromAnalog_dataTrainVref_detectedDataPattern;
+  logic ltsm_flagFromAnalog_dataTrainVref_finishedPattern;
+  wire logic ltsm_flagToAnalog_dataTrainVref_applyRxVref;
+  wire logic [DATA_LANE_COUNT*VREF_CODE_WIDTH-1:0] ltsm_flagToAnalog_dataTrainVref_rxVrefCodes;
+  logic ltsm_flagFromAnalog_dataTrainVref_rxVrefApplied;
+  wire logic ltsm_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest;
+  wire logic [15:0] ltsm_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold;
+  wire logic ltsm_flagToAnalog_dataTrainVref_comparisonMode;
+  wire logic [15:0] ltsm_flagToAnalog_dataTrainVref_iterationCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_dataTrainVref_idleCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_dataTrainVref_burstCountSettings;
+  wire logic ltsm_flagToAnalog_dataTrainVref_patternMode;
+  wire logic [3:0] ltsm_flagToAnalog_dataTrainVref_clockPhaseControl;
+  wire logic [2:0] ltsm_flagToAnalog_dataTrainVref_validPattern;
+  wire logic [2:0] ltsm_flagToAnalog_dataTrainVref_dataPattern;
+  wire logic ltsm_flagToAnalog_dataTrainVref_clearComparisonErrors;
+  wire logic ltsm_flagToAnalog_dataTrainVref_resetLocalTxScrambler;
+  wire logic ltsm_flagToAnalog_rxDeskew_sendLfsrPattern;
+  logic ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent;
+  wire logic ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler;
+  wire logic ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew;
+  wire logic [DATA_LANE_COUNT*RX_DESKEW_CODE_WIDTH-1:0] ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes;
+  logic ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied;
+  wire logic ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest;
+  wire logic [15:0] ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold;
+  wire logic ltsm_flagToAnalog_rxDeskew_comparisonMode;
+  wire logic [15:0] ltsm_flagToAnalog_rxDeskew_iterationCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_rxDeskew_idleCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_rxDeskew_burstCountSettings;
+  wire logic ltsm_flagToAnalog_rxDeskew_patternMode;
+  wire logic [3:0] ltsm_flagToAnalog_rxDeskew_clockPhaseControl;
+  wire logic [2:0] ltsm_flagToAnalog_rxDeskew_validPattern;
+  wire logic [2:0] ltsm_flagToAnalog_rxDeskew_dataPattern;
+  wire logic ltsm_flagToAnalog_rxDeskew_clearComparisonErrors;
+  logic [DATA_LANE_COUNT-1:0] ltsm_flagFromAnalog_rxDeskew_detectedDataPattern;
+  wire logic ltsm_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern;
+  logic ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent;
+  wire logic ltsm_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler;
+  wire logic ltsm_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase;
+  logic ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied;
+  wire logic ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold;
+  wire logic ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings;
+  wire logic ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode;
+  wire logic [3:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl;
+  wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern;
+  wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern;
+  wire logic ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler;
+  wire logic ltsm_flagToLtsm_linkSpeed_phyInRetrain;
+  wire logic ltsm_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern;
+  logic ltsm_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent;
+  wire logic ltsm_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler;
+  wire logic ltsm_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold;
+  wire logic ltsm_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings;
+  wire logic [15:0] ltsm_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings;
+  wire logic ltsm_flagToAnalog_d2cReceiver_linkSpeed_patternMode;
+  wire logic [3:0] ltsm_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl;
+  wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_linkSpeed_validPattern;
+  wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_linkSpeed_dataPattern;
+  wire logic ltsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler;
+  logic [15:0] ltsm_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful;
+  wire logic [15:0] ltsm_dbg_mbtrainLastErrorCount;
+  wire logic [15:0] ltsm_dbg_mbtrainRetryCount;
+  wire logic [3:0] debug_ltsm_state;
+  wire logic debug_ltsm_inband_pres;
+  wire UcieUPM_interfaces_pkg::PhyStateReq_t debug_fdi_to_rdi_state_req;
+  wire logic debug_rx_route_ltsm;
+  wire logic debug_rx_route_fdi;
+  wire logic debug_rx_route_rdi;
+
+  function automatic int unsigned data_vref_left(input int unsigned lane);
+    data_vref_left = DATA_VREF_LEFT_BASE + (lane % DATA_VREF_LANE_PERIOD);
+  endfunction
+
+  function automatic int unsigned datatrain_vref_left(input int unsigned lane);
+    datatrain_vref_left =
+      DATATRAIN_VREF_LEFT_BASE + (lane % DATATRAIN_VREF_LANE_PERIOD);
+  endfunction
+
+  function automatic int unsigned rx_deskew_left(input int unsigned lane);
+    rx_deskew_left = RX_DESKEW_LEFT_BASE + (lane % RX_DESKEW_LANE_PERIOD);
+  endfunction
+
+  assign fdi_lp_state_req = external_fdi_control
+    ? external_fdi_lp_state_req
+    : (protocol_request_active ? PhyStateReq_active : PhyStateReq_nop);
+  assign fdi_lp_linkerror = external_fdi_control
+    ? external_fdi_lp_linkerror : 1'b0;
+  assign fdi_lp_rx_active_sts = external_fdi_control
+    ? external_fdi_lp_rx_active_sts : auto_fdi_lp_rx_active_sts;
+  assign fdi_lp_wake_req = external_fdi_control
+    ? external_fdi_lp_wake_req : 1'b0;
+  assign fdi_lp_clk_ack = external_fdi_control
+    ? external_fdi_lp_clk_ack : fdi_pl_clk_req;
+  assign fdi_lp_stall_ack = external_fdi_control
+    ? external_fdi_lp_stall_ack : fdi_pl_stall_req;
+
+  assign ltsm_flagFromAnalog_FinishedClkPatterns = 1'b1;
+  assign ltsm_flagFromAnalog_FinishedValTrainPattern = 1'b1;
+  assign ltsm_flagFromAnalog_ReadyToExchangeClkPatterns = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9 = 1'b1;
+  assign ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8 = 1'b1;
+  assign ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9 = 1'b1;
+  assign ltsm_flagFromAnalog_ValTrainPatternReceived = 1'b1;
+  assign ltsm_flagFromAnalog_clkPatternReceivedRCKN_L = 1'b1;
+  assign ltsm_flagFromAnalog_clkPatternReceivedRCKP_L = 1'b1;
+  assign ltsm_flagFromAnalog_clkPatternReceivedRTRK_L = 1'b1;
+
+  assign ltsm_flagFromAnalog_rxClkCal_done = 1'b1;
+  assign ltsm_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent = 1'b1;
+  assign ltsm_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful =
+    16'hFFFF;
+
+  // Registered one-cycle analog/protocol acknowledgements.  Holding the
+  // request until the corresponding acknowledgement is therefore exercised.
+  always_ff @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      auto_fdi_lp_rx_active_sts <= 1'b0;
+      ltsm_flagFromAnalog_valVref_finishedPattern <= 1'b0;
+      ltsm_flagFromAnalog_valVref_rxVrefApplied <= 1'b0;
+      ltsm_flagFromAnalog_dataVref_finishedPattern <= 1'b0;
+      ltsm_flagFromAnalog_dataVref_rxVrefApplied <= 1'b0;
+      ltsm_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent <= 1'b0;
+      ltsm_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied <= 1'b0;
+      ltsm_flagFromAnalog_valTrainVref_finishedPattern <= 1'b0;
+      ltsm_flagFromAnalog_valTrainVref_rxVrefApplied <= 1'b0;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent <= 1'b0;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied <= 1'b0;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied <= 1'b0;
+      ltsm_flagFromAnalog_dataTrainVref_finishedPattern <= 1'b0;
+      ltsm_flagFromAnalog_dataTrainVref_rxVrefApplied <= 1'b0;
+      ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent <= 1'b0;
+      ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied <= 1'b0;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent <= 1'b0;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied <= 1'b0;
+    end else begin
+      auto_fdi_lp_rx_active_sts <= fdi_pl_rx_active_req;
+      ltsm_flagFromAnalog_valVref_finishedPattern <=
+        ltsm_flagToAnalog_valVref_sendPattern;
+      ltsm_flagFromAnalog_valVref_rxVrefApplied <=
+        ltsm_flagToAnalog_valVref_applyRxVref;
+      ltsm_flagFromAnalog_dataVref_finishedPattern <=
+        ltsm_flagToAnalog_dataVref_sendPattern;
+      ltsm_flagFromAnalog_dataVref_rxVrefApplied <=
+        ltsm_flagToAnalog_dataVref_applyRxVref;
+      ltsm_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent <=
+        ltsm_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern;
+      ltsm_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied <=
+        ltsm_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase;
+      ltsm_flagFromAnalog_valTrainVref_finishedPattern <=
+        ltsm_flagToAnalog_valTrainVref_sendPattern;
+      ltsm_flagFromAnalog_valTrainVref_rxVrefApplied <=
+        ltsm_flagToAnalog_valTrainVref_applyRxVref;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent <=
+        ltsm_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied <=
+        ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied <=
+        ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew;
+      ltsm_flagFromAnalog_dataTrainVref_finishedPattern <=
+        ltsm_flagToAnalog_dataTrainVref_sendPattern;
+      ltsm_flagFromAnalog_dataTrainVref_rxVrefApplied <=
+        ltsm_flagToAnalog_dataTrainVref_applyRxVref;
+      ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent <=
+        ltsm_flagToAnalog_rxDeskew_sendLfsrPattern;
+      ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied <=
+        ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent <=
+        ltsm_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern;
+      ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied <=
+        ltsm_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase;
+    end
+  end
+
+  // PHY-side passing windows for all newly exposed receiver controls.
+  always_comb begin
+    ltsm_flagFromAnalog_valVref_detectedValPattern =
+      (ltsm_flagToAnalog_valVref_rxVrefCode >= VAL_VREF_LEFT) &&
+      (ltsm_flagToAnalog_valVref_rxVrefCode <= VAL_VREF_RIGHT);
+    ltsm_flagFromAnalog_valTrainVref_detectedValPattern =
+      (ltsm_flagToAnalog_valTrainVref_rxVrefCode >= VALTRAIN_VREF_LEFT) &&
+      (ltsm_flagToAnalog_valTrainVref_rxVrefCode <= VALTRAIN_VREF_RIGHT);
+
+    ltsm_flagFromAnalog_dataVref_detectedDataPattern = '0;
+    ltsm_flagFromAnalog_dataTrainVref_detectedDataPattern = '0;
+    ltsm_flagFromAnalog_rxDeskew_detectedDataPattern = '0;
+
+    for (int unsigned lane = 0; lane < DATA_LANE_COUNT; lane = lane + 1) begin
+      ltsm_flagFromAnalog_dataVref_detectedDataPattern[lane] =
+        (ltsm_flagToAnalog_dataVref_rxVrefCodes[
+           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] >= data_vref_left(lane)) &&
+        (ltsm_flagToAnalog_dataVref_rxVrefCodes[
+           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] <
+           (data_vref_left(lane) + DATA_VREF_WINDOW_VALUES));
+
+      ltsm_flagFromAnalog_dataTrainVref_detectedDataPattern[lane] =
+        (ltsm_flagToAnalog_dataTrainVref_rxVrefCodes[
+           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] >= datatrain_vref_left(lane)) &&
+        (ltsm_flagToAnalog_dataTrainVref_rxVrefCodes[
+           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] <
+           (datatrain_vref_left(lane) + DATATRAIN_VREF_WINDOW_VALUES));
+
+      ltsm_flagFromAnalog_rxDeskew_detectedDataPattern[lane] =
+        (ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes[
+           lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH] >=
+           rx_deskew_left(lane)) &&
+        (ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes[
+           lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH] <
+           (rx_deskew_left(lane) + RX_DESKEW_WINDOW_VALUES));
+    end
+  end
+
+  // Scalar status for the integrated serial transmitter.
+  assign sb_tx_idle  = (dut.u_sideband.u_sideband_phy.txCount == 0) &&
+                       dut.u_sideband.u_sideband_phy.txInternalReady;
+
+  // The physical pins provide no packet ready input. Directed tests can
+  // pause only the integrated FIFO's admission handshake. Forcing the FIFO's
+  // ready output also stalls the arbiter, so neither side counts an enqueue.
+  // Already accepted packets keep draining through the unmodified serial PHY.
+  // Normal bring-up keeps sb_tx_enable high and applies no override.
+  always @(sb_tx_enable) begin
+    if (!sb_tx_enable)
+      force dut.u_sideband.u_sideband_phy.tx_ready = 1'b0;
+    else
+      release dut.u_sideband.u_sideband_phy.tx_ready;
+  end
+
+  // --------------------------------------------------------------------------
+  // Shared MBTRAIN analog-port adapter
+  // MBTrainFSM drives one shared set of valVref/dataVref and D2C sender/receiver
+  // ports for all MBTRAIN substates and zeroes them outside the owning state.
+  // The per-substate analog models in this file are kept unchanged: the DUT
+  // MBTRAIN state (ltsm_dbg_mbtrainState) demuxes the shared requests to the
+  // model of the active substate and muxes that model's responses back.
+  // TX phase and TX lane-deskew codes are latched on their apply request, as
+  // the PHY retains applied values; the peer die eye models see those codes.
+  // --------------------------------------------------------------------------
+  localparam logic [3:0] MBTRAIN_VALVREF = 4'd1;
+  localparam logic [3:0] MBTRAIN_DATAVREF = 4'd2;
+  localparam logic [3:0] MBTRAIN_VALTRAINCENTER = 4'd6;
+  localparam logic [3:0] MBTRAIN_VALTRAINVREF = 4'd7;
+  localparam logic [3:0] MBTRAIN_DATATRAINCENTER1 = 4'd8;
+  localparam logic [3:0] MBTRAIN_DATATRAINVREF = 4'd9;
+  localparam logic [3:0] MBTRAIN_DATATRAINCENTER2 = 4'd11;
+  localparam logic [3:0] MBTRAIN_LINKSPEED = 4'd12;
+
+  wire logic fdi_active;
+  wire logic phy_flagToAnalog_valVref_sendPattern;
+  logic phy_flagFromAnalog_valVref_detectedValPattern;
+  logic phy_flagFromAnalog_valVref_finishedPattern;
+  wire logic phy_flagToAnalog_valVref_applyRxVref;
+  wire logic [VREF_CODE_WIDTH-1:0] phy_flagToAnalog_valVref_rxVrefCode;
+  logic phy_flagFromAnalog_valVref_rxVrefApplied;
+  wire logic phy_flagToAnalog_valVref_configureRxInitD2CPointTest;
+  wire logic [15:0] phy_flagToAnalog_valVref_maximumComparisonErrorThreshold;
+  wire logic phy_flagToAnalog_valVref_comparisonMode;
+  wire logic [15:0] phy_flagToAnalog_valVref_iterationCountSettings;
+  wire logic [15:0] phy_flagToAnalog_valVref_idleCountSettings;
+  wire logic [15:0] phy_flagToAnalog_valVref_burstCountSettings;
+  wire logic phy_flagToAnalog_valVref_patternMode;
+  wire logic [3:0] phy_flagToAnalog_valVref_clockPhaseControl;
+  wire logic [2:0] phy_flagToAnalog_valVref_validPattern;
+  wire logic [2:0] phy_flagToAnalog_valVref_dataPattern;
+  wire logic phy_flagToAnalog_valVref_clearComparisonErrors;
+  wire logic phy_flagToAnalog_valVref_resetLocalTxScrambler;
+  wire logic phy_flagToAnalog_dataVref_sendPattern;
+  logic [DATA_LANE_COUNT-1:0] phy_flagFromAnalog_dataVref_detectedDataPattern;
+  logic phy_flagFromAnalog_dataVref_finishedPattern;
+  wire logic phy_flagToAnalog_dataVref_applyRxVref;
+  wire logic [DATA_LANE_COUNT*VREF_CODE_WIDTH-1:0] phy_flagToAnalog_dataVref_rxVrefCodes;
+  logic phy_flagFromAnalog_dataVref_rxVrefApplied;
+  wire logic phy_flagToAnalog_dataVref_configureRxInitD2CPointTest;
+  wire logic [15:0] phy_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+  wire logic phy_flagToAnalog_dataVref_comparisonMode;
+  wire logic [15:0] phy_flagToAnalog_dataVref_iterationCountSettings;
+  wire logic [15:0] phy_flagToAnalog_dataVref_idleCountSettings;
+  wire logic [15:0] phy_flagToAnalog_dataVref_burstCountSettings;
+  wire logic phy_flagToAnalog_dataVref_patternMode;
+  wire logic [3:0] phy_flagToAnalog_dataVref_clockPhaseControl;
+  wire logic [2:0] phy_flagToAnalog_dataVref_validPattern;
+  wire logic [2:0] phy_flagToAnalog_dataVref_dataPattern;
+  wire logic phy_flagToAnalog_dataVref_clearComparisonErrors;
+  wire logic phy_flagToAnalog_dataVref_resetLocalTxScrambler;
+  wire logic phy_flagToAnalog_d2cSender_sendValTrainPattern;
+  logic phy_flagFromAnalog_d2cSender_valTrainPatternSent;
+  wire logic phy_flagToAnalog_d2cSender_resetLocalScrambler;
+  wire logic phy_flagToAnalog_d2cSender_applyTxClockPhase;
+  wire logic [PI_CODE_WIDTH-1:0] phy_flagToAnalog_d2cSender_txClockPhaseCode;
+  logic phy_flagFromAnalog_d2cSender_txClockPhaseApplied;
+  wire logic phy_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest;
+  wire logic [15:0] phy_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold;
+  wire logic phy_flagToAnalog_d2cReceiver_comparisonMode;
+  wire logic [15:0] phy_flagToAnalog_d2cReceiver_iterationCountSettings;
+  wire logic [15:0] phy_flagToAnalog_d2cReceiver_idleCountSettings;
+  wire logic [15:0] phy_flagToAnalog_d2cReceiver_burstCountSettings;
+  wire logic phy_flagToAnalog_d2cReceiver_patternMode;
+  wire logic [3:0] phy_flagToAnalog_d2cReceiver_clockPhaseControl;
+  wire logic [2:0] phy_flagToAnalog_d2cReceiver_validPattern;
+  wire logic [2:0] phy_flagToAnalog_d2cReceiver_dataPattern;
+  wire logic phy_flagToAnalog_d2cReceiver_resetLocalRxScrambler;
+  logic [15:0] phy_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo;
+  logic [63:0] phy_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
+  wire logic phy_flagToAnalog_d2cSender_sendLfsrPattern;
+  logic phy_flagFromAnalog_d2cSender_lfsrPatternSent;
+  wire logic phy_flagToAnalog_d2cSender_applyTxLaneDeskew;
+  wire logic [64*TX_DESKEW_CODE_WIDTH-1:0] phy_flagToAnalog_d2cSender_txLaneDeskewCodes;
+  logic phy_flagFromAnalog_d2cSender_txLaneDeskewApplied;
+  logic [15:0] phy_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
+
+  logic [PI_CODE_WIDTH-1:0]          phy_txClockPhaseLatched;
+  logic [64*TX_DESKEW_CODE_WIDTH-1:0] phy_txLaneDeskewLatched;
+  always_ff @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      phy_txClockPhaseLatched <= '0;
+      phy_txLaneDeskewLatched <= '0;
+    end else begin
+      if (phy_flagToAnalog_d2cSender_applyTxClockPhase)
+        phy_txClockPhaseLatched <= phy_flagToAnalog_d2cSender_txClockPhaseCode;
+      if (phy_flagToAnalog_d2cSender_applyTxLaneDeskew)
+        phy_txLaneDeskewLatched <= phy_flagToAnalog_d2cSender_txLaneDeskewCodes;
+    end
+  end
+
+  // Requests/configuration: shared DUT outputs -> per-substate model signals.
+  assign ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode = phy_txClockPhaseLatched;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode = phy_txClockPhaseLatched;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes = phy_txLaneDeskewLatched;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode = phy_txClockPhaseLatched;
+  assign ltsm_flagToAnalog_valVref_sendPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_sendPattern : '0;
+  assign ltsm_flagToAnalog_valVref_applyRxVref =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_applyRxVref : '0;
+  assign ltsm_flagToAnalog_valVref_rxVrefCode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_rxVrefCode : '0;
+  assign ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_configureRxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_valVref_comparisonMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_comparisonMode : '0;
+  assign ltsm_flagToAnalog_valVref_iterationCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_valVref_idleCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_valVref_burstCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_valVref_patternMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_patternMode : '0;
+  assign ltsm_flagToAnalog_valVref_clockPhaseControl =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_valVref_validPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_validPattern : '0;
+  assign ltsm_flagToAnalog_valVref_dataPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_dataPattern : '0;
+  assign ltsm_flagToAnalog_valVref_clearComparisonErrors =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_clearComparisonErrors : '0;
+  assign ltsm_flagToAnalog_valVref_resetLocalTxScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALVREF) ? phy_flagToAnalog_valVref_resetLocalTxScrambler : '0;
+  assign ltsm_flagToAnalog_dataVref_sendPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_sendPattern : '0;
+  assign ltsm_flagToAnalog_dataVref_applyRxVref =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_applyRxVref : '0;
+  assign ltsm_flagToAnalog_dataVref_rxVrefCodes =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_rxVrefCodes : '0;
+  assign ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_configureRxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_dataVref_comparisonMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_comparisonMode : '0;
+  assign ltsm_flagToAnalog_dataVref_iterationCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_dataVref_idleCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_dataVref_burstCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_dataVref_patternMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_patternMode : '0;
+  assign ltsm_flagToAnalog_dataVref_clockPhaseControl =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_dataVref_validPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_validPattern : '0;
+  assign ltsm_flagToAnalog_dataVref_dataPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_dataPattern : '0;
+  assign ltsm_flagToAnalog_dataVref_clearComparisonErrors =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_clearComparisonErrors : '0;
+  assign ltsm_flagToAnalog_dataVref_resetLocalTxScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATAVREF) ? phy_flagToAnalog_dataVref_resetLocalTxScrambler : '0;
+  assign ltsm_flagToAnalog_d2cSender_valTrainCenter_sendValTrainPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cSender_sendValTrainPattern : '0;
+  assign ltsm_flagToAnalog_d2cSender_valTrainCenter_resetLocalScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cSender_resetLocalScrambler : '0;
+  assign ltsm_flagToAnalog_d2cSender_valTrainCenter_applyTxClockPhase =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cSender_applyTxClockPhase : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_configureTxInitD2CPointTest =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_maximumComparisonErrorThreshold =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_comparisonMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_comparisonMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_iterationCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_idleCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_burstCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_patternMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_patternMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_clockPhaseControl =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_validPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_validPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_dataPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINCENTER) ? phy_flagToAnalog_d2cReceiver_resetLocalRxScrambler : '0;
+  assign ltsm_flagToAnalog_valTrainVref_sendPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_sendPattern : '0;
+  assign ltsm_flagToAnalog_valTrainVref_applyRxVref =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_applyRxVref : '0;
+  assign ltsm_flagToAnalog_valTrainVref_rxVrefCode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_rxVrefCode : '0;
+  assign ltsm_flagToAnalog_valTrainVref_configureRxInitD2CPointTest =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_configureRxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_valTrainVref_maximumComparisonErrorThreshold =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_valTrainVref_comparisonMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_comparisonMode : '0;
+  assign ltsm_flagToAnalog_valTrainVref_iterationCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_valTrainVref_idleCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_valTrainVref_burstCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_valTrainVref_patternMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_patternMode : '0;
+  assign ltsm_flagToAnalog_valTrainVref_clockPhaseControl =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_valTrainVref_validPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_validPattern : '0;
+  assign ltsm_flagToAnalog_valTrainVref_dataPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_dataPattern : '0;
+  assign ltsm_flagToAnalog_valTrainVref_clearComparisonErrors =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_clearComparisonErrors : '0;
+  assign ltsm_flagToAnalog_valTrainVref_resetLocalTxScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_VALTRAINVREF) ? phy_flagToAnalog_valVref_resetLocalTxScrambler : '0;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter1_sendLfsrPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cSender_sendLfsrPattern : '0;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter1_resetLocalScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cSender_resetLocalScrambler : '0;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxClockPhase =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cSender_applyTxClockPhase : '0;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter1_applyTxLaneDeskew =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cSender_applyTxLaneDeskew : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_configureTxInitD2CPointTest =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_maximumComparisonErrorThreshold =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_comparisonMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_comparisonMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_iterationCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_idleCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_burstCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_patternMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_patternMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_clockPhaseControl =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_validPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_validPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_dataPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER1) ? phy_flagToAnalog_d2cReceiver_resetLocalRxScrambler : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_sendPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_sendPattern : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_applyRxVref =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_applyRxVref : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_rxVrefCodes =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_rxVrefCodes : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_configureRxInitD2CPointTest =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_configureRxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_maximumComparisonErrorThreshold =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_comparisonMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_comparisonMode : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_iterationCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_idleCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_burstCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_patternMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_patternMode : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_clockPhaseControl =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_validPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_validPattern : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_dataPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_dataPattern : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_clearComparisonErrors =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_clearComparisonErrors : '0;
+  assign ltsm_flagToAnalog_dataTrainVref_resetLocalTxScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINVREF) ? phy_flagToAnalog_dataVref_resetLocalTxScrambler : '0;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter2_sendLfsrPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cSender_sendLfsrPattern : '0;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter2_resetLocalScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cSender_resetLocalScrambler : '0;
+  assign ltsm_flagToAnalog_d2cSender_dataTrainCenter2_applyTxClockPhase =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cSender_applyTxClockPhase : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_configureTxInitD2CPointTest =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_maximumComparisonErrorThreshold =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_comparisonMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_comparisonMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_iterationCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_idleCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_burstCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_patternMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_patternMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_clockPhaseControl =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_validPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_dataPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_DATATRAINCENTER2) ? phy_flagToAnalog_d2cReceiver_resetLocalRxScrambler : '0;
+  assign ltsm_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cSender_sendLfsrPattern : '0;
+  assign ltsm_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cSender_resetLocalScrambler : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_configureTxInitD2CPointTest =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_maximumComparisonErrorThreshold =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_comparisonMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_comparisonMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_iterationCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_iterationCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_idleCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_idleCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_burstCountSettings =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_burstCountSettings : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_patternMode =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_patternMode : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_clockPhaseControl =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_clockPhaseControl : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_validPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_validPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_dataPattern =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_dataPattern : '0;
+  assign ltsm_flagToAnalog_d2cReceiver_linkSpeed_resetLocalRxScrambler =
+    (ltsm_dbg_mbtrainState == MBTRAIN_LINKSPEED) ? phy_flagToAnalog_d2cReceiver_resetLocalRxScrambler : '0;
+
+  // Responses: per-substate model signals -> shared DUT inputs.
+  always_comb begin
+    phy_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo = '0;
+    phy_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload = '0;
+    phy_flagFromAnalog_valVref_detectedValPattern = '0;
+    phy_flagFromAnalog_valVref_finishedPattern = '0;
+    phy_flagFromAnalog_valVref_rxVrefApplied = '0;
+    phy_flagFromAnalog_dataVref_detectedDataPattern = '0;
+    phy_flagFromAnalog_dataVref_finishedPattern = '0;
+    phy_flagFromAnalog_dataVref_rxVrefApplied = '0;
+    phy_flagFromAnalog_d2cSender_valTrainPatternSent = '0;
+    phy_flagFromAnalog_d2cSender_txClockPhaseApplied = '0;
+    phy_flagFromAnalog_d2cSender_lfsrPatternSent = '0;
+    phy_flagFromAnalog_d2cSender_txLaneDeskewApplied = '0;
+    phy_flagFromAnalog_d2cReceiver_laneComparisonSuccessful = '0;
+    case (ltsm_dbg_mbtrainState)
+      MBTRAIN_VALVREF: begin
+        phy_flagFromAnalog_valVref_detectedValPattern = ltsm_flagFromAnalog_valVref_detectedValPattern;
+        phy_flagFromAnalog_valVref_finishedPattern = ltsm_flagFromAnalog_valVref_finishedPattern;
+        phy_flagFromAnalog_valVref_rxVrefApplied = ltsm_flagFromAnalog_valVref_rxVrefApplied;
+      end
+      MBTRAIN_DATAVREF: begin
+        phy_flagFromAnalog_dataVref_detectedDataPattern = ltsm_flagFromAnalog_dataVref_detectedDataPattern;
+        phy_flagFromAnalog_dataVref_finishedPattern = ltsm_flagFromAnalog_dataVref_finishedPattern;
+        phy_flagFromAnalog_dataVref_rxVrefApplied = ltsm_flagFromAnalog_dataVref_rxVrefApplied;
+      end
+      MBTRAIN_VALTRAINCENTER: begin
+        phy_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo = ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo;
+        phy_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload = ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload;
+        phy_flagFromAnalog_d2cSender_valTrainPatternSent = ltsm_flagFromAnalog_d2cSender_valTrainCenter_valTrainPatternSent;
+        phy_flagFromAnalog_d2cSender_txClockPhaseApplied = ltsm_flagFromAnalog_d2cSender_valTrainCenter_txClockPhaseApplied;
+      end
+      MBTRAIN_VALTRAINVREF: begin
+        phy_flagFromAnalog_valVref_detectedValPattern = ltsm_flagFromAnalog_valTrainVref_detectedValPattern;
+        phy_flagFromAnalog_valVref_finishedPattern = ltsm_flagFromAnalog_valTrainVref_finishedPattern;
+        phy_flagFromAnalog_valVref_rxVrefApplied = ltsm_flagFromAnalog_valTrainVref_rxVrefApplied;
+      end
+      MBTRAIN_DATATRAINCENTER1: begin
+        phy_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo = ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo;
+        phy_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload = ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload;
+        phy_flagFromAnalog_d2cSender_txClockPhaseApplied = ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txClockPhaseApplied;
+        phy_flagFromAnalog_d2cSender_lfsrPatternSent = ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_lfsrPatternSent;
+        phy_flagFromAnalog_d2cSender_txLaneDeskewApplied = ltsm_flagFromAnalog_d2cSender_dataTrainCenter1_txLaneDeskewApplied;
+      end
+      MBTRAIN_DATATRAINVREF: begin
+        phy_flagFromAnalog_dataVref_detectedDataPattern = ltsm_flagFromAnalog_dataTrainVref_detectedDataPattern;
+        phy_flagFromAnalog_dataVref_finishedPattern = ltsm_flagFromAnalog_dataTrainVref_finishedPattern;
+        phy_flagFromAnalog_dataVref_rxVrefApplied = ltsm_flagFromAnalog_dataTrainVref_rxVrefApplied;
+      end
+      MBTRAIN_DATATRAINCENTER2: begin
+        phy_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo = ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo;
+        phy_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload = ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload;
+        phy_flagFromAnalog_d2cSender_txClockPhaseApplied = ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_txClockPhaseApplied;
+        phy_flagFromAnalog_d2cSender_lfsrPatternSent = ltsm_flagFromAnalog_d2cSender_dataTrainCenter2_lfsrPatternSent;
+      end
+      MBTRAIN_LINKSPEED: begin
+        phy_flagFromAnalog_d2cSender_lfsrPatternSent = ltsm_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent;
+        phy_flagFromAnalog_d2cReceiver_laneComparisonSuccessful = ltsm_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful;
+      end
+      default: ;
+    endcase
+  end
+
+  D2DAdapterLinkMgmtLtsmSBTop #(
+    // The link-management widths are intentionally left at the DUT defaults;
+    // this testbench only drives link-management control and sideband traffic.
+    .sbFeatureExtension                       (1'b0),
+    .ucieA                                    (UCIE_A),
+    .moduleID                                 (2'd0),
+    .clkPhase                                 (1'b0),
+    .clkMode                                  (1'b0),
+    .voltageSwing                             (5'd7),
+    .maxLinkSpeed                             (4'd3),
+    .d2cPiCodeWidth                           (PI_CODE_WIDTH),
+    .d2cTxDeskewCodeWidth                     (TX_DESKEW_CODE_WIDTH),
+    .d2cDeskewStepsPerPi                      (DESKEW_STEPS_PER_PI),
+    .d2cDeskewAddDelayIncreasesPhase          (DESKEW_ADD_DELAY_INCREASES_PHASE),
+    .d2cMaximumComparisonErrorThreshold       (16'd0),
+    .d2cMinLaneWindowSteps                    (MIN_LANE_WINDOW_STEPS),
+    .d2cMinCommonWindowSteps                  (MIN_COMMON_WINDOW_STEPS),
+    .d2cMaxTrainingRetries                    (MAX_TRAINING_RETRIES),
+    .validVrefValueCount                      (VREF_VALUE_COUNT),
+    .validVrefCodeWidth                       (VREF_CODE_WIDTH),
+    .validVrefMinimumMillivolts               (250),
+    .validVrefMaximumMillivolts               (550),
+    .validVrefMaximumComparisonErrorThreshold (16'd0),
+    .validVrefMinPassingWindowValues          (1),
+    .validVrefMaxTrainingRetries              (MAX_TRAINING_RETRIES),
+    .valTrainVrefEnable                       (1'b1),
+    .dataLaneCount                            (DATA_LANE_COUNT),
+    .activeDataLaneMask                       ({DATA_LANE_COUNT{1'b1}}),
+    .dataVrefValueCount                       (VREF_VALUE_COUNT),
+    .dataVrefCodeWidth                        (VREF_CODE_WIDTH),
+    .dataVrefMinimumMillivolts                (250),
+    .dataVrefMaximumMillivolts                (550),
+    .dataVrefMaximumComparisonErrorThreshold  (16'd0),
+    .dataVrefMinPassingWindowValues           (1),
+    .dataVrefMaxTrainingRetries               (MAX_TRAINING_RETRIES),
+    .dataTrainVrefEnable                      (1'b1),
+    .rxDeskewEnable                           (1'b1),
+    .rxDeskewValueCount                       (RX_DESKEW_VALUE_COUNT),
+    .rxDeskewCodeWidth                        (RX_DESKEW_CODE_WIDTH),
+    .rxDeskewMaximumComparisonErrorThreshold  (16'd0),
+    .rxDeskewMinPassingWindowValues           (1),
+    .rxDeskewMaxTrainingRetries               (MAX_TRAINING_RETRIES)
+  ) dut (
+    .clock                                                                          (clock),
+    .reset_n                                                                        (reset_n),
+    .fdi_lp_state_req                                                               (fdi_lp_state_req),
+    .fdi_lp_linkerror                                                               (fdi_lp_linkerror),
+    .fdi_lp_rx_active_sts                                                           (fdi_lp_rx_active_sts),
+    .fdi_lp_wake_req                                                                (fdi_lp_wake_req),
+    .fdi_lp_clk_ack                                                                 (fdi_lp_clk_ack),
+    .fdi_lp_stall_ack                                                               (fdi_lp_stall_ack),
+    .fdi_pl_state_sts                                                               (fdi_pl_state_sts),
+    .fdi_pl_rx_active_req                                                           (fdi_pl_rx_active_req),
+    .fdi_pl_inband_pres                                                             (fdi_pl_inband_pres),
+    .fdi_pl_wake_ack                                                                (fdi_pl_wake_ack),
+    .fdi_pl_clk_req                                                                 (fdi_pl_clk_req),
+    .fdi_pl_stall_req                                                               (fdi_pl_stall_req),
+    .fdi_active                                                                     (fdi_active),
+    .sb_tx_dout                                                                     (sb_tx_dout),
+    .sb_tx_clk                                                                      (sb_tx_clk),
+    .sb_rx_din                                                                      (sb_rx_din),
+    .sb_rx_clk                                                                      (sb_rx_clk),
+    .debug_sb_rx_overflow                                                           (sb_rx_overflow),
+    .timeout_disable                                                                (1'b0),
+    .cycles_1us                                                                     (cycles_1us),
+    .ltsm_start                                                                     (ltsm_start),
+    .ltsm_stable_clk                                                                (ltsm_stable_clk),
+    .ltsm_pll_locked                                                                (ltsm_pll_locked),
+    .ltsm_stable_supply                                                             (ltsm_stable_supply),
+    .ltsm_flagFromAnalog_ReadyToExchangeClkPatterns                                 (ltsm_flagFromAnalog_ReadyToExchangeClkPatterns),
+    .ltsm_flagFromAnalog_FinishedClkPatterns                                        (ltsm_flagFromAnalog_FinishedClkPatterns),
+    .ltsm_flagFromAnalog_FinishedValTrainPattern                                    (ltsm_flagFromAnalog_FinishedValTrainPattern),
+    .ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern                            (ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern),
+    .ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern                              (ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern),
+    .ltsm_flagFromAnalog_clkPatternReceivedRTRK_L                                   (ltsm_flagFromAnalog_clkPatternReceivedRTRK_L),
+    .ltsm_flagFromAnalog_clkPatternReceivedRCKN_L                                   (ltsm_flagFromAnalog_clkPatternReceivedRCKN_L),
+    .ltsm_flagFromAnalog_clkPatternReceivedRCKP_L                                   (ltsm_flagFromAnalog_clkPatternReceivedRCKP_L),
+    .ltsm_flagFromAnalog_ValTrainPatternReceived                                    (ltsm_flagFromAnalog_ValTrainPatternReceived),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9                            (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10                           (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11                           (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12                           (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13                           (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14                           (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14),
+    .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15                           (ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9                             (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10                            (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11                            (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12                            (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13                            (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14                            (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14),
+    .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15                            (ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15),
+    .ltsm_flagToAnalog_RepairClkState                                               (ltsm_flagToAnalog_RepairClkState),
+    .ltsm_flagToAnalog_SendClkPatterns                                              (ltsm_flagToAnalog_SendClkPatterns),
+    .ltsm_flagToAnalog_RepairValState                                               (ltsm_flagToAnalog_RepairValState),
+    .ltsm_flagToAnalog_SendValTrainPattern                                          (ltsm_flagToAnalog_SendValTrainPattern),
+    .ltsm_flagToAnalog_ReversalMbSendLaneIDPattern                                  (ltsm_flagToAnalog_ReversalMbSendLaneIDPattern),
+    .ltsm_flagToAnalog_RepairMbSendLaneIDPattern                                    (ltsm_flagToAnalog_RepairMbSendLaneIDPattern),
+    .ltsm_flagToAnalog_RepairMbSetReceiver                                          (ltsm_flagToAnalog_RepairMbSetReceiver),
+    .ltsm_flagToAnalog_LaneReversalApplied                                          (ltsm_flagToAnalog_LaneReversalApplied),
+    .ltsm_flagToAnalog_linkInit_resetLfsrScrambler                                  (ltsm_flagToAnalog_linkInit_resetLfsrScrambler),
+    .ltsm_state                                                                     (ltsm_state),
+    .ltsm_dbg_flagSbinitFirstClkPatternSeen                                         (ltsm_dbg_flagSbinitFirstClkPatternSeen),
+    .ltsm_dbg_rxValidRisingEdge                                                     (ltsm_dbg_rxValidRisingEdge),
+    .ltsm_dbg_sbinitSendCount                                                       (ltsm_dbg_sbinitSendCount),
+    .ltsm_dbg_sbTxValid                                                             (ltsm_dbg_sbTxValid),
+    .ltsm_dbg_sbTxDin                                                               (ltsm_dbg_sbTxDin),
+    .ltsm_dbg_flagTrainError                                                        (ltsm_dbg_flagTrainError),
+    .ltsm_dbg_mbinitSubstate                                                        (ltsm_dbg_mbinitSubstate),
+    .ltsm_dbg_mbinitReversalMbReceivedSuccessCount                                  (ltsm_dbg_mbinitReversalMbReceivedSuccessCount),
+    .ltsm_flagToAnalog_valVref_sendPattern                                          (phy_flagToAnalog_valVref_sendPattern),
+    .ltsm_flagFromAnalog_valVref_detectedValPattern                                 (phy_flagFromAnalog_valVref_detectedValPattern),
+    .ltsm_flagFromAnalog_valVref_finishedPattern                                    (phy_flagFromAnalog_valVref_finishedPattern),
+    .ltsm_flagToAnalog_valVref_applyRxVref                                          (phy_flagToAnalog_valVref_applyRxVref),
+    .ltsm_flagToAnalog_valVref_rxVrefCode                                           (phy_flagToAnalog_valVref_rxVrefCode),
+    .ltsm_flagFromAnalog_valVref_rxVrefApplied                                      (phy_flagFromAnalog_valVref_rxVrefApplied),
+    .ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest                          (phy_flagToAnalog_valVref_configureRxInitD2CPointTest),
+    .ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold                      (phy_flagToAnalog_valVref_maximumComparisonErrorThreshold),
+    .ltsm_flagToAnalog_valVref_comparisonMode                                       (phy_flagToAnalog_valVref_comparisonMode),
+    .ltsm_flagToAnalog_valVref_iterationCountSettings                               (phy_flagToAnalog_valVref_iterationCountSettings),
+    .ltsm_flagToAnalog_valVref_idleCountSettings                                    (phy_flagToAnalog_valVref_idleCountSettings),
+    .ltsm_flagToAnalog_valVref_burstCountSettings                                   (phy_flagToAnalog_valVref_burstCountSettings),
+    .ltsm_flagToAnalog_valVref_patternMode                                          (phy_flagToAnalog_valVref_patternMode),
+    .ltsm_flagToAnalog_valVref_clockPhaseControl                                    (phy_flagToAnalog_valVref_clockPhaseControl),
+    .ltsm_flagToAnalog_valVref_validPattern                                         (phy_flagToAnalog_valVref_validPattern),
+    .ltsm_flagToAnalog_valVref_dataPattern                                          (phy_flagToAnalog_valVref_dataPattern),
+    .ltsm_flagToAnalog_valVref_clearComparisonErrors                                (phy_flagToAnalog_valVref_clearComparisonErrors),
+    .ltsm_flagToAnalog_valVref_resetLocalTxScrambler                                (phy_flagToAnalog_valVref_resetLocalTxScrambler),
+    .ltsm_flagToAnalog_dataVref_sendPattern                                         (phy_flagToAnalog_dataVref_sendPattern),
+    .ltsm_flagFromAnalog_dataVref_detectedDataPattern                               (phy_flagFromAnalog_dataVref_detectedDataPattern),
+    .ltsm_flagFromAnalog_dataVref_finishedPattern                                   (phy_flagFromAnalog_dataVref_finishedPattern),
+    .ltsm_flagToAnalog_dataVref_applyRxVref                                         (phy_flagToAnalog_dataVref_applyRxVref),
+    .ltsm_flagToAnalog_dataVref_rxVrefCodes                                         (phy_flagToAnalog_dataVref_rxVrefCodes),
+    .ltsm_flagFromAnalog_dataVref_rxVrefApplied                                     (phy_flagFromAnalog_dataVref_rxVrefApplied),
+    .ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest                         (phy_flagToAnalog_dataVref_configureRxInitD2CPointTest),
+    .ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold                     (phy_flagToAnalog_dataVref_maximumComparisonErrorThreshold),
+    .ltsm_flagToAnalog_dataVref_comparisonMode                                      (phy_flagToAnalog_dataVref_comparisonMode),
+    .ltsm_flagToAnalog_dataVref_iterationCountSettings                              (phy_flagToAnalog_dataVref_iterationCountSettings),
+    .ltsm_flagToAnalog_dataVref_idleCountSettings                                   (phy_flagToAnalog_dataVref_idleCountSettings),
+    .ltsm_flagToAnalog_dataVref_burstCountSettings                                  (phy_flagToAnalog_dataVref_burstCountSettings),
+    .ltsm_flagToAnalog_dataVref_patternMode                                         (phy_flagToAnalog_dataVref_patternMode),
+    .ltsm_flagToAnalog_dataVref_clockPhaseControl                                   (phy_flagToAnalog_dataVref_clockPhaseControl),
+    .ltsm_flagToAnalog_dataVref_validPattern                                        (phy_flagToAnalog_dataVref_validPattern),
+    .ltsm_flagToAnalog_dataVref_dataPattern                                         (phy_flagToAnalog_dataVref_dataPattern),
+    .ltsm_flagToAnalog_dataVref_clearComparisonErrors                               (phy_flagToAnalog_dataVref_clearComparisonErrors),
+    .ltsm_flagToAnalog_dataVref_resetLocalTxScrambler                               (phy_flagToAnalog_dataVref_resetLocalTxScrambler),
+    .ltsm_flagToAnalog_rxClkCal_doCalibration                                       (ltsm_flagToAnalog_rxClkCal_doCalibration),
+    .ltsm_flagFromAnalog_rxClkCal_done                                              (ltsm_flagFromAnalog_rxClkCal_done),
+    .ltsm_flagToAnalog_rxClkCal_sendClockTrack                                      (ltsm_flagToAnalog_rxClkCal_sendClockTrack),
+    .ltsm_flagToAnalog_d2cSender_sendValTrainPattern                                (phy_flagToAnalog_d2cSender_sendValTrainPattern),
+    .ltsm_flagFromAnalog_d2cSender_valTrainPatternSent                              (phy_flagFromAnalog_d2cSender_valTrainPatternSent),
+    .ltsm_flagToAnalog_d2cSender_resetLocalScrambler                                (phy_flagToAnalog_d2cSender_resetLocalScrambler),
+    .ltsm_flagToAnalog_d2cSender_applyTxClockPhase                                  (phy_flagToAnalog_d2cSender_applyTxClockPhase),
+    .ltsm_flagToAnalog_d2cSender_txClockPhaseCode                                   (phy_flagToAnalog_d2cSender_txClockPhaseCode),
+    .ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied                              (phy_flagFromAnalog_d2cSender_txClockPhaseApplied),
+    .ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest                      (phy_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest),
+    .ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold                  (phy_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold),
+    .ltsm_flagToAnalog_d2cReceiver_comparisonMode                                   (phy_flagToAnalog_d2cReceiver_comparisonMode),
+    .ltsm_flagToAnalog_d2cReceiver_iterationCountSettings                           (phy_flagToAnalog_d2cReceiver_iterationCountSettings),
+    .ltsm_flagToAnalog_d2cReceiver_idleCountSettings                                (phy_flagToAnalog_d2cReceiver_idleCountSettings),
+    .ltsm_flagToAnalog_d2cReceiver_burstCountSettings                               (phy_flagToAnalog_d2cReceiver_burstCountSettings),
+    .ltsm_flagToAnalog_d2cReceiver_patternMode                                      (phy_flagToAnalog_d2cReceiver_patternMode),
+    .ltsm_flagToAnalog_d2cReceiver_clockPhaseControl                                (phy_flagToAnalog_d2cReceiver_clockPhaseControl),
+    .ltsm_flagToAnalog_d2cReceiver_validPattern                                     (phy_flagToAnalog_d2cReceiver_validPattern),
+    .ltsm_flagToAnalog_d2cReceiver_dataPattern                                      (phy_flagToAnalog_d2cReceiver_dataPattern),
+    .ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler                            (phy_flagToAnalog_d2cReceiver_resetLocalRxScrambler),
+    .ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo                        (phy_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo),
+    .ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload                        (phy_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload),
+    .ltsm_flagToAnalog_d2cSender_sendLfsrPattern                                    (phy_flagToAnalog_d2cSender_sendLfsrPattern),
+    .ltsm_flagFromAnalog_d2cSender_lfsrPatternSent                                  (phy_flagFromAnalog_d2cSender_lfsrPatternSent),
+    .ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew                                  (phy_flagToAnalog_d2cSender_applyTxLaneDeskew),
+    .ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes                                  (phy_flagToAnalog_d2cSender_txLaneDeskewCodes),
+    .ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied                              (phy_flagFromAnalog_d2cSender_txLaneDeskewApplied),
+    .ltsm_flagToAnalog_rxDeskew_sendLfsrPattern                                     (ltsm_flagToAnalog_rxDeskew_sendLfsrPattern),
+    .ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent                                   (ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent),
+    .ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler                               (ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler),
+    .ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew                                   (ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew),
+    .ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes                                   (ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes),
+    .ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied                               (ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied),
+    .ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest                         (ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest),
+    .ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold                     (ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold),
+    .ltsm_flagToAnalog_rxDeskew_comparisonMode                                      (ltsm_flagToAnalog_rxDeskew_comparisonMode),
+    .ltsm_flagToAnalog_rxDeskew_iterationCountSettings                              (ltsm_flagToAnalog_rxDeskew_iterationCountSettings),
+    .ltsm_flagToAnalog_rxDeskew_idleCountSettings                                   (ltsm_flagToAnalog_rxDeskew_idleCountSettings),
+    .ltsm_flagToAnalog_rxDeskew_burstCountSettings                                  (ltsm_flagToAnalog_rxDeskew_burstCountSettings),
+    .ltsm_flagToAnalog_rxDeskew_patternMode                                         (ltsm_flagToAnalog_rxDeskew_patternMode),
+    .ltsm_flagToAnalog_rxDeskew_clockPhaseControl                                   (ltsm_flagToAnalog_rxDeskew_clockPhaseControl),
+    .ltsm_flagToAnalog_rxDeskew_validPattern                                        (ltsm_flagToAnalog_rxDeskew_validPattern),
+    .ltsm_flagToAnalog_rxDeskew_dataPattern                                         (ltsm_flagToAnalog_rxDeskew_dataPattern),
+    .ltsm_flagToAnalog_rxDeskew_clearComparisonErrors                               (ltsm_flagToAnalog_rxDeskew_clearComparisonErrors),
+    .ltsm_flagFromAnalog_rxDeskew_detectedDataPattern                               (ltsm_flagFromAnalog_rxDeskew_detectedDataPattern),
+    .ltsm_flagToLtsm_linkSpeed_phyInRetrain                                         (ltsm_flagToLtsm_linkSpeed_phyInRetrain),
+    .ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful                       (phy_flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
+    .ltsm_dbg_mbtrainState                                                          (ltsm_dbg_mbtrainState),
+    .ltsm_dbg_mbtrainActiveSubstate                                                 (ltsm_dbg_mbtrainActiveSubstate),
+    .ltsm_dbg_mbtrainLastErrorCount                                                 (ltsm_dbg_mbtrainLastErrorCount),
+    .ltsm_dbg_mbtrainRetryCount                                                     (ltsm_dbg_mbtrainRetryCount),
+    .debug_ltsm_state                                                               (debug_ltsm_state),
+    .debug_ltsm_inband_pres                                                         (debug_ltsm_inband_pres),
+    .debug_fdi_link_init_state                                                      (debug_fdi_link_init_state),
+    .debug_rdi_state                                                                (debug_rdi_state),
+    .debug_fdi_to_rdi_state_req                                                     (debug_fdi_to_rdi_state_req),
+    .debug_arb_grant_ltsm                                                           (debug_arb_grant_ltsm),
+    .debug_arb_grant_fdi                                                            (debug_arb_grant_fdi),
+    .debug_arb_grant_rdi                                                            (debug_arb_grant_rdi),
+    .debug_arb_tx_locked                                                            (debug_arb_tx_locked),
+    .debug_arb_tx_fire                                                              (debug_arb_tx_fire),
+    .debug_rx_route_ltsm                                                            (debug_rx_route_ltsm),
+    .debug_rx_route_fdi                                                             (debug_rx_route_fdi),
+    .debug_rx_route_rdi                                                             (debug_rx_route_rdi),
+    .debug_rx_drop_unknown                                                          (debug_rx_drop_unknown),
+    .debug_rx_fire                                                                  (debug_rx_fire)
+  );
+endmodule
+
+module D2DAdapterLinkMgmtLtsmDualDieHarness (
+  input  wire logic clock,
+  input  wire logic reset_n,
+  input  wire logic start,
+  input  wire logic stable_clk,
+  input  wire logic pll_locked,
+  input  wire logic stable_supply,
+  input  wire logic [31:0] cycles_1us,
+  input  wire logic protocol_request_active,
+  input  wire logic link_0_to_1_enable,
+  input  wire logic link_1_to_0_enable,
+
+  output wire logic [3:0] die0_ltsm_state,
+  output wire logic [3:0] die1_ltsm_state,
+  output wire UcieUPM_interfaces_pkg::PhyState_t die0_rdi_state,
+  output wire UcieUPM_interfaces_pkg::PhyState_t die1_rdi_state,
+  output wire UcieUPM_interfaces_pkg::PhyState_t die0_fdi_state,
+  output wire UcieUPM_interfaces_pkg::PhyState_t die1_fdi_state,
+  output wire UcieUPM_d2dadapter_pkg::LinkInitState_t die0_fdi_init_state,
+  output wire UcieUPM_d2dadapter_pkg::LinkInitState_t die1_fdi_init_state,
+  output wire logic [2:0] die0_mbinit_substate,
+  output wire logic [2:0] die1_mbinit_substate,
+  output wire logic [3:0] die0_mbtrain_state,
+  output wire logic [3:0] die1_mbtrain_state,
+  output wire logic [11:0] die0_mbtrain_active_substate,
+  output wire logic [11:0] die1_mbtrain_active_substate,
+  output wire logic die0_ltsm_train_error,
+  output wire logic die1_ltsm_train_error,
+  output wire logic die0_grant_ltsm,
+  output wire logic die0_grant_rdi,
+  output wire logic die0_grant_fdi,
+  output wire logic die1_grant_ltsm,
+  output wire logic die1_grant_rdi,
+  output wire logic die1_grant_fdi,
+  output wire logic die0_tx_fire,
+  output wire logic die1_tx_fire,
+  output wire logic die0_rx_fire,
+  output wire logic die1_rx_fire,
+  output wire logic die0_tx_locked,
+  output wire logic die1_tx_locked,
+  output wire logic die0_rx_drop_unknown,
+  output wire logic die1_rx_drop_unknown,
+  output wire logic [127:0] progress_signature,
+  output wire logic [5:0] grant_mask,
+  output wire logic both_ltsm_active,
+  output wire logic both_fdi_wait_protocol,
+  output wire logic any_internal_transfer,
+  output wire logic any_train_error,
+  output wire logic any_unknown_drop,
+  output wire logic all_active,
+  output wire logic sb_0_to_1_data,
+  output wire logic sb_0_to_1_clk,
+  output wire logic sb_1_to_0_data,
+  output wire logic sb_1_to_0_clk,
+  output wire logic serial_wire_activity,
+  output wire logic serial_idle,
+  output wire logic serial_error,
+  output wire logic any_sb_rx_overflow,
+  output wire logic [31:0] wire_completed_0_to_1,
+  output wire logic [31:0] wire_completed_1_to_0
+);
+  localparam bit          UCIE_A                           = 1'b0;
+  localparam int unsigned PI_CODE_WIDTH                    = 4;
+  localparam int unsigned TX_DESKEW_CODE_WIDTH             = 4;
+  localparam int unsigned DESKEW_STEPS_PER_PI              = 1;
+  localparam bit          DESKEW_ADD_DELAY_INCREASES_PHASE = 1'b1;
+  localparam int unsigned DATA_LANE_COUNT                  = 16;
+  localparam int unsigned VREF_CODE_WIDTH                  = 4;
+  localparam int unsigned RX_DESKEW_CODE_WIDTH             = 4;
+
+  // Read-only verification taps. These are local to the harness; the die
+  // instances below expose only scalar serial pins for sideband traffic.
+  wire logic         mon_die0_tx_valid;
+  wire logic [127:0] mon_die0_tx_msg;
+  wire logic         mon_die0_tx_ready;
+  wire logic         mon_die0_rx_valid;
+  wire logic [127:0] mon_die0_rx_msg;
+  wire logic         mon_die0_rx_ready;
+  wire logic         mon_die1_tx_valid;
+  wire logic [127:0] mon_die1_tx_msg;
+  wire logic         mon_die1_tx_ready;
+  wire logic         mon_die1_rx_valid;
+  wire logic [127:0] mon_die1_rx_msg;
+  wire logic         mon_die1_rx_ready;
+
+  assign mon_die0_tx_valid = die0.dut.u_sideband.sb_msg_tx_valid;
+  assign mon_die0_tx_msg = die0.dut.u_sideband.sb_msg_tx_msg;
+  assign mon_die0_tx_ready = die0.dut.u_sideband.sb_msg_tx_ready;
+  assign mon_die0_rx_valid = die0.dut.u_sideband.sb_msg_rx_valid;
+  assign mon_die0_rx_msg = die0.dut.u_sideband.sb_msg_rx_msg;
+  assign mon_die0_rx_ready = die0.dut.u_sideband.sb_msg_rx_ready;
+  assign mon_die1_tx_valid = die1.dut.u_sideband.sb_msg_tx_valid;
+  assign mon_die1_tx_msg = die1.dut.u_sideband.sb_msg_tx_msg;
+  assign mon_die1_tx_ready = die1.dut.u_sideband.sb_msg_tx_ready;
+  assign mon_die1_rx_valid = die1.dut.u_sideband.sb_msg_rx_valid;
+  assign mon_die1_rx_msg = die1.dut.u_sideband.sb_msg_rx_msg;
+  assign mon_die1_rx_ready = die1.dut.u_sideband.sb_msg_rx_ready;
+
+  logic [PI_CODE_WIDTH-1:0] die0_valtrain_phase;
+  logic [PI_CODE_WIDTH-1:0] die1_valtrain_phase;
+  logic [PI_CODE_WIDTH-1:0] die0_train1_phase;
+  logic [PI_CODE_WIDTH-1:0] die1_train1_phase;
+  logic [64*TX_DESKEW_CODE_WIDTH-1:0] die0_train1_deskew;
+  logic [64*TX_DESKEW_CODE_WIDTH-1:0] die1_train1_deskew;
+  logic [PI_CODE_WIDTH-1:0] die0_train2_phase;
+  logic [PI_CODE_WIDTH-1:0] die1_train2_phase;
+
+  logic [15:0] die0_valtrain_result_info;
+  logic [63:0] die0_valtrain_result_payload;
+  logic [15:0] die1_valtrain_result_info;
+  logic [63:0] die1_valtrain_result_payload;
+  logic [15:0] die0_train1_result_info;
+  logic [63:0] die0_train1_result_payload;
+  logic [15:0] die1_train1_result_info;
+  logic [63:0] die1_train1_result_payload;
+  logic [15:0] die0_train2_result_info;
+  logic [63:0] die0_train2_result_payload;
+  logic [15:0] die1_train2_result_info;
+  logic [63:0] die1_train2_result_payload;
+
+  logic die0_serial_idle, die1_serial_idle;
+  logic die0_sb_rx_overflow, die1_sb_rx_overflow;
+  logic check01_idle, check10_idle, check01_error, check10_error;
+  assign serial_wire_activity = sb_0_to_1_clk || sb_1_to_0_clk;
+  assign serial_idle = die0_serial_idle && die1_serial_idle &&
+                       check01_idle && check10_idle;
+  assign any_sb_rx_overflow = die0_sb_rx_overflow || die1_sb_rx_overflow;
+  assign serial_error = check01_error || check10_error || any_sb_rx_overflow;
+
+  // These are passive checks. They neither drive nor repair received packets.
+  D2DAdapterLinkMgmtTbSerialLinkChecker check_0_to_1 (
+    .clock(clock), .reset_n(reset_n),
+    .tx_valid(mon_die0_tx_valid), .tx_msg(mon_die0_tx_msg), .tx_ready(mon_die0_tx_ready),
+    .serial_data(sb_0_to_1_data), .serial_clock(sb_0_to_1_clk),
+    .rx_valid(mon_die1_rx_valid), .rx_msg(mon_die1_rx_msg), .rx_ready(mon_die1_rx_ready),
+    .wire_completed(wire_completed_0_to_1),
+    .idle(check01_idle), .error(check01_error)
+  );
+  D2DAdapterLinkMgmtTbSerialLinkChecker check_1_to_0 (
+    .clock(clock), .reset_n(reset_n),
+    .tx_valid(mon_die1_tx_valid), .tx_msg(mon_die1_tx_msg), .tx_ready(mon_die1_tx_ready),
+    .serial_data(sb_1_to_0_data), .serial_clock(sb_1_to_0_clk),
+    .rx_valid(mon_die0_rx_valid), .rx_msg(mon_die0_rx_msg), .rx_ready(mon_die0_rx_ready),
+    .wire_completed(wire_completed_1_to_0),
+    .idle(check10_idle), .error(check10_error)
+  );
+
+  // Local die1 receiver measures die0 transmitter.
+  D2DAdapterLinkMgmtTbValTrainResultModel #(
+    .PI_CODE_WIDTH (PI_CODE_WIDTH),
+    .WINDOW_LEFT   (2),
+    .WINDOW_RIGHT  (7)
+  ) die1_rx_for_die0_valtrain (
+    .remote_tx_phase      (die0_valtrain_phase),
+    .local_result_info    (die1_valtrain_result_info),
+    .local_result_payload (die1_valtrain_result_payload)
+  );
+
+  // Local die0 receiver measures die1 transmitter.
+  D2DAdapterLinkMgmtTbValTrainResultModel #(
+    .PI_CODE_WIDTH (PI_CODE_WIDTH),
+    .WINDOW_LEFT   (9),
+    .WINDOW_RIGHT  (13)
+  ) die0_rx_for_die1_valtrain (
+    .remote_tx_phase      (die1_valtrain_phase),
+    .local_result_info    (die0_valtrain_result_info),
+    .local_result_payload (die0_valtrain_result_payload)
+  );
+
+  D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
+    .UCIE_A                         (UCIE_A),
+    .PI_CODE_WIDTH                  (PI_CODE_WIDTH),
+    .TX_DESKEW_CODE_WIDTH           (TX_DESKEW_CODE_WIDTH),
+    .DESKEW_STEPS_PER_PI            (DESKEW_STEPS_PER_PI),
+    .DESKEW_ADDED_DELAY_MOVES_UP    (DESKEW_ADD_DELAY_INCREASES_PHASE),
+    .BASE_CENTER                    (6),
+    .HALF_EYE_WIDTH                 (2)
+  ) die1_rx_for_die0_train1 (
+    .remote_tx_phase        (die0_train1_phase),
+    .remote_tx_deskew_codes (die0_train1_deskew),
+    .local_result_info      (die1_train1_result_info),
+    .local_result_payload   (die1_train1_result_payload)
+  );
+
+  D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
+    .UCIE_A                         (UCIE_A),
+    .PI_CODE_WIDTH                  (PI_CODE_WIDTH),
+    .TX_DESKEW_CODE_WIDTH           (TX_DESKEW_CODE_WIDTH),
+    .DESKEW_STEPS_PER_PI            (DESKEW_STEPS_PER_PI),
+    .DESKEW_ADDED_DELAY_MOVES_UP    (DESKEW_ADD_DELAY_INCREASES_PHASE),
+    .BASE_CENTER                    (5),
+    .HALF_EYE_WIDTH                 (2)
+  ) die0_rx_for_die1_train1 (
+    .remote_tx_phase        (die1_train1_phase),
+    .remote_tx_deskew_codes (die1_train1_deskew),
+    .local_result_info      (die0_train1_result_info),
+    .local_result_payload   (die0_train1_result_payload)
+  );
+
+  D2DAdapterLinkMgmtTbDataTrainCenter2ResultModel #(
+    .UCIE_A        (UCIE_A),
+    .PI_CODE_WIDTH (PI_CODE_WIDTH),
+    .WINDOW_LEFT   (10),
+    .WINDOW_RIGHT  (13)
+  ) die1_rx_for_die0_train2 (
+    .remote_tx_phase      (die0_train2_phase),
+    .local_result_info    (die1_train2_result_info),
+    .local_result_payload (die1_train2_result_payload)
+  );
+
+  D2DAdapterLinkMgmtTbDataTrainCenter2ResultModel #(
+    .UCIE_A        (UCIE_A),
+    .PI_CODE_WIDTH (PI_CODE_WIDTH),
+    .WINDOW_LEFT   (4),
+    .WINDOW_RIGHT  (7)
+  ) die0_rx_for_die1_train2 (
+    .remote_tx_phase      (die1_train2_phase),
+    .local_result_info    (die0_train2_result_info),
+    .local_result_payload (die0_train2_result_payload)
+  );
+
+  D2DAdapterLinkMgmtLtsmSerialDieModel #(
+    .UCIE_A                           (UCIE_A),
+    .PI_CODE_WIDTH                    (PI_CODE_WIDTH),
+    .TX_DESKEW_CODE_WIDTH             (TX_DESKEW_CODE_WIDTH),
+    .DESKEW_STEPS_PER_PI              (DESKEW_STEPS_PER_PI),
+    .DESKEW_ADD_DELAY_INCREASES_PHASE (DESKEW_ADD_DELAY_INCREASES_PHASE),
+    .VAL_VREF_LEFT                    (2),
+    .VAL_VREF_RIGHT                   (7),
+    .VALTRAIN_VREF_LEFT               (4),
+    .VALTRAIN_VREF_RIGHT              (9),
+    .DATA_VREF_LEFT_BASE              (0),
+    .DATA_VREF_LANE_PERIOD            (4),
+    .DATA_VREF_WINDOW_VALUES          (5),
+    .DATATRAIN_VREF_LEFT_BASE         (2),
+    .DATATRAIN_VREF_LANE_PERIOD       (5),
+    .DATATRAIN_VREF_WINDOW_VALUES     (6),
+    .RX_DESKEW_LEFT_BASE              (1),
+    .RX_DESKEW_LANE_PERIOD            (5),
+    .RX_DESKEW_WINDOW_VALUES          (6)
+  ) die0 (
+    .clock                    (clock),
+    .reset_n                  (reset_n),
+    .ltsm_start               (start),
+    .ltsm_stable_clk          (stable_clk),
+    .ltsm_pll_locked          (pll_locked),
+    .ltsm_stable_supply       (stable_supply),
+    .protocol_request_active  (protocol_request_active),
+    .external_fdi_control      (1'b0),
+    .external_fdi_lp_state_req (UcieUPM_interfaces_pkg::PhyStateReq_nop),
+    .external_fdi_lp_linkerror (1'b0),
+    .external_fdi_lp_rx_active_sts(1'b0),
+    .external_fdi_lp_wake_req  (1'b0),
+    .external_fdi_lp_clk_ack   (1'b0),
+    .external_fdi_lp_stall_ack (1'b0),
+    .cycles_1us               (cycles_1us),
+    .sb_tx_enable             (link_0_to_1_enable),
+    .sb_tx_dout               (sb_0_to_1_data),
+    .sb_tx_clk                (sb_0_to_1_clk),
+    .sb_rx_din                (sb_1_to_0_data),
+    .sb_rx_clk                (sb_1_to_0_clk),
+    .sb_tx_idle               (die0_serial_idle),
+    .sb_rx_overflow           (die0_sb_rx_overflow),
+    .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo
+                              (die0_valtrain_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload
+                              (die0_valtrain_result_payload),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo
+                              (die0_train1_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload
+                              (die0_train1_result_payload),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo
+                              (die0_train2_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload
+                              (die0_train2_result_payload),
+    .ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode
+                              (die0_valtrain_phase),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode
+                              (die0_train1_phase),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes
+                              (die0_train1_deskew),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode
+                              (die0_train2_phase),
+    .ltsm_state               (die0_ltsm_state),
+    .fdi_pl_state_sts         (die0_fdi_state),
+    .fdi_pl_rx_active_req     (),
+    .fdi_pl_inband_pres       (),
+    .fdi_pl_wake_ack          (),
+    .fdi_pl_clk_req           (),
+    .fdi_pl_stall_req         (),
+    .debug_fdi_link_init_state(die0_fdi_init_state),
+    .debug_rdi_state          (die0_rdi_state),
+    .ltsm_dbg_mbinitSubstate  (die0_mbinit_substate),
+    .ltsm_dbg_mbtrainState    (die0_mbtrain_state),
+    .ltsm_dbg_mbtrainActiveSubstate(die0_mbtrain_active_substate),
+    .ltsm_dbg_flagTrainError  (die0_ltsm_train_error),
+    .debug_arb_grant_ltsm     (die0_grant_ltsm),
+    .debug_arb_grant_fdi      (die0_grant_fdi),
+    .debug_arb_grant_rdi      (die0_grant_rdi),
+    .debug_arb_tx_locked      (die0_tx_locked),
+    .debug_arb_tx_fire        (die0_tx_fire),
+    .debug_rx_drop_unknown    (die0_rx_drop_unknown),
+    .debug_rx_fire            (die0_rx_fire)
+  );
+
+  D2DAdapterLinkMgmtLtsmSerialDieModel #(
+    .UCIE_A                           (UCIE_A),
+    .PI_CODE_WIDTH                    (PI_CODE_WIDTH),
+    .TX_DESKEW_CODE_WIDTH             (TX_DESKEW_CODE_WIDTH),
+    .DESKEW_STEPS_PER_PI              (DESKEW_STEPS_PER_PI),
+    .DESKEW_ADD_DELAY_INCREASES_PHASE (DESKEW_ADD_DELAY_INCREASES_PHASE),
+    .VAL_VREF_LEFT                    (9),
+    .VAL_VREF_RIGHT                   (14),
+    .VALTRAIN_VREF_LEFT               (10),
+    .VALTRAIN_VREF_RIGHT              (15),
+    .DATA_VREF_LEFT_BASE              (5),
+    .DATA_VREF_LANE_PERIOD            (4),
+    .DATA_VREF_WINDOW_VALUES          (5),
+    .DATATRAIN_VREF_LEFT_BASE         (7),
+    .DATATRAIN_VREF_LANE_PERIOD       (4),
+    .DATATRAIN_VREF_WINDOW_VALUES     (5),
+    .RX_DESKEW_LEFT_BASE              (7),
+    .RX_DESKEW_LANE_PERIOD            (4),
+    .RX_DESKEW_WINDOW_VALUES          (5)
+  ) die1 (
+    .clock                    (clock),
+    .reset_n                  (reset_n),
+    .ltsm_start               (start),
+    .ltsm_stable_clk          (stable_clk),
+    .ltsm_pll_locked          (pll_locked),
+    .ltsm_stable_supply       (stable_supply),
+    .protocol_request_active  (protocol_request_active),
+    .external_fdi_control      (1'b0),
+    .external_fdi_lp_state_req (UcieUPM_interfaces_pkg::PhyStateReq_nop),
+    .external_fdi_lp_linkerror (1'b0),
+    .external_fdi_lp_rx_active_sts(1'b0),
+    .external_fdi_lp_wake_req  (1'b0),
+    .external_fdi_lp_clk_ack   (1'b0),
+    .external_fdi_lp_stall_ack (1'b0),
+    .cycles_1us               (cycles_1us),
+    .sb_tx_enable             (link_1_to_0_enable),
+    .sb_tx_dout               (sb_1_to_0_data),
+    .sb_tx_clk                (sb_1_to_0_clk),
+    .sb_rx_din                (sb_0_to_1_data),
+    .sb_rx_clk                (sb_0_to_1_clk),
+    .sb_tx_idle               (die1_serial_idle),
+    .sb_rx_overflow           (die1_sb_rx_overflow),
+    .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo
+                              (die1_valtrain_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload
+                              (die1_valtrain_result_payload),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo
+                              (die1_train1_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload
+                              (die1_train1_result_payload),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo
+                              (die1_train2_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload
+                              (die1_train2_result_payload),
+    .ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode
+                              (die1_valtrain_phase),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode
+                              (die1_train1_phase),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes
+                              (die1_train1_deskew),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode
+                              (die1_train2_phase),
+    .ltsm_state               (die1_ltsm_state),
+    .fdi_pl_state_sts         (die1_fdi_state),
+    .fdi_pl_rx_active_req     (),
+    .fdi_pl_inband_pres       (),
+    .fdi_pl_wake_ack          (),
+    .fdi_pl_clk_req           (),
+    .fdi_pl_stall_req         (),
+    .debug_fdi_link_init_state(die1_fdi_init_state),
+    .debug_rdi_state          (die1_rdi_state),
+    .ltsm_dbg_mbinitSubstate  (die1_mbinit_substate),
+    .ltsm_dbg_mbtrainState    (die1_mbtrain_state),
+    .ltsm_dbg_mbtrainActiveSubstate(die1_mbtrain_active_substate),
+    .ltsm_dbg_flagTrainError  (die1_ltsm_train_error),
+    .debug_arb_grant_ltsm     (die1_grant_ltsm),
+    .debug_arb_grant_fdi      (die1_grant_fdi),
+    .debug_arb_grant_rdi      (die1_grant_rdi),
+    .debug_arb_tx_locked      (die1_tx_locked),
+    .debug_arb_tx_fire        (die1_tx_fire),
+    .debug_rx_drop_unknown    (die1_rx_drop_unknown),
+    .debug_rx_fire            (die1_rx_fire)
+  );
+
+  assign progress_signature = {
+    4'b0,
+    mon_die1_tx_msg[27:0], mon_die0_tx_msg[27:0],
+    die1_mbtrain_active_substate, die0_mbtrain_active_substate,
+    die1_mbtrain_state, die0_mbtrain_state,
+    die1_mbinit_substate, die0_mbinit_substate,
+    die1_fdi_init_state, die0_fdi_init_state,
+    die1_fdi_state, die0_fdi_state,
+    die1_rdi_state, die0_rdi_state,
+    die1_ltsm_state, die0_ltsm_state
+  };
+
+  assign grant_mask = {
+    die1_grant_fdi, die1_grant_rdi, die1_grant_ltsm,
+    die0_grant_fdi, die0_grant_rdi, die0_grant_ltsm
+  };
+
+  assign both_ltsm_active =
+    (die0_ltsm_state == 4'd8) && (die1_ltsm_state == 4'd8);
+  assign both_fdi_wait_protocol =
+    (die0_fdi_init_state ==
+      UcieUPM_d2dadapter_pkg::LinkInitState_FDI_WAIT_LP_REQ_ACTIVE) &&
+    (die1_fdi_init_state ==
+      UcieUPM_d2dadapter_pkg::LinkInitState_FDI_WAIT_LP_REQ_ACTIVE);
+  assign any_internal_transfer =
+    die0_tx_fire || die1_tx_fire || die0_rx_fire || die1_rx_fire;
+  assign any_train_error = die0_ltsm_train_error || die1_ltsm_train_error;
+  assign any_unknown_drop = die0_rx_drop_unknown || die1_rx_drop_unknown;
+  assign all_active =
+    both_ltsm_active &&
+    (die0_rdi_state == UcieUPM_interfaces_pkg::PhyState_active) &&
+    (die1_rdi_state == UcieUPM_interfaces_pkg::PhyState_active) &&
+    (die0_fdi_state == UcieUPM_interfaces_pkg::PhyState_active) &&
+    (die1_fdi_state == UcieUPM_interfaces_pkg::PhyState_active);
+endmodule
+
+`default_nettype wire
+
+```
+
+<a id="test-D2DAdapterLinkMgmtLtsmIntegrated128Harness-sv"></a>
+
+## [55] test\D2DAdapterLinkMgmtLtsmIntegrated128Harness.sv
+
+```systemverilog
+// FILE_INDEX: 55
+// FILE_PATH : test\D2DAdapterLinkMgmtLtsmIntegrated128Harness.sv
+
+// Directed single-DUT scenarios using D2DAdapterLinkMgmtLtsmSBTop at both dies.
+// Training uses an external store-and-forward serial BFM: complete LTSM wire
+// frames are decoded and reserialized to the other die; local management
+// frames are retained for directed stimulus, and peer management is drained.
+// This relay is specific to directed tests.  The dual-die bring-up and
+// backpressure harnesses connect the two physical serial interfaces directly.
+// No controller packet input is driven by this harness.
+
+`timescale 1ns/1ps
+`default_nettype none
+
+module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
+  input  wire logic clock,
+  input  wire logic reset_n,
+
+  input  wire logic ltsm_start,
+  input  wire logic ltsm_stable_clk,
+  input  wire logic ltsm_pll_locked,
+  input  wire logic ltsm_stable_supply,
+  input  wire logic manual_sideband_mode,
+
+  input  wire UcieUPM_interfaces_pkg::PhyStateReq_t fdi_lp_state_req,
+  input  wire logic                                  fdi_lp_linkerror,
+  input  wire logic                                  fdi_lp_rx_active_sts,
+  input  wire logic                                  fdi_lp_wake_req,
+  input  wire logic                                  fdi_lp_clk_ack,
+  input  wire logic                                  fdi_lp_stall_ack,
+  output wire UcieUPM_interfaces_pkg::PhyState_t    fdi_pl_state_sts,
+  output wire logic                                  fdi_pl_rx_active_req,
+  output wire logic                                  fdi_pl_inband_pres,
+  output wire logic                                  fdi_pl_wake_ack,
+  output wire logic                                  fdi_pl_clk_req,
+  output wire logic                                  fdi_pl_stall_req,
+
+  // Testbench-only transaction API. The BFM serializes send messages onto
+  // the local die's one-bit RX pins and decodes received messages from its
+  // one-bit TX pins. These ports are not connected to either die as packets.
+  output wire logic         bfm_received_valid,
+  output wire logic [127:0] bfm_received_msg,
+  input  wire logic         bfm_received_ready,
+  input  wire logic         bfm_send_valid,
+  input  wire logic [127:0] bfm_send_msg,
+  output wire logic         bfm_send_ready,
+  // Completes only after the injected wire frame has been accepted through
+  // the integrated top's receive mailbox and the serializer is idle.
+  output wire logic         bfm_send_idle,
+  input  wire logic [31:0]  cycles_1us,
+
+  output wire logic [3:0] local_ltsm_state,
+  output wire logic [3:0] peer_ltsm_state,
+  output wire logic [2:0] local_mbinit_substate,
+  output wire logic [2:0] peer_mbinit_substate,
+  output wire logic [3:0] local_mbtrain_state,
+  output wire logic [3:0] peer_mbtrain_state,
+  output wire logic [11:0] local_mbtrain_active_substate,
+  output wire logic [11:0] peer_mbtrain_active_substate,
+  output wire logic local_ltsm_train_error,
+  output wire logic peer_ltsm_train_error,
+  output wire logic training_complete,
+  output logic training_sideband_transfer,
+  output logic training_unknown_drop,
+  output wire logic serial_error,
+  output wire logic serial_idle,
+
+  output wire UcieUPM_d2dadapter_pkg::LinkInitState_t debug_fdi_link_init_state,
+  output wire UcieUPM_interfaces_pkg::PhyState_t      debug_rdi_state,
+  output wire logic debug_arb_grant_ltsm,
+  output wire logic debug_arb_grant_fdi,
+  output wire logic debug_arb_grant_rdi,
+  output wire logic debug_arb_tx_locked,
+  output wire logic debug_arb_tx_fire,
+  output wire logic debug_rx_drop_unknown,
+  output wire logic debug_rx_fire
+);
+  import SidebandMsgGenerator_pkg::*;
+
+  localparam bit          UCIE_A                           = 1'b0;
+  localparam int unsigned PI_CODE_WIDTH                    = 4;
+  localparam int unsigned TX_DESKEW_CODE_WIDTH             = 4;
+  localparam int unsigned DESKEW_STEPS_PER_PI              = 1;
+  localparam bit          DESKEW_ADD_DELAY_INCREASES_PHASE = 1'b1;
+
+  logic local_serial_data, local_serial_clock, local_serial_idle;
+  logic peer_serial_data, peer_serial_clock, peer_serial_idle;
+  logic local_in_data, local_in_clock, peer_in_data, peer_in_clock;
+  logic local_bfm_send_valid, local_bfm_send_ready, local_bfm_idle;
+  logic peer_bfm_send_valid, peer_bfm_send_ready, peer_bfm_idle;
+  logic [127:0] local_bfm_send_msg, peer_bfm_send_msg;
+  logic local_dec_valid, local_dec_ready, peer_dec_valid, peer_dec_ready;
+  logic [127:0] local_dec_msg, peer_dec_msg;
+  logic local_dec_ltsm, peer_dec_ltsm;
+  logic local_out_check_idle, peer_out_check_idle;
+  logic local_in_check_idle, peer_in_check_idle;
+  logic local_out_error, peer_out_error, local_in_error, peer_in_error;
+  logic local_rx_overflow, peer_rx_overflow;
+  logic [31:0] local_out_completed, peer_out_completed;
+  logic [31:0] local_in_completed, peer_in_completed;
+  logic physical_training_complete;
+
+  logic local_grant_ltsm;
+  logic local_grant_fdi;
+  logic local_grant_rdi;
+  logic peer_grant_ltsm;
+  logic peer_grant_fdi;
+  logic peer_grant_rdi;
+  logic local_tx_fire;
+  logic peer_tx_fire;
+  logic local_rx_fire;
+  logic peer_rx_fire;
+  logic local_unknown_drop;
+  logic peer_unknown_drop;
+
+  // Observe complete serialized packets continuously, including the first
+  // local RDI Req.Active emitted before the directed test starts consuming.
+  localparam int unsigned MANUAL_QUEUE_DEPTH = 256;
+  logic [127:0] manual_queue [0:MANUAL_QUEUE_DEPTH-1];
+  integer unsigned manual_write_count, manual_read_count;
+  logic capture_manual_tx, consume_manual_tx;
+  logic manual_mode_delayed;
+  UcieUPM_interfaces_pkg::PhyState_t trace_previous_fdi, trace_previous_rdi;
+
+  logic [PI_CODE_WIDTH-1:0] local_valtrain_phase;
+  logic [PI_CODE_WIDTH-1:0] peer_valtrain_phase;
+  logic [PI_CODE_WIDTH-1:0] local_train1_phase;
+  logic [PI_CODE_WIDTH-1:0] peer_train1_phase;
+  logic [64*TX_DESKEW_CODE_WIDTH-1:0] local_train1_deskew;
+  logic [64*TX_DESKEW_CODE_WIDTH-1:0] peer_train1_deskew;
+  logic [PI_CODE_WIDTH-1:0] local_train2_phase;
+  logic [PI_CODE_WIDTH-1:0] peer_train2_phase;
+
+  logic [15:0] local_valtrain_result_info;
+  logic [63:0] local_valtrain_result_payload;
+  logic [15:0] peer_valtrain_result_info;
+  logic [63:0] peer_valtrain_result_payload;
+  logic [15:0] local_train1_result_info;
+  logic [63:0] local_train1_result_payload;
+  logic [15:0] peer_train1_result_info;
+  logic [63:0] peer_train1_result_payload;
+  logic [15:0] local_train2_result_info;
+  logic [63:0] local_train2_result_payload;
+  logic [15:0] peer_train2_result_info;
+  logic [63:0] peer_train2_result_payload;
+
+  UcieUPM_interfaces_pkg::PhyState_t peer_fdi_state;
+  UcieUPM_interfaces_pkg::PhyState_t peer_rdi_state;
+  UcieUPM_d2dadapter_pkg::LinkInitState_t peer_fdi_init_state;
+  logic peer_fdi_rx_active_req;
+  logic peer_fdi_inband_pres;
+  logic peer_fdi_wake_ack;
+  logic peer_fdi_clk_req;
+  logic peer_fdi_stall_req;
+  logic peer_tx_locked;
+
+  assign physical_training_complete =
+    (local_ltsm_state == 4'd8) && (peer_ltsm_state == 4'd8);
+  // Both physical FSMs being Active is insufficient: last frames can still
+  // be in serializer FIFOs, in flight, or queued in the serial relay.
+  assign serial_idle = local_serial_idle && peer_serial_idle &&
+    local_bfm_idle && peer_bfm_idle &&
+    local_out_check_idle && peer_out_check_idle &&
+    local_in_check_idle && peer_in_check_idle;
+  assign training_complete = physical_training_complete && serial_idle;
+
+  assign local_dec_ltsm = UCIe2_isLtsmMessage(local_dec_msg);
+  assign peer_dec_ltsm = UCIe2_isLtsmMessage(peer_dec_msg);
+
+  // Only complete decoded training frames cross the relay.  The production
+  // SidebandTx sends every relayed/injected message through the DUT RX pins.
+  assign local_bfm_send_valid = manual_sideband_mode ? bfm_send_valid
+    : (peer_dec_valid && peer_dec_ltsm);
+  assign local_bfm_send_msg = manual_sideband_mode ? bfm_send_msg : peer_dec_msg;
+  assign peer_bfm_send_valid = !manual_sideband_mode && local_dec_valid && local_dec_ltsm;
+  assign peer_bfm_send_msg = local_dec_msg;
+  assign peer_dec_ready = manual_sideband_mode || !peer_dec_ltsm || local_bfm_send_ready;
+  assign local_dec_ready = (!manual_sideband_mode && local_dec_ltsm)
+    ? peer_bfm_send_ready : (manual_write_count - manual_read_count < MANUAL_QUEUE_DEPTH);
+
+  assign capture_manual_tx = local_dec_valid && local_dec_ready &&
+    (manual_sideband_mode || !local_dec_ltsm);
+  assign consume_manual_tx = bfm_received_valid && bfm_received_ready;
+  assign bfm_received_valid = manual_sideband_mode && (manual_write_count != manual_read_count);
+  assign bfm_received_msg = (manual_write_count != manual_read_count)
+    ? manual_queue[manual_read_count % MANUAL_QUEUE_DEPTH] : 128'b0;
+  assign bfm_send_ready = manual_sideband_mode && local_bfm_send_ready;
+  assign bfm_send_idle = local_bfm_send_ready && local_in_check_idle;
+
+  always @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      manual_write_count <= 0;
+      manual_read_count <= 0;
+      manual_mode_delayed <= 1'b0;
+    end else begin
+      manual_mode_delayed <= manual_sideband_mode;
+      if (manual_sideband_mode && !manual_mode_delayed && physical_training_complete &&
+          !training_complete)
+        $fatal(1, "Manual sideband handoff requested before serial traffic drained");
+      if (capture_manual_tx) begin
+        manual_queue[manual_write_count % MANUAL_QUEUE_DEPTH] <= local_dec_msg;
+        manual_write_count <= manual_write_count + 1;
+      end
+      if (consume_manual_tx) manual_read_count <= manual_read_count + 1;
+      if (local_dec_valid && (manual_sideband_mode || !local_dec_ltsm) && !local_dec_ready)
+        $fatal(1, "Integrated serial manual observation queue overflow");
+    end
+  end
+
+  // The stimulus samples after the clock edge.  Register the transfer event
+  // before the receive FIFO advances so that every accepted frame is visible.
+  always @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      training_sideband_transfer <= 1'b0;
+      training_unknown_drop <= 1'b0;
+    end else begin
+      training_sideband_transfer <= !manual_sideband_mode &&
+        ((local_dec_valid && local_dec_ready && local_dec_ltsm) ||
+         (peer_dec_valid && peer_dec_ready && peer_dec_ltsm));
+      if (!manual_sideband_mode && (local_unknown_drop || peer_unknown_drop))
+        training_unknown_drop <= 1'b1;
+    end
+  end
+  assign serial_error = local_out_error || peer_out_error || local_in_error || peer_in_error ||
+    local_rx_overflow || peer_rx_overflow;
+
+  // Optional transaction/state log for diagnosing directed controller tests.
+  // These observations have no influence on the wire or controller inputs.
+  always @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      trace_previous_fdi <= UcieUPM_interfaces_pkg::PhyState_reset;
+      trace_previous_rdi <= UcieUPM_interfaces_pkg::PhyState_reset;
+    end else begin
+      if ($test$plusargs("SERIAL_TRACE") && manual_sideband_mode) begin
+        if (local_die.dut.u_sideband.sb_msg_tx_valid && local_die.dut.u_sideband.sb_msg_tx_ready)
+          $display("[SERIAL TRACE] t=%0t TX enqueue header=%016h FDI=%0h RDI=%0h LP.req=%0h",
+            $time, local_die.dut.u_sideband.sb_msg_tx_msg[63:0], fdi_pl_state_sts, debug_rdi_state, fdi_lp_state_req);
+        if (fdi_pl_state_sts != trace_previous_fdi || debug_rdi_state != trace_previous_rdi)
+          $display("[SERIAL TRACE] t=%0t state FDI=%0h RDI=%0h LP.req=%0h",
+            $time, fdi_pl_state_sts, debug_rdi_state, fdi_lp_state_req);
+      end
+      trace_previous_fdi <= fdi_pl_state_sts;
+      trace_previous_rdi <= debug_rdi_state;
+    end
+  end
+
+  assign debug_arb_grant_ltsm = local_grant_ltsm;
+  assign debug_arb_grant_fdi  = local_grant_fdi;
+  assign debug_arb_grant_rdi  = local_grant_rdi;
+  assign debug_arb_tx_fire    = local_tx_fire;
+  assign debug_rx_drop_unknown = local_unknown_drop;
+  assign debug_rx_fire         = local_rx_fire;
+
+  D2DAdapterLinkMgmtTbSerialBfm local_endpoint (
+    .clock(clock), .reset_n(reset_n),
+    .send_valid(local_bfm_send_valid), .send_msg(local_bfm_send_msg),
+    .send_ready(local_bfm_send_ready), .tx_data(local_in_data), .tx_clock(local_in_clock),
+    .rx_data(local_serial_data), .rx_clock(local_serial_clock),
+    .received_valid(local_dec_valid), .received_msg(local_dec_msg),
+    .received_ready(local_dec_ready), .idle(local_bfm_idle)
+  );
+  D2DAdapterLinkMgmtTbSerialBfm peer_endpoint (
+    .clock(clock), .reset_n(reset_n),
+    .send_valid(peer_bfm_send_valid), .send_msg(peer_bfm_send_msg),
+    .send_ready(peer_bfm_send_ready), .tx_data(peer_in_data), .tx_clock(peer_in_clock),
+    .rx_data(peer_serial_data), .rx_clock(peer_serial_clock),
+    .received_valid(peer_dec_valid), .received_msg(peer_dec_msg),
+    .received_ready(peer_dec_ready), .idle(peer_bfm_idle)
+  );
+
+  // Check complete wire frames against their enqueue transaction and check
+  // each integrated receive mailbox's acceptance exactly once. Hierarchical
+  // reads below are passive observations of DUT internals; each die exposes
+  // only one-bit sideband data and clock ports to this harness.
+  D2DAdapterLinkMgmtTbSerialLinkChecker #(.CHECK_RX_ACCEPT(0)) local_output_check (
+    .clock(clock), .reset_n(reset_n),
+    .tx_valid(local_die.dut.u_sideband.sb_msg_tx_valid),
+    .tx_msg(local_die.dut.u_sideband.sb_msg_tx_msg),
+    .tx_ready(local_die.dut.u_sideband.sb_msg_tx_ready),
+    .serial_data(local_serial_data), .serial_clock(local_serial_clock),
+    .rx_valid(1'b0), .rx_msg(128'b0), .rx_ready(1'b0),
+    .wire_completed(local_out_completed), .idle(local_out_check_idle), .error(local_out_error)
+  );
+  D2DAdapterLinkMgmtTbSerialLinkChecker #(.CHECK_RX_ACCEPT(0)) peer_output_check (
+    .clock(clock), .reset_n(reset_n),
+    .tx_valid(peer_die.dut.u_sideband.sb_msg_tx_valid),
+    .tx_msg(peer_die.dut.u_sideband.sb_msg_tx_msg),
+    .tx_ready(peer_die.dut.u_sideband.sb_msg_tx_ready),
+    .serial_data(peer_serial_data), .serial_clock(peer_serial_clock),
+    .rx_valid(1'b0), .rx_msg(128'b0), .rx_ready(1'b0),
+    .wire_completed(peer_out_completed), .idle(peer_out_check_idle), .error(peer_out_error)
+  );
+  D2DAdapterLinkMgmtTbSerialLinkChecker local_input_check (
+    .clock(clock), .reset_n(reset_n),
+    .tx_valid(local_bfm_send_valid), .tx_msg(local_bfm_send_msg), .tx_ready(local_bfm_send_ready),
+    .serial_data(local_in_data), .serial_clock(local_in_clock),
+    .rx_valid(local_die.dut.u_sideband.sb_msg_rx_valid),
+    .rx_msg(local_die.dut.u_sideband.sb_msg_rx_msg),
+    .rx_ready(local_die.dut.u_sideband.sb_msg_rx_ready),
+    .wire_completed(local_in_completed), .idle(local_in_check_idle), .error(local_in_error)
+  );
+  D2DAdapterLinkMgmtTbSerialLinkChecker peer_input_check (
+    .clock(clock), .reset_n(reset_n),
+    .tx_valid(peer_bfm_send_valid), .tx_msg(peer_bfm_send_msg), .tx_ready(peer_bfm_send_ready),
+    .serial_data(peer_in_data), .serial_clock(peer_in_clock),
+    .rx_valid(peer_die.dut.u_sideband.sb_msg_rx_valid),
+    .rx_msg(peer_die.dut.u_sideband.sb_msg_rx_msg),
+    .rx_ready(peer_die.dut.u_sideband.sb_msg_rx_ready),
+    .wire_completed(peer_in_completed), .idle(peer_in_check_idle), .error(peer_in_error)
+  );
+
+  // The peer receiver measures the local transmitter.
+  D2DAdapterLinkMgmtTbValTrainResultModel #(
+    .PI_CODE_WIDTH (PI_CODE_WIDTH),
+    .WINDOW_LEFT   (2),
+    .WINDOW_RIGHT  (7)
+  ) peer_rx_for_local_valtrain (
+    .remote_tx_phase      (local_valtrain_phase),
+    .local_result_info    (peer_valtrain_result_info),
+    .local_result_payload (peer_valtrain_result_payload)
+  );
+
+  // The local receiver measures the peer transmitter.
+  D2DAdapterLinkMgmtTbValTrainResultModel #(
+    .PI_CODE_WIDTH (PI_CODE_WIDTH),
+    .WINDOW_LEFT   (9),
+    .WINDOW_RIGHT  (13)
+  ) local_rx_for_peer_valtrain (
+    .remote_tx_phase      (peer_valtrain_phase),
+    .local_result_info    (local_valtrain_result_info),
+    .local_result_payload (local_valtrain_result_payload)
+  );
+
+  D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
+    .UCIE_A                      (UCIE_A),
+    .PI_CODE_WIDTH               (PI_CODE_WIDTH),
+    .TX_DESKEW_CODE_WIDTH        (TX_DESKEW_CODE_WIDTH),
+    .DESKEW_STEPS_PER_PI         (DESKEW_STEPS_PER_PI),
+    .DESKEW_ADDED_DELAY_MOVES_UP (DESKEW_ADD_DELAY_INCREASES_PHASE),
+    .BASE_CENTER                 (6),
+    .HALF_EYE_WIDTH              (2)
+  ) peer_rx_for_local_train1 (
+    .remote_tx_phase        (local_train1_phase),
+    .remote_tx_deskew_codes (local_train1_deskew),
+    .local_result_info      (peer_train1_result_info),
+    .local_result_payload   (peer_train1_result_payload)
+  );
+
+  D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
+    .UCIE_A                      (UCIE_A),
+    .PI_CODE_WIDTH               (PI_CODE_WIDTH),
+    .TX_DESKEW_CODE_WIDTH        (TX_DESKEW_CODE_WIDTH),
+    .DESKEW_STEPS_PER_PI         (DESKEW_STEPS_PER_PI),
+    .DESKEW_ADDED_DELAY_MOVES_UP (DESKEW_ADD_DELAY_INCREASES_PHASE),
+    .BASE_CENTER                 (5),
+    .HALF_EYE_WIDTH              (2)
+  ) local_rx_for_peer_train1 (
+    .remote_tx_phase        (peer_train1_phase),
+    .remote_tx_deskew_codes (peer_train1_deskew),
+    .local_result_info      (local_train1_result_info),
+    .local_result_payload   (local_train1_result_payload)
+  );
+
+  D2DAdapterLinkMgmtTbDataTrainCenter2ResultModel #(
+    .UCIE_A        (UCIE_A),
+    .PI_CODE_WIDTH (PI_CODE_WIDTH),
+    .WINDOW_LEFT   (10),
+    .WINDOW_RIGHT  (13)
+  ) peer_rx_for_local_train2 (
+    .remote_tx_phase      (local_train2_phase),
+    .local_result_info    (peer_train2_result_info),
+    .local_result_payload (peer_train2_result_payload)
+  );
+
+  D2DAdapterLinkMgmtTbDataTrainCenter2ResultModel #(
+    .UCIE_A        (UCIE_A),
+    .PI_CODE_WIDTH (PI_CODE_WIDTH),
+    .WINDOW_LEFT   (4),
+    .WINDOW_RIGHT  (7)
+  ) local_rx_for_peer_train2 (
+    .remote_tx_phase      (peer_train2_phase),
+    .local_result_info    (local_train2_result_info),
+    .local_result_payload (local_train2_result_payload)
+  );
+
+  D2DAdapterLinkMgmtLtsmSerialDieModel #(
+    .UCIE_A                           (UCIE_A),
+    .PI_CODE_WIDTH                    (PI_CODE_WIDTH),
+    .TX_DESKEW_CODE_WIDTH             (TX_DESKEW_CODE_WIDTH),
+    .DESKEW_STEPS_PER_PI              (DESKEW_STEPS_PER_PI),
+    .DESKEW_ADD_DELAY_INCREASES_PHASE (DESKEW_ADD_DELAY_INCREASES_PHASE),
+    .VAL_VREF_LEFT                    (2),
+    .VAL_VREF_RIGHT                   (7),
+    .VALTRAIN_VREF_LEFT               (4),
+    .VALTRAIN_VREF_RIGHT              (9),
+    .DATA_VREF_LEFT_BASE              (0),
+    .DATA_VREF_LANE_PERIOD            (4),
+    .DATA_VREF_WINDOW_VALUES          (5),
+    .DATATRAIN_VREF_LEFT_BASE         (2),
+    .DATATRAIN_VREF_LANE_PERIOD       (5),
+    .DATATRAIN_VREF_WINDOW_VALUES     (6),
+    .RX_DESKEW_LEFT_BASE              (1),
+    .RX_DESKEW_LANE_PERIOD            (5),
+    .RX_DESKEW_WINDOW_VALUES          (6)
+  ) local_die (
+    .clock                    (clock),
+    .reset_n                  (reset_n),
+    .ltsm_start               (ltsm_start),
+    .ltsm_stable_clk          (ltsm_stable_clk),
+    .ltsm_pll_locked          (ltsm_pll_locked),
+    .ltsm_stable_supply       (ltsm_stable_supply),
+    .protocol_request_active  (1'b0),
+    .external_fdi_control     (1'b1),
+    .external_fdi_lp_state_req(fdi_lp_state_req),
+    .external_fdi_lp_linkerror(fdi_lp_linkerror),
+    .external_fdi_lp_rx_active_sts(fdi_lp_rx_active_sts),
+    .external_fdi_lp_wake_req (fdi_lp_wake_req),
+    .external_fdi_lp_clk_ack  (fdi_lp_clk_ack),
+    .external_fdi_lp_stall_ack(fdi_lp_stall_ack),
+    .cycles_1us               (cycles_1us),
+    .sb_tx_enable             (1'b1),
+    .sb_tx_dout               (local_serial_data),
+    .sb_tx_clk                (local_serial_clock),
+    .sb_tx_idle               (local_serial_idle),
+    .sb_rx_overflow           (local_rx_overflow),
+    .sb_rx_din                (local_in_data),
+    .sb_rx_clk                (local_in_clock),
+    .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo(local_valtrain_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload(local_valtrain_result_payload),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo(local_train1_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload(local_train1_result_payload),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo(local_train2_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload(local_train2_result_payload),
+    .ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode(local_valtrain_phase),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode(local_train1_phase),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes(local_train1_deskew),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode(local_train2_phase),
+    .ltsm_state               (local_ltsm_state),
+    .fdi_pl_state_sts         (fdi_pl_state_sts),
+    .fdi_pl_rx_active_req     (fdi_pl_rx_active_req),
+    .fdi_pl_inband_pres       (fdi_pl_inband_pres),
+    .fdi_pl_wake_ack          (fdi_pl_wake_ack),
+    .fdi_pl_clk_req           (fdi_pl_clk_req),
+    .fdi_pl_stall_req         (fdi_pl_stall_req),
+    .debug_fdi_link_init_state(debug_fdi_link_init_state),
+    .debug_rdi_state          (debug_rdi_state),
+    .ltsm_dbg_mbinitSubstate  (local_mbinit_substate),
+    .ltsm_dbg_mbtrainState    (local_mbtrain_state),
+    .ltsm_dbg_mbtrainActiveSubstate(local_mbtrain_active_substate),
+    .ltsm_dbg_flagTrainError  (local_ltsm_train_error),
+    .debug_arb_grant_ltsm     (local_grant_ltsm),
+    .debug_arb_grant_fdi      (local_grant_fdi),
+    .debug_arb_grant_rdi      (local_grant_rdi),
+    .debug_arb_tx_locked      (debug_arb_tx_locked),
+    .debug_arb_tx_fire        (local_tx_fire),
+    .debug_rx_drop_unknown    (local_unknown_drop),
+    .debug_rx_fire            (local_rx_fire)
+  );
+
+  D2DAdapterLinkMgmtLtsmSerialDieModel #(
+    .UCIE_A                           (UCIE_A),
+    .PI_CODE_WIDTH                    (PI_CODE_WIDTH),
+    .TX_DESKEW_CODE_WIDTH             (TX_DESKEW_CODE_WIDTH),
+    .DESKEW_STEPS_PER_PI              (DESKEW_STEPS_PER_PI),
+    .DESKEW_ADD_DELAY_INCREASES_PHASE (DESKEW_ADD_DELAY_INCREASES_PHASE),
+    .VAL_VREF_LEFT                    (9),
+    .VAL_VREF_RIGHT                   (14),
+    .VALTRAIN_VREF_LEFT               (10),
+    .VALTRAIN_VREF_RIGHT              (15),
+    .DATA_VREF_LEFT_BASE              (5),
+    .DATA_VREF_LANE_PERIOD            (4),
+    .DATA_VREF_WINDOW_VALUES          (5),
+    .DATATRAIN_VREF_LEFT_BASE         (7),
+    .DATATRAIN_VREF_LANE_PERIOD       (4),
+    .DATATRAIN_VREF_WINDOW_VALUES     (5),
+    .RX_DESKEW_LEFT_BASE              (7),
+    .RX_DESKEW_LANE_PERIOD            (4),
+    .RX_DESKEW_WINDOW_VALUES          (5)
+  ) peer_die (
+    .clock                    (clock),
+    .reset_n                  (reset_n),
+    .ltsm_start               (ltsm_start),
+    .ltsm_stable_clk          (ltsm_stable_clk),
+    .ltsm_pll_locked          (ltsm_pll_locked),
+    .ltsm_stable_supply       (ltsm_stable_supply),
+    .protocol_request_active  (1'b0),
+    .external_fdi_control     (1'b0),
+    .external_fdi_lp_state_req(UcieUPM_interfaces_pkg::PhyStateReq_nop),
+    .external_fdi_lp_linkerror(1'b0),
+    .external_fdi_lp_rx_active_sts(1'b0),
+    .external_fdi_lp_wake_req (1'b0),
+    .external_fdi_lp_clk_ack  (1'b0),
+    .external_fdi_lp_stall_ack(1'b0),
+    .cycles_1us               (cycles_1us),
+    .sb_tx_enable             (1'b1),
+    .sb_tx_dout               (peer_serial_data),
+    .sb_tx_clk                (peer_serial_clock),
+    .sb_tx_idle               (peer_serial_idle),
+    .sb_rx_overflow           (peer_rx_overflow),
+    .sb_rx_din                (peer_in_data),
+    .sb_rx_clk                (peer_in_clock),
+    .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo(peer_valtrain_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload(peer_valtrain_result_payload),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo(peer_train1_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload(peer_train1_result_payload),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo(peer_train2_result_info),
+    .ltsm_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload(peer_train2_result_payload),
+    .ltsm_flagToAnalog_d2cSender_valTrainCenter_txClockPhaseCode(peer_valtrain_phase),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txClockPhaseCode(peer_train1_phase),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter1_txLaneDeskewCodes(peer_train1_deskew),
+    .ltsm_flagToAnalog_d2cSender_dataTrainCenter2_txClockPhaseCode(peer_train2_phase),
+    .ltsm_state               (peer_ltsm_state),
+    .fdi_pl_state_sts         (peer_fdi_state),
+    .fdi_pl_rx_active_req     (peer_fdi_rx_active_req),
+    .fdi_pl_inband_pres       (peer_fdi_inband_pres),
+    .fdi_pl_wake_ack          (peer_fdi_wake_ack),
+    .fdi_pl_clk_req           (peer_fdi_clk_req),
+    .fdi_pl_stall_req         (peer_fdi_stall_req),
+    .debug_fdi_link_init_state(peer_fdi_init_state),
+    .debug_rdi_state          (peer_rdi_state),
+    .ltsm_dbg_mbinitSubstate  (peer_mbinit_substate),
+    .ltsm_dbg_mbtrainState    (peer_mbtrain_state),
+    .ltsm_dbg_mbtrainActiveSubstate(peer_mbtrain_active_substate),
+    .ltsm_dbg_flagTrainError  (peer_ltsm_train_error),
+    .debug_arb_grant_ltsm     (peer_grant_ltsm),
+    .debug_arb_grant_fdi      (peer_grant_fdi),
+    .debug_arb_grant_rdi      (peer_grant_rdi),
+    .debug_arb_tx_locked      (peer_tx_locked),
+    .debug_arb_tx_fire        (peer_tx_fire),
+    .debug_rx_drop_unknown    (peer_unknown_drop),
+    .debug_rx_fire            (peer_rx_fire)
+  );
+endmodule
+
+`default_nettype wire
+
+```
+
+<a id="test-D2DAdapterLinkMgmtTbSerialBfm-sv"></a>
+
+## [56] test\D2DAdapterLinkMgmtTbSerialBfm.sv
+
+```systemverilog
+// FILE_INDEX: 56
+// FILE_PATH : test\D2DAdapterLinkMgmtTbSerialBfm.sv
+
+// Testbench endpoint: complete messages are driven through the production
+// SidebandTx and decoded independently from the one-bit pins.  The packet
+// ports belong only to the stimulus/scoreboard, never to a DUT connection.
+`timescale 1ns/1ps
+`default_nettype none
+module D2DAdapterLinkMgmtTbSerialBfm #(
+  parameter int unsigned QUEUE_DEPTH = 256
+) (
+  input wire logic clock, reset_n,
+  input wire logic send_valid,
+  input wire logic [127:0] send_msg,
+  output wire logic send_ready,
+  output wire logic tx_data, tx_clock,
+  input wire logic rx_data, rx_clock,
+  output wire logic received_valid,
+  output wire logic [127:0] received_msg,
+  input wire logic received_ready,
+  output wire logic idle
+);
+  logic [127:0] received_queue [0:QUEUE_DEPTH-1];
+  integer unsigned write_count, read_count;
+  integer unsigned bit_index;
+  logic [63:0] word, saved_header;
+  logic waiting_payload;
+
+  SidebandTx tx (
+    .clock(clock), .reset_n(reset_n),
+    .din(send_msg), .valid(send_valid), .ready(send_ready),
+    .dout(tx_data), .clk_out(tx_clock),
+    .dbg_state(), .dbg_shiftReg(), .dbg_payloadReg(),
+    .dbg_bitsLeft(), .dbg_gapCount(), .dbg_payloadPending()
+  );
+
+  assign received_valid = (write_count != read_count);
+  assign received_msg = received_valid ? received_queue[read_count % QUEUE_DEPTH] : 128'b0;
+  assign idle = send_ready && !received_valid && (bit_index == 0) && !waiting_payload;
+
+  always @(posedge clock or negedge reset_n) begin
+    if (!reset_n) read_count <= 0;
+    else if (received_valid && received_ready) read_count <= read_count + 1;
+  end
+
+  // Sample the source-synchronous data at the falling edge, after the
+  // serializer has launched it on the rising edge.  Decode LSB first.
+  always @(negedge rx_clock or negedge reset_n) begin
+    if (!reset_n) begin
+      write_count = 0;
+      bit_index = 0;
+      word = 0;
+      saved_header = 0;
+      waiting_payload = 0;
+    end else begin
+      if ($isunknown(rx_data)) $fatal(1, "Serial BFM received X/Z data");
+      word[bit_index] = rx_data;
+      if (bit_index == 63) begin
+        bit_index = 0;
+        if (!waiting_payload && word[4:0] == 5'h1b) begin
+          saved_header = word;
+          waiting_payload = 1;
+        end else begin
+          if (write_count - read_count >= QUEUE_DEPTH)
+            $fatal(1, "Serial BFM receive queue overflow");
+          received_queue[write_count % QUEUE_DEPTH] = waiting_payload
+            ? {word, saved_header} : {64'b0, word};
+          write_count = write_count + 1;
+          waiting_payload = 0;
+        end
+        word = 0;
+      end else bit_index = bit_index + 1;
+    end
+  end
+endmodule
+`default_nettype wire
+
+```
+
+<a id="test-D2DAdapterLinkMgmtTbSerialLinkChecker-sv"></a>
+
+## [57] test\D2DAdapterLinkMgmtTbSerialLinkChecker.sv
+
+```systemverilog
+// FILE_INDEX: 57
+// FILE_PATH : test\D2DAdapterLinkMgmtTbSerialLinkChecker.sv
+
+// Passive scoreboard for the actual one-bit sideband link.
+// Compares accepted serializer inputs to independently decoded wire packets,
+// then checks that the receiving controller accepts each packet exactly once.
+// No monitor output feeds the DUT. This is a simulation-only checker.
+`timescale 1ns/1ps
+`default_nettype none
+module D2DAdapterLinkMgmtTbSerialLinkChecker #(
+  parameter bit CHECK_RX_ACCEPT = 1'b1,
+  parameter int unsigned QUEUE_DEPTH = 1024
+) (
+  input wire logic clock,
+  input wire logic reset_n,
+  input wire logic tx_valid,
+  input wire logic [127:0] tx_msg,
+  input wire logic tx_ready,
+  input wire logic serial_data,
+  input wire logic serial_clock,
+  input wire logic rx_valid,
+  input wire logic [127:0] rx_msg,
+  input wire logic rx_ready,
+  output logic [31:0] wire_completed,
+  output wire logic idle,
+  output wire logic error
+);
+  logic [127:0] tx_expected [0:QUEUE_DEPTH-1];
+  logic [127:0] rx_expected [0:QUEUE_DEPTH-1];
+  int unsigned tx_accepted, rx_accepted;
+  int unsigned bit_count;
+  logic [63:0] word_bits, header_bits;
+  logic payload_pending;
+  logic tx_error, rx_error, wire_error;
+  logic holding_tx;
+  logic [127:0] held_tx;
+  logic holding_rx;
+  logic [127:0] held_rx;
+  bit diagnostic;
+
+  // Diagnostic mode continues collecting evidence, but leaves error asserted
+  // so a test cannot report PASS. The normal run stops at the first error.
+  initial begin
+    diagnostic = $test$plusargs("SERIAL_DIAGNOSTIC");
+    if (QUEUE_DEPTH < 2) $fatal(1, "Serial checker queue too small");
+  end
+
+  function automatic logic [127:0] wire_form(input logic [127:0] msg);
+    return (msg[4:0] == 5'h1b) ? msg : {64'b0, msg[63:0]};
+  endfunction
+
+  task automatic report_error(input string reason);
+    if (diagnostic)
+      $display("[SERIAL ERROR] %m at %0t: %s", $time, reason);
+    else
+      $fatal(1, "[SERIAL ERROR] %m at %0t: %s", $time, reason);
+  endtask
+
+  assign error = tx_error || rx_error || wire_error;
+  assign idle = (tx_accepted == wire_completed) &&
+                (!CHECK_RX_ACCEPT || (rx_accepted == wire_completed)) &&
+                (bit_count == 0) && !payload_pending;
+
+  // Sender and receiver packet interfaces are sampled on the local clock.
+  // The supplied dual-die tests use a common clock. The serial data itself is
+  // decoded exclusively at falling edges of the forwarded clock below.
+  always @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      tx_accepted <= 0;
+      rx_accepted <= 0;
+      tx_error <= 1'b0;
+      rx_error <= 1'b0;
+      holding_tx <= 1'b0;
+      held_tx <= '0;
+      holding_rx <= 1'b0;
+      held_rx <= '0;
+    end else begin
+      if (holding_tx && ((tx_valid !== 1'b1) || (tx_msg !== held_tx))) begin
+        tx_error <= 1'b1;
+        if (!tx_error) report_error("source changed or withdrew a stalled packet");
+      end
+      holding_tx <= tx_valid && !tx_ready;
+      if (tx_valid && !tx_ready) held_tx <= tx_msg;
+
+      // The integrated top holds a decoded packet until the controller can
+      // consume it. Check that mailbox contract as well as exactly-once RX.
+      if (CHECK_RX_ACCEPT && holding_rx &&
+          ((rx_valid !== 1'b1) || (rx_msg !== held_rx))) begin
+        rx_error <= 1'b1;
+        if (!rx_error) report_error("receiver changed or withdrew a stalled packet");
+      end
+      holding_rx <= CHECK_RX_ACCEPT && rx_valid && !rx_ready;
+      if (CHECK_RX_ACCEPT && rx_valid && !rx_ready) held_rx <= rx_msg;
+
+      if (tx_valid && tx_ready) begin
+        if ((tx_accepted - wire_completed) >= QUEUE_DEPTH) begin
+          tx_error <= 1'b1;
+          if (!tx_error) report_error("TX expectation queue overflow");
+        end else begin
+          tx_expected[tx_accepted % QUEUE_DEPTH] <= wire_form(tx_msg);
+          tx_accepted <= tx_accepted + 1;
+        end
+      end
+
+      if (CHECK_RX_ACCEPT && rx_valid && rx_ready) begin
+        if (rx_accepted >= wire_completed) begin
+          rx_error <= 1'b1;
+          if (!rx_error) report_error($sformatf(
+            "receiver accepted a duplicate or premature packet: accepted=%0d wire_completed=%0d msg=%032h; check held serial RX valid",
+            rx_accepted, wire_completed, rx_msg));
+        end else begin
+          if (rx_msg !== rx_expected[rx_accepted % QUEUE_DEPTH]) begin
+            rx_error <= 1'b1;
+            if (!rx_error) report_error($sformatf(
+              "receiver packet mismatch: expected=%032h actual=%032h",
+              rx_expected[rx_accepted % QUEUE_DEPTH], rx_msg));
+          end
+          rx_accepted <= rx_accepted + 1;
+        end
+      end
+    end
+  end
+
+  // Header and optional payload are each 64 bits, least-significant bit
+  // first. No receive-valid signal or serializer internals are used to decode.
+  always @(negedge serial_clock or negedge reset_n) begin : decode_wire
+    logic [127:0] completed_msg;
+    if (!reset_n) begin
+      wire_completed = 0;
+      bit_count = 0;
+      word_bits = '0;
+      header_bits = '0;
+      payload_pending = 1'b0;
+      wire_error = 1'b0;
+    end else begin
+      if ($isunknown(serial_data)) begin
+        if (!wire_error) report_error("unknown data bit on physical sideband");
+        wire_error = 1'b1;
+      end
+      word_bits[bit_count] = serial_data;
+      if (bit_count == 63) begin
+        bit_count = 0;
+        if (!payload_pending && (word_bits[4:0] == 5'h1b)) begin
+          header_bits = word_bits;
+          payload_pending = 1'b1;
+        end else begin
+          completed_msg = payload_pending ? {word_bits, header_bits} :
+                                            {64'b0, word_bits};
+          payload_pending = 1'b0;
+          if (wire_completed >= tx_accepted) begin
+            if (!wire_error) report_error("wire packet has no accepted TX input");
+            wire_error = 1'b1;
+          end else if (completed_msg !== tx_expected[wire_completed % QUEUE_DEPTH]) begin
+            if (!wire_error) report_error($sformatf(
+              "serialized packet mismatch: expected=%032h actual=%032h",
+              tx_expected[wire_completed % QUEUE_DEPTH], completed_msg));
+            wire_error = 1'b1;
+          end
+          if (CHECK_RX_ACCEPT &&
+              ((wire_completed - rx_accepted) >= QUEUE_DEPTH)) begin
+            if (!wire_error) report_error("RX expectation queue overflow");
+            wire_error = 1'b1;
+          end
+          rx_expected[wire_completed % QUEUE_DEPTH] = completed_msg;
+          wire_completed = wire_completed + 1;
+        end
+        word_bits = '0;
+      end else bit_count = bit_count + 1;
+    end
+  end
+endmodule
+`default_nettype wire
+
+```
+
+<a id="test-D2DAdapterLinkMgmtTopIntegrated128Spec_tb-sv"></a>
+
+## [58] test\D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv
+
+```systemverilog
+// FILE_INDEX: 58
+// FILE_PATH : test\D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv
+
+// SystemVerilog translation of D2DAdapterLinkMgmtTopIntegrated128Spec(1).scala.
+// Revised to run the complete UCIe 2.0 LTSM training sequence and every
+// directed message through production one-bit sideband serializers.
+// Each die model instantiates D2DAdapterLinkMgmtLtsmSBTop, including its
+// serializer, clock-domain crossing, and controller receive mailbox.
+// The bfm_send_* / bfm_received_* API carries 128-bit test transactions.
+// Both die instances expose only one-bit sideband data and forwarded clocks.
+// Reset convention: asynchronous active-low reset_n; there is no reset signal.
+// Run one scenario with +SCENARIO=<name>, or omit it to run all scenarios.
+
+`timescale 1ns/1ps
+`default_nettype none
+
+module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
+  import UcieUPM_interfaces_pkg::*;
+  import UcieUPM_d2dadapter_pkg::*;
+
+  localparam logic [15:0] REQUIRED_MBTRAIN_STATE_MASK = 16'h5FFE;
+  localparam int unsigned MAX_LTSM_BRINGUP_CYCLES = 1_500_000;
+
+  logic clock = 1'b0;
+  logic reset_n = 1'b1;
+
+  PhyStateReq_t fdi_lp_state_req;
+  logic fdi_lp_linkerror;
+  logic fdi_lp_rx_active_sts;
+  logic fdi_lp_wake_req;
+  logic fdi_lp_clk_ack;
+  logic fdi_lp_stall_ack;
+  PhyState_t fdi_pl_state_sts;
+  logic fdi_pl_rx_active_req;
+  logic fdi_pl_inband_pres;
+  logic fdi_pl_wake_ack;
+  logic fdi_pl_clk_req;
+  logic fdi_pl_stall_req;
+
+  logic ltsm_start;
+  logic ltsm_stable_clk;
+  logic ltsm_pll_locked;
+  logic ltsm_stable_supply;
+  logic manual_sideband_mode;
+  logic [3:0] local_ltsm_state;
+  logic [3:0] peer_ltsm_state;
+  logic [2:0] local_mbinit_substate;
+  logic [2:0] peer_mbinit_substate;
+  logic [3:0] local_mbtrain_state;
+  logic [3:0] peer_mbtrain_state;
+  logic [11:0] local_mbtrain_active_substate;
+  logic [11:0] peer_mbtrain_active_substate;
+  logic local_ltsm_train_error;
+  logic peer_ltsm_train_error;
+  logic training_complete;
+  logic training_sideband_transfer;
+  logic training_unknown_drop;
+  logic serial_error;
+  logic serial_idle;
+  bit serial_failure_seen = 1'b0;
+
+  // Logical BFM transactions; the harness connects to the dies with scalar
+  // sideband data/clock signals and serializes/deserializes these messages.
+  logic bfm_received_valid;
+  logic [127:0] bfm_received_msg;
+  logic bfm_received_ready;
+  logic bfm_send_valid;
+  logic [127:0] bfm_send_msg;
+  logic bfm_send_ready;
+  logic bfm_send_idle;
+  logic [31:0] cycles_1us;
+
+  LinkInitState_t debug_fdi_link_init_state;
+  PhyState_t debug_rdi_state;
+  logic debug_arb_grant_ltsm;
+  logic debug_arb_grant_fdi;
+  logic debug_arb_grant_rdi;
+  logic debug_arb_tx_locked;
+  logic debug_arb_tx_fire;
+  logic debug_rx_drop_unknown;
+  logic debug_rx_fire;
+
+  always #5ns clock = ~clock;
+
+  task automatic step(input int unsigned cycles);
+    repeat (cycles) begin
+      @(posedge clock);
+      #1ps;
+      if (serial_error === 1'b1) serial_failure_seen = 1'b1;
+    end
+  endtask
+
+  function automatic logic [63:0] build_header(
+    input logic [15:0] msg_info,
+    input logic [7:0]  msg_code,
+    input logic [7:0]  msg_sub,
+    input logic [2:0]  src_id,
+    input logic [2:0]  dst_id,
+    input logic [4:0]  opcode,
+    input logic        data_parity
+  );
+    logic [63:0] tail;
+    logic control_parity;
+    begin
+      tail = 64'b0;
+      tail[58:56] = dst_id;
+      tail[55:40] = msg_info;
+      tail[39:32] = msg_sub;
+      tail[31:29] = src_id;
+      tail[21:14] = msg_code;
+      tail[4:0] = opcode;
+      control_parity = ^tail[61:0];
+      build_header = {data_parity, control_parity, tail[61:0]};
+    end
+  endfunction
+
+  function automatic logic [127:0] build_message(
+    input logic [63:0] header,
+    input logic [63:0] payload
+  );
+    build_message = {payload, header};
+  endfunction
+
+  localparam logic [4:0] MSG_WITHOUT_DATA = 5'h12;
+  localparam logic [4:0] MSG_WITH_64B_DATA = 5'h1b;
+  localparam logic [2:0] LOCAL_D2D = 3'h1;
+  localparam logic [2:0] LOCAL_PHY = 3'h2;
+  localparam logic [2:0] REMOTE_D2D = 3'h5;
+  localparam logic [2:0] REMOTE_PHY = 3'h6;
+  localparam logic [7:0] RDI_REQ = 8'h01;
+  localparam logic [7:0] RDI_RSP = 8'h02;
+  localparam logic [7:0] ADAPTER0_REQ = 8'h03;
+  localparam logic [7:0] ADAPTER0_RSP = 8'h04;
+  localparam logic [7:0] SUB_ACTIVE = 8'h01;
+  localparam logic [7:0] SUB_LINKRESET = 8'h09;
+  localparam logic [7:0] SUB_LINKERROR = 8'h0a;
+  localparam logic [7:0] SUB_RETRAIN = 8'h0b;
+  localparam logic [7:0] SUB_DISABLE = 8'h0c;
+  localparam logic [63:0] RAW_STREAMING_ADV_CAP_PAYLOAD = 64'h0000_0000_0000_0091;
+
+  localparam logic [63:0] LOCAL_RDI_REQ_ACTIVE =
+    build_header(16'h0, RDI_REQ, SUB_ACTIVE, LOCAL_PHY, REMOTE_PHY, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] LOCAL_RDI_RSP_ACTIVE =
+    build_header(16'h0, RDI_RSP, SUB_ACTIVE, LOCAL_PHY, REMOTE_PHY, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_RDI_REQ_ACTIVE =
+    build_header(16'h0, RDI_REQ, SUB_ACTIVE, REMOTE_PHY, LOCAL_PHY, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_RDI_RSP_ACTIVE =
+    build_header(16'h0, RDI_RSP, SUB_ACTIVE, REMOTE_PHY, LOCAL_PHY, MSG_WITHOUT_DATA, 1'b0);
+
+  localparam logic [63:0] LOCAL_ADAPTER_REQ_ACTIVE =
+    build_header(16'h0, ADAPTER0_REQ, SUB_ACTIVE, LOCAL_D2D, REMOTE_D2D, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] LOCAL_ADAPTER_RSP_ACTIVE =
+    build_header(16'h0, ADAPTER0_RSP, SUB_ACTIVE, LOCAL_D2D, REMOTE_D2D, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_ADAPTER_REQ_ACTIVE =
+    build_header(16'h0, ADAPTER0_REQ, SUB_ACTIVE, REMOTE_D2D, LOCAL_D2D, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_ADAPTER_RSP_ACTIVE =
+    build_header(16'h0, ADAPTER0_RSP, SUB_ACTIVE, REMOTE_D2D, LOCAL_D2D, MSG_WITHOUT_DATA, 1'b0);
+
+  localparam logic [63:0] LOCAL_ADV_CAP_ADAPTER =
+    build_header(16'h0, 8'h01, 8'h00, LOCAL_D2D, REMOTE_D2D,
+                 MSG_WITH_64B_DATA, ^RAW_STREAMING_ADV_CAP_PAYLOAD);
+  localparam logic [63:0] REMOTE_ADV_CAP_ADAPTER =
+    build_header(16'h0, 8'h01, 8'h00, REMOTE_D2D, LOCAL_D2D,
+                 MSG_WITH_64B_DATA, ^RAW_STREAMING_ADV_CAP_PAYLOAD);
+
+  localparam logic [63:0] LOCAL_RDI_REQ_RETRAIN =
+    build_header(16'h0, RDI_REQ, SUB_RETRAIN, LOCAL_PHY, REMOTE_PHY, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_RDI_RSP_RETRAIN =
+    build_header(16'h0, RDI_RSP, SUB_RETRAIN, REMOTE_PHY, LOCAL_PHY, MSG_WITHOUT_DATA, 1'b0);
+
+  localparam logic [63:0] LOCAL_RDI_REQ_DISABLE =
+    build_header(16'h0, RDI_REQ, SUB_DISABLE, LOCAL_PHY, REMOTE_PHY, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_RDI_RSP_DISABLE =
+    build_header(16'h0, RDI_RSP, SUB_DISABLE, REMOTE_PHY, LOCAL_PHY, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] LOCAL_ADAPTER_REQ_DISABLE =
+    build_header(16'h0, ADAPTER0_REQ, SUB_DISABLE, LOCAL_D2D, REMOTE_D2D, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_ADAPTER_RSP_DISABLE =
+    build_header(16'h0, ADAPTER0_RSP, SUB_DISABLE, REMOTE_D2D, LOCAL_D2D, MSG_WITHOUT_DATA, 1'b0);
+
+  localparam logic [63:0] LOCAL_RDI_REQ_LINKRESET =
+    build_header(16'h0, RDI_REQ, SUB_LINKRESET, LOCAL_PHY, REMOTE_PHY, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_RDI_RSP_LINKRESET =
+    build_header(16'h0, RDI_RSP, SUB_LINKRESET, REMOTE_PHY, LOCAL_PHY, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] LOCAL_ADAPTER_REQ_LINKRESET =
+    build_header(16'h0, ADAPTER0_REQ, SUB_LINKRESET, LOCAL_D2D, REMOTE_D2D, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_ADAPTER_RSP_LINKRESET =
+    build_header(16'h0, ADAPTER0_RSP, SUB_LINKRESET, REMOTE_D2D, LOCAL_D2D, MSG_WITHOUT_DATA, 1'b0);
+
+  localparam logic [63:0] LOCAL_RDI_REQ_LINKERROR =
+    build_header(16'h0, RDI_REQ, SUB_LINKERROR, LOCAL_PHY, REMOTE_PHY, MSG_WITHOUT_DATA, 1'b0);
+  localparam logic [63:0] REMOTE_RDI_RSP_LINKERROR =
+    build_header(16'h0, RDI_RSP, SUB_LINKERROR, REMOTE_PHY, LOCAL_PHY, MSG_WITHOUT_DATA, 1'b0);
+
+  D2DAdapterLinkMgmtLtsmIntegrated128Harness dut (
+    .clock(clock),
+    .reset_n(reset_n),
+    .ltsm_start(ltsm_start),
+    .ltsm_stable_clk(ltsm_stable_clk),
+    .ltsm_pll_locked(ltsm_pll_locked),
+    .ltsm_stable_supply(ltsm_stable_supply),
+    .manual_sideband_mode(manual_sideband_mode),
+    .fdi_lp_state_req(fdi_lp_state_req),
+    .fdi_lp_linkerror(fdi_lp_linkerror),
+    .fdi_lp_rx_active_sts(fdi_lp_rx_active_sts),
+    .fdi_lp_wake_req(fdi_lp_wake_req),
+    .fdi_lp_clk_ack(fdi_lp_clk_ack),
+    .fdi_lp_stall_ack(fdi_lp_stall_ack),
+    .fdi_pl_state_sts(fdi_pl_state_sts),
+    .fdi_pl_rx_active_req(fdi_pl_rx_active_req),
+    .fdi_pl_inband_pres(fdi_pl_inband_pres),
+    .fdi_pl_wake_ack(fdi_pl_wake_ack),
+    .fdi_pl_clk_req(fdi_pl_clk_req),
+    .fdi_pl_stall_req(fdi_pl_stall_req),
+    .bfm_received_valid(bfm_received_valid),
+    .bfm_received_msg(bfm_received_msg),
+    .bfm_received_ready(bfm_received_ready),
+    .bfm_send_valid(bfm_send_valid),
+    .bfm_send_msg(bfm_send_msg),
+    .bfm_send_ready(bfm_send_ready),
+    .bfm_send_idle(bfm_send_idle),
+    .cycles_1us(cycles_1us),
+    .local_ltsm_state(local_ltsm_state),
+    .peer_ltsm_state(peer_ltsm_state),
+    .local_mbinit_substate(local_mbinit_substate),
+    .peer_mbinit_substate(peer_mbinit_substate),
+    .local_mbtrain_state(local_mbtrain_state),
+    .peer_mbtrain_state(peer_mbtrain_state),
+    .local_mbtrain_active_substate(local_mbtrain_active_substate),
+    .peer_mbtrain_active_substate(peer_mbtrain_active_substate),
+    .local_ltsm_train_error(local_ltsm_train_error),
+    .peer_ltsm_train_error(peer_ltsm_train_error),
+    .training_complete(training_complete),
+    .training_sideband_transfer(training_sideband_transfer),
+    .training_unknown_drop(training_unknown_drop),
+    .serial_error(serial_error),
+    .serial_idle(serial_idle),
+    .debug_fdi_link_init_state(debug_fdi_link_init_state),
+    .debug_rdi_state(debug_rdi_state),
+    .debug_arb_grant_ltsm(debug_arb_grant_ltsm),
+    .debug_arb_grant_fdi(debug_arb_grant_fdi),
+    .debug_arb_grant_rdi(debug_arb_grant_rdi),
+    .debug_arb_tx_locked(debug_arb_tx_locked),
+    .debug_arb_tx_fire(debug_arb_tx_fire),
+    .debug_rx_drop_unknown(debug_rx_drop_unknown),
+    .debug_rx_fire(debug_rx_fire)
+  );
+
+  task automatic reset_and_initialize(input logic run_ltsm_training);
+    int unsigned training_cycles;
+    logic [15:0] local_ltsm_visited;
+    logic [15:0] peer_ltsm_visited;
+    logic [15:0] local_mbtrain_visited;
+    logic [15:0] peer_mbtrain_visited;
+    logic saw_training_transfer;
+    logic saw_training_unknown_drop;
+    begin
+      // Never use reset to discard an accepted or partially serialized frame
+      // from the preceding scenario (including direct Reset-exit subcases).
+      if (reset_n && manual_sideband_mode)
+        finish_serial_exchange(
+          (fdi_pl_state_sts == PhyState_reset) &&
+          (debug_rdi_state == PhyState_reset) &&
+          (fdi_lp_state_req == PhyStateReq_active));
+      fdi_lp_state_req = PhyStateReq_nop;
+      fdi_lp_linkerror = 1'b0;
+      fdi_lp_rx_active_sts = 1'b0;
+      fdi_lp_wake_req = 1'b0;
+      fdi_lp_clk_ack = 1'b0;
+      fdi_lp_stall_ack = 1'b0;
+      ltsm_start = 1'b0;
+      ltsm_stable_clk = 1'b0;
+      ltsm_pll_locked = 1'b0;
+      ltsm_stable_supply = 1'b0;
+      manual_sideband_mode = 1'b0;
+      cycles_1us = run_ltsm_training ? 32'd1000 : 32'd1;
+      bfm_received_ready = 1'b0;
+      bfm_send_valid = 1'b0;
+      bfm_send_msg = 128'b0;
+
+      reset_n = 1'b0;
+      step(3);
+      @(negedge clock);
+      #1ps;
+      reset_n = 1'b1;
+      step(1);
+
+      if (local_ltsm_state !== 4'd0 || peer_ltsm_state !== 4'd0)
+        $fatal(1, "Post-reset LTSM state mismatch: local=%0d peer=%0d",
+               local_ltsm_state, peer_ltsm_state);
+
+      if (run_ltsm_training) begin
+        ltsm_start = 1'b1;
+        ltsm_stable_clk = 1'b1;
+        ltsm_pll_locked = 1'b1;
+        ltsm_stable_supply = 1'b1;
+
+        local_ltsm_visited = 16'h0001 << local_ltsm_state;
+        peer_ltsm_visited = 16'h0001 << peer_ltsm_state;
+        local_mbtrain_visited = 16'h0001 << local_mbtrain_state;
+        peer_mbtrain_visited = 16'h0001 << peer_mbtrain_state;
+        saw_training_transfer = 1'b0;
+        saw_training_unknown_drop = 1'b0;
+        training_cycles = 0;
+
+        while (training_cycles < MAX_LTSM_BRINGUP_CYCLES &&
+               (training_complete !== 1'b1)) begin
+          local_ltsm_visited |= 16'h0001 << local_ltsm_state;
+          peer_ltsm_visited |= 16'h0001 << peer_ltsm_state;
+          local_mbtrain_visited |= 16'h0001 << local_mbtrain_state;
+          peer_mbtrain_visited |= 16'h0001 << peer_mbtrain_state;
+          saw_training_transfer |= training_sideband_transfer;
+          saw_training_unknown_drop |= training_unknown_drop;
+
+          if ((local_ltsm_train_error === 1'b1) ||
+              (peer_ltsm_train_error === 1'b1))
+            $fatal(1, "LTSM training error at cycle %0d: LTSM=(%0d,%0d) MBTRAIN=(%0h,%0h)",
+                   training_cycles, local_ltsm_state, peer_ltsm_state,
+                   local_mbtrain_state, peer_mbtrain_state);
+          step(1);
+          training_cycles++;
+        end
+
+        local_ltsm_visited |= 16'h0001 << local_ltsm_state;
+        peer_ltsm_visited |= 16'h0001 << peer_ltsm_state;
+        local_mbtrain_visited |= 16'h0001 << local_mbtrain_state;
+        peer_mbtrain_visited |= 16'h0001 << peer_mbtrain_state;
+        saw_training_transfer |= training_sideband_transfer;
+        saw_training_unknown_drop |= training_unknown_drop;
+
+        if (training_complete !== 1'b1)
+          $fatal(1, "Timed out after %0d clocks waiting for LTSM training: LTSM=(%0d,%0d) MBTRAIN=(%0h,%0h)",
+                 MAX_LTSM_BRINGUP_CYCLES, local_ltsm_state, peer_ltsm_state,
+                 local_mbtrain_state, peer_mbtrain_state);
+        if ((local_ltsm_visited & 16'h01FF) !== 16'h01FF ||
+            (peer_ltsm_visited & 16'h01FF) !== 16'h01FF)
+          $fatal(1, "LTSM state coverage mismatch: local=0x%04h peer=0x%04h",
+                 local_ltsm_visited, peer_ltsm_visited);
+        if ((local_mbtrain_visited & REQUIRED_MBTRAIN_STATE_MASK) !==
+              REQUIRED_MBTRAIN_STATE_MASK ||
+            (peer_mbtrain_visited & REQUIRED_MBTRAIN_STATE_MASK) !==
+              REQUIRED_MBTRAIN_STATE_MASK)
+          $fatal(1, "MBTRAIN state coverage mismatch: local=0x%04h peer=0x%04h required=0x%04h",
+                 local_mbtrain_visited, peer_mbtrain_visited,
+                 REQUIRED_MBTRAIN_STATE_MASK);
+        if (saw_training_transfer !== 1'b1)
+          $fatal(1, "No LTSM sideband packet traversed the integrated top during training");
+        if (saw_training_unknown_drop !== 1'b0)
+          $fatal(1, "An LTSM training packet was dropped as an unknown sideband message");
+
+        $display("[ltsm] PASS: cycles=%0d LTSM masks=(0x%04h,0x%04h) MBTRAIN masks=(0x%04h,0x%04h)",
+                 training_cycles, local_ltsm_visited, peer_ltsm_visited,
+                 local_mbtrain_visited, peer_mbtrain_visited);
+
+        // The harness declares completion only after serial FIFOs, complete
+        // wire frames, and the training relay have drained.  Directed task
+        // traffic continues through the same local serial pins after this.
+        // cycles_1us returns to one for the existing 16-ms residency check;
+        // the shortest adapter timer is still 4000 clocks, well above the
+        // maximum 192-clock serialized frame and directed response latency.
+        manual_sideband_mode = 1'b1;
+        cycles_1us = 32'd1;
+        step(2);
+      end else begin
+        // Direct Reset-exit scenarios intentionally keep the physical LTSM in
+        // Reset, matching the old explicit ltsm_pl_inband_pres=0 stimulus.
+        manual_sideband_mode = 1'b1;
+        cycles_1us = 32'd1;
+        step(2);
+      end
+    end
+  endtask
+
+  task automatic take_tx_message(
+    output logic [63:0] header,
+    output logic [63:0] payload,
+    output logic has_payload,
+    input int unsigned max_cycles
+  );
+    int unsigned wait_message;
+    begin
+      bfm_received_ready = 1'b0;
+      wait_message = 0;
+      while (!bfm_received_valid && wait_message < max_cycles) begin
+        step(1);
+        wait_message++;
+      end
+      if (wait_message >= max_cycles)
+        $fatal(1, "No TX message within %0d cycles", max_cycles);
+
+      header = bfm_received_msg[63:0];
+      payload = bfm_received_msg[127:64];
+      has_payload = (header[4:0] == MSG_WITH_64B_DATA);
+
+      bfm_received_ready = 1'b1;
+      step(1);
+      bfm_received_ready = 1'b0;
+    end
+  endtask
+
+  task automatic send_rx_message(
+    input logic [63:0] header,
+    input logic [63:0] payload,
+    input logic has_payload,
+    input int unsigned max_cycles
+  );
+    int unsigned wait_ready;
+    begin
+      bfm_send_valid = 1'b0;
+      wait_ready = 0;
+      while (!bfm_send_ready && wait_ready < max_cycles) begin
+        step(1);
+        wait_ready++;
+      end
+      if (wait_ready >= max_cycles)
+        $fatal(1, "RX not ready for header 0x%016h", header);
+
+      bfm_send_msg = build_message(header, has_payload ? payload : 64'b0);
+      bfm_send_valid = 1'b1;
+      step(1);
+      bfm_send_valid = 1'b0;
+      bfm_send_msg = 128'b0;
+      // Input ready belongs to the BFM serializer. Wait through the entire
+      // frame and final 32-bit idle gap, then require the passive checker to
+      // have observed acceptance by the integrated top's receive mailbox.
+      wait_ready = 0;
+      while ((!bfm_send_ready || !bfm_send_idle) && wait_ready < max_cycles) begin
+        step(1);
+        wait_ready++;
+      end
+      if (wait_ready >= max_cycles)
+        $fatal(1, "Injected header 0x%016h did not finish serial TX and mailbox acceptance", header);
+      step(2);
+    end
+  endtask
+
+  task automatic finish_serial_exchange(input logic allow_reset_follow_on);
+    logic [63:0] header, payload;
+    logic has_payload;
+    int unsigned waited, quiet_cycles, follow_on_count;
+    begin
+      waited = 0;
+      quiet_cycles = 0;
+      follow_on_count = 0;
+      // Checkers include accepted-but-not-yet-sent and not-yet-consumed
+      // frames.  The idle condition also covers the serializer's final gap.
+      while (quiet_cycles < 16 && waited < 2000) begin
+        if (bfm_received_valid) begin
+          take_tx_message(header, payload, has_payload, 1000);
+          // Disabled/LinkReset -> Reset leaves LP Req.Active asserted.
+          // An autonomous new RDI Req.Active is therefore an expected
+          // follow-on transaction.  Observe it on the wire before resetting.
+          if (!allow_reset_follow_on || header !== LOCAL_RDI_REQ_ACTIVE ||
+              has_payload || follow_on_count != 0)
+            $fatal(1, "Unexpected trailing serialized message 0x%016h", header);
+          follow_on_count++;
+          quiet_cycles = 0;
+        end
+        step(1);
+        waited++;
+        if (serial_idle && !bfm_received_valid) quiet_cycles++;
+        else quiet_cycles = 0;
+      end
+      if (quiet_cycles < 16)
+        $fatal(1, "Serial transport failed to drain before scenario reset/completion");
+      if (serial_error || serial_failure_seen)
+        $fatal(1, "Serial checker reported a failure before scenario completion");
+    end
+  endtask
+
+  task automatic bring_both_controllers_to_active;
+    logic [63:0] header;
+    logic [63:0] payload;
+    logic has_payload;
+    int unsigned count;
+    begin
+      reset_and_initialize(1'b1);
+
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_RDI_REQ_ACTIVE || has_payload)
+        $fatal(1, "Bring-up: expected local RDI Req.Active, got header=0x%016h payload=%0b", header, has_payload);
+
+      send_rx_message(REMOTE_RDI_REQ_ACTIVE, 64'b0, 1'b0, 1000);
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_RDI_RSP_ACTIVE)
+        $fatal(1, "Bring-up: expected local RDI Rsp.Active, got 0x%016h", header);
+      send_rx_message(REMOTE_RDI_RSP_ACTIVE, 64'b0, 1'b0, 1000);
+
+      count = 0;
+      while (debug_rdi_state != PhyState_active && count < 300) begin
+        step(1);
+        count++;
+      end
+      if (count >= 300) $fatal(1, "Bring-up: RDI did not reach Active");
+
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_ADV_CAP_ADAPTER || payload !== RAW_STREAMING_ADV_CAP_PAYLOAD || !has_payload)
+        $fatal(1, "Bring-up: AdvCap.Adapter mismatch header=0x%016h payload=0x%016h hasPayload=%0b",
+               header, payload, has_payload);
+      send_rx_message(REMOTE_ADV_CAP_ADAPTER, RAW_STREAMING_ADV_CAP_PAYLOAD, 1'b1, 1000);
+
+      count = 0;
+      while (debug_fdi_link_init_state != LinkInitState_FDI_WAIT_LP_REQ_ACTIVE && count < 300) begin
+        step(1);
+        count++;
+      end
+      if (count >= 300) $fatal(1, "Bring-up: FDI did not finish Parameter Exchange");
+
+      fdi_lp_state_req = PhyStateReq_nop;
+      step(2);
+      fdi_lp_state_req = PhyStateReq_active;
+
+      count = 0;
+      while (!fdi_pl_rx_active_req && count < 300) begin
+        step(1);
+        count++;
+      end
+      if (count >= 300) $fatal(1, "Bring-up: FDI did not request RX Active");
+      fdi_lp_rx_active_sts = 1'b1;
+      step(2);
+
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_ADAPTER_REQ_ACTIVE)
+        $fatal(1, "Bring-up: expected local Adapter Req.Active, got 0x%016h", header);
+      send_rx_message(REMOTE_ADAPTER_REQ_ACTIVE, 64'b0, 1'b0, 1000);
+
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_ADAPTER_RSP_ACTIVE)
+        $fatal(1, "Bring-up: expected local Adapter Rsp.Active, got 0x%016h", header);
+      send_rx_message(REMOTE_ADAPTER_RSP_ACTIVE, 64'b0, 1'b0, 1000);
+
+      count = 0;
+      while (fdi_pl_state_sts != PhyState_active && count < 300) begin
+        step(1);
+        count++;
+      end
+      if (count >= 300) $fatal(1, "Bring-up: FDI did not reach Active");
+      if (debug_rdi_state != PhyState_active || !fdi_pl_inband_pres)
+        $fatal(1, "Bring-up final state/inband mismatch");
+    end
+  endtask
+
+  task automatic scenario_retrain;
+    logic [63:0] header;
+    logic [63:0] payload;
+    logic has_payload;
+    int unsigned count;
+    begin
+      $display("[scenario] Reset -> Active -> Retrain -> Active");
+      bring_both_controllers_to_active();
+
+      fdi_lp_state_req = PhyStateReq_nop;
+      step(2);
+      fdi_lp_state_req = PhyStateReq_retrain;
+
+      count = 0;
+      while (!fdi_pl_stall_req && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "No FDI stall before Retrain");
+      fdi_lp_stall_ack = 1'b1;
+      step(3);
+
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_RDI_REQ_RETRAIN)
+        $fatal(1, "Expected local RDI Req.Retrain, got 0x%016h", header);
+      send_rx_message(REMOTE_RDI_RSP_RETRAIN, 64'b0, 1'b0, 1000);
+
+      count = 0;
+      while (fdi_pl_rx_active_req && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "RX Active request did not fall for Retrain");
+      fdi_lp_rx_active_sts = 1'b0;
+
+      count = 0;
+      while ((fdi_pl_state_sts != PhyState_retrain || debug_rdi_state != PhyState_retrain) && count < 500) begin
+        step(1); count++;
+      end
+      if (count >= 500) $fatal(1, "FDI/RDI did not both reach Retrain");
+
+      count = 0;
+      while (fdi_pl_stall_req && count < 100) begin step(1); count++; end
+      if (count >= 100) $fatal(1, "Stall request did not fall in Retrain");
+      fdi_lp_stall_ack = 1'b0;
+      step(2);
+
+      fdi_lp_state_req = PhyStateReq_nop;
+      step(2);
+      fdi_lp_state_req = PhyStateReq_active;
+
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_RDI_REQ_ACTIVE)
+        $fatal(1, "Retrain exit: expected RDI Req.Active, got 0x%016h", header);
+      send_rx_message(REMOTE_RDI_REQ_ACTIVE, 64'b0, 1'b0, 1000);
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_RDI_RSP_ACTIVE)
+        $fatal(1, "Retrain exit: expected RDI Rsp.Active, got 0x%016h", header);
+      send_rx_message(REMOTE_RDI_RSP_ACTIVE, 64'b0, 1'b0, 1000);
+
+      count = 0;
+      while (debug_rdi_state != PhyState_active && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "RDI did not return to Active");
+
+      count = 0;
+      while (!fdi_pl_rx_active_req && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "FDI did not request RX Active on Retrain exit");
+      fdi_lp_rx_active_sts = 1'b1;
+      step(2);
+
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_ADAPTER_REQ_ACTIVE)
+        $fatal(1, "Retrain exit: expected Adapter Req.Active, got 0x%016h", header);
+      send_rx_message(REMOTE_ADAPTER_REQ_ACTIVE, 64'b0, 1'b0, 1000);
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_ADAPTER_RSP_ACTIVE)
+        $fatal(1, "Retrain exit: expected Adapter Rsp.Active, got 0x%016h", header);
+      send_rx_message(REMOTE_ADAPTER_RSP_ACTIVE, 64'b0, 1'b0, 1000);
+
+      count = 0;
+      while (fdi_pl_state_sts != PhyState_active && count < 300) begin step(1); count++; end
+      if (count >= 300 || debug_rdi_state != PhyState_active)
+        $fatal(1, "FDI/RDI did not return to Active");
+      finish_serial_exchange(1'b0);
+      $display("PASS: scenario_retrain");
+    end
+  endtask
+
+  task automatic scenario_disabled;
+    logic [63:0] header;
+    logic [63:0] payload;
+    logic has_payload;
+    logic saw_adapter;
+    logic saw_rdi;
+    int unsigned count;
+    int unsigned packets;
+    begin
+      $display("[scenario] Active -> Disabled -> Reset");
+      bring_both_controllers_to_active();
+
+      fdi_lp_state_req = PhyStateReq_nop;
+      step(2);
+      fdi_lp_state_req = PhyStateReq_disabled;
+
+      count = 0;
+      while (!fdi_pl_stall_req && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "No FDI stall before Disabled");
+      fdi_lp_stall_ack = 1'b1;
+      step(3);
+
+      saw_adapter = 1'b0;
+      saw_rdi = 1'b0;
+      packets = 0;
+      while (!(saw_adapter && saw_rdi) && packets < 4) begin
+        take_tx_message(header, payload, has_payload, 1000);
+        if (header == LOCAL_ADAPTER_REQ_DISABLE) begin
+          if (saw_adapter) $fatal(1, "Duplicate Adapter Req.Disable");
+          saw_adapter = 1'b1;
+        end else if (header == LOCAL_RDI_REQ_DISABLE) begin
+          if (saw_rdi) $fatal(1, "Duplicate RDI Req.Disable");
+          saw_rdi = 1'b1;
+        end else begin
+          $fatal(1, "Unexpected Disable message 0x%016h", header);
+        end
+        packets++;
+      end
+      if (!(saw_adapter && saw_rdi)) $fatal(1, "Did not observe both Disable requests");
+
+      send_rx_message(REMOTE_RDI_RSP_DISABLE, 64'b0, 1'b0, 1000);
+      count = 0;
+      while (debug_rdi_state != PhyState_disabled && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "RDI did not reach Disabled");
+
+      send_rx_message(REMOTE_ADAPTER_RSP_DISABLE, 64'b0, 1'b0, 1000);
+      count = 0;
+      while (fdi_pl_rx_active_req && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "RX Active request did not fall for Disabled");
+      fdi_lp_rx_active_sts = 1'b0;
+
+      count = 0;
+      while ((fdi_pl_state_sts != PhyState_disabled || debug_rdi_state != PhyState_disabled) && count < 500) begin
+        step(1); count++;
+      end
+      if (count >= 500) $fatal(1, "FDI/RDI did not both reach Disabled");
+
+      count = 0;
+      while (fdi_pl_stall_req && count < 100) begin step(1); count++; end
+      fdi_lp_stall_ack = 1'b0;
+      step(2);
+      if (fdi_pl_state_sts != PhyState_disabled || debug_rdi_state != PhyState_disabled || fdi_pl_inband_pres)
+        $fatal(1, "Disabled final state/inband mismatch");
+
+      fdi_lp_state_req = PhyStateReq_nop;
+      step(2);
+      fdi_lp_state_req = PhyStateReq_active;
+      count = 0;
+      while ((fdi_pl_state_sts != PhyState_reset || debug_rdi_state != PhyState_reset) && count < 300) begin
+        step(1); count++;
+      end
+      if (count >= 300) $fatal(1, "Disabled did not return through Reset");
+      finish_serial_exchange(1'b1);
+      $display("PASS: scenario_disabled");
+    end
+  endtask
+
+  task automatic scenario_linkreset;
+    logic [63:0] header;
+    logic [63:0] payload;
+    logic has_payload;
+    logic saw_adapter;
+    logic saw_rdi;
+    int unsigned count;
+    int unsigned packets;
+    begin
+      $display("[scenario] Active -> LinkReset -> Reset");
+      bring_both_controllers_to_active();
+
+      fdi_lp_state_req = PhyStateReq_nop;
+      step(2);
+      fdi_lp_state_req = PhyStateReq_linkReset;
+
+      count = 0;
+      while (!fdi_pl_stall_req && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "No FDI stall before LinkReset");
+      fdi_lp_stall_ack = 1'b1;
+      step(3);
+
+      saw_adapter = 1'b0;
+      saw_rdi = 1'b0;
+      packets = 0;
+      while (!(saw_adapter && saw_rdi) && packets < 4) begin
+        take_tx_message(header, payload, has_payload, 1000);
+        if (header == LOCAL_ADAPTER_REQ_LINKRESET) begin
+          if (saw_adapter) $fatal(1, "Duplicate Adapter Req.LinkReset");
+          saw_adapter = 1'b1;
+        end else if (header == LOCAL_RDI_REQ_LINKRESET) begin
+          if (saw_rdi) $fatal(1, "Duplicate RDI Req.LinkReset");
+          saw_rdi = 1'b1;
+        end else begin
+          $fatal(1, "Unexpected LinkReset message 0x%016h", header);
+        end
+        packets++;
+      end
+      if (!(saw_adapter && saw_rdi)) $fatal(1, "Did not observe both LinkReset requests");
+
+      send_rx_message(REMOTE_RDI_RSP_LINKRESET, 64'b0, 1'b0, 1000);
+      count = 0;
+      while (debug_rdi_state != PhyState_linkReset && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "RDI did not reach LinkReset");
+
+      send_rx_message(REMOTE_ADAPTER_RSP_LINKRESET, 64'b0, 1'b0, 1000);
+      count = 0;
+      while (fdi_pl_rx_active_req && count < 300) begin step(1); count++; end
+      if (count >= 300) $fatal(1, "RX Active request did not fall for LinkReset");
+      fdi_lp_rx_active_sts = 1'b0;
+
+      count = 0;
+      while ((fdi_pl_state_sts != PhyState_linkReset || debug_rdi_state != PhyState_linkReset) && count < 500) begin
+        step(1); count++;
+      end
+      if (count >= 500) $fatal(1, "FDI/RDI did not both reach LinkReset");
+
+      count = 0;
+      while (fdi_pl_stall_req && count < 100) begin step(1); count++; end
+      fdi_lp_stall_ack = 1'b0;
+      step(2);
+      if (fdi_pl_state_sts != PhyState_linkReset || debug_rdi_state != PhyState_linkReset)
+        $fatal(1, "LinkReset final state mismatch");
+
+      fdi_lp_state_req = PhyStateReq_nop;
+      step(2);
+      fdi_lp_state_req = PhyStateReq_active;
+      count = 0;
+      while ((fdi_pl_state_sts != PhyState_reset || debug_rdi_state != PhyState_reset) && count < 300) begin
+        step(1); count++;
+      end
+      if (count >= 300) $fatal(1, "LinkReset did not return through Reset");
+      finish_serial_exchange(1'b1);
+      $display("PASS: scenario_linkreset");
+    end
+  endtask
+
+  task automatic scenario_linkerror;
+    logic [63:0] header;
+    logic [63:0] payload;
+    logic has_payload;
+    int unsigned count;
+    begin
+      $display("[scenario] Active -> LinkError -> Reset after 16 ms residency");
+      bring_both_controllers_to_active();
+
+      fdi_lp_linkerror = 1'b1;
+      take_tx_message(header, payload, has_payload, 1000);
+      if (header !== LOCAL_RDI_REQ_LINKERROR)
+        $fatal(1, "Expected local RDI Req.LinkError, got 0x%016h", header);
+      send_rx_message(REMOTE_RDI_RSP_LINKERROR, 64'b0, 1'b0, 1000);
+
+      count = 0;
+      while (fdi_pl_rx_active_req && count < 300) begin step(1); count++; end
+      fdi_lp_rx_active_sts = 1'b0;
+
+      count = 0;
+      while ((fdi_pl_state_sts != PhyState_linkError || debug_rdi_state != PhyState_linkError) && count < 300) begin
+        step(1); count++;
+      end
+      if (count >= 300) $fatal(1, "FDI/RDI did not both reach LinkError");
+      if (fdi_pl_stall_req || fdi_pl_inband_pres)
+        $fatal(1, "LinkError stall/inband outputs are incorrect");
+
+      fdi_lp_linkerror = 1'b0;
+      fdi_lp_state_req = PhyStateReq_active;
+
+      step(15000);
+      if (fdi_pl_state_sts != PhyState_linkError || debug_rdi_state != PhyState_linkError)
+        $fatal(1, "LinkError exited before the configured residency");
+
+      step(1100);
+      count = 0;
+      while ((fdi_pl_state_sts != PhyState_reset || debug_rdi_state != PhyState_reset) && count < 100) begin
+        step(1); count++;
+      end
+      if (count >= 100) $fatal(1, "LinkError did not return to Reset after residency");
+      finish_serial_exchange(1'b1);
+      $display("PASS: scenario_linkerror");
+    end
+  endtask
+
+  task automatic scenario_direct_reset_exits;
+    logic [63:0] header;
+    logic [63:0] payload;
+    logic has_payload;
+    logic saw_adapter;
+    logic saw_rdi;
+    int unsigned packets;
+    int unsigned count;
+    string direct_reset_case;
+    begin
+      if (!$value$plusargs("DIRECT_RESET_CASE=%s", direct_reset_case))
+        direct_reset_case = "all";
+      if (direct_reset_case != "all" && direct_reset_case != "disabled" &&
+          direct_reset_case != "linkreset" && direct_reset_case != "linkerror")
+        $fatal(1, "Unknown +DIRECT_RESET_CASE=%s", direct_reset_case);
+      $display("[scenario] Direct Reset exits case=%s", direct_reset_case);
+
+      if (direct_reset_case == "all" || direct_reset_case == "disabled") begin
+        // Reset -> Disabled -> Reset.
+        reset_and_initialize(1'b0);
+        fdi_lp_state_req = PhyStateReq_nop;
+        step(2);
+        fdi_lp_state_req = PhyStateReq_disabled;
+
+        saw_adapter = 1'b0;
+        saw_rdi = 1'b0;
+        packets = 0;
+        while (!(saw_adapter && saw_rdi) && packets < 4) begin
+          take_tx_message(header, payload, has_payload, 1000);
+          if (header == LOCAL_ADAPTER_REQ_DISABLE) saw_adapter = 1'b1;
+          else if (header == LOCAL_RDI_REQ_DISABLE) saw_rdi = 1'b1;
+          else $fatal(1, "Unexpected Reset->Disabled message 0x%016h", header);
+          packets++;
+        end
+        if (!(saw_adapter && saw_rdi)) $fatal(1, "Reset->Disabled requests incomplete");
+
+        send_rx_message(REMOTE_RDI_RSP_DISABLE, 64'b0, 1'b0, 1000);
+        count = 0;
+        while (debug_rdi_state != PhyState_disabled && count < 300) begin step(1); count++; end
+        send_rx_message(REMOTE_ADAPTER_RSP_DISABLE, 64'b0, 1'b0, 1000);
+        count = 0;
+        while ((fdi_pl_state_sts != PhyState_disabled || debug_rdi_state != PhyState_disabled) && count < 500) begin
+          step(1); count++;
+        end
+        if (count >= 500) $fatal(1, "Direct Reset->Disabled did not complete");
+
+        fdi_lp_state_req = PhyStateReq_active;
+        count = 0;
+        while ((fdi_pl_state_sts != PhyState_reset || debug_rdi_state != PhyState_reset) && count < 300) begin
+          step(1); count++;
+        end
+        if (count >= 300) $fatal(1, "Disabled->Reset did not complete");
+      end
+
+      if (direct_reset_case == "all" || direct_reset_case == "linkreset") begin
+        // Reset -> LinkReset -> Reset.
+        reset_and_initialize(1'b0);
+        fdi_lp_state_req = PhyStateReq_nop;
+        step(2);
+        fdi_lp_state_req = PhyStateReq_linkReset;
+
+        saw_adapter = 1'b0;
+        saw_rdi = 1'b0;
+        packets = 0;
+        while (!(saw_adapter && saw_rdi) && packets < 4) begin
+          take_tx_message(header, payload, has_payload, 1000);
+          if (header == LOCAL_ADAPTER_REQ_LINKRESET) saw_adapter = 1'b1;
+          else if (header == LOCAL_RDI_REQ_LINKRESET) saw_rdi = 1'b1;
+          else $fatal(1, "Unexpected Reset->LinkReset message 0x%016h", header);
+          packets++;
+        end
+        if (!(saw_adapter && saw_rdi)) $fatal(1, "Reset->LinkReset requests incomplete");
+
+        send_rx_message(REMOTE_RDI_RSP_LINKRESET, 64'b0, 1'b0, 1000);
+        count = 0;
+        while (debug_rdi_state != PhyState_linkReset && count < 300) begin step(1); count++; end
+        send_rx_message(REMOTE_ADAPTER_RSP_LINKRESET, 64'b0, 1'b0, 1000);
+        count = 0;
+        while ((fdi_pl_state_sts != PhyState_linkReset || debug_rdi_state != PhyState_linkReset) && count < 500) begin
+          step(1); count++;
+        end
+        if (count >= 500) $fatal(1, "Direct Reset->LinkReset did not complete");
+
+        fdi_lp_state_req = PhyStateReq_active;
+        count = 0;
+        while ((fdi_pl_state_sts != PhyState_reset || debug_rdi_state != PhyState_reset) && count < 300) begin
+          step(1); count++;
+        end
+        if (count >= 300) $fatal(1, "LinkReset->Reset did not complete");
+      end
+
+      if (direct_reset_case == "all" || direct_reset_case == "linkerror") begin
+        // Reset -> LinkError.
+        reset_and_initialize(1'b0);
+        fdi_lp_linkerror = 1'b1;
+        take_tx_message(header, payload, has_payload, 1000);
+        if (header !== LOCAL_RDI_REQ_LINKERROR)
+          $fatal(1, "Direct Reset->LinkError expected RDI request, got 0x%016h", header);
+        send_rx_message(REMOTE_RDI_RSP_LINKERROR, 64'b0, 1'b0, 1000);
+
+        count = 0;
+        while ((fdi_pl_state_sts != PhyState_linkError || debug_rdi_state != PhyState_linkError) && count < 300) begin
+          step(1); count++;
+        end
+        if (count >= 300) $fatal(1, "Direct Reset->LinkError did not complete");
+      end
+      finish_serial_exchange(direct_reset_case == "disabled" || direct_reset_case == "linkreset");
+      $display("PASS: scenario_direct_reset_exits case=%s", direct_reset_case);
+    end
+  endtask
+
+  initial begin : run_tests
+    string scenario;
+    if (!$value$plusargs("SCENARIO=%s", scenario))
+      scenario = "all";
+
+    if ($test$plusargs("VCD")) begin
+      $dumpfile("D2DAdapterLinkMgmtTopIntegrated128Spec_tb.vcd");
+      $dumpvars(0, D2DAdapterLinkMgmtTopIntegrated128Spec_tb);
+    end
+
+    // Give every input a defined value before the first asynchronous reset.
+    fdi_lp_state_req = PhyStateReq_nop;
+    fdi_lp_linkerror = 1'b0;
+    fdi_lp_rx_active_sts = 1'b0;
+    fdi_lp_wake_req = 1'b0;
+    fdi_lp_clk_ack = 1'b0;
+    fdi_lp_stall_ack = 1'b0;
+    ltsm_start = 1'b0;
+    ltsm_stable_clk = 1'b0;
+    ltsm_pll_locked = 1'b0;
+    ltsm_stable_supply = 1'b0;
+    manual_sideband_mode = 1'b0;
+    bfm_received_ready = 1'b0;
+    bfm_send_valid = 1'b0;
+    bfm_send_msg = 128'b0;
+    cycles_1us = 32'd1;
+    reset_n = 1'b0;
+
+    if (scenario == "all" || scenario == "retrain") scenario_retrain();
+    if (scenario == "all" || scenario == "disabled") scenario_disabled();
+    if (scenario == "all" || scenario == "linkreset") scenario_linkreset();
+    if (scenario == "all" || scenario == "linkerror") scenario_linkerror();
+    if (scenario == "all" || scenario == "direct_reset_exits") scenario_direct_reset_exits();
+
+    if (scenario != "all" && scenario != "retrain" && scenario != "disabled" &&
+        scenario != "linkreset" && scenario != "linkerror" &&
+        scenario != "direct_reset_exits")
+      $fatal(1, "Unknown +SCENARIO=%s", scenario);
+
+    if (serial_error || serial_failure_seen)
+      $fatal(1, "Serial wire/receive checker failed; scenario cannot pass");
+    if (dut.local_out_completed == 0 || dut.local_in_completed == 0)
+      $fatal(1, "No complete serialized traffic observed in both local directions");
+    $display("PASS: D2DAdapterLinkMgmtTopIntegrated128Spec serial scenario=%s", scenario);
+    $finish;
+  end
+endmodule
+
+`default_nettype wire
+
+```
+
+<a id="test-timescale-sv"></a>
+
+## [59] test\timescale.sv
+
+```systemverilog
+// FILE_INDEX: 59
+// FILE_PATH : test\timescale.sv
+
+`timescale 1ns/1ps
 
 ```
 
