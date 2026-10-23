@@ -41,9 +41,8 @@
 //                     (jtagFdi_<port> held at 0)    (normal sink held idle/0)
 //   rdi, ltsm and u_sideband are held in reset while testModeFdi = 1, and the
 //   fdi -> rdi/u_sideband nets are forced idle (no request, no packet), so
-//   the rest of the core stays quiet. The fdi clock is a plain combinational
-//   mux: change testModeFdi only while both clocks are quiet (or with reset
-//   asserted). For synthesis replace it with a glitch-free clock-mux cell.
+//   the rest of the core stays quiet. There is no clock mux here: the core
+//   clock (from UcieDigitalTop) is jtagFdi_clock during FDI test.
 // ============================================================================
 
 module UcieDigitalCore #(
@@ -342,13 +341,14 @@ module UcieDigitalCore #(
 
   // ==========================================================================
   // FDI ISOLATION TEST (testModeFdi = 1)
-  // One jtagFdi_<port> pin per LinkManagementController port, same type and
-  // direction. Inputs are ignored and outputs held at 0 while testModeFdi = 0.
+  // One jtagFdi_<port> pin per LinkManagementController port (except clock),
+  // same type and direction. Inputs are ignored and outputs held at 0 while
+  // testModeFdi = 0.
   // ==========================================================================
   input wire logic testModeFdi,
 
-  // Common clock, reset and timing.
-  input wire logic        jtagFdi_clock,
+  // Reset and timing. The fdi clock is the core clock: UcieDigitalTop selects
+  // jtagFdi_clock on its single core clock mux, so all children stay aligned.
   input wire logic        jtagFdi_reset_n,
   input wire logic [31:0] jtagFdi_cycles_1us,
   input wire logic        jtagFdi_timeout_disable,
@@ -439,7 +439,6 @@ module UcieDigitalCore #(
   logic restCore_reset_n;
 
   // fdi instance port nets (after the testModeFdi mux).
-  logic         fdiCore_clock;
   logic         fdiCore_reset_n;
   logic [31:0]  fdiCore_cycles_1us;
   logic         fdiCore_timeout_disable;
@@ -480,7 +479,6 @@ module UcieDigitalCore #(
   assign restCore_reset_n = reset_n & ~testModeFdi;
 
   // Inputs to fdi: normal source or TDR pin.
-  assign fdiCore_clock                = testModeFdi ? jtagFdi_clock                : clock;
   assign fdiCore_reset_n              = testModeFdi ? jtagFdi_reset_n              : reset_n;
   assign fdiCore_cycles_1us           = testModeFdi ? jtagFdi_cycles_1us           : cycles_1us;
   assign fdiCore_timeout_disable      = testModeFdi ? jtagFdi_timeout_disable      : timeout_disable;
@@ -547,7 +545,7 @@ module UcieDigitalCore #(
     .RDI_SB_WIDTH      (RDI_SB_WIDTH),
     .SB_NODE_MSG_WIDTH (SB_NODE_MSG_WIDTH)
   ) fdi (
-    .clock                (fdiCore_clock),
+    .clock                (clock),
     .reset_n              (fdiCore_reset_n),
 
     .fdi_lp_state_req     (fdiCore_fdi_lp_state_req),

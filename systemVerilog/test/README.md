@@ -43,6 +43,7 @@ bash test/run_tests.sh all
 bash test/run_tests.sh bringup
 bash test/run_tests.sh backpressure
 bash test/run_tests.sh 128b +SCENARIO=retrain
+bash test/run_tests.sh digital
 ```
 
 `sources.f` contains the package-first compilation order for other
@@ -55,6 +56,14 @@ nonzero exit status.
 
 ## Changes
 
+- `UcieDigitalTopTestModeDigitalSpec_tb.sv` (`run_tests.sh digital`): the
+  dual-die bring-up spec with `TEST_MODE_DIGITAL = 1`. Each die is a
+  `UcieDigitalTop` with `testModeDigital = 1`, driven and observed only via its
+  `jtag_*` pins. Functional pins carry junk (clocks stopped, reset asserted,
+  other inputs inverted) and every functional output is checked to stay 0.
+  The die model selects the DUT in a `g_dut` generate block and exposes
+  `sb_mon_*` sideband monitor nets, so harnesses no longer reference
+  `dut.u_sideband` directly.
 - `D2DAdapterLinkMgmtLtsmDualDieHarness.sv`: the shared die model now
   instantiates the production serial top, replacing the old packet top plus
   a separately instantiated PHY. Only one data bit and one forwarded clock

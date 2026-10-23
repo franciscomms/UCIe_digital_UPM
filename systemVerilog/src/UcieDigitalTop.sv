@@ -843,7 +843,10 @@ module UcieDigitalTop #(
   // --------------------------------------------------------------------------
   // Input muxes: functional pin or TDR pin -> core
   // --------------------------------------------------------------------------
-  assign core_clock = testModeDigital ? jtag_clock : clock;
+  // One clock mux for the whole core (no skew between its children): in FDI
+  // test the core clock is jtagFdi_clock; the rest of the core is in reset.
+  assign core_clock = testModeDigital  ? jtag_clock    :
+                      core_testModeFdi ? jtagFdi_clock : clock;
   assign core_reset_n = testModeDigital ? jtag_reset_n : reset_n;
   assign core_fdi_lp_state_req = testModeDigital ? jtag_fdi_lp_state_req : fdi_lp_state_req;
   assign core_fdi_lp_linkerror = testModeDigital ? jtag_fdi_lp_linkerror : fdi_lp_linkerror;
@@ -1395,7 +1398,6 @@ module UcieDigitalTop #(
 
     // FDI isolation test: straight through, muxed inside the core.
     .testModeFdi                                                                    (core_testModeFdi),
-    .jtagFdi_clock                                                                  (jtagFdi_clock),
     .jtagFdi_reset_n                                                                (jtagFdi_reset_n),
     .jtagFdi_cycles_1us                                                             (jtagFdi_cycles_1us),
     .jtagFdi_timeout_disable                                                        (jtagFdi_timeout_disable),

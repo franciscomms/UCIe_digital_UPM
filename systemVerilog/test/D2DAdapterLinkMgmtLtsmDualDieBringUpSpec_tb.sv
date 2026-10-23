@@ -11,7 +11,9 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
   // Include serialization of all training and adapter-management packets.
   parameter int unsigned MAX_LTSM_BRINGUP_CYCLES = 12_000_000,
   parameter int unsigned MAX_LINKMGMT_CYCLES = 250_000,
-  parameter int unsigned SERIAL_DRAIN_CYCLES = 32
+  parameter int unsigned SERIAL_DRAIN_CYCLES = 32,
+  // 1: each die is UcieDigitalTop in testModeDigital, driven only via jtag_*.
+  parameter bit TEST_MODE_DIGITAL = 1'b0
 );
   import UcieUPM_interfaces_pkg::*;
   import UcieUPM_d2dadapter_pkg::*;
@@ -91,7 +93,9 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     end
   endtask
 
-  D2DAdapterLinkMgmtLtsmDualDieHarness dut (
+  D2DAdapterLinkMgmtLtsmDualDieHarness #(
+    .TEST_MODE_DIGITAL(TEST_MODE_DIGITAL)
+  ) dut (
     .clock(clock),
     .reset_n(reset_n),
     .start(start),
@@ -421,7 +425,8 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     if (!(sawDie0FdiGrant && sawDie1FdiGrant))
       $fatal(1, "The shared arbiter never granted one of the FDI producers");
 
-    $display("PASS: D2DAdapterLinkMgmtLtsmDualDieBringUpSpec");
+    $display("PASS: D2DAdapterLinkMgmtLtsmDualDieBringUpSpec (%s)",
+             TEST_MODE_DIGITAL ? "UcieDigitalTop testModeDigital, jtag_* pins only" : "UcieDigitalCore");
     $display("PASS: revised MBTRAIN states visited: die0=0x%04h die1=0x%04h",
              die0MbtrainVisited, die1MbtrainVisited);
     $display("PASS: one-bit wire packets 0->1=%0d 1->0=%0d; serial paths drained",

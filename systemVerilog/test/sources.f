@@ -10,6 +10,7 @@ timescale.sv
 ../src/RdiLinkManagementConstants.sv
 ../src/SidebandMsgGenerator_corregido.sv
 ../src/UcieDigitalCore.sv
+../src/UcieDigitalTop.sv
 ../src/SidebandWrapper.sv
 ../src/LinkManagementController.sv
 ../src/LinkMgmtSidebandPacketArbiter.sv
@@ -58,3 +59,4 @@ D2DAdapterLinkMgmtLtsmIntegrated128Harness.sv
 D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb.sv
 D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb.sv
 D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv
+UcieDigitalTopTestModeDigitalSpec_tb.sv
