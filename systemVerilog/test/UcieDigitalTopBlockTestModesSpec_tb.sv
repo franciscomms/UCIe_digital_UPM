@@ -15,7 +15,6 @@
 // The functional reset_n is released and the functional inputs would start
 // the LTSM and FDI, so the other blocks are quiet only because the core holds
 // them in reset.
-// Finally it checks the priority: testModeDigital masks testModeLtsm.
 
 `timescale 1ns/1ps
 `default_nettype none
@@ -1946,16 +1945,6 @@ module UcieDigitalTopBlockTestModesSpec_tb;
     run_mode(MODE_FDI,  "testModeFdi");
     run_mode(MODE_RDI,  "testModeRdi");
     run_mode(MODE_LTSM, "testModeLtsm");
-
-    // Priority: testModeDigital masks testModeLtsm (LTSM clock running).
-    mode = MODE_LTSM;
-    testModeDigital = 1'b1;
-    testModeLtsm    = 1'b1;
-    jtagLtsm_reset_n = 1'b1;
-    step(200);
-    if (ltsm_outs !== '0 || fdi_outs !== '0 || rdi_outs !== '0)
-      $fatal(1, "testModeDigital did not mask testModeLtsm");
-    $display("PASS: testModeDigital has priority over testModeLtsm");
     $finish;
   end
 endmodule

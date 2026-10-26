@@ -32,14 +32,15 @@
 //   is done in UcieDigitalCore; see its header. In a block test the rest of
 //   the core is held in reset and the block's functional pins read 0.
 //
-//   Priority: testModeDigital > testModeFdi > testModeRdi > testModeLtsm.
-//   Only the highest-priority mode that is set takes effect.
+//   At most one testMode* may be set (UcieDigitalTopJtag drives them one-hot
+//   from its control register). There is no priority logic: setting more than
+//   one is not supported and is reported as an error in simulation.
 //
 //   Digital  Fdi  Rdi  Ltsm   mode
 //      0      0    0    0     functional
-//      1      x    x    x     digital test (jtag_*)
-//      0      1    x    x     FDI isolation test (jtagFdi_*)
-//      0      0    1    x     RDI isolation test (jtagRdi_*)
+//      1      0    0    0     digital test (jtag_*)
+//      0      1    0    0     FDI isolation test (jtagFdi_*)
+//      0      0    1    0     RDI isolation test (jtagRdi_*)
 //      0      0    0    1     LTSM isolation test (jtagLtsm_*)
 //
 // Parameters are identical to UcieDigitalCore and passed straight through.
@@ -102,9 +103,9 @@ module UcieDigitalTop #(
   // ==========================================================================
   // TEST MODE SELECT
   // testModeDigital = 1: jtag_* (TDR) pins drive/observe the core.
-  // testModeFdi / testModeRdi / testModeLtsm = 1 (and testModeDigital = 0):
+  // testModeFdi / testModeRdi / testModeLtsm = 1:
   // jtagFdi_* / jtagRdi_* / jtagLtsm_* pins drive/observe only that block.
-  // All 0: functional pins drive/observe the core. See header for priority.
+  // All 0: functional pins drive/observe the core. At most one may be set.
   // ==========================================================================
   input wire logic testModeDigital,
   input wire logic testModeFdi,
@@ -596,7 +597,7 @@ module UcieDigitalTop #(
   output var logic jtag_debug_rx_fire,
 
   // ##########################################################################
-  // JTAG FDI TDR PINS (testModeFdi = 1, testModeDigital = 0)
+  // JTAG FDI TDR PINS (testModeFdi = 1, all other test modes 0)
   // One pin per FDI (LinkManagementController) port, prefixed with jtagFdi_.
   // Inputs are ignored and outputs held at 0 outside FDI test.
   // ##########################################################################
@@ -904,21 +905,13 @@ module UcieDigitalTop #(
 );
 
   // --------------------------------------------------------------------------
-  // Test mode select. Priority: testModeDigital > testModeFdi > testModeRdi >
-  // testModeLtsm. Only the highest-priority requested mode reaches the core.
+  // Test mode select: at most one testMode* may be set (no priority logic).
   // --------------------------------------------------------------------------
-  logic core_testModeFdi;
-  logic core_testModeRdi;
-  logic core_testModeLtsm;
-  assign core_testModeFdi  = testModeFdi  & ~testModeDigital;
-  assign core_testModeRdi  = testModeRdi  & ~testModeDigital & ~testModeFdi;
-  assign core_testModeLtsm = testModeLtsm & ~testModeDigital & ~testModeFdi & ~testModeRdi;
-
 `ifndef SYNTHESIS
   always @(testModeDigital or testModeFdi or testModeRdi or testModeLtsm)
     if ($countones({testModeDigital, testModeFdi, testModeRdi, testModeLtsm}) > 1)
-      $warning("UcieDigitalTop: several test modes set (digital=%b fdi=%b rdi=%b ltsm=%b); only the highest priority applies",
-               testModeDigital, testModeFdi, testModeRdi, testModeLtsm);
+      $error("UcieDigitalTop: several test modes set (digital=%b fdi=%b rdi=%b ltsm=%b); at most one is supported",
+             testModeDigital, testModeFdi, testModeRdi, testModeLtsm);
 `endif
 
   // --------------------------------------------------------------------------
@@ -1120,10 +1113,10 @@ module UcieDigitalTop #(
   // One clock mux for the whole core (no skew between its children): in a
   // block isolation test the core clock is that block's jtag*_clock; the rest
   // of the core is held in reset.
-  assign core_clock = testModeDigital   ? jtag_clock     :
-                      core_testModeFdi  ? jtagFdi_clock  :
-                      core_testModeRdi  ? jtagRdi_clock  :
-                      core_testModeLtsm ? jtagLtsm_clock : clock;
+  assign core_clock = testModeDigital ? jtag_clock     :
+                      testModeFdi     ? jtagFdi_clock  :
+                      testModeRdi     ? jtagRdi_clock  :
+                      testModeLtsm    ? jtagLtsm_clock : clock;
   assign core_reset_n = testModeDigital ? jtag_reset_n : reset_n;
   assign core_fdi_lp_state_req = testModeDigital ? jtag_fdi_lp_state_req : fdi_lp_state_req;
   assign core_fdi_lp_linkerror = testModeDigital ? jtag_fdi_lp_linkerror : fdi_lp_linkerror;
@@ -1674,7 +1667,7 @@ module UcieDigitalTop #(
     .debug_rx_fire                                                                  (core_debug_rx_fire),
 
     // FDI isolation test: straight through, muxed inside the core.
-    .testModeFdi                                                                    (core_testModeFdi),
+    .testModeFdi                                                                    (testModeFdi),
     .jtagFdi_reset_n                                                                (jtagFdi_reset_n),
     .jtagFdi_cycles_1us                                                             (jtagFdi_cycles_1us),
     .jtagFdi_timeout_disable                                                        (jtagFdi_timeout_disable),
@@ -1710,7 +1703,7 @@ module UcieDigitalTop #(
     .jtagFdi_sb_rcv_ready                                                           (jtagFdi_sb_rcv_ready),
 
     // RDI isolation test: straight through, muxed inside the core.
-    .testModeRdi                                                                     (core_testModeRdi),
+    .testModeRdi                                                                     (testModeRdi),
     .jtagRdi_reset_n                                                                 (jtagRdi_reset_n),
     .jtagRdi_ltsm_lp_wake_req                                                        (jtagRdi_ltsm_lp_wake_req),
     .jtagRdi_ltsm_pl_wake_ack                                                        (jtagRdi_ltsm_pl_wake_ack),
@@ -1738,7 +1731,7 @@ module UcieDigitalTop #(
     .jtagRdi_cycles_1us                                                              (jtagRdi_cycles_1us),
 
     // LTSM isolation test: straight through, muxed inside the core.
-    .testModeLtsm                                                                    (core_testModeLtsm),
+    .testModeLtsm                                                                    (testModeLtsm),
     .jtagLtsm_reset_n                                                                (jtagLtsm_reset_n),
     .jtagLtsm_sb_tx_din                                                              (jtagLtsm_sb_tx_din),
     .jtagLtsm_sb_tx_valid                                                            (jtagLtsm_sb_tx_valid),

@@ -45,7 +45,7 @@
 //   While any of these modes is set, every other block (and u_sideband) is
 //   held in reset, and the nets from the block under test to the others are
 //   forced idle (0: no request, no packet), so the rest of the core stays
-//   quiet. At most one mode may be set; UcieDigitalTop enforces it. There is
+//   quiet. At most one mode may be set; UcieDigitalTopJtag guarantees it. There is
 //   no clock mux here: the core clock (from UcieDigitalTop) is
 //   jtag<Blk>_clock during a block test.
 // ============================================================================

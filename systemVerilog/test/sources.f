@@ -11,6 +11,9 @@ timescale.sv
 ../src/SidebandMsgGenerator_corregido.sv
 ../src/UcieDigitalCore.sv
 ../src/UcieDigitalTop.sv
+../src/tc_sync.sv
+../src/jtag_tdr_snapshot.sv
+../src/UcieDigitalTopJtag.sv
 ../src/SidebandWrapper.sv
 ../src/LinkManagementController.sv
 ../src/LinkMgmtSidebandPacketArbiter.sv
