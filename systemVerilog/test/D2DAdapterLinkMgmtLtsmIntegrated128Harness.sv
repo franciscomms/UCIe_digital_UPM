@@ -75,8 +75,8 @@ module D2DAdapterLinkMgmtLtsmIntegrated128Harness (
   import SidebandMsgGenerator_pkg::*;
 
   localparam bit          UCIE_A                           = 1'b0;
-  localparam int unsigned PI_CODE_WIDTH                    = 4;
-  localparam int unsigned TX_DESKEW_CODE_WIDTH             = 4;
+  localparam int unsigned PI_CODE_WIDTH                    = LtsmParameters_pkg::DEFAULT_D2C_PI_CODE_WIDTH;
+  localparam int unsigned TX_DESKEW_CODE_WIDTH             = LtsmParameters_pkg::DEFAULT_D2C_TX_DESKEW_CODE_WIDTH;
   localparam int unsigned DESKEW_STEPS_PER_PI              = 1;
   localparam bit          DESKEW_ADD_DELAY_INCREASES_PHASE = 1'b1;
 

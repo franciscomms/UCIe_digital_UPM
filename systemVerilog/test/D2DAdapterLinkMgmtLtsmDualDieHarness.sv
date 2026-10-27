@@ -13,9 +13,51 @@
 // Each die instantiates the production top with its integrated SideBandModule
 // and RX mailbox. Only one data bit and its forwarded clock cross each link.
 
+// Behavioral decoders use the physical pin weights and mux adjacency, not
+// the production encoders. Invalid control words cannot pass an eye window.
+package D2DAdapterLinkMgmtTbAnalogDecode_pkg;
+  function automatic integer phase_index(input logic [37:0] code);
+    logic [1:0] upper_sel, lower_sel;
+    logic [16:0] upper_bank, lower_bank, later_bank;
+    integer sector, step, coarse;
+    begin
+      phase_index = -1;
+      upper_sel = code[1:0];
+      lower_sel = code[3:2];
+      upper_bank = code[20:4];
+      lower_bank = code[37:21];
+      sector = -1;
+      if (upper_sel == lower_sel)
+        sector = 2 * int'(lower_sel);
+      else if (upper_sel == (lower_sel + 2'd1))
+        sector = 2 * int'(lower_sel) + 1;
+      later_bank = sector[0] ? upper_bank : lower_bank;
+      coarse = $countones(later_bank[16:1]);
+      step = 2 * coarse + int'(later_bank[0]);
+      if (!$isunknown(code) && (sector >= 0) && (lower_bank === ~upper_bank) &&
+          (later_bank[16:1] === (16'hffff >> (16-coarse))))
+        phase_index = (33 * sector + step) % 264;
+    end
+  endfunction
+
+  function automatic integer deskew_steps(input logic [19:0] code);
+    integer first_coarse, second_coarse;
+    begin
+      first_coarse = $countones(code[9:1]);
+      second_coarse = $countones(code[19:11]);
+      deskew_steps = -1;
+      if (!$isunknown(code) && (code[9:1] === (9'h1ff >> (9-first_coarse))) &&
+          (code[19:11] === (9'h1ff >> (9-second_coarse))) &&
+          ((code[19:10] == 0) || (code[9:0] == 10'h3ff)))
+        deskew_steps = 2*(first_coarse + second_coarse) +
+                       int'(code[0]) + int'(code[10]);
+    end
+  endfunction
+endpackage
+
 // Valid-lane phase-eye model used by VALTRAINCENTER.
 module D2DAdapterLinkMgmtTbValTrainResultModel #(
-  parameter int unsigned PI_CODE_WIDTH = 4,
+  parameter int unsigned PI_CODE_WIDTH = LtsmParameters_pkg::DEFAULT_D2C_PI_CODE_WIDTH,
   parameter int unsigned WINDOW_LEFT   = 2,
   parameter int unsigned WINDOW_RIGHT  = 7
 ) (
@@ -23,15 +65,16 @@ module D2DAdapterLinkMgmtTbValTrainResultModel #(
   output      logic [15:0]              local_result_info,
   output      logic [63:0]              local_result_payload
 );
-  localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  localparam int unsigned PHASE_COUNT = LtsmParameters_pkg::D2C_PI_PHASE_COUNT;
   integer phase_int;
   logic valid_pass;
 
   always_comb begin
-    phase_int = remote_tx_phase;
+    phase_int = D2DAdapterLinkMgmtTbAnalogDecode_pkg::phase_index(remote_tx_phase);
     valid_pass =
       (WINDOW_LEFT <= WINDOW_RIGHT) &&
       (WINDOW_RIGHT < PHASE_COUNT) &&
+      (phase_int >= 0) &&
       (phase_int >= WINDOW_LEFT) &&
       (phase_int <= WINDOW_RIGHT);
 
@@ -45,8 +88,8 @@ endmodule
 // Per-lane phase/deskew eye model used by DATATRAINCENTER1.
 module D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
   parameter bit          UCIE_A                         = 1'b0,
-  parameter int unsigned PI_CODE_WIDTH                  = 4,
-  parameter int unsigned TX_DESKEW_CODE_WIDTH           = 4,
+  parameter int unsigned PI_CODE_WIDTH                  = LtsmParameters_pkg::DEFAULT_D2C_PI_CODE_WIDTH,
+  parameter int unsigned TX_DESKEW_CODE_WIDTH           = LtsmParameters_pkg::DEFAULT_D2C_TX_DESKEW_CODE_WIDTH,
   parameter int unsigned DESKEW_STEPS_PER_PI            = 1,
   parameter bit          DESKEW_ADDED_DELAY_MOVES_UP    = 1'b1,
   parameter int unsigned BASE_CENTER                    = 6,
@@ -57,7 +100,7 @@ module D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
   output      logic [15:0] local_result_info,
   output      logic [63:0] local_result_payload
 );
-  localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  localparam int unsigned PHASE_COUNT = LtsmParameters_pkg::D2C_PI_PHASE_COUNT;
   localparam logic [63:0] ACTIVE_LANE_MASK =
     UCIE_A ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
 
@@ -76,7 +119,7 @@ module D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
     local_result_info     = '0;
     local_result_payload  = '0;
     all_active_lanes_pass = 1'b1;
-    phase_int             = remote_tx_phase;
+    phase_int             = D2DAdapterLinkMgmtTbAnalogDecode_pkg::phase_index(remote_tx_phase);
     base_center_int       = 0;
     deskew_code_int       = 0;
     deskew_phase_steps_int = 0;
@@ -88,9 +131,8 @@ module D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
     for (lane = 0; lane < 64; lane = lane + 1) begin
       if (ACTIVE_LANE_MASK[lane]) begin
         base_center_int = BASE_CENTER + (lane % 4);
-        deskew_code_int = remote_tx_deskew_codes[
-          lane*TX_DESKEW_CODE_WIDTH +: TX_DESKEW_CODE_WIDTH
-        ];
+        deskew_code_int = D2DAdapterLinkMgmtTbAnalogDecode_pkg::deskew_steps(
+          remote_tx_deskew_codes[lane*TX_DESKEW_CODE_WIDTH +: TX_DESKEW_CODE_WIDTH]);
         deskew_phase_steps_int = deskew_code_int / DESKEW_STEPS_PER_PI;
 
         if (DESKEW_ADDED_DELAY_MOVES_UP)
@@ -101,6 +143,7 @@ module D2DAdapterLinkMgmtTbDataTrainCenter1ResultModel #(
         lower_edge_int = shifted_center_int - HALF_EYE_WIDTH;
         upper_edge_int = shifted_center_int + HALF_EYE_WIDTH;
         lane_pass =
+          (phase_int >= 0) && (deskew_code_int >= 0) &&
           (shifted_center_int >= 0) &&
           (shifted_center_int < PHASE_COUNT) &&
           (phase_int >= lower_edge_int) &&
@@ -120,7 +163,7 @@ endmodule
 // Aggregate post-Vref/post-RX-deskew phase-eye model for DATATRAINCENTER2.
 module D2DAdapterLinkMgmtTbDataTrainCenter2ResultModel #(
   parameter bit          UCIE_A        = 1'b0,
-  parameter int unsigned PI_CODE_WIDTH = 4,
+  parameter int unsigned PI_CODE_WIDTH = LtsmParameters_pkg::DEFAULT_D2C_PI_CODE_WIDTH,
   parameter int unsigned WINDOW_LEFT   = 4,
   parameter int unsigned WINDOW_RIGHT  = 7
 ) (
@@ -128,17 +171,18 @@ module D2DAdapterLinkMgmtTbDataTrainCenter2ResultModel #(
   output      logic [15:0]              local_result_info,
   output      logic [63:0]              local_result_payload
 );
-  localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
+  localparam int unsigned PHASE_COUNT = LtsmParameters_pkg::D2C_PI_PHASE_COUNT;
   localparam logic [63:0] ACTIVE_LANE_MASK =
     UCIE_A ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
   integer phase_int;
   logic aggregate_pass;
 
   always_comb begin
-    phase_int = remote_tx_phase;
+    phase_int = D2DAdapterLinkMgmtTbAnalogDecode_pkg::phase_index(remote_tx_phase);
     aggregate_pass =
       (WINDOW_LEFT <= WINDOW_RIGHT) &&
       (WINDOW_RIGHT < PHASE_COUNT) &&
+      (phase_int >= 0) &&
       (phase_int >= WINDOW_LEFT) &&
       (phase_int <= WINDOW_RIGHT);
 
@@ -152,20 +196,22 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   // FDI, RDI, and sideband widths are not part of this PHY-training model's
   // interface.  The integrated DUT therefore uses its own package defaults.
   parameter bit          UCIE_A                           = 1'b0,
-  parameter int unsigned PI_CODE_WIDTH                    = 4,
-  parameter int unsigned TX_DESKEW_CODE_WIDTH             = 4,
+  parameter int unsigned PI_CODE_WIDTH                    = LtsmParameters_pkg::DEFAULT_D2C_PI_CODE_WIDTH,
+  parameter int unsigned TX_DESKEW_CODE_WIDTH             = LtsmParameters_pkg::DEFAULT_D2C_TX_DESKEW_CODE_WIDTH,
   parameter int unsigned DESKEW_STEPS_PER_PI              = 1,
   parameter bit          DESKEW_ADD_DELAY_INCREASES_PHASE = 1'b1,
   parameter int unsigned MIN_LANE_WINDOW_STEPS            = 3,
   parameter int unsigned MIN_COMMON_WINDOW_STEPS          = 3,
   parameter int unsigned MAX_TRAINING_RETRIES             = 1,
-  parameter int unsigned VREF_VALUE_COUNT                 = 16,
+  parameter int unsigned VREF_VALUE_COUNT                 =
+    LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
   parameter int unsigned VREF_CODE_WIDTH =
-    (VREF_VALUE_COUNT <= 1) ? 1 : $clog2(VREF_VALUE_COUNT),
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH,
   parameter int unsigned DATA_LANE_COUNT                  = 16,
-  parameter int unsigned RX_DESKEW_VALUE_COUNT            = 16,
+  parameter int unsigned RX_DESKEW_VALUE_COUNT            =
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_VALUE_COUNT,
   parameter int unsigned RX_DESKEW_CODE_WIDTH =
-    (RX_DESKEW_VALUE_COUNT <= 1) ? 1 : $clog2(RX_DESKEW_VALUE_COUNT),
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_CODE_WIDTH,
   parameter int unsigned VAL_VREF_LEFT                    = 2,
   parameter int unsigned VAL_VREF_RIGHT                   = 7,
   parameter int unsigned VALTRAIN_VREF_LEFT               = 4,
@@ -179,6 +225,10 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   parameter int unsigned RX_DESKEW_LEFT_BASE              = 1,
   parameter int unsigned RX_DESKEW_LANE_PERIOD            = 5,
   parameter int unsigned RX_DESKEW_WINDOW_VALUES          = 6,
+  // Fail one receiver lane at the highest rate, or every rate when enabled.
+  // The peer observes this result through the real serialized D2C exchange.
+  parameter bit          LINK_SPEED_FAIL_TOP_RATE         = 1'b0,
+  parameter bit          LINK_SPEED_FAIL_ALL_RATES        = 1'b0,
   // 1: the DUT is UcieDigitalTop in testModeDigital, driven only via jtag_*.
   parameter bit          TEST_MODE_DIGITAL                = 1'b0
 ) (
@@ -450,6 +500,14 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_validPattern;
   wire logic [2:0] ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern;
   wire logic ltsm_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler;
+  // The analog speed-code request defaults to code 3 (8 GHz / 16 GT/s).
+  wire logic [1:0] ltsm_flagToAnalog_linkSpeed_speedCode;
+  wire logic ltsm_flagToAnalog_linkSpeed_applySpeed;
+  wire logic ltsm_flagToAnalog_linkSpeed_electricalIdle;
+  logic ltsm_flagFromAnalog_linkSpeed_speedApplied;
+  logic linkSpeedApplyPending;
+  logic [1:0] linkSpeedHeldCode;
+  logic [1:0] linkSpeedApplyDelay;
   wire logic ltsm_flagToLtsm_linkSpeed_phyInRetrain;
   wire logic ltsm_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern;
   logic ltsm_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent;
@@ -474,6 +532,18 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   wire logic debug_rx_route_ltsm;
   wire logic debug_rx_route_fdi;
   wire logic debug_rx_route_rdi;
+
+  // PHY controls are one-hot switch words; passing windows use tap indices.
+  // Exact comparison rejects zero, multi-hot, X/Z, and unconfigured tap bits.
+  // An invalid word decodes above every physical tap and cannot pass a window.
+  function automatic int unsigned vref_tap_index(
+    input logic [VREF_CODE_WIDTH-1:0] code
+  );
+    vref_tap_index = '1;
+    for (int unsigned tap = 0; tap < VREF_VALUE_COUNT; tap = tap + 1)
+      if (code === (VREF_CODE_WIDTH'(1) << tap))
+        vref_tap_index = tap;
+  endfunction
 
   function automatic int unsigned data_vref_left(input int unsigned lane);
     data_vref_left = DATA_VREF_LEFT_BASE + (lane % DATA_VREF_LANE_PERIOD);
@@ -547,7 +617,44 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   assign ltsm_flagFromAnalog_rxClkCal_done = 1'b1;
   assign ltsm_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent = 1'b1;
   assign ltsm_flagFromAnalog_d2cReceiver_linkSpeed_laneComparisonSuccessful =
-    16'hFFFF;
+    (LINK_SPEED_FAIL_TOP_RATE && (LINK_SPEED_FAIL_ALL_RATES ||
+     (ltsm_flagToAnalog_linkSpeed_speedCode == 2'd3))) ? 16'hFFFE : 16'hFFFF;
+
+  // Delay speed acknowledgement by three complete core cycles after the
+  // first observed request. Check that the DUT holds its request, code and
+  // electrical-idle indication until that delayed response can be consumed.
+  always_ff @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      ltsm_flagFromAnalog_linkSpeed_speedApplied <= 1'b0;
+      linkSpeedApplyPending <= 1'b0;
+      linkSpeedHeldCode <= '0;
+      linkSpeedApplyDelay <= '0;
+    end else if (ltsm_flagToAnalog_linkSpeed_applySpeed) begin
+      if (ltsm_flagToAnalog_linkSpeed_electricalIdle !== 1'b1)
+        $fatal(1, "%m: speed apply must remain in electrical idle");
+      if (!linkSpeedApplyPending) begin
+        if ($isunknown(ltsm_flagToAnalog_linkSpeed_speedCode))
+          $fatal(1, "%m: speed apply carried an unknown speed code");
+        linkSpeedApplyPending <= 1'b1;
+        linkSpeedHeldCode <= ltsm_flagToAnalog_linkSpeed_speedCode;
+        linkSpeedApplyDelay <= '0;
+        ltsm_flagFromAnalog_linkSpeed_speedApplied <= 1'b0;
+      end else begin
+        if (ltsm_flagToAnalog_linkSpeed_speedCode !== linkSpeedHeldCode)
+          $fatal(1, "%m: speed code changed during delayed apply acknowledgement");
+        if (linkSpeedApplyDelay == 2'd2)
+          ltsm_flagFromAnalog_linkSpeed_speedApplied <= 1'b1;
+        else
+          linkSpeedApplyDelay <= linkSpeedApplyDelay + 1'b1;
+      end
+    end else begin
+      if (linkSpeedApplyPending && !ltsm_flagFromAnalog_linkSpeed_speedApplied)
+        $fatal(1, "%m: speed apply withdrawn before acknowledgement");
+      ltsm_flagFromAnalog_linkSpeed_speedApplied <= 1'b0;
+      linkSpeedApplyPending <= 1'b0;
+      linkSpeedApplyDelay <= '0;
+    end
+  end
 
   // Registered one-cycle analog/protocol acknowledgements.  Holding the
   // request until the corresponding acknowledgement is therefore exercised.
@@ -613,11 +720,11 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   // PHY-side passing windows for all newly exposed receiver controls.
   always_comb begin
     ltsm_flagFromAnalog_valVref_detectedValPattern =
-      (ltsm_flagToAnalog_valVref_rxVrefCode >= VAL_VREF_LEFT) &&
-      (ltsm_flagToAnalog_valVref_rxVrefCode <= VAL_VREF_RIGHT);
+      (vref_tap_index(ltsm_flagToAnalog_valVref_rxVrefCode) >= VAL_VREF_LEFT) &&
+      (vref_tap_index(ltsm_flagToAnalog_valVref_rxVrefCode) <= VAL_VREF_RIGHT);
     ltsm_flagFromAnalog_valTrainVref_detectedValPattern =
-      (ltsm_flagToAnalog_valTrainVref_rxVrefCode >= VALTRAIN_VREF_LEFT) &&
-      (ltsm_flagToAnalog_valTrainVref_rxVrefCode <= VALTRAIN_VREF_RIGHT);
+      (vref_tap_index(ltsm_flagToAnalog_valTrainVref_rxVrefCode) >= VALTRAIN_VREF_LEFT) &&
+      (vref_tap_index(ltsm_flagToAnalog_valTrainVref_rxVrefCode) <= VALTRAIN_VREF_RIGHT);
 
     ltsm_flagFromAnalog_dataVref_detectedDataPattern = '0;
     ltsm_flagFromAnalog_dataTrainVref_detectedDataPattern = '0;
@@ -625,25 +732,27 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
 
     for (int unsigned lane = 0; lane < DATA_LANE_COUNT; lane = lane + 1) begin
       ltsm_flagFromAnalog_dataVref_detectedDataPattern[lane] =
-        (ltsm_flagToAnalog_dataVref_rxVrefCodes[
-           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] >= data_vref_left(lane)) &&
-        (ltsm_flagToAnalog_dataVref_rxVrefCodes[
-           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] <
+        (vref_tap_index(ltsm_flagToAnalog_dataVref_rxVrefCodes[
+           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH]) >= data_vref_left(lane)) &&
+        (vref_tap_index(ltsm_flagToAnalog_dataVref_rxVrefCodes[
+           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH]) <
            (data_vref_left(lane) + DATA_VREF_WINDOW_VALUES));
 
       ltsm_flagFromAnalog_dataTrainVref_detectedDataPattern[lane] =
-        (ltsm_flagToAnalog_dataTrainVref_rxVrefCodes[
-           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] >= datatrain_vref_left(lane)) &&
-        (ltsm_flagToAnalog_dataTrainVref_rxVrefCodes[
-           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] <
+        (vref_tap_index(ltsm_flagToAnalog_dataTrainVref_rxVrefCodes[
+           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH]) >= datatrain_vref_left(lane)) &&
+        (vref_tap_index(ltsm_flagToAnalog_dataTrainVref_rxVrefCodes[
+           lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH]) <
            (datatrain_vref_left(lane) + DATATRAIN_VREF_WINDOW_VALUES));
 
       ltsm_flagFromAnalog_rxDeskew_detectedDataPattern[lane] =
-        (ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes[
-           lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH] >=
+        (D2DAdapterLinkMgmtTbAnalogDecode_pkg::deskew_steps(
+           ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes[
+             lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH]) >=
            rx_deskew_left(lane)) &&
-        (ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes[
-           lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH] <
+        (D2DAdapterLinkMgmtTbAnalogDecode_pkg::deskew_steps(
+           ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes[
+             lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH]) <
            (rx_deskew_left(lane) + RX_DESKEW_WINDOW_VALUES));
     end
   end
@@ -743,7 +852,7 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
   logic [64*TX_DESKEW_CODE_WIDTH-1:0] phy_txLaneDeskewLatched;
   always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
-      phy_txClockPhaseLatched <= '0;
+      phy_txClockPhaseLatched <= {17'h00000, 17'h1ffff, 4'b0000};
       phy_txLaneDeskewLatched <= '0;
     end else begin
       if (phy_flagToAnalog_d2cSender_applyTxClockPhase)
@@ -1281,6 +1390,11 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
       .ltsm_flagToAnalog_rxDeskew_dataPattern                                         (ltsm_flagToAnalog_rxDeskew_dataPattern),
       .ltsm_flagToAnalog_rxDeskew_clearComparisonErrors                               (ltsm_flagToAnalog_rxDeskew_clearComparisonErrors),
       .ltsm_flagFromAnalog_rxDeskew_detectedDataPattern                               (ltsm_flagFromAnalog_rxDeskew_detectedDataPattern),
+      .ltsm_linkSpeed_requestedSpeed                                                   (2'd3),
+      .ltsm_flagToAnalog_linkSpeed_speedCode                                           (ltsm_flagToAnalog_linkSpeed_speedCode),
+      .ltsm_flagToAnalog_linkSpeed_applySpeed                                          (ltsm_flagToAnalog_linkSpeed_applySpeed),
+      .ltsm_flagToAnalog_linkSpeed_electricalIdle                                      (ltsm_flagToAnalog_linkSpeed_electricalIdle),
+      .ltsm_flagFromAnalog_linkSpeed_speedApplied                                      (ltsm_flagFromAnalog_linkSpeed_speedApplied),
       .ltsm_flagToLtsm_linkSpeed_phyInRetrain                                         (ltsm_flagToLtsm_linkSpeed_phyInRetrain),
       .ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful                       (phy_flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
       .ltsm_dbg_mbtrainState                                                          (ltsm_dbg_mbtrainState),
@@ -1527,6 +1641,11 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
       .jtagLtsm_flagToAnalog_rxDeskew_dataPattern                                      (),
       .jtagLtsm_flagToAnalog_rxDeskew_clearComparisonErrors                            (),
       .jtagLtsm_flagFromAnalog_rxDeskew_detectedDataPattern                            ('0),
+      .jtagLtsm_linkSpeed_requestedSpeed                                               (2'd0),
+      .jtagLtsm_flagToAnalog_linkSpeed_speedCode                                       (),
+      .jtagLtsm_flagToAnalog_linkSpeed_applySpeed                                      (),
+      .jtagLtsm_flagToAnalog_linkSpeed_electricalIdle                                  (),
+      .jtagLtsm_flagFromAnalog_linkSpeed_speedApplied                                  (1'b0),
       .jtagLtsm_flagToLtsm_linkSpeed_phyInRetrain                                      (),
       .jtagLtsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful                    ('0),
       .jtagLtsm_dbg_mbtrainState                                                       (),
@@ -1810,6 +1929,9 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
     logic [2:0] func_ltsm_flagToAnalog_rxDeskew_dataPattern;
     logic func_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors;
     logic [dataLaneCount-1:0] func_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern;
+    logic [1:0] func_ltsm_flagToAnalog_linkSpeed_speedCode;
+    logic func_ltsm_flagToAnalog_linkSpeed_applySpeed;
+    logic func_ltsm_flagToAnalog_linkSpeed_electricalIdle;
     logic func_ltsm_flagToLtsm_linkSpeed_phyInRetrain;
     logic [15:0] func_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
     logic [3:0] func_ltsm_dbg_mbtrainState;
@@ -2004,6 +2126,9 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
       func_ltsm_flagToAnalog_rxDeskew_validPattern,
       func_ltsm_flagToAnalog_rxDeskew_dataPattern,
       func_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors,
+      func_ltsm_flagToAnalog_linkSpeed_speedCode,
+      func_ltsm_flagToAnalog_linkSpeed_applySpeed,
+      func_ltsm_flagToAnalog_linkSpeed_electricalIdle,
       func_ltsm_flagToLtsm_linkSpeed_phyInRetrain,
       func_ltsm_dbg_mbtrainState,
       func_ltsm_dbg_mbtrainActiveSubstate,
@@ -2239,6 +2364,11 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
       .ltsm_flagToAnalog_rxDeskew_dataPattern                                            (func_ltsm_flagToAnalog_rxDeskew_dataPattern),
       .ltsm_flagToAnalog_rxDeskew_clearComparisonErrors                                  (func_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors),
       .ltsm_flagFromAnalog_rxDeskew_detectedDataPattern                                  (func_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern),
+      .ltsm_linkSpeed_requestedSpeed                                                   (2'd0),
+      .ltsm_flagToAnalog_linkSpeed_speedCode                                           (func_ltsm_flagToAnalog_linkSpeed_speedCode),
+      .ltsm_flagToAnalog_linkSpeed_applySpeed                                          (func_ltsm_flagToAnalog_linkSpeed_applySpeed),
+      .ltsm_flagToAnalog_linkSpeed_electricalIdle                                      (func_ltsm_flagToAnalog_linkSpeed_electricalIdle),
+      .ltsm_flagFromAnalog_linkSpeed_speedApplied                                      (1'b1),
       .ltsm_flagToLtsm_linkSpeed_phyInRetrain                                            (func_ltsm_flagToLtsm_linkSpeed_phyInRetrain),
       .ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful                          (func_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
       .ltsm_dbg_mbtrainState                                                             (func_ltsm_dbg_mbtrainState),
@@ -2428,6 +2558,11 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
       .jtag_ltsm_flagToAnalog_rxDeskew_dataPattern                                       (ltsm_flagToAnalog_rxDeskew_dataPattern),
       .jtag_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors                             (ltsm_flagToAnalog_rxDeskew_clearComparisonErrors),
       .jtag_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern                             (ltsm_flagFromAnalog_rxDeskew_detectedDataPattern),
+      .jtag_ltsm_linkSpeed_requestedSpeed                                              (2'd3),
+      .jtag_ltsm_flagToAnalog_linkSpeed_speedCode                                      (ltsm_flagToAnalog_linkSpeed_speedCode),
+      .jtag_ltsm_flagToAnalog_linkSpeed_applySpeed                                     (ltsm_flagToAnalog_linkSpeed_applySpeed),
+      .jtag_ltsm_flagToAnalog_linkSpeed_electricalIdle                                 (ltsm_flagToAnalog_linkSpeed_electricalIdle),
+      .jtag_ltsm_flagFromAnalog_linkSpeed_speedApplied                                 (ltsm_flagFromAnalog_linkSpeed_speedApplied),
       .jtag_ltsm_flagToLtsm_linkSpeed_phyInRetrain                                       (ltsm_flagToLtsm_linkSpeed_phyInRetrain),
       .jtag_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful                     (phy_flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
       .jtag_ltsm_dbg_mbtrainState                                                        (ltsm_dbg_mbtrainState),
@@ -2677,6 +2812,11 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
       .jtagLtsm_flagToAnalog_rxDeskew_dataPattern                                      (),
       .jtagLtsm_flagToAnalog_rxDeskew_clearComparisonErrors                            (),
       .jtagLtsm_flagFromAnalog_rxDeskew_detectedDataPattern                            ('0),
+      .jtagLtsm_linkSpeed_requestedSpeed                                               (2'd0),
+      .jtagLtsm_flagToAnalog_linkSpeed_speedCode                                       (),
+      .jtagLtsm_flagToAnalog_linkSpeed_applySpeed                                      (),
+      .jtagLtsm_flagToAnalog_linkSpeed_electricalIdle                                  (),
+      .jtagLtsm_flagFromAnalog_linkSpeed_speedApplied                                  (1'b0),
       .jtagLtsm_flagToLtsm_linkSpeed_phyInRetrain                                      (),
       .jtagLtsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful                    ('0),
       .jtagLtsm_dbg_mbtrainState                                                       (),
@@ -2755,6 +2895,10 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
 endmodule
 
 module D2DAdapterLinkMgmtLtsmDualDieHarness #(
+  // Bit N injects a failing RX comparison on die N only at speed code 3.
+  parameter logic [1:0] LINK_SPEED_FAIL_TOP_RATE_MASK = 2'b00,
+  // Extend the selected receiver fault through the minimum rate.
+  parameter bit LINK_SPEED_FAIL_ALL_RATES = 1'b0,
   // 1: each die is UcieDigitalTop in testModeDigital, driven only via jtag_*.
   parameter bit TEST_MODE_DIGITAL = 1'b0
 ) (
@@ -2819,13 +2963,14 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness #(
   output wire logic [31:0] wire_completed_1_to_0
 );
   localparam bit          UCIE_A                           = 1'b0;
-  localparam int unsigned PI_CODE_WIDTH                    = 4;
-  localparam int unsigned TX_DESKEW_CODE_WIDTH             = 4;
+  localparam int unsigned PI_CODE_WIDTH                    = LtsmParameters_pkg::DEFAULT_D2C_PI_CODE_WIDTH;
+  localparam int unsigned TX_DESKEW_CODE_WIDTH             = LtsmParameters_pkg::DEFAULT_D2C_TX_DESKEW_CODE_WIDTH;
   localparam int unsigned DESKEW_STEPS_PER_PI              = 1;
   localparam bit          DESKEW_ADD_DELAY_INCREASES_PHASE = 1'b1;
   localparam int unsigned DATA_LANE_COUNT                  = 16;
-  localparam int unsigned VREF_CODE_WIDTH                  = 4;
-  localparam int unsigned RX_DESKEW_CODE_WIDTH             = 4;
+  localparam int unsigned VREF_CODE_WIDTH                  =
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH;
+  localparam int unsigned RX_DESKEW_CODE_WIDTH             = LtsmParameters_pkg::DEFAULT_RX_DESKEW_CODE_WIDTH;
 
   // Read-only verification taps. These are local to the harness; the die
   // instances below expose only scalar serial pins for sideband traffic.
@@ -2979,6 +3124,8 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness #(
   );
 
   D2DAdapterLinkMgmtLtsmSerialDieModel #(
+    .LINK_SPEED_FAIL_TOP_RATE         (LINK_SPEED_FAIL_TOP_RATE_MASK[0]),
+    .LINK_SPEED_FAIL_ALL_RATES        (LINK_SPEED_FAIL_ALL_RATES),
     .TEST_MODE_DIGITAL                (TEST_MODE_DIGITAL),
     .UCIE_A                           (UCIE_A),
     .PI_CODE_WIDTH                    (PI_CODE_WIDTH),
@@ -3064,6 +3211,8 @@ module D2DAdapterLinkMgmtLtsmDualDieHarness #(
   );
 
   D2DAdapterLinkMgmtLtsmSerialDieModel #(
+    .LINK_SPEED_FAIL_TOP_RATE         (LINK_SPEED_FAIL_TOP_RATE_MASK[1]),
+    .LINK_SPEED_FAIL_ALL_RATES        (LINK_SPEED_FAIL_ALL_RATES),
     .TEST_MODE_DIGITAL                (TEST_MODE_DIGITAL),
     .UCIE_A                           (UCIE_A),
     .PI_CODE_WIDTH                    (PI_CODE_WIDTH),

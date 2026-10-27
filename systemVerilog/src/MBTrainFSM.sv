@@ -19,7 +19,7 @@ module MBTrainFSM #(
   parameter int unsigned d2cMaxTrainingRetries = LtsmParameters_pkg::DEFAULT_D2C_MAX_TRAINING_RETRIES,
   parameter int unsigned validVrefValueCount = LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
   parameter int unsigned validVrefCodeWidth =
-    (validVrefValueCount <= 1) ? 1 : $clog2(validVrefValueCount),
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH,
   parameter int unsigned validVrefMinimumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
   parameter int unsigned validVrefMaximumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAXIMUM_MILLIVOLTS,
   parameter logic [15:0] validVrefMaximumComparisonErrorThreshold = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAX_COMPARISON_ERROR_THRESHOLD,
@@ -32,7 +32,7 @@ module MBTrainFSM #(
   parameter int unsigned dataVrefValueCount =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
   parameter int unsigned dataVrefCodeWidth =
-    (dataVrefValueCount <= 1) ? 1 : $clog2(dataVrefValueCount),
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH,
   parameter int unsigned dataVrefMinimumMillivolts =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
   parameter int unsigned dataVrefMaximumMillivolts =
@@ -49,7 +49,7 @@ module MBTrainFSM #(
   parameter int unsigned rxDeskewValueCount =
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_VALUE_COUNT,
   parameter int unsigned rxDeskewCodeWidth =
-    (rxDeskewValueCount <= 1) ? 1 : $clog2(rxDeskewValueCount),
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_CODE_WIDTH,
   parameter logic [15:0] rxDeskewMaximumComparisonErrorThreshold =
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_COMPARISON_ERROR_THRESHOLD,
   parameter int unsigned rxDeskewMinPassingWindowValues =
@@ -58,6 +58,12 @@ module MBTrainFSM #(
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES
 ) (
   input wire logic clock,
+  input wire logic [31:0] cycles_1us,
+  input wire logic [1:0] initialSpeed,
+  input wire logic flagFromAnalog_linkSpeed_speedApplied,
+  output var logic [1:0] flagToAnalog_linkSpeed_speedCode,
+  output var logic flagToAnalog_linkSpeed_applySpeed,
+  output var logic flagToAnalog_linkSpeed_electricalIdle,
   input wire logic reset_n,
   input wire logic           start,
   output var logic           busy,
@@ -229,6 +235,31 @@ module MBTrainFSM #(
 
   (* keep = "true" *) State_t stateReg;
   (* keep = "true" *) logic errorReg;
+  State_t previousStateReg;
+  logic [1:0] selectedSpeedReg;
+  logic speedChangeAccepted;
+  logic speedAppliedSync;
+  // The PHY acknowledgement may originate in the PLL/control domain. The
+  // requested rate remains stable until this synchronized acknowledgement.
+  tc_sync #(.Stages(2)) u_speed_applied_sync (
+    .clk_i(clock), .rst_ni(reset_n),
+    .serial_i(flagFromAnalog_linkSpeed_speedApplied),
+    .serial_o(speedAppliedSync)
+  );
+  logic speedDegradeAtFloorReg;
+  logic [15:0] speedDegradeCountReg;
+  logic linkSpeed_exitToSpeedDegrade;
+  wire stageSettled = (stateReg == previousStateReg);
+
+  // Zero-based rate code: 0=2GHz/4GT/s, 1=4GHz/8GT/s,
+  // 2=6GHz/12GT/s, 3=8GHz/16GT/s. Retain it while ACTIVE.
+  assign flagToAnalog_linkSpeed_speedCode = selectedSpeedReg;
+  assign flagToAnalog_linkSpeed_electricalIdle =
+    (stateReg == State_SPEEDIDLE) || (stateReg == State_ERROR) || errorReg;
+  assign flagToAnalog_linkSpeed_applySpeed =
+    (stateReg == State_SPEEDIDLE) && stageSettled && !speedChangeAccepted &&
+    !speedDegradeAtFloorReg;
+
 
   // Private sub-FSM interfaces: only the selected state owns the PHY ports.
   logic stage_flagToAnalog_valVref_sendPattern;
@@ -919,6 +950,9 @@ module MBTrainFSM #(
     .voltageSwing(voltageSwing),
     .maxLinkSpeed(maxLinkSpeed)
   ) speedIdle (
+    .cycles_1us(cycles_1us),
+    .speedApplied(speedChangeAccepted),
+    .speedDegradeAtFloor(speedDegradeAtFloorReg),
     .clock(clock),
     .reset_n(reset_n),
     .start(stateReg == State_SPEEDIDLE),
@@ -1381,6 +1415,8 @@ module MBTrainFSM #(
     .voltageSwing(voltageSwing),
     .maxLinkSpeed(maxLinkSpeed)
   ) linkSpeed (
+    .cycles_1us(cycles_1us),
+    .exitToSpeedDegrade(linkSpeed_exitToSpeedDegrade),
     .clock(clock),
     .reset_n(reset_n),
     .start(stateReg == State_LINKSPEED),
@@ -1416,12 +1452,19 @@ module MBTrainFSM #(
     .retryCount(linkSpeed_retryCount)
   );
 
-  wire activeChildError =
-    valVref_trainError || dataVref_trainError || speedIdle_trainError ||
-    txSelfCal_trainError || rxClkCal_trainError || valTrainCenter_trainError ||
-    valTrainVref_trainError || dataTrainCenter1_trainError ||
-    dataTrainVref_trainError || rxDeskew_trainError ||
-    dataTrainCenter2_trainError || linkSpeed_trainError;
+  wire activeChildError = stageSettled && (
+    ((stateReg == State_VALVREF) && valVref_trainError) ||
+    ((stateReg == State_DATAVREF) && dataVref_trainError) ||
+    ((stateReg == State_SPEEDIDLE) && speedIdle_trainError) ||
+    ((stateReg == State_TXSELFCAL) && txSelfCal_trainError) ||
+    ((stateReg == State_RXCLKCAL) && rxClkCal_trainError) ||
+    ((stateReg == State_VALTRAINCENTER) && valTrainCenter_trainError) ||
+    ((stateReg == State_VALTRAINVREF) && valTrainVref_trainError) ||
+    ((stateReg == State_DATATRAINCENTER1) && dataTrainCenter1_trainError) ||
+    ((stateReg == State_DATATRAINVREF) && dataTrainVref_trainError) ||
+    ((stateReg == State_RXDESKEW) && rxDeskew_trainError) ||
+    ((stateReg == State_DATATRAINCENTER2) && dataTrainCenter2_trainError) ||
+    ((stateReg == State_LINKSPEED) && linkSpeed_trainError));
 
   always_comb begin
     sb_tx_valid = 1'b0;
@@ -1436,7 +1479,7 @@ module MBTrainFSM #(
         sb_tx_din = dataVref_sb_tx_din;
       end
       State_SPEEDIDLE: begin
-        sb_tx_valid = speedIdle_sb_tx_valid;
+        sb_tx_valid = speedIdle_sb_tx_valid && sb_tx_ready;
         sb_tx_din = speedIdle_sb_tx_din;
       end
       State_TXSELFCAL: begin
@@ -1472,7 +1515,9 @@ module MBTrainFSM #(
         sb_tx_din = dataTrainCenter2_sb_tx_din;
       end
       State_LINKSPEED: begin
-        sb_tx_valid = linkSpeed_sb_tx_valid;
+        // LINKSPEED holds valid until accepted. The parent LTSM interface
+        // feeds a legacy pulse-capture queue, so emit one pulse per transfer.
+        sb_tx_valid = linkSpeed_sb_tx_valid && sb_tx_ready;
         sb_tx_din = linkSpeed_sb_tx_din;
       end
       default: ;
@@ -1594,7 +1639,7 @@ module MBTrainFSM #(
       State_LINKSPEED: begin
         activeSubstate = {linkSpeed_dbg_senderState, linkSpeed_dbg_d2cSenderState, linkSpeed_dbg_d2cReceiverState};
         lastErrorCount = linkSpeed_lastErrorCount;
-        retryCount = linkSpeed_retryCount;
+        retryCount = speedDegradeCountReg;
       end
       default: ;
     endcase
@@ -1604,62 +1649,96 @@ module MBTrainFSM #(
     if (!reset_n) begin
       stateReg <= State_IDLE;
       errorReg <= 1'b0;
+      previousStateReg <= State_IDLE;
+      selectedSpeedReg <= 2'd0;
+      speedChangeAccepted <= 1'b0;
+      speedDegradeAtFloorReg <= 1'b0;
+      speedDegradeCountReg <= 16'd0;
     end else begin
+      previousStateReg <= stateReg;
+      if (stateReg != State_SPEEDIDLE)
+        speedChangeAccepted <= 1'b0;
+      else if (flagToAnalog_linkSpeed_applySpeed && speedAppliedSync)
+        speedChangeAccepted <= 1'b1;
       if ((stateReg == State_IDLE) && start) begin
         stateReg <= State_VALVREF;
         errorReg <= 1'b0;
+        selectedSpeedReg <= 2'd0;
+        speedChangeAccepted <= 1'b0;
+        speedDegradeAtFloorReg <= 1'b0;
+        speedDegradeCountReg <= 16'd0;
       end else if (activeChildError) begin
-        stateReg <= State_ERROR;
-        errorReg <= 1'b1;
+        if (stateReg == State_LINKSPEED) begin
+          // A negotiation timeout also uses the terminal TRAINERROR exchange.
+          speedDegradeAtFloorReg <= 1'b1;
+          stateReg <= State_SPEEDIDLE;
+        end else begin
+          stateReg <= State_ERROR;
+          errorReg <= 1'b1;
+        end
       end else begin
         unique case (stateReg)
           State_IDLE: ;
           State_VALVREF: begin
-            if (valVref_done)
+            if (stageSettled && valVref_done)
               stateReg <= State_DATAVREF;
           end
           State_DATAVREF: begin
-            if (dataVref_done)
+            if (stageSettled && dataVref_done) begin
+              selectedSpeedReg <= initialSpeed;
+              speedDegradeAtFloorReg <= 1'b0;
               stateReg <= State_SPEEDIDLE;
+            end
           end
           State_SPEEDIDLE: begin
-            if (speedIdle_done)
+            if (stageSettled && speedIdle_done)
               stateReg <= State_TXSELFCAL;
           end
           State_TXSELFCAL: begin
-            if (txSelfCal_done)
+            if (stageSettled && txSelfCal_done)
               stateReg <= State_RXCLKCAL;
           end
           State_RXCLKCAL: begin
-            if (rxClkCal_done)
+            if (stageSettled && rxClkCal_done)
               stateReg <= State_VALTRAINCENTER;
           end
           State_VALTRAINCENTER: begin
-            if (valTrainCenter_done)
+            if (stageSettled && valTrainCenter_done)
               stateReg <= State_VALTRAINVREF;
           end
           State_VALTRAINVREF: begin
-            if (valTrainVref_done)
+            if (stageSettled && valTrainVref_done)
               stateReg <= State_DATATRAINCENTER1;
           end
           State_DATATRAINCENTER1: begin
-            if (dataTrainCenter1_done)
+            if (stageSettled && dataTrainCenter1_done)
               stateReg <= State_DATATRAINVREF;
           end
           State_DATATRAINVREF: begin
-            if (dataTrainVref_done)
+            if (stageSettled && dataTrainVref_done)
               stateReg <= State_RXDESKEW;
           end
           State_RXDESKEW: begin
-            if (rxDeskew_done)
+            if (stageSettled && rxDeskew_done)
               stateReg <= State_DATATRAINCENTER2;
           end
           State_DATATRAINCENTER2: begin
-            if (dataTrainCenter2_done)
+            if (stageSettled && dataTrainCenter2_done)
               stateReg <= State_LINKSPEED;
           end
           State_LINKSPEED: begin
-            if (linkSpeed_done)
+            if (stageSettled && linkSpeed_exitToSpeedDegrade) begin
+              // The child has completed all required ERROR and DEGRADE
+              // exchanges. Change the analog rate only in electrical idle.
+              stateReg <= State_SPEEDIDLE;
+              if (selectedSpeedReg != 2'd0) begin
+                selectedSpeedReg <= selectedSpeedReg - 2'd1;
+                speedDegradeAtFloorReg <= 1'b0;
+                speedDegradeCountReg <= speedDegradeCountReg + 16'd1;
+              end else begin
+                speedDegradeAtFloorReg <= 1'b1;
+              end
+            end else if (stageSettled && linkSpeed_done)
               stateReg <= State_COMPLETE;
           end
           State_REPAIR: begin
@@ -1679,6 +1758,15 @@ module MBTrainFSM #(
       end
     end
   end
+`ifndef SYNTHESIS
+  a_speed_apply_in_idle: assert property (@(posedge clock) disable iff (!reset_n)
+    flagToAnalog_linkSpeed_applySpeed |-> flagToAnalog_linkSpeed_electricalIdle)
+    else $error("Speed change outside electrical idle");
+  a_speed_hold_until_ack: assert property (@(posedge clock) disable iff (!reset_n)
+    (flagToAnalog_linkSpeed_applySpeed && $past(flagToAnalog_linkSpeed_applySpeed))
+    |-> $stable(selectedSpeedReg))
+    else $error("Speed code changed while PHY request outstanding");
+`endif
 endmodule
 
 `default_nettype wire

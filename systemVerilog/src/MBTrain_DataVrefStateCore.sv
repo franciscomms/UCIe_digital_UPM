@@ -13,6 +13,8 @@
 // RxInitD2CPointTestReceiverFSM and RxInitD2CPointTestSenderFSM modules supply
 // the sequencing.  The project-owned TxInitD2CPointTest* modules remain in the
 // build for transmitter-initiated states but cannot replace these Rx-init roles.
+// Vref code ports carry 20-bit one-hot tap selections; bit 0 is the lowest tap.
+// Selected/window outputs are zero before a valid window is found.
 `default_nettype none
 
 module MBTrain_DataVrefStateCore #(
@@ -21,9 +23,8 @@ module MBTrain_DataVrefStateCore #(
   parameter int unsigned DATA_LANE_COUNT = 16,
   parameter logic [DATA_LANE_COUNT-1:0] ACTIVE_DATA_LANE_MASK =
     {DATA_LANE_COUNT{1'b1}},
-  parameter int unsigned VREF_VALUE_COUNT = 16,
-  parameter int unsigned VREF_CODE_WIDTH =
-    (VREF_VALUE_COUNT <= 1) ? 1 : $clog2(VREF_VALUE_COUNT),
+  parameter int unsigned VREF_VALUE_COUNT = 20,
+  parameter int unsigned VREF_CODE_WIDTH = 20,
   parameter logic [15:0] MAXIMUM_COMPARISON_ERROR_THRESHOLD = 16'd0,
   parameter int unsigned MIN_PASSING_WINDOW_VALUES = 1,
   parameter int unsigned MAX_TRAINING_RETRIES = 1

@@ -4,6 +4,8 @@
 // operating rate.  Even when local optimization is disabled, the state still
 // performs the outer Start/End handshake and serves the partner die's
 // receiver-initiated point tests.
+// Vref code ports carry 20-bit one-hot tap selections; bit 0 is the lowest tap.
+// Selected/window outputs are zero before a valid window is found.
 `default_nettype none
 
 module MBTrainDataTrainVrefFSM #(
@@ -20,7 +22,7 @@ module MBTrainDataTrainVrefFSM #(
   parameter int unsigned dataVrefValueCount =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
   parameter int unsigned dataVrefCodeWidth =
-    (dataVrefValueCount <= 1) ? 1 : $clog2(dataVrefValueCount),
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH,
   parameter int unsigned dataVrefMinimumMillivolts =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
   parameter int unsigned dataVrefMaximumMillivolts =

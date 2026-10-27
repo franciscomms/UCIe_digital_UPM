@@ -13,6 +13,10 @@ module MBInitFSM #(
   input wire logic clock,
   input wire logic reset_n,
   input wire logic           start,
+  // UCIe speed encodings: 0=4, 1=8, 2=12, 3=16 GT/s (2/4/6/8 GHz).
+  // Sampled on start; changing the request cannot alter an active negotiation.
+  input wire logic [1:0]     requestedSpeed,
+  output var logic [1:0]    negotiatedSpeed,
   output var logic           busy,
   output var logic           done,
   output var logic           trainError,
@@ -394,6 +398,16 @@ module MBInitFSM #(
   (* keep = "true" *) logic mbinitRepairClk_logClkPatternReceivedRCKP_L;
   (* keep = "true" *) logic [63:0] remoteParamReqPayload;
   (* keep = "true" *) logic [63:0] remoteParamRespPayload;
+  logic [3:0] localSpeedCapReg;
+  wire [1:0] cappedRequestedSpeed;
+  generate
+    if (maxLinkSpeed < 4'd3) begin : g_limited_speed_cap
+      assign cappedRequestedSpeed = ({2'b0, requestedSpeed} > maxLinkSpeed) ?
+                                     maxLinkSpeed[1:0] : requestedSpeed;
+    end else begin : g_full_speed_cap
+      assign cappedRequestedSpeed = requestedSpeed;
+    end
+  endgenerate
   (* keep = "true" *) logic prevStart;
   (* keep = "true" *) logic prevRxValid;
 
@@ -402,9 +416,9 @@ module MBInitFSM #(
 
   wire [127:0] MBINIT_PARAM_REQ = msgMbinitParamConfigReq(
     ENDPOINT_PHY, ENDPOINT_REMOTE_PHY, sbFeatureExtension, ucieA, moduleID,
-    clkPhase, clkMode, voltageSwing, maxLinkSpeed);
+    clkPhase, clkMode, voltageSwing, localSpeedCapReg);
   wire [127:0] MBINIT_PARAM_RESP = msgMbinitParamConfigResp(
-    ENDPOINT_PHY, ENDPOINT_REMOTE_PHY, clkPhase, clkMode, maxLinkSpeed);
+    ENDPOINT_PHY, ENDPOINT_REMOTE_PHY, clkPhase, clkMode, {2'b0, negotiatedSpeed});
   wire [127:0] MBINIT_CAL_DONE_REQ = msgMbinitCalDoneReq(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
   wire [127:0] MBINIT_CAL_DONE_RESP = msgMbinitCalDoneResp(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
 
@@ -660,19 +674,33 @@ module MBInitFSM #(
       mbinitRepairClk_logClkPatternReceivedRCKP_L <= 1'b0;
       remoteParamReqPayload <= 64'b0;
       remoteParamRespPayload <= 64'b0;
+      localSpeedCapReg <= 4'd0;
+      negotiatedSpeed <= 2'd0;
       prevStart <= 1'b0;
       prevRxValid <= 1'b0;
     end else begin
-      // RegNext semantics and the source's defaulted pulse-style TX registers.
+      // PARAM uses a decoupled TX register. Other legacy MBINIT substates keep
+      // their existing pulse-style interface to the LTSM capture queue.
       prevStart <= start;
       prevRxValid <= sb_rx_valid;
-      sbTxValid <= 1'b0;
-      sbTxDin <= 128'b0;
+      if (stateReg != MBInitState_PARAM || (sbTxValid && sb_tx_ready)) begin
+        sbTxValid <= 1'b0;
+        sbTxDin <= 128'b0;
+      end
+      if (running && stateReg == MBInitState_PARAM && sbTxValid && sb_tx_ready) begin
+        if (sbTxDin[21:14] == 8'hA5) flagMbinitParam_SentReq <= 1'b1;
+        if (sbTxDin[21:14] == 8'hAA) flagMbinitParam_SentResp <= 1'b1;
+      end
 
       if (startPulse) begin
         running <= 1'b1;
         stateReg <= MBInitState_PARAM;
         trainErrorReg <= 1'b0;
+        sbTxValid <= 1'b0;
+        sbTxDin <= 128'b0;
+        // Encodings 0..5 are defined, but this PHY implements through 16 GT/s.
+        localSpeedCapReg <= {2'b0, cappedRequestedSpeed};
+        negotiatedSpeed <= 2'd0;
         flagMbinitParam_ReceivedReqHeader <= 1'b0;
         flagMbinitParam_ReceivedReqPayload <= 1'b0;
         flagMbinitParam_SentReq <= 1'b0;
@@ -827,15 +855,18 @@ module MBInitFSM #(
         running <= 1'b0;
       end
       if (rxValidRisingEdge) begin
-        if (sb_rx_dout == MBINIT_PARAM_REQ) begin
+        // Payload and its data parity vary with the partner's capabilities.
+        if (sb_rx_dout[62:0] == MBINIT_PARAM_REQ[62:0]) begin
           flagMbinitParam_ReceivedReqHeader <= 1'b1;
           flagMbinitParam_ReceivedReqPayload <= 1'b1;
           remoteParamReqPayload <= sb_rx_dout[127:64];
+          if (sb_rx_dout[63] != ^sb_rx_dout[127:64]) trainErrorReg <= 1'b1;
         end
-        if (sb_rx_dout == MBINIT_PARAM_RESP) begin
+        if (sb_rx_dout[62:0] == MBINIT_PARAM_RESP[62:0]) begin
           flagMbinitParam_ReceivedRespHeader <= 1'b1;
           flagMbinitParam_ReceivedRespPayload <= 1'b1;
           remoteParamRespPayload <= sb_rx_dout[127:64];
+          if (sb_rx_dout[63] != ^sb_rx_dout[127:64]) trainErrorReg <= 1'b1;
         end
         if (sb_rx_dout == MBINIT_CAL_DONE_REQ) begin
           flagMbinitCal_ReceivedDoneReq <= 1'b1;
@@ -973,8 +1004,12 @@ module MBInitFSM #(
                 end
               end
               ParamSenderState_waitResp: begin
-                if (flagMbinitParam_ReceivedRespHeader && flagMbinitParam_ReceivedRespPayload) begin
-                  paramSenderStateReg <= ParamSenderState_finish;
+                if (flagMbinitParam_ReceivedRespHeader && flagMbinitParam_ReceivedRespPayload &&
+                    flagMbinitParam_ReceivedCorrectReq) begin
+                  if (remoteParamRespPayload == MBINIT_PARAM_RESP[127:64])
+                    paramSenderStateReg <= ParamSenderState_finish;
+                  else
+                    trainErrorReg <= 1'b1;
                 end
               end
               default: ;
@@ -986,7 +1021,12 @@ module MBInitFSM #(
                 end
               end
               ParamReceiverState_validateReqPayload: begin
-                if (remoteParamReqPayload == MBINIT_PARAM_REQ[127:64]) begin
+                // Preserve the existing non-speed parameter checks. Speed is
+                // negotiated rather than requiring identical advertisements.
+                if ((remoteParamReqPayload[63:4] == MBINIT_PARAM_REQ[127:68]) &&
+                    (remoteParamReqPayload[3:0] <= 4'd5)) begin
+                  negotiatedSpeed <= (remoteParamReqPayload[3:0] < localSpeedCapReg) ?
+                                       remoteParamReqPayload[1:0] : localSpeedCapReg[1:0];
                   flagMbinitParam_ReceivedCorrectReq <= 1'b1;
                   paramReceiverStateReg <= ParamReceiverState_sendRespHeader;
                 end
@@ -1005,16 +1045,14 @@ module MBInitFSM #(
               end
               default: ;
             endcase
-            if (sb_tx_ready && !sbTxValid) begin
-              if (flagMbinitParam_SendResp) begin
+            if (!sbTxValid && !trainErrorReg) begin
+              if (flagMbinitParam_SendResp && !flagMbinitParam_SentResp) begin
                 sbTxDin <= MBINIT_PARAM_RESP;
                 sbTxValid <= 1'b1;
-                flagMbinitParam_SentResp <= 1'b1;
               end
-              else if (flagMbinitParam_SendReq) begin
+              else if (flagMbinitParam_SendReq && !flagMbinitParam_SentReq) begin
                 sbTxDin <= MBINIT_PARAM_REQ;
                 sbTxValid <= 1'b1;
-                flagMbinitParam_SentReq <= 1'b1;
               end
             end
             if (paramSenderStateReg == ParamSenderState_finish && paramReceiverStateReg == ParamReceiverState_finish) begin

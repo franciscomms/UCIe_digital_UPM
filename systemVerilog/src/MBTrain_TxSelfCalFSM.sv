@@ -106,6 +106,10 @@ module MBTrainTxSelfCalFSM #(
       prevRxValid <= sb_rx_valid;
 
       if (startPulse) begin
+        // Restart has priority over the previous run's sticky finish states.
+        // Otherwise their self-assignments below overwrite this initialization.
+        sbTxValid <= 1'b0;
+        sbTxDin <= '0;
         running <= 1'b1;
         doneReg <= 1'b0;
         trainErrorReg <= 1'b0;
@@ -115,41 +119,42 @@ module MBTrainTxSelfCalFSM #(
         flagSentTxSelfCalDoneResp <= 1'b0;
         txSelfCalSenderStateReg <= TxSelfCalSenderState_doTxSelfCal;
         txSelfCalReceiverStateReg <= TxSelfCalReceiverState_waitDoneReq;
-      end
+      end else begin
 
-      if (running && rxValidRisingEdge) begin
-        if (sb_rx_dout == MBTRAIN_TXSELFCAL_DONE_REQ)
-          flagReceivedTxSelfCalDoneReq <= 1'b1;
-        if (sb_rx_dout == MBTRAIN_TXSELFCAL_DONE_RESP)
-          flagReceivedTxSelfCalDoneResp <= 1'b1;
-      end
+        if (running && rxValidRisingEdge) begin
+          if (sb_rx_dout == MBTRAIN_TXSELFCAL_DONE_REQ)
+            flagReceivedTxSelfCalDoneReq <= 1'b1;
+          if (sb_rx_dout == MBTRAIN_TXSELFCAL_DONE_RESP)
+            flagReceivedTxSelfCalDoneResp <= 1'b1;
+        end
 
-      if (running && sb_tx_ready && !sbTxValid) begin
-        if ((txSelfCalReceiverStateReg == TxSelfCalReceiverState_sendDoneResp) && !flagSentTxSelfCalDoneResp)
-          flagSentTxSelfCalDoneResp <= 1'b1;
-        else if ((txSelfCalSenderStateReg == TxSelfCalSenderState_sendDoneReq) && !flagSentTxSelfCalDoneReq)
-          flagSentTxSelfCalDoneReq <= 1'b1;
-      end
+        if (running && sb_tx_ready && !sbTxValid) begin
+          if ((txSelfCalReceiverStateReg == TxSelfCalReceiverState_sendDoneResp) && !flagSentTxSelfCalDoneResp)
+            flagSentTxSelfCalDoneResp <= 1'b1;
+          else if ((txSelfCalSenderStateReg == TxSelfCalSenderState_sendDoneReq) && !flagSentTxSelfCalDoneReq)
+            flagSentTxSelfCalDoneReq <= 1'b1;
+        end
 
-      unique case (txSelfCalSenderStateReg)
-        TxSelfCalSenderState_doTxSelfCal: if (running) txSelfCalSenderStateReg <= TxSelfCalSenderState_sendDoneReq;
-        TxSelfCalSenderState_sendDoneReq: if (flagSentTxSelfCalDoneReq) txSelfCalSenderStateReg <= TxSelfCalSenderState_waitDoneResp;
-        TxSelfCalSenderState_waitDoneResp: if (flagReceivedTxSelfCalDoneResp) txSelfCalSenderStateReg <= TxSelfCalSenderState_finish;
-        TxSelfCalSenderState_finish: txSelfCalSenderStateReg <= TxSelfCalSenderState_finish;
-        default: txSelfCalSenderStateReg <= TxSelfCalSenderState_doTxSelfCal;
-      endcase
+        unique case (txSelfCalSenderStateReg)
+          TxSelfCalSenderState_doTxSelfCal: if (running) txSelfCalSenderStateReg <= TxSelfCalSenderState_sendDoneReq;
+          TxSelfCalSenderState_sendDoneReq: if (flagSentTxSelfCalDoneReq) txSelfCalSenderStateReg <= TxSelfCalSenderState_waitDoneResp;
+          TxSelfCalSenderState_waitDoneResp: if (flagReceivedTxSelfCalDoneResp) txSelfCalSenderStateReg <= TxSelfCalSenderState_finish;
+          TxSelfCalSenderState_finish: txSelfCalSenderStateReg <= TxSelfCalSenderState_finish;
+          default: txSelfCalSenderStateReg <= TxSelfCalSenderState_doTxSelfCal;
+        endcase
 
-      unique case (txSelfCalReceiverStateReg)
-        TxSelfCalReceiverState_waitDoneReq: if (flagReceivedTxSelfCalDoneReq) txSelfCalReceiverStateReg <= TxSelfCalReceiverState_sendDoneResp;
-        TxSelfCalReceiverState_sendDoneResp: if (flagSentTxSelfCalDoneResp) txSelfCalReceiverStateReg <= TxSelfCalReceiverState_finish;
-        TxSelfCalReceiverState_finish: txSelfCalReceiverStateReg <= TxSelfCalReceiverState_finish;
-        default: txSelfCalReceiverStateReg <= TxSelfCalReceiverState_waitDoneReq;
-      endcase
+        unique case (txSelfCalReceiverStateReg)
+          TxSelfCalReceiverState_waitDoneReq: if (flagReceivedTxSelfCalDoneReq) txSelfCalReceiverStateReg <= TxSelfCalReceiverState_sendDoneResp;
+          TxSelfCalReceiverState_sendDoneResp: if (flagSentTxSelfCalDoneResp) txSelfCalReceiverStateReg <= TxSelfCalReceiverState_finish;
+          TxSelfCalReceiverState_finish: txSelfCalReceiverStateReg <= TxSelfCalReceiverState_finish;
+          default: txSelfCalReceiverStateReg <= TxSelfCalReceiverState_waitDoneReq;
+        endcase
 
-      if (running && (txSelfCalSenderStateReg == TxSelfCalSenderState_finish) &&
-          (txSelfCalReceiverStateReg == TxSelfCalReceiverState_finish)) begin
-        doneReg <= 1'b1;
-        running <= 1'b0;
+        if (running && (txSelfCalSenderStateReg == TxSelfCalSenderState_finish) &&
+            (txSelfCalReceiverStateReg == TxSelfCalReceiverState_finish)) begin
+          doneReg <= 1'b1;
+          running <= 1'b0;
+        end
       end
     end
   end

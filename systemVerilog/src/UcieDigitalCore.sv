@@ -64,6 +64,7 @@ module UcieDigitalCore #(
   parameter bit clkMode             = LtsmParameters_pkg::DEFAULT_CLK_MODE,
   parameter logic [4:0] voltageSwing = LtsmParameters_pkg::DEFAULT_VOLTAGE_SWING,
   parameter logic [3:0] maxLinkSpeed = LtsmParameters_pkg::DEFAULT_MAX_LINK_SPEED,
+  // Physical DLL/PI control word: 38 bits; the binary sweep index is internal.
   parameter int unsigned d2cPiCodeWidth = LtsmParameters_pkg::DEFAULT_D2C_PI_CODE_WIDTH,
   parameter int unsigned d2cTxDeskewCodeWidth = LtsmParameters_pkg::DEFAULT_D2C_TX_DESKEW_CODE_WIDTH,
   parameter int unsigned d2cDeskewStepsPerPi = LtsmParameters_pkg::DEFAULT_D2C_DESKEW_STEPS_PER_PI,
@@ -73,8 +74,9 @@ module UcieDigitalCore #(
   parameter int unsigned d2cMinCommonWindowSteps = LtsmParameters_pkg::DEFAULT_D2C_MIN_COMMON_WINDOW_STEPS,
   parameter int unsigned d2cMaxTrainingRetries = LtsmParameters_pkg::DEFAULT_D2C_MAX_TRAINING_RETRIES,
   parameter int unsigned validVrefValueCount = LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
+  // Physical Vref controls are 20-bit one-hot words, independent of sweep count.
   parameter int unsigned validVrefCodeWidth =
-    (validVrefValueCount <= 1) ? 1 : $clog2(validVrefValueCount),
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH,
   parameter int unsigned validVrefMinimumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
   parameter int unsigned validVrefMaximumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAXIMUM_MILLIVOLTS,
   parameter logic [15:0] validVrefMaximumComparisonErrorThreshold = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAX_COMPARISON_ERROR_THRESHOLD,
@@ -85,7 +87,7 @@ module UcieDigitalCore #(
   parameter logic [dataLaneCount-1:0] activeDataLaneMask = {dataLaneCount{1'b1}},
   parameter int unsigned dataVrefValueCount = LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
   parameter int unsigned dataVrefCodeWidth =
-    (dataVrefValueCount <= 1) ? 1 : $clog2(dataVrefValueCount),
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH,
   parameter int unsigned dataVrefMinimumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
   parameter int unsigned dataVrefMaximumMillivolts = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAXIMUM_MILLIVOLTS,
   parameter logic [15:0] dataVrefMaximumComparisonErrorThreshold = LtsmParameters_pkg::DEFAULT_VALID_VREF_MAX_COMPARISON_ERROR_THRESHOLD,
@@ -94,8 +96,9 @@ module UcieDigitalCore #(
   parameter bit dataTrainVrefEnable = 1'b1,
   parameter bit rxDeskewEnable = LtsmParameters_pkg::DEFAULT_RX_DESKEW_ENABLE,
   parameter int unsigned rxDeskewValueCount = LtsmParameters_pkg::DEFAULT_RX_DESKEW_VALUE_COUNT,
+  // Physical RX deskew uses two 10-bit cells per lane, not a binary delay index.
   parameter int unsigned rxDeskewCodeWidth =
-    (rxDeskewValueCount <= 1) ? 1 : $clog2(rxDeskewValueCount),
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_CODE_WIDTH,
   parameter logic [15:0] rxDeskewMaximumComparisonErrorThreshold =
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_COMPARISON_ERROR_THRESHOLD,
   parameter int unsigned rxDeskewMinPassingWindowValues =
@@ -302,7 +305,12 @@ module UcieDigitalCore #(
 
   // LTSM MBTRAIN.LINKSPEED interface.
   output var logic           ltsm_flagToLtsm_linkSpeed_phyInRetrain,
+  output var logic [1:0]           ltsm_flagToAnalog_linkSpeed_speedCode,
+  output var logic           ltsm_flagToAnalog_linkSpeed_applySpeed,
+  output var logic           ltsm_flagToAnalog_linkSpeed_electricalIdle,
   input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
+  input wire logic [1:0]    ltsm_linkSpeed_requestedSpeed,
+  input wire logic     ltsm_flagFromAnalog_linkSpeed_speedApplied,
   output var logic [3:0]     ltsm_dbg_mbtrainState,
   // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    ltsm_dbg_mbtrainActiveSubstate,
@@ -599,7 +607,12 @@ module UcieDigitalCore #(
   output var logic jtagLtsm_flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] jtagLtsm_flagFromAnalog_rxDeskew_detectedDataPattern,
   output var logic jtagLtsm_flagToLtsm_linkSpeed_phyInRetrain,
+  output var logic [1:0] jtagLtsm_flagToAnalog_linkSpeed_speedCode,
+  output var logic jtagLtsm_flagToAnalog_linkSpeed_applySpeed,
+  output var logic jtagLtsm_flagToAnalog_linkSpeed_electricalIdle,
   input wire logic [15:0] jtagLtsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
+  input wire logic [1:0] jtagLtsm_linkSpeed_requestedSpeed,
+  input wire logic  jtagLtsm_flagFromAnalog_linkSpeed_speedApplied,
   output var logic [3:0] jtagLtsm_dbg_mbtrainState,
   output var logic [11:0] jtagLtsm_dbg_mbtrainActiveSubstate,
   output var logic [3:0] jtagLtsm_dbg_mbtrainValVrefLocalState,
@@ -1178,7 +1191,12 @@ module UcieDigitalCore #(
   logic ltsmCore_flagToAnalog_rxDeskew_clearComparisonErrors;
   logic [dataLaneCount-1:0] ltsmCore_flagFromAnalog_rxDeskew_detectedDataPattern;
   logic ltsmCore_flagToLtsm_linkSpeed_phyInRetrain;
+  logic [1:0] ltsmCore_flagToAnalog_linkSpeed_speedCode;
+  logic ltsmCore_flagToAnalog_linkSpeed_applySpeed;
+  logic ltsmCore_flagToAnalog_linkSpeed_electricalIdle;
   logic [15:0] ltsmCore_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
+  logic [1:0] ltsmCore_linkSpeed_requestedSpeed;
+  logic  ltsmCore_flagFromAnalog_linkSpeed_speedApplied;
   logic [3:0] ltsmCore_dbg_mbtrainState;
   logic [11:0] ltsmCore_dbg_mbtrainActiveSubstate;
   logic [3:0] ltsmCore_dbg_mbtrainValVrefLocalState;
@@ -1301,6 +1319,8 @@ module UcieDigitalCore #(
   assign ltsmCore_flagFromAnalog_rxDeskew_rxLaneDeskewApplied = testModeLtsm ? jtagLtsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied : ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied;
   assign ltsmCore_flagFromAnalog_rxDeskew_detectedDataPattern = testModeLtsm ? jtagLtsm_flagFromAnalog_rxDeskew_detectedDataPattern : ltsm_flagFromAnalog_rxDeskew_detectedDataPattern;
   assign ltsmCore_flagFromAnalog_d2cReceiver_laneComparisonSuccessful = testModeLtsm ? jtagLtsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful : ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
+  assign ltsmCore_linkSpeed_requestedSpeed = testModeLtsm ? jtagLtsm_linkSpeed_requestedSpeed : ltsm_linkSpeed_requestedSpeed;
+  assign ltsmCore_flagFromAnalog_linkSpeed_speedApplied = testModeLtsm ? jtagLtsm_flagFromAnalog_linkSpeed_speedApplied : ltsm_flagFromAnalog_linkSpeed_speedApplied;
 
   // Outputs of ltsm: normal sink or TDR pin (the other side is 0, so the
   // rest of the core sees an idle block in test mode).
@@ -1487,7 +1507,13 @@ module UcieDigitalCore #(
   assign jtagLtsm_flagToAnalog_rxDeskew_clearComparisonErrors = testModeLtsm ? ltsmCore_flagToAnalog_rxDeskew_clearComparisonErrors : '0;
   assign ltsm_flagToAnalog_rxDeskew_clearComparisonErrors = testModeLtsm ? '0 : ltsmCore_flagToAnalog_rxDeskew_clearComparisonErrors;
   assign jtagLtsm_flagToLtsm_linkSpeed_phyInRetrain = testModeLtsm ? ltsmCore_flagToLtsm_linkSpeed_phyInRetrain : '0;
+  assign jtagLtsm_flagToAnalog_linkSpeed_speedCode = testModeLtsm ? ltsmCore_flagToAnalog_linkSpeed_speedCode : '0;
+  assign jtagLtsm_flagToAnalog_linkSpeed_applySpeed = testModeLtsm ? ltsmCore_flagToAnalog_linkSpeed_applySpeed : '0;
+  assign jtagLtsm_flagToAnalog_linkSpeed_electricalIdle = testModeLtsm ? ltsmCore_flagToAnalog_linkSpeed_electricalIdle : '0;
   assign ltsm_flagToLtsm_linkSpeed_phyInRetrain = testModeLtsm ? '0 : ltsmCore_flagToLtsm_linkSpeed_phyInRetrain;
+  assign ltsm_flagToAnalog_linkSpeed_speedCode = testModeLtsm ? '0 : ltsmCore_flagToAnalog_linkSpeed_speedCode;
+  assign ltsm_flagToAnalog_linkSpeed_applySpeed = testModeLtsm ? '0 : ltsmCore_flagToAnalog_linkSpeed_applySpeed;
+  assign ltsm_flagToAnalog_linkSpeed_electricalIdle = testModeLtsm ? '0 : ltsmCore_flagToAnalog_linkSpeed_electricalIdle;
   assign jtagLtsm_dbg_mbtrainState = testModeLtsm ? ltsmCore_dbg_mbtrainState : '0;
   assign ltsm_dbg_mbtrainState = testModeLtsm ? '0 : ltsmCore_dbg_mbtrainState;
   assign jtagLtsm_dbg_mbtrainActiveSubstate = testModeLtsm ? ltsmCore_dbg_mbtrainActiveSubstate : '0;
@@ -1592,6 +1618,7 @@ module UcieDigitalCore #(
     .rxDeskewMinPassingWindowValues           (rxDeskewMinPassingWindowValues),
     .rxDeskewMaxTrainingRetries               (rxDeskewMaxTrainingRetries)
   ) ltsm (
+    .cycles_1us(cycles_1us),
     .clock                                                                     (clock),
     .reset_n                                                                   (ltsmCore_reset_n),
     .sb_tx_din                                                                 (ltsmCore_sb_tx_din),
@@ -1745,7 +1772,12 @@ module UcieDigitalCore #(
     .flagToAnalog_rxDeskew_clearComparisonErrors                               (ltsmCore_flagToAnalog_rxDeskew_clearComparisonErrors),
     .flagFromAnalog_rxDeskew_detectedDataPattern                               (ltsmCore_flagFromAnalog_rxDeskew_detectedDataPattern),
     .flagToLtsm_linkSpeed_phyInRetrain                                         (ltsmCore_flagToLtsm_linkSpeed_phyInRetrain),
+    .flagToAnalog_linkSpeed_speedCode                                         (ltsmCore_flagToAnalog_linkSpeed_speedCode),
+    .flagToAnalog_linkSpeed_applySpeed                                         (ltsmCore_flagToAnalog_linkSpeed_applySpeed),
+    .flagToAnalog_linkSpeed_electricalIdle                                         (ltsmCore_flagToAnalog_linkSpeed_electricalIdle),
     .flagFromAnalog_d2cReceiver_laneComparisonSuccessful             (ltsmCore_flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
+    .linkSpeed_requestedSpeed             (ltsmCore_linkSpeed_requestedSpeed),
+    .flagFromAnalog_linkSpeed_speedApplied             (ltsmCore_flagFromAnalog_linkSpeed_speedApplied),
     .dbg_mbtrainState                                                          (ltsmCore_dbg_mbtrainState),
     // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     .dbg_mbtrainActiveSubstate                                                 (ltsmCore_dbg_mbtrainActiveSubstate),

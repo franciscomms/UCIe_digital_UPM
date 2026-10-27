@@ -1,6 +1,9 @@
 // Parameterized linear receiver-Vref sweep for the UCIe Data lanes.
 //
-// One receiver-initiated point test is performed at each Vref code.  The
+// Each active lane uses a 20-bit one-hot code: bit 0 selects the lowest tap
+// and bit 19 the highest. Inactive lane slices remain zero. Internal sweep and
+// window arithmetic operates on binary tap indices.
+// One receiver-initiated point test is performed at each Vref tap.  The
 // per-lane longest interval is tracked as results arrive.  Every active lane
 // selects the lower midpoint of its longest non-wrapping passing interval.
 // All selected per-lane codes are then applied together and verified by one
@@ -11,9 +14,8 @@ module MBTrain_DataVrefSweepEngine #(
   parameter int unsigned DATA_LANE_COUNT = 16,
   parameter logic [DATA_LANE_COUNT-1:0] ACTIVE_DATA_LANE_MASK =
     {DATA_LANE_COUNT{1'b1}},
-  parameter int unsigned VREF_VALUE_COUNT = 16,
-  parameter int unsigned VREF_CODE_WIDTH =
-    (VREF_VALUE_COUNT <= 1) ? 1 : $clog2(VREF_VALUE_COUNT),
+  parameter int unsigned VREF_VALUE_COUNT = 20,
+  parameter int unsigned VREF_CODE_WIDTH = 20,
   parameter int unsigned MIN_PASSING_WINDOW_VALUES = 1,
   parameter int unsigned MAX_TRAINING_RETRIES = 1
 ) (
@@ -63,15 +65,17 @@ module MBTrain_DataVrefSweepEngine #(
   localparam int unsigned FAILED_COUNT_WIDTH =
     (DATA_LANE_COUNT < 2) ? 1 : $clog2(DATA_LANE_COUNT + 1);
   localparam int unsigned COUNT_TREE_LEAVES = 1 << $clog2(DATA_LANE_COUNT);
-  logic [VREF_CODE_WIDTH-1:0] runStartReg [0:DATA_LANE_COUNT-1];
-  logic [VREF_CODE_WIDTH-1:0] bestStartReg [0:DATA_LANE_COUNT-1];
+  localparam int unsigned VREF_INDEX_WIDTH =
+    (VREF_VALUE_COUNT <= 1) ? 1 : $clog2(VREF_VALUE_COUNT);
+  logic [VREF_INDEX_WIDTH-1:0] runStartReg [0:DATA_LANE_COUNT-1];
+  logic [VREF_INDEX_WIDTH-1:0] bestStartReg [0:DATA_LANE_COUNT-1];
   logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg [0:DATA_LANE_COUNT-1];
   logic [WINDOW_LENGTH_WIDTH-1:0] bestLengthReg [0:DATA_LANE_COUNT-1];
   wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength [0:DATA_LANE_COUNT-1];
   wire [WINDOW_LENGTH_WIDTH-1:0] bestSpan [0:DATA_LANE_COUNT-1];
   wire [DATA_LANE_COUNT-1:0] laneHasWindow;
   wire [FAILED_COUNT_WIDTH-1:0] failedCountTree [1:2*COUNT_TREE_LEAVES-1];
-  (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] currentCodeReg;
+  (* keep = "true" *) logic [VREF_INDEX_WIDTH-1:0] currentCodeReg;
   (* keep = "true" *) logic [DATA_LANE_COUNT*VREF_CODE_WIDTH-1:0]
     finalCodeVectorReg;
   (* keep = "true" *) logic [DATA_LANE_COUNT*VREF_CODE_WIDTH-1:0]
@@ -80,6 +84,18 @@ module MBTrain_DataVrefSweepEngine #(
     rightCodeVectorReg;
   (* keep = "true" *) logic [15:0] failedLaneCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
+
+  function automatic logic [VREF_CODE_WIDTH-1:0] encodeVrefIndex(
+    input logic [VREF_INDEX_WIDTH-1:0] tapIndex
+  );
+    logic [VREF_CODE_WIDTH-1:0] code;
+    begin
+      code = '0;
+      if (int'(tapIndex) < VREF_VALUE_COUNT)
+        code[tapIndex] = 1'b1;
+      return code;
+    end
+  endfunction
 
   wire allActiveLanesHaveWindow = &laneHasWindow;
   wire allActiveLanesPassFinal =
@@ -137,7 +153,7 @@ module MBTrain_DataVrefSweepEngine #(
            output_lane = output_lane + 1) begin
         if (ACTIVE_DATA_LANE_MASK[output_lane])
           rx_vref_codes[output_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH] =
-            currentCodeReg;
+            encodeVrefIndex(currentCodeReg);
       end
     end
   end
@@ -214,7 +230,7 @@ module MBTrain_DataVrefSweepEngine #(
               failedLaneCountReg <= failedLaneCountReg +
                                     16'(failedCountTree[1]);
 
-              if (currentCodeReg == VREF_CODE_WIDTH'(VREF_VALUE_COUNT - 1)) begin
+              if (currentCodeReg == VREF_INDEX_WIDTH'(VREF_VALUE_COUNT - 1)) begin
                 stateReg <= SweepState_analyze;
               end else begin
                 currentCodeReg <= currentCodeReg + 1'b1;
@@ -231,15 +247,15 @@ module MBTrain_DataVrefSweepEngine #(
                 if (ACTIVE_DATA_LANE_MASK[select_lane]) begin
                   finalCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
-                  ] <= bestStartReg[select_lane] +
-                       VREF_CODE_WIDTH'(bestSpan[select_lane] >> 1);
+                  ] <= encodeVrefIndex(bestStartReg[select_lane] +
+                       VREF_INDEX_WIDTH'(bestSpan[select_lane] >> 1));
                   leftCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
-                  ] <= bestStartReg[select_lane];
+                  ] <= encodeVrefIndex(bestStartReg[select_lane]);
                   rightCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
-                  ] <= bestStartReg[select_lane] +
-                       VREF_CODE_WIDTH'(bestSpan[select_lane]);
+                  ] <= encodeVrefIndex(bestStartReg[select_lane] +
+                       VREF_INDEX_WIDTH'(bestSpan[select_lane]));
                 end else begin
                   finalCodeVectorReg[
                     select_lane*VREF_CODE_WIDTH +: VREF_CODE_WIDTH
@@ -318,10 +334,10 @@ module MBTrain_DataVrefSweepEngine #(
       $error("DATA_LANE_COUNT must be at least 1");
     if (ACTIVE_DATA_LANE_MASK == '0)
       $error("ACTIVE_DATA_LANE_MASK must enable at least one lane");
-    if (VREF_VALUE_COUNT < 2)
-      $error("VREF_VALUE_COUNT must be at least 2");
-    if (VREF_VALUE_COUNT > (1 << VREF_CODE_WIDTH))
-      $error("VREF_CODE_WIDTH cannot represent every Vref value");
+    if ((VREF_VALUE_COUNT < 1) || (VREF_VALUE_COUNT > 20))
+      $error("VREF_VALUE_COUNT must be between 1 and 20");
+    if (VREF_CODE_WIDTH != 20)
+      $error("VREF_CODE_WIDTH must be 20 for the one-hot analog interface");
     if ((MIN_PASSING_WINDOW_VALUES < 1) ||
         (MIN_PASSING_WINDOW_VALUES > VREF_VALUE_COUNT))
       $error("MIN_PASSING_WINDOW_VALUES is outside the Vref sweep range");

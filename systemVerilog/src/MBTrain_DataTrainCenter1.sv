@@ -165,6 +165,10 @@ module MBTrain_DataTrainCenter1 #(
 
   logic d2cSender_start;
   logic d2cReceiver_start;
+  // Child request outputs are sticky after completion. A new wrapper start
+  // must not expose the old point's actions before a fresh child start.
+  logic senderPointArmed;
+  logic receiverPointArmed;
   logic senderSentStartPulse;
   logic senderSentLfsrPulse;
   logic senderSentResultsPulse;
@@ -403,18 +407,22 @@ module MBTrain_DataTrainCenter1 #(
       endcase
     end
 
-    if (running && sb_tx_ready && !sbTxValid) begin
+    if (running && !startPulse && sb_tx_ready && !sbTxValid) begin
       if ((receiverStateReg == DataTrainCenter1ReceiverState_sendDoneResp) && !flagSentDoneResp) begin
         nextSbTxDin = MBTRAIN_DATATRAINCENTER1_DONE_RESP;
         nextSbTxValid = 1'b1;
         selectSentDoneResp = 1'b1;
       end
-      else if (d2cReceiver_sendEndTxInitD2CPointTestResp && !d2cReceiver_sentEndPointTestResp) begin
+      else if (receiverPointArmed && !d2cReceiver_start &&
+               (receiverStateReg == DataTrainCenter1ReceiverState_runPointTest) &&
+               d2cReceiver_sendEndTxInitD2CPointTestResp && !d2cReceiver_sentEndPointTestResp) begin
         nextSbTxDin = END_POINT_TEST_RESP;
         nextSbTxValid = 1'b1;
         selectReceiverEndResp = 1'b1;
       end
-      else if (d2cReceiver_sendTxInitD2CResultsResp && !d2cReceiver_sentResultsResp) begin
+      else if (receiverPointArmed && !d2cReceiver_start &&
+               (receiverStateReg == DataTrainCenter1ReceiverState_runPointTest) &&
+               d2cReceiver_sendTxInitD2CResultsResp && !d2cReceiver_sentResultsResp) begin
         nextSbTxDin = msgMbtrainTxInitD2CResultsResp(
           ENDPOINT_PHY, ENDPOINT_REMOTE_PHY,
           d2cReceiver_loggedResultsMsgInfo,
@@ -423,12 +431,16 @@ module MBTrain_DataTrainCenter1 #(
         nextSbTxValid = 1'b1;
         selectReceiverResultsResp = 1'b1;
       end
-      else if (d2cReceiver_sendLfsrClearErrorResp && !d2cReceiver_sentLfsrClearResp) begin
+      else if (receiverPointArmed && !d2cReceiver_start &&
+               (receiverStateReg == DataTrainCenter1ReceiverState_runPointTest) &&
+               d2cReceiver_sendLfsrClearErrorResp && !d2cReceiver_sentLfsrClearResp) begin
         nextSbTxDin = LFSR_CLEAR_ERROR_RESP;
         nextSbTxValid = 1'b1;
         selectReceiverLfsrResp = 1'b1;
       end
-      else if (d2cReceiver_sendStartTxInitD2CPointTestResp && !d2cReceiver_sentPointTestStartResp) begin
+      else if (receiverPointArmed && !d2cReceiver_start &&
+               (receiverStateReg == DataTrainCenter1ReceiverState_runPointTest) &&
+               d2cReceiver_sendStartTxInitD2CPointTestResp && !d2cReceiver_sentPointTestStartResp) begin
         nextSbTxDin = START_POINT_TEST_RESP;
         nextSbTxValid = 1'b1;
         selectReceiverStartResp = 1'b1;
@@ -444,25 +456,33 @@ module MBTrain_DataTrainCenter1 #(
         nextSbTxValid = 1'b1;
         selectSentDoneReq = 1'b1;
       end
-      else if ((senderStateReg == DataTrainCenter1SenderState_waitPointTest) && d2cSender_sendEndTxInitD2CPointTestReq && !d2cSender_sentEndPointTestReq) begin
+      else if (senderPointArmed && !d2cSender_start &&
+               (senderStateReg == DataTrainCenter1SenderState_waitPointTest) &&
+               d2cSender_sendEndTxInitD2CPointTestReq && !d2cSender_sentEndPointTestReq) begin
         nextSbTxDin = END_POINT_TEST_REQ;
         nextSbTxValid = 1'b1;
         selectSenderEndReq = 1'b1;
         senderSentEndPulse = 1'b1;
       end
-      else if ((senderStateReg == DataTrainCenter1SenderState_waitPointTest) && d2cSender_sendTxInitD2CResultsReq && !d2cSender_sentResultsReq) begin
+      else if (senderPointArmed && !d2cSender_start &&
+               (senderStateReg == DataTrainCenter1SenderState_waitPointTest) &&
+               d2cSender_sendTxInitD2CResultsReq && !d2cSender_sentResultsReq) begin
         nextSbTxDin = TX_INIT_RESULTS_REQ;
         nextSbTxValid = 1'b1;
         selectSenderResultsReq = 1'b1;
         senderSentResultsPulse = 1'b1;
       end
-      else if ((senderStateReg == DataTrainCenter1SenderState_waitPointTest) && d2cSender_sendLfsrClearErrorReq && !d2cSender_sentLfsrClearReq) begin
+      else if (senderPointArmed && !d2cSender_start &&
+               (senderStateReg == DataTrainCenter1SenderState_waitPointTest) &&
+               d2cSender_sendLfsrClearErrorReq && !d2cSender_sentLfsrClearReq) begin
         nextSbTxDin = LFSR_CLEAR_ERROR_REQ;
         nextSbTxValid = 1'b1;
         selectSenderLfsrReq = 1'b1;
         senderSentLfsrPulse = 1'b1;
       end
-      else if ((senderStateReg == DataTrainCenter1SenderState_waitPointTest) && d2cSender_sendStartTxInitD2CPointTestReq && !d2cSender_sentPointTestStartReq) begin
+      else if (senderPointArmed && !d2cSender_start &&
+               (senderStateReg == DataTrainCenter1SenderState_waitPointTest) &&
+               d2cSender_sendStartTxInitD2CPointTestReq && !d2cSender_sentPointTestStartReq) begin
         nextSbTxDin = START_POINT_TEST_REQ;
         nextSbTxValid = 1'b1;
         selectSenderStartReq = 1'b1;
@@ -485,6 +505,8 @@ module MBTrain_DataTrainCenter1 #(
       trainErrorReg <= 1'b0;
       prevStart <= 1'b0;
       prevRxValid <= 1'b0;
+      senderPointArmed <= 1'b0;
+      receiverPointArmed <= 1'b0;
       flagReceivedStartResp <= 1'b0;
       flagReceivedDoneResp <= 1'b0;
       flagReceivedStartReq <= 1'b0;
@@ -535,6 +557,8 @@ module MBTrain_DataTrainCenter1 #(
       sbTxDin <= nextSbTxDin;
 
       if (startPulse) begin
+        senderPointArmed <= 1'b0;
+        receiverPointArmed <= 1'b0;
         running <= 1'b1;
         doneReg <= 1'b0;
         trainErrorReg <= 1'b0;
@@ -573,7 +597,7 @@ module MBTrain_DataTrainCenter1 #(
         d2cSender_resultsCumulativePassReg <= 1'b0;
       end
 
-      if (running && rxValidRisingEdge) begin
+      if (running && !startPulse && rxValidRisingEdge) begin
         if (sb_rx_dout == MBTRAIN_DATATRAINCENTER1_START_RESP)
           flagReceivedStartResp <= 1'b1;
         else if (sb_rx_dout == MBTRAIN_DATATRAINCENTER1_DONE_RESP)
@@ -618,6 +642,7 @@ module MBTrain_DataTrainCenter1 #(
       end
 
       if (d2cSender_start) begin
+        senderPointArmed <= 1'b1;
         d2cSender_receivedPointTestStartResp <= 1'b0;
         d2cSender_receivedLfsrClearResp <= 1'b0;
         d2cSender_receivedResultsResp <= 1'b0;
@@ -640,6 +665,7 @@ module MBTrain_DataTrainCenter1 #(
         d2cReceiver_receivedPointTestStartReq <= 1'b0;
 
       if (d2cReceiver_start) begin
+        receiverPointArmed <= 1'b1;
         d2cReceiver_receivedLfsrClearReq <= 1'b0;
         d2cReceiver_receivedResultsReq <= 1'b0;
         d2cReceiver_receivedEndPointTestReq <= 1'b0;

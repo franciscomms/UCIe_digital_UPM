@@ -1,11 +1,12 @@
 // -----------------------------------------------------------------------------
 // jtag_tdr_snapshot.sv
 //
-// Snapshot TDR: captures a bus living in the IP clock domain at the moment a
-// request is issued, and optionally writes a control word into the IP with a
-// synchronized one-cycle pulse. CDC-lint clean: only two single-bit crossings
-// go through synchronizers; the data buses cross under a synchronized qualifier
-// (DMUX / multi-cycle-path scheme).
+// Snapshot TDR: captures an IP-clock-domain bus for each synchronized
+// transaction, and optionally writes a control word into the IP with a
+// synchronized one-cycle pulse. The request and acknowledge use two-flop
+// synchronizers; data crosses under a synchronized qualifier (bundled-data /
+// multi-cycle-path scheme). CDC constraints and physical timing still require
+// implementation sign-off; this module alone is not a CDC sign-off result.
 //
 // -----------------------------------------------------------------------------
 // **** OPERATIONS ****
@@ -14,9 +15,10 @@
 //                                           * we=1: data_out <= data, data_out_valid
 //                                                   pulses for one clk cycle
 //                                           * we=0: read only
-//                                           * In both cases the IP side takes a
-//                                             snapshot of data_in one clk cycle
-//                                             after the write is applied.
+//                                           * Write data_out at core edge N;
+//                                             consumer sees data_out_valid at
+//                                             N+1; snapshot data_in at N+2.
+//                                             Reads use the same pipeline.
 //
 //   - DR-scan #2  shift out {rd_data, busy} Capture-DR returns the snapshot of
 //                                           the last completed transaction and
@@ -25,8 +27,14 @@
 //                                           the read scan (with we=0).
 //
 //   - An Update-DR while busy=1 is IGNORED (a $warning is printed in
-//     simulation). Capture-DR precedes Shift-DR in every scan, so the debugger
-//     always sees busy before deciding whether to write.
+//     simulation). Acceptance uses busy AT UPDATE, not the busy bit sampled
+//     earlier at Capture-DR; a transaction can complete during a long scan.
+//     Every accepted we=0 Update-DR launches ANOTHER read transaction. Even
+//     when a poll captures busy=0, its own Update can make the mailbox busy
+//     again. Allow that read to complete before a subsequent write Update
+//     (or perform a capture/shift without Update when the host supports it).
+//     Busy is not a write-accept acknowledgement; do not infer acceptance
+//     from an earlier Capture-DR value alone.
 //
 // 
 // **** DATA REGISTER LAYOUT (DATA_W + 1 bits, LSB shifted first) ****
@@ -42,23 +50,28 @@
 //
 //   req_toggle_q   TCK -> clk   1 bit, 2-flop synchronizer
 //   ack_toggle_q   clk -> TCK   1 bit, 2-flop synchronizer
-//   wr_data_q      TCK -> clk   multi-bit, loaded only on req_pulse (derived
+//   wr_data_q      TCK -> clk   multi-bit, sampled on req_pulse (derived
 //                               from the synchronized toggle); stable while
 //                               busy=1
 //   snap_q         clk -> TCK   multi-bit, loaded only on the synchronized ack
-//                               edge; written one cycle before ack toggles
+//                               edge; written together with ack, then stable
+//                               through the two-flop acknowledge synchronizer
 //
 //
 // **** RESET BEHAVIOUR ****
 //
-//   jtag_nRst   asynchronous reset of the TCK side (TRST# / POR)
-//   nRst        asynchronous reset of the IP side
-//   tdr_rst     Test-Logic-Reset (level, active high): re-synchronizes the
-//               request toggle to the acknowledged one. Recovers the TDR after a
-//               TCK-side reset (OpenOCD always starts with Test-Logic-Reset).
-//               If issued with a transaction in flight, a second TLR may be
-//               needed. An IP reset with a pending request re-executes it when
-//               the IP leaves reset.
+//   Either jtag_nRst or nRst asynchronously clears BOTH sides of the mailbox:
+//   scan state, request, acknowledge, payload and snapshot. An outstanding
+//   transaction is aborted, never replayed after reset. A write already applied
+//   to data_out is retained on jtag_nRst; nRst restores RESET_VALUE.
+//
+//   tdr_rst (Test-Logic-Reset) clears only the serial shift register. It does
+//   not alter the request/acknowledge handshake, committed data_out, or a live
+//   transaction. An accepted request therefore completes once during TLR.
+//
+//   Assert either asynchronous reset for the required cell pulse width. Reset
+//   release must meet each clock domain's recovery/removal requirements (use
+//   the system reset distribution/synchronization flow).
 //
 //
 // Author: Alex R!
@@ -89,6 +102,11 @@ module jtag_tdr_snapshot #(
 
 	localparam int unsigned DR_W = DATA_W + 1;
 
+	// Both handshake endpoints must reset together, even when only one external
+	// reset is asserted. Otherwise an old toggle can become a new transaction.
+	logic mailbox_nRst;
+	assign mailbox_nRst = jtag_nRst & nRst;
+
 	// -----------------------------------------------------------------------------
 	// TCK domain
 	// -----------------------------------------------------------------------------
@@ -107,11 +125,11 @@ module jtag_tdr_snapshot #(
 
 	assign busy      = (req_toggle_q != ack_sync);
 	assign ack_edge  = (ack_sync != ack_sync_d1);
-	assign do_update = sel & tdr_update & ~busy;
+	assign do_update = sel & tdr_update & ~busy & ~tdr_rst;
 	assign tdo       = shift_q[0];
 
-	always_ff @(posedge tdr_tck or negedge jtag_nRst) begin
-		if (!jtag_nRst) begin
+	always_ff @(posedge tdr_tck or negedge mailbox_nRst) begin
+		if (!mailbox_nRst) begin
 			shift_q      <= '0;
 			wr_data_q    <= '0;
 			wr_en_q      <= 1'b0;
@@ -125,8 +143,12 @@ module jtag_tdr_snapshot #(
 			// Capture-DR (OpenOCD's shortest path Run-Test/Idle -> Select-DR ->
 			// Capture-DR reaches the capture edge exactly when rd_data_q is being
 			// loaded), take snap_q directly: it has been stable since ack toggled.
-			if (sel && tdr_capture) shift_q <= {(ack_edge ? snap_q : rd_data_q), busy};
-			if (sel && tdr_shift)   shift_q <= {tdr_tdi, shift_q[(DR_W - 1) : 1]};
+			if (tdr_rst)
+				shift_q <= '0;
+			else if (sel && tdr_capture)
+				shift_q <= {(ack_edge ? snap_q : rd_data_q), busy};
+			else if (sel && tdr_shift)
+				shift_q <= {tdr_tdi, shift_q[(DR_W - 1) : 1]};
 
 			// launch a transaction: freeze the payload and flip the request toggle
 			if (do_update) begin
@@ -135,11 +157,10 @@ module jtag_tdr_snapshot #(
 				req_toggle_q <= ~req_toggle_q;
 			end
 
-			// response: snap_q has been stable since before ack toggled
+			// response: snap_q has been stable through the ack synchronizer
 			if (ack_edge) rd_data_q <= snap_q;
 
-			// Test-Logic-Reset: re-synchronize
-			if (tdr_rst) req_toggle_q <= ack_sync;
+			// TLR deliberately leaves the live mailbox handshake unchanged.
 		end
 	end
 
@@ -159,21 +180,17 @@ module jtag_tdr_snapshot #(
 	assign data_out       = data_out_q;
 	assign data_out_valid = req_pulse_d1 & wr_en_q;
 
-	always_ff @(posedge clk or negedge nRst) begin
-		if (!nRst) begin
+	always_ff @(posedge clk or negedge mailbox_nRst) begin
+		if (!mailbox_nRst) begin
 			req_sync_d1  <= 1'b0;
 			req_pulse_d1 <= 1'b0;
 			req_pulse_d2 <= 1'b0;
 			ack_toggle_q <= 1'b0;
 			snap_q       <= '0;
-			data_out_q   <= RESET_VALUE;
 		end else begin
 			req_sync_d1  <= req_sync;
 			req_pulse_d1 <= req_pulse;
 			req_pulse_d2 <= req_pulse_d1;
-
-			// cycle 1: register the write (payload has been stable since the TCK side froze it)
-			if (req_pulse && wr_en_q) data_out_q <= wr_data_q;
 
 			// cycle 2: data_out_valid is high (assign above)
 
@@ -185,6 +202,15 @@ module jtag_tdr_snapshot #(
 		end
 	end
 
+	// Committed controls survive TRST. Functional reset alone owns their reset
+	// value. Gate with mailbox reset so TRST cannot create an IP-side write.
+	always_ff @(posedge clk or negedge nRst) begin
+		if (!nRst)
+			data_out_q <= RESET_VALUE;
+		else if (mailbox_nRst && req_pulse && wr_en_q)
+			data_out_q <= wr_data_q;
+	end
+
 	// -----------------------------------------------------------------------------
 	// SYNCHRONIZERS
 	// -----------------------------------------------------------------------------
@@ -193,7 +219,7 @@ module jtag_tdr_snapshot #(
 		.Stages(2)
 	) u_sync_req (
 		.clk_i		(clk),
-		.rst_ni		(nRst),
+		.rst_ni		(mailbox_nRst),
 		.serial_i	(req_toggle_q),
 		.serial_o	(req_sync)
 	);
@@ -202,7 +228,7 @@ module jtag_tdr_snapshot #(
 		.Stages(2)
 	) u_ack_req (
 		.clk_i		(tdr_tck),
-		.rst_ni		(jtag_nRst),
+		.rst_ni		(mailbox_nRst),
 		.serial_i	(ack_toggle_q),
 		.serial_o	(ack_sync)
 	);
@@ -212,24 +238,30 @@ module jtag_tdr_snapshot #(
 	// -----------------------------------------------------------------------------
 
 	`ifndef SYNTHESIS
-		a_cap_upd   : assert property (@(posedge tdr_tck) disable iff (!jtag_nRst) !(tdr_capture && tdr_update))
+		// Skip history comparisons on the first core edge after either reset,
+		// including a reset pulse that occurs while the core clock is stopped.
+		logic snapshot_history_valid;
+		always_ff @(posedge clk or negedge mailbox_nRst)
+			if (!mailbox_nRst) snapshot_history_valid <= 1'b0;
+			else snapshot_history_valid <= 1'b1;
+		a_cap_upd   : assert property (@(posedge tdr_tck) disable iff (!mailbox_nRst) !(tdr_capture && tdr_update))
 						else $error("%m: capture and update asserted together");
-		a_cap_shift : assert property (@(posedge tdr_tck) disable iff (!jtag_nRst) !(tdr_capture && tdr_shift))
+		a_cap_shift : assert property (@(posedge tdr_tck) disable iff (!mailbox_nRst) !(tdr_capture && tdr_shift))
 						else $error("%m: capture and shift asserted together");
-		a_sel_shift : assert property (@(posedge tdr_tck) disable iff (!jtag_nRst) (sel && tdr_shift) |=> sel)
+		a_sel_shift : assert property (@(posedge tdr_tck) disable iff (!mailbox_nRst) (sel && tdr_shift) |=> sel)
 						else $error("%m: sel changed during shift");
-		a_wr_stable : assert property (@(posedge tdr_tck) disable iff (!jtag_nRst)
+		a_wr_stable : assert property (@(posedge tdr_tck) disable iff (!mailbox_nRst)
 										(busy && $past(busy)) |-> ($stable(wr_data_q) && $stable(wr_en_q)))
 						else $error("%m: write payload changed while busy");
-		a_snap_stable : assert property (@(posedge clk) disable iff (!nRst)
-										!req_pulse_d1 |-> $stable(snap_q))
+		a_snap_stable : assert property (@(posedge clk) disable iff (!mailbox_nRst)
+										(snapshot_history_valid && !$past(req_pulse_d2)) |-> $stable(snap_q))
 						else $error("%m: snapshot changed outside the acknowledge cycle");
-		 a_valid_data : assert property (@(posedge clk) disable iff (!nRst)
+		 a_valid_data : assert property (@(posedge clk) disable iff (!mailbox_nRst)
                                    data_out_valid |-> (data_out == wr_data_q))
                 else $error("%m: data_out_valid with stale data_out");
 
 		always @(posedge tdr_tck)
-			if (jtag_nRst && sel && tdr_update && busy)
+			if (mailbox_nRst && !tdr_rst && sel && tdr_update && busy)
 			$warning("%m: Update-DR ignored (busy=1) at %t", $time);
 	`endif
 

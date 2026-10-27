@@ -3,6 +3,8 @@
 // This mandatory low-rate state optimizes the local Valid receiver Vref using
 // repeated receiver-initiated D2C point tests.  The containing LTSM is
 // responsible for entering this state while the mainband is at 4 GT/s.
+// Vref code ports carry 20-bit one-hot tap selections; bit 0 is the lowest tap.
+// Selected/window outputs are zero before a valid window is found.
 `default_nettype none
 
 module MBTrainValVrefFSM #(
@@ -16,7 +18,7 @@ module MBTrainValVrefFSM #(
   parameter int unsigned validVrefValueCount =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
   parameter int unsigned validVrefCodeWidth =
-    (validVrefValueCount <= 1) ? 1 : $clog2(validVrefValueCount),
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH,
   parameter int unsigned validVrefMinimumMillivolts =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
   parameter int unsigned validVrefMaximumMillivolts =
