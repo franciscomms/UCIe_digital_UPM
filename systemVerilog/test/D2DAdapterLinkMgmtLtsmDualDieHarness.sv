@@ -2649,6 +2649,7 @@ module D2DAdapterLinkMgmtLtsmSerialDieModel #(
       .jtagRdi_timeout_disable                                                         ('0),
       .jtagRdi_cycles_1us                                                              ('0),
       .testModeLtsm                                                                    (1'b0),
+      .testModePhy                                                                     (1'b0),
       .jtagLtsm_clock                                                                  (1'b0),
       .jtagLtsm_reset_n                                                                ('0),
       .jtagLtsm_sb_tx_din                                                              (),

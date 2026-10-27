@@ -31,6 +31,7 @@ timescale.sv
 ../src/MBTrain_DataVrefFSM.sv
 ../src/MBTrain_DataVrefStateCore.sv
 ../src/MBTrain_DataVrefSweepEngine.sv
+../src/MBTrain_DllPiEncoder.sv
 ../src/MBTrain_LinkSpeed.sv
 ../src/MBTrain_RxClkCalFSM.sv
 ../src/MBTrain_RxDeskewFSM.sv
@@ -64,3 +65,4 @@ D2DAdapterLinkMgmtLtsmDualDieBackpressureSpec_tb.sv
 D2DAdapterLinkMgmtTopIntegrated128Spec_tb.sv
 UcieDigitalTopTestModeDigitalSpec_tb.sv
 UcieDigitalTopBlockTestModesSpec_tb.sv
+UcieDigitalTopJtagPhyModeSpec_tb.sv

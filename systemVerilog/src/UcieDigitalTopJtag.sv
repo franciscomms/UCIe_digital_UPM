@@ -5,7 +5,7 @@
 // The <reg>_in_t / <reg>_out_t structs and the u_top connections follow the
 // jtag*_* port list of UcieDigitalTop; update them if those ports change.
 //
-// UcieDigitalTop with its test pins (testMode*, jtag*_*) connected to five
+// UcieDigitalTop with its test pins (testMode*, jtag*_*) connected to six
 // jtag_tdr_snapshot Test Data Registers. The TAP is external: it drives the
 // shared TDR bus (tdr_*) and one sel_<reg> per register, and muxes tdo_<reg>.
 //
@@ -15,25 +15,30 @@
 //   fdi       max(in, out) of jtagFdi_* testModeFdi pins
 //   rdi       max(in, out) of jtagRdi_* testModeRdi pins
 //   ltsm      max(in, out) of jtagLtsm_* testModeLtsm pins
+//   phy       max(in, out) of jtagPhy_* testModePhy pins
 //
 // Every register uses the jtag_tdr_snapshot protocol (see that file):
 //   DR bit 0      we (TDI) / busy (TDO)
 //   DR bits [N:1] data_out (TDI, written when we=1) / snapshot of data_in (TDO)
 //
 // Control register (ctrl, data_out; data_in reads data_out back):
-//   [2:0]  mode     0 = functional, 1 = digital, 2 = fdi, 3 = rdi, 4 = ltsm
-//                   (5..7 = functional). Exactly one testMode* is driven.
+//   [2:0]  mode     0 = functional, 1 = digital, 2 = fdi, 3 = rdi, 4 = ltsm,
+//                   5 = phy (6..7 = functional). At most one testMode* is driven.
 //   [3]    sys_rst  1 = core held in reset while in a test mode
 //                   (drives every jtag<Blk>_reset_n). Reset value 1.
+//                   No effect in phy mode: the core is always held in reset.
 //   [7:4]  unused
 //   Recommended sequence: write {sys_rst=1, mode=X}, then {sys_rst=0, mode=X}.
 //   Change mode only with sys_rst=1.
 //
-// I/O registers (dig, fdi, rdi, ltsm):
+// I/O registers (dig, fdi, rdi, ltsm, phy):
 //   data_out = <reg>_in  packed struct of the block inputs  (jtag<Blk>_* inputs)
 //   data_in  = <reg>_out packed struct of the block outputs (jtag<Blk>_* outputs)
 //   Both are zero-extended to DATA_W. The first port of the group is the MSB
 //   field of the struct; DR bit = data bit + 1.
+//   For phy, phy_in is what the TDR drives toward the PHY (flagToAnalog_*)
+//   and phy_out is what the PHY reports (flagFromAnalog_*, stable_clk,
+//   pll_locked, stable_supply). Field names drop the ltsm_ pin prefix.
 //   jtag<Blk>_clock and jtag<Blk>_reset_n are not in the registers: the clock
 //   is the wrapper clock and the reset comes from ctrl.sys_rst.
 //   Inputs change together, one clock cycle after the Update-DR is
@@ -42,7 +47,7 @@
 //
 // Clocks and resets:
 //   clock    core clock (internal or external, selected outside this wrapper).
-//            Also the IP-side clock of the five TDRs and every jtag<Blk>_clock,
+//            Also the IP-side clock of the six TDRs and every jtag<Blk>_clock,
 //            so the clock muxes in UcieDigitalTop never switch between
 //            different sources.
 //   reset_n  functional reset of the core and IP-side reset of the TDRs.
@@ -133,11 +138,13 @@ module UcieDigitalTopJtag #(
   input  wire logic sel_fdi,
   input  wire logic sel_rdi,
   input  wire logic sel_ltsm,
+  input  wire logic sel_phy,
   output var  logic tdo_ctrl,
   output var  logic tdo_dig,
   output var  logic tdo_fdi,
   output var  logic tdo_rdi,
   output var  logic tdo_ltsm,
+  output var  logic tdo_phy,
 
   // ##########################################################################
   // FUNCTIONAL PINS (testModeDigital = 0)
@@ -398,6 +405,7 @@ module UcieDigitalTopJtag #(
   localparam logic [2:0] MODE_FDI = 3'd2;
   localparam logic [2:0] MODE_RDI = 3'd3;
   localparam logic [2:0] MODE_LTSM = 3'd4;
+  localparam logic [2:0] MODE_PHY = 3'd5;
 
   logic [CTRL_W-1:0] ctrl_q;
   logic [2:0]        ctrl_mode;
@@ -1059,6 +1067,185 @@ module UcieDigitalTopJtag #(
   );
 
   // --------------------------------------------------------------------------
+  // PHY TDR (jtagPhy_* pins, testModePhy)
+  // --------------------------------------------------------------------------
+  typedef struct packed {
+    logic flagToAnalog_RepairClkState;
+    logic flagToAnalog_SendClkPatterns;
+    logic flagToAnalog_RepairValState;
+    logic flagToAnalog_SendValTrainPattern;
+    logic flagToAnalog_ReversalMbSendLaneIDPattern;
+    logic flagToAnalog_RepairMbSendLaneIDPattern;
+    logic flagToAnalog_RepairMbSetReceiver;
+    logic flagToAnalog_LaneReversalApplied;
+    logic flagToAnalog_linkInit_resetLfsrScrambler;
+    logic flagToAnalog_valVref_sendPattern;
+    logic flagToAnalog_valVref_applyRxVref;
+    logic [validVrefCodeWidth-1:0] flagToAnalog_valVref_rxVrefCode;
+    logic flagToAnalog_valVref_configureRxInitD2CPointTest;
+    logic [15:0] flagToAnalog_valVref_maximumComparisonErrorThreshold;
+    logic flagToAnalog_valVref_comparisonMode;
+    logic [15:0] flagToAnalog_valVref_iterationCountSettings;
+    logic [15:0] flagToAnalog_valVref_idleCountSettings;
+    logic [15:0] flagToAnalog_valVref_burstCountSettings;
+    logic flagToAnalog_valVref_patternMode;
+    logic [3:0] flagToAnalog_valVref_clockPhaseControl;
+    logic [2:0] flagToAnalog_valVref_validPattern;
+    logic [2:0] flagToAnalog_valVref_dataPattern;
+    logic flagToAnalog_valVref_clearComparisonErrors;
+    logic flagToAnalog_valVref_resetLocalTxScrambler;
+    logic flagToAnalog_dataVref_sendPattern;
+    logic flagToAnalog_dataVref_applyRxVref;
+    logic [dataLaneCount*dataVrefCodeWidth-1:0] flagToAnalog_dataVref_rxVrefCodes;
+    logic flagToAnalog_dataVref_configureRxInitD2CPointTest;
+    logic [15:0] flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+    logic flagToAnalog_dataVref_comparisonMode;
+    logic [15:0] flagToAnalog_dataVref_iterationCountSettings;
+    logic [15:0] flagToAnalog_dataVref_idleCountSettings;
+    logic [15:0] flagToAnalog_dataVref_burstCountSettings;
+    logic flagToAnalog_dataVref_patternMode;
+    logic [3:0] flagToAnalog_dataVref_clockPhaseControl;
+    logic [2:0] flagToAnalog_dataVref_validPattern;
+    logic [2:0] flagToAnalog_dataVref_dataPattern;
+    logic flagToAnalog_dataVref_clearComparisonErrors;
+    logic flagToAnalog_dataVref_resetLocalTxScrambler;
+    logic flagToAnalog_rxClkCal_doCalibration;
+    logic flagToAnalog_rxClkCal_sendClockTrack;
+    logic flagToAnalog_d2cSender_sendValTrainPattern;
+    logic flagToAnalog_d2cSender_resetLocalScrambler;
+    logic flagToAnalog_d2cSender_applyTxClockPhase;
+    logic [d2cPiCodeWidth-1:0] flagToAnalog_d2cSender_txClockPhaseCode;
+    logic flagToAnalog_d2cReceiver_configureTxInitD2CPointTest;
+    logic [15:0] flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold;
+    logic flagToAnalog_d2cReceiver_comparisonMode;
+    logic [15:0] flagToAnalog_d2cReceiver_iterationCountSettings;
+    logic [15:0] flagToAnalog_d2cReceiver_idleCountSettings;
+    logic [15:0] flagToAnalog_d2cReceiver_burstCountSettings;
+    logic flagToAnalog_d2cReceiver_patternMode;
+    logic [3:0] flagToAnalog_d2cReceiver_clockPhaseControl;
+    logic [2:0] flagToAnalog_d2cReceiver_validPattern;
+    logic [2:0] flagToAnalog_d2cReceiver_dataPattern;
+    logic flagToAnalog_d2cReceiver_resetLocalRxScrambler;
+    logic flagToAnalog_d2cSender_sendLfsrPattern;
+    logic flagToAnalog_d2cSender_applyTxLaneDeskew;
+    logic [64*d2cTxDeskewCodeWidth-1:0] flagToAnalog_d2cSender_txLaneDeskewCodes;
+    logic flagToAnalog_rxDeskew_sendLfsrPattern;
+    logic flagToAnalog_rxDeskew_resetLocalTxScrambler;
+    logic flagToAnalog_rxDeskew_applyRxLaneDeskew;
+    logic [dataLaneCount*rxDeskewCodeWidth-1:0] flagToAnalog_rxDeskew_rxLaneDeskewCodes;
+    logic flagToAnalog_rxDeskew_configureRxInitD2CPointTest;
+    logic [15:0] flagToAnalog_rxDeskew_maximumComparisonErrorThreshold;
+    logic flagToAnalog_rxDeskew_comparisonMode;
+    logic [15:0] flagToAnalog_rxDeskew_iterationCountSettings;
+    logic [15:0] flagToAnalog_rxDeskew_idleCountSettings;
+    logic [15:0] flagToAnalog_rxDeskew_burstCountSettings;
+    logic flagToAnalog_rxDeskew_patternMode;
+    logic [3:0] flagToAnalog_rxDeskew_clockPhaseControl;
+    logic [2:0] flagToAnalog_rxDeskew_validPattern;
+    logic [2:0] flagToAnalog_rxDeskew_dataPattern;
+    logic flagToAnalog_rxDeskew_clearComparisonErrors;
+    logic [1:0] flagToAnalog_linkSpeed_speedCode;
+    logic flagToAnalog_linkSpeed_applySpeed;
+    logic flagToAnalog_linkSpeed_electricalIdle;
+  } phy_in_t;
+
+  typedef struct packed {
+    logic stable_clk;
+    logic pll_locked;
+    logic stable_supply;
+    logic flagFromAnalog_ReadyToExchangeClkPatterns;
+    logic flagFromAnalog_FinishedClkPatterns;
+    logic flagFromAnalog_FinishedValTrainPattern;
+    logic flagFromAnalog_ReversalMbFinishedLaneIDPattern;
+    logic flagFromAnalog_RepairMbFinishedLaneIDPattern;
+    logic flagFromAnalog_clkPatternReceivedRTRK_L;
+    logic flagFromAnalog_clkPatternReceivedRCKN_L;
+    logic flagFromAnalog_clkPatternReceivedRCKP_L;
+    logic flagFromAnalog_ValTrainPatternReceived;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived0;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived1;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived2;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived3;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived4;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived5;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived6;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived7;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived8;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived9;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived10;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived11;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived12;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived13;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived14;
+    logic flagFromAnalog_ReversalMbTrainPatternReceived15;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern0;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern1;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern2;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern3;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern4;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern5;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern6;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern7;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern8;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern9;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern10;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern11;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern12;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern13;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern14;
+    logic flagFromAnalog_RepairMbDetectedLaneIDPattern15;
+    logic flagFromAnalog_valVref_detectedValPattern;
+    logic flagFromAnalog_valVref_finishedPattern;
+    logic flagFromAnalog_valVref_rxVrefApplied;
+    logic [dataLaneCount-1:0] flagFromAnalog_dataVref_detectedDataPattern;
+    logic flagFromAnalog_dataVref_finishedPattern;
+    logic flagFromAnalog_dataVref_rxVrefApplied;
+    logic flagFromAnalog_rxClkCal_done;
+    logic flagFromAnalog_d2cSender_valTrainPatternSent;
+    logic flagFromAnalog_d2cSender_txClockPhaseApplied;
+    logic [15:0] flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo;
+    logic [63:0] flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
+    logic flagFromAnalog_d2cSender_lfsrPatternSent;
+    logic flagFromAnalog_d2cSender_txLaneDeskewApplied;
+    logic flagFromAnalog_rxDeskew_lfsrPatternSent;
+    logic flagFromAnalog_rxDeskew_rxLaneDeskewApplied;
+    logic [dataLaneCount-1:0] flagFromAnalog_rxDeskew_detectedDataPattern;
+    logic [15:0] flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
+    logic flagFromAnalog_linkSpeed_speedApplied;
+  } phy_out_t;
+
+  localparam int unsigned PHY_IN_W  = $bits(phy_in_t);
+  localparam int unsigned PHY_OUT_W = $bits(phy_out_t);
+  localparam int unsigned PHY_W     = (PHY_IN_W > PHY_OUT_W) ? PHY_IN_W : PHY_OUT_W;
+
+  phy_in_t        phy_in;
+  phy_out_t       phy_out;
+  logic [PHY_W-1:0] phy_data_out;
+  logic [PHY_W-1:0] phy_data_in;
+
+  assign phy_in      = phy_data_out[PHY_IN_W-1:0];
+  assign phy_data_in = PHY_W'(phy_out);
+
+  jtag_tdr_snapshot #(
+    .DATA_W (PHY_W)
+  ) u_tdr_phy (
+    .jtag_nRst     (jtag_nRst),
+    .tdr_rst       (tdr_rst),
+    .tdr_tck       (tdr_tck),
+    .tdr_tdi       (tdr_tdi),
+    .tdr_capture   (tdr_capture),
+    .tdr_shift     (tdr_shift),
+    .tdr_update    (tdr_update),
+    .sel           (sel_phy),
+    .tdo           (tdo_phy),
+    .clk           (clock),
+    .nRst          (reset_n),
+    .data_in       (phy_data_in),
+    .data_out      (phy_data_out),
+    .data_out_valid()
+  );
+
+  // --------------------------------------------------------------------------
   // UcieDigitalTop
   // --------------------------------------------------------------------------
   UcieDigitalTop #(
@@ -1113,6 +1300,7 @@ module UcieDigitalTopJtag #(
     .testModeFdi((ctrl_mode == MODE_FDI)),
     .testModeRdi((ctrl_mode == MODE_RDI)),
     .testModeLtsm((ctrl_mode == MODE_LTSM)),
+    .testModePhy((ctrl_mode == MODE_PHY)),
     .clock(clock),
     .reset_n(reset_n),
     .fdi_lp_state_req(fdi_lp_state_req),
@@ -1784,7 +1972,146 @@ module UcieDigitalTopJtag #(
     .jtagLtsm_dbg_mbtrainLinkSpeedD2cSenderState(ltsm_out.dbg_mbtrainLinkSpeedD2cSenderState),
     .jtagLtsm_dbg_mbtrainLinkSpeedD2cReceiverState(ltsm_out.dbg_mbtrainLinkSpeedD2cReceiverState),
     .jtagLtsm_dbg_mbtrainLastErrorCount(ltsm_out.dbg_mbtrainLastErrorCount),
-    .jtagLtsm_dbg_mbtrainRetryCount(ltsm_out.dbg_mbtrainRetryCount)
+    .jtagLtsm_dbg_mbtrainRetryCount(ltsm_out.dbg_mbtrainRetryCount),
+    .jtagPhy_ltsm_flagToAnalog_RepairClkState(phy_in.flagToAnalog_RepairClkState),
+    .jtagPhy_ltsm_flagToAnalog_SendClkPatterns(phy_in.flagToAnalog_SendClkPatterns),
+    .jtagPhy_ltsm_flagToAnalog_RepairValState(phy_in.flagToAnalog_RepairValState),
+    .jtagPhy_ltsm_flagToAnalog_SendValTrainPattern(phy_in.flagToAnalog_SendValTrainPattern),
+    .jtagPhy_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern(phy_in.flagToAnalog_ReversalMbSendLaneIDPattern),
+    .jtagPhy_ltsm_flagToAnalog_RepairMbSendLaneIDPattern(phy_in.flagToAnalog_RepairMbSendLaneIDPattern),
+    .jtagPhy_ltsm_flagToAnalog_RepairMbSetReceiver(phy_in.flagToAnalog_RepairMbSetReceiver),
+    .jtagPhy_ltsm_flagToAnalog_LaneReversalApplied(phy_in.flagToAnalog_LaneReversalApplied),
+    .jtagPhy_ltsm_flagToAnalog_linkInit_resetLfsrScrambler(phy_in.flagToAnalog_linkInit_resetLfsrScrambler),
+    .jtagPhy_ltsm_flagToAnalog_valVref_sendPattern(phy_in.flagToAnalog_valVref_sendPattern),
+    .jtagPhy_ltsm_flagToAnalog_valVref_applyRxVref(phy_in.flagToAnalog_valVref_applyRxVref),
+    .jtagPhy_ltsm_flagToAnalog_valVref_rxVrefCode(phy_in.flagToAnalog_valVref_rxVrefCode),
+    .jtagPhy_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest(phy_in.flagToAnalog_valVref_configureRxInitD2CPointTest),
+    .jtagPhy_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold(phy_in.flagToAnalog_valVref_maximumComparisonErrorThreshold),
+    .jtagPhy_ltsm_flagToAnalog_valVref_comparisonMode(phy_in.flagToAnalog_valVref_comparisonMode),
+    .jtagPhy_ltsm_flagToAnalog_valVref_iterationCountSettings(phy_in.flagToAnalog_valVref_iterationCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_valVref_idleCountSettings(phy_in.flagToAnalog_valVref_idleCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_valVref_burstCountSettings(phy_in.flagToAnalog_valVref_burstCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_valVref_patternMode(phy_in.flagToAnalog_valVref_patternMode),
+    .jtagPhy_ltsm_flagToAnalog_valVref_clockPhaseControl(phy_in.flagToAnalog_valVref_clockPhaseControl),
+    .jtagPhy_ltsm_flagToAnalog_valVref_validPattern(phy_in.flagToAnalog_valVref_validPattern),
+    .jtagPhy_ltsm_flagToAnalog_valVref_dataPattern(phy_in.flagToAnalog_valVref_dataPattern),
+    .jtagPhy_ltsm_flagToAnalog_valVref_clearComparisonErrors(phy_in.flagToAnalog_valVref_clearComparisonErrors),
+    .jtagPhy_ltsm_flagToAnalog_valVref_resetLocalTxScrambler(phy_in.flagToAnalog_valVref_resetLocalTxScrambler),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_sendPattern(phy_in.flagToAnalog_dataVref_sendPattern),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_applyRxVref(phy_in.flagToAnalog_dataVref_applyRxVref),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_rxVrefCodes(phy_in.flagToAnalog_dataVref_rxVrefCodes),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest(phy_in.flagToAnalog_dataVref_configureRxInitD2CPointTest),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold(phy_in.flagToAnalog_dataVref_maximumComparisonErrorThreshold),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_comparisonMode(phy_in.flagToAnalog_dataVref_comparisonMode),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_iterationCountSettings(phy_in.flagToAnalog_dataVref_iterationCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_idleCountSettings(phy_in.flagToAnalog_dataVref_idleCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_burstCountSettings(phy_in.flagToAnalog_dataVref_burstCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_patternMode(phy_in.flagToAnalog_dataVref_patternMode),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_clockPhaseControl(phy_in.flagToAnalog_dataVref_clockPhaseControl),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_validPattern(phy_in.flagToAnalog_dataVref_validPattern),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_dataPattern(phy_in.flagToAnalog_dataVref_dataPattern),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_clearComparisonErrors(phy_in.flagToAnalog_dataVref_clearComparisonErrors),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler(phy_in.flagToAnalog_dataVref_resetLocalTxScrambler),
+    .jtagPhy_ltsm_flagToAnalog_rxClkCal_doCalibration(phy_in.flagToAnalog_rxClkCal_doCalibration),
+    .jtagPhy_ltsm_flagToAnalog_rxClkCal_sendClockTrack(phy_in.flagToAnalog_rxClkCal_sendClockTrack),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_sendValTrainPattern(phy_in.flagToAnalog_d2cSender_sendValTrainPattern),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_resetLocalScrambler(phy_in.flagToAnalog_d2cSender_resetLocalScrambler),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxClockPhase(phy_in.flagToAnalog_d2cSender_applyTxClockPhase),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_txClockPhaseCode(phy_in.flagToAnalog_d2cSender_txClockPhaseCode),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(phy_in.flagToAnalog_d2cReceiver_configureTxInitD2CPointTest),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(phy_in.flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_comparisonMode(phy_in.flagToAnalog_d2cReceiver_comparisonMode),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings(phy_in.flagToAnalog_d2cReceiver_iterationCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_idleCountSettings(phy_in.flagToAnalog_d2cReceiver_idleCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_burstCountSettings(phy_in.flagToAnalog_d2cReceiver_burstCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_patternMode(phy_in.flagToAnalog_d2cReceiver_patternMode),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl(phy_in.flagToAnalog_d2cReceiver_clockPhaseControl),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_validPattern(phy_in.flagToAnalog_d2cReceiver_validPattern),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_dataPattern(phy_in.flagToAnalog_d2cReceiver_dataPattern),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler(phy_in.flagToAnalog_d2cReceiver_resetLocalRxScrambler),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_sendLfsrPattern(phy_in.flagToAnalog_d2cSender_sendLfsrPattern),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew(phy_in.flagToAnalog_d2cSender_applyTxLaneDeskew),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes(phy_in.flagToAnalog_d2cSender_txLaneDeskewCodes),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(phy_in.flagToAnalog_rxDeskew_sendLfsrPattern),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler(phy_in.flagToAnalog_rxDeskew_resetLocalTxScrambler),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew(phy_in.flagToAnalog_rxDeskew_applyRxLaneDeskew),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes(phy_in.flagToAnalog_rxDeskew_rxLaneDeskewCodes),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest(phy_in.flagToAnalog_rxDeskew_configureRxInitD2CPointTest),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold(phy_in.flagToAnalog_rxDeskew_maximumComparisonErrorThreshold),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_comparisonMode(phy_in.flagToAnalog_rxDeskew_comparisonMode),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_iterationCountSettings(phy_in.flagToAnalog_rxDeskew_iterationCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_idleCountSettings(phy_in.flagToAnalog_rxDeskew_idleCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_burstCountSettings(phy_in.flagToAnalog_rxDeskew_burstCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_patternMode(phy_in.flagToAnalog_rxDeskew_patternMode),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_clockPhaseControl(phy_in.flagToAnalog_rxDeskew_clockPhaseControl),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_validPattern(phy_in.flagToAnalog_rxDeskew_validPattern),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_dataPattern(phy_in.flagToAnalog_rxDeskew_dataPattern),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors(phy_in.flagToAnalog_rxDeskew_clearComparisonErrors),
+    .jtagPhy_ltsm_flagToAnalog_linkSpeed_speedCode(phy_in.flagToAnalog_linkSpeed_speedCode),
+    .jtagPhy_ltsm_flagToAnalog_linkSpeed_applySpeed(phy_in.flagToAnalog_linkSpeed_applySpeed),
+    .jtagPhy_ltsm_flagToAnalog_linkSpeed_electricalIdle(phy_in.flagToAnalog_linkSpeed_electricalIdle),
+    .jtagPhy_ltsm_stable_clk(phy_out.stable_clk),
+    .jtagPhy_ltsm_pll_locked(phy_out.pll_locked),
+    .jtagPhy_ltsm_stable_supply(phy_out.stable_supply),
+    .jtagPhy_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns(phy_out.flagFromAnalog_ReadyToExchangeClkPatterns),
+    .jtagPhy_ltsm_flagFromAnalog_FinishedClkPatterns(phy_out.flagFromAnalog_FinishedClkPatterns),
+    .jtagPhy_ltsm_flagFromAnalog_FinishedValTrainPattern(phy_out.flagFromAnalog_FinishedValTrainPattern),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(phy_out.flagFromAnalog_ReversalMbFinishedLaneIDPattern),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern(phy_out.flagFromAnalog_RepairMbFinishedLaneIDPattern),
+    .jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L(phy_out.flagFromAnalog_clkPatternReceivedRTRK_L),
+    .jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L(phy_out.flagFromAnalog_clkPatternReceivedRCKN_L),
+    .jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L(phy_out.flagFromAnalog_clkPatternReceivedRCKP_L),
+    .jtagPhy_ltsm_flagFromAnalog_ValTrainPatternReceived(phy_out.flagFromAnalog_ValTrainPatternReceived),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived0),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived1),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived2),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived3),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived4),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived5),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived6),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived7),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived8),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived9),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived10),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived11),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived12),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived13),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived14),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived15),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern0),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern1),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern2),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern3),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern4),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern5),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern6),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern7),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern8),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern9),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern10),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern11),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern12),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern13),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern14),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern15),
+    .jtagPhy_ltsm_flagFromAnalog_valVref_detectedValPattern(phy_out.flagFromAnalog_valVref_detectedValPattern),
+    .jtagPhy_ltsm_flagFromAnalog_valVref_finishedPattern(phy_out.flagFromAnalog_valVref_finishedPattern),
+    .jtagPhy_ltsm_flagFromAnalog_valVref_rxVrefApplied(phy_out.flagFromAnalog_valVref_rxVrefApplied),
+    .jtagPhy_ltsm_flagFromAnalog_dataVref_detectedDataPattern(phy_out.flagFromAnalog_dataVref_detectedDataPattern),
+    .jtagPhy_ltsm_flagFromAnalog_dataVref_finishedPattern(phy_out.flagFromAnalog_dataVref_finishedPattern),
+    .jtagPhy_ltsm_flagFromAnalog_dataVref_rxVrefApplied(phy_out.flagFromAnalog_dataVref_rxVrefApplied),
+    .jtagPhy_ltsm_flagFromAnalog_rxClkCal_done(phy_out.flagFromAnalog_rxClkCal_done),
+    .jtagPhy_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent(phy_out.flagFromAnalog_d2cSender_valTrainPatternSent),
+    .jtagPhy_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied(phy_out.flagFromAnalog_d2cSender_txClockPhaseApplied),
+    .jtagPhy_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(phy_out.flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo),
+    .jtagPhy_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(phy_out.flagFromAnalog_d2cReceiver_txInitD2CResultsPayload),
+    .jtagPhy_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent(phy_out.flagFromAnalog_d2cSender_lfsrPatternSent),
+    .jtagPhy_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied(phy_out.flagFromAnalog_d2cSender_txLaneDeskewApplied),
+    .jtagPhy_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent(phy_out.flagFromAnalog_rxDeskew_lfsrPatternSent),
+    .jtagPhy_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied(phy_out.flagFromAnalog_rxDeskew_rxLaneDeskewApplied),
+    .jtagPhy_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern(phy_out.flagFromAnalog_rxDeskew_detectedDataPattern),
+    .jtagPhy_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful(phy_out.flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
+    .jtagPhy_ltsm_flagFromAnalog_linkSpeed_speedApplied(phy_out.flagFromAnalog_linkSpeed_speedApplied)
   );
 
 endmodule

@@ -3,10 +3,11 @@
 
 // Integration fixture, NOT a production SoC bridge:
 // - supplied TAP RTL and the actual uploaded jtag_cfg_pkg instruction constants;
-// - actual UcieDigitalTopJtag and all five TDRs;
-// - bank_select below supplies the missing five-bank decoder/TDO mux in the TB.
+// - actual UcieDigitalTopJtag and its TDRs (the phy bank is selected and its
+//   mode decoded here; UcieDigitalTopJtagPhyModeSpec_tb scans its data);
+// - bank_select below supplies the missing six-bank decoder/TDO mux in the TB.
 // A real system must supply that decoder/opcode allocation; the attached TAP
-// alone cannot address all five wrapper registers.
+// alone cannot address all six wrapper registers.
 // The wide snapshots are injected at each TDR's data_in boundary. This checks
 // every serialized bit and clock-domain transaction, not analog training.
 // New speed fields are additionally scanned through the actual top-level muxes,
@@ -21,7 +22,7 @@ module JtagTapIntegrationSpec_tb;
   wire tdo, tdo_en;
   wire tdr_rst, tdr_tck, tdr_tdi, tdr_capture, tdr_shift, tdr_update;
   wire snap_sel, step_sel, dtmcs_sel, dmi_sel;
-  wire tdo_ctrl, tdo_dig, tdo_fdi, tdo_rdi, tdo_ltsm;
+  wire tdo_ctrl, tdo_dig, tdo_fdi, tdo_rdi, tdo_ltsm, tdo_phy;
   logic [2:0] bank_select = 0;
   logic selected_tdo;
   logic [2556:0] dig_live;
@@ -45,6 +46,7 @@ module JtagTapIntegrationSpec_tb;
       2: selected_tdo = tdo_fdi;
       3: selected_tdo = tdo_rdi;
       4: selected_tdo = tdo_ltsm;
+      5: selected_tdo = tdo_phy;
       default: selected_tdo = 0;
     endcase
   end
@@ -72,6 +74,7 @@ module JtagTapIntegrationSpec_tb;
     .sel_fdi((snap_sel && bank_select==3'd2)),
     .sel_rdi((snap_sel && bank_select==3'd3)),
     .sel_ltsm((snap_sel && bank_select==3'd4)),
+    .sel_phy((snap_sel && bank_select==3'd5)),
     .clock(clock),
     .reset_n(reset_n),
     .fdi_lp_state_req(UcieUPM_interfaces_pkg::PhyStateReq_nop),
@@ -152,7 +155,8 @@ module JtagTapIntegrationSpec_tb;
     .tdo_dig(tdo_dig),
     .tdo_fdi(tdo_fdi),
     .tdo_rdi(tdo_rdi),
-    .tdo_ltsm(tdo_ltsm)
+    .tdo_ltsm(tdo_ltsm),
+    .tdo_phy(tdo_phy)
   );
 
   // Sample on the next rising edge; the TAP launches TDO on falling TCK.
@@ -310,9 +314,9 @@ module JtagTapIntegrationSpec_tb;
     // Exercise all control modes while holding their selected block in reset.
     for (int mode=0; mode<=7; mode++) begin
       control_write(8'h08 | 8'(mode));
-      if ({dut.u_top.testModeLtsm,dut.u_top.testModeRdi,
+      if ({dut.u_top.testModePhy,dut.u_top.testModeLtsm,dut.u_top.testModeRdi,
            dut.u_top.testModeFdi,dut.u_top.testModeDigital} !==
-          ((mode>=1 && mode<=4) ? (4'b1 << (mode-1)) : 4'b0))
+          ((mode>=1 && mode<=5) ? (5'b1 << (mode-1)) : 5'b0))
         $fatal(1,"Mode decode is not mutually exclusive, mode=%0d",mode);
       if (dut.test_reset_n !== 0) $fatal(1,"Control reset not asserted");
     end

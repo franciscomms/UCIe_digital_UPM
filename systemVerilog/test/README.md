@@ -33,6 +33,7 @@ warnings remain in the logs; a passing simulation is not lint or CDC signoff.
 | `CenterStageRestartSpec_tb` | Three complete starts of all three centering wrappers on both peers; reject stale responses, verify 265/529/265 phase applications each round. |
 | `UcieCodeWidthSpec_tb` | Independently elaborated Core/Top/TopJtag defaults; reduced sweep counts retain physical widths; all 1,978 analog code bits through real hierarchy in functional, digital-test and LTSM-test modes; all five scan-bank sizes and every new speed-control field in each mux mode. |
 | `JtagSnapshotSpec_tb` | Snapshot/scan transactions, busy rejection, independent resets and replay prevention; automatically runs four TCK/core ratios. |
+| `UcieDigitalTopJtagPhyModeSpec_tb` | PHY isolation mode (ctrl mode 5) through the real ctrl/phy TDRs: one-hot mode decode, core held in reset, every `flagToAnalog` bit driven from the PHY TDR and every PHY status bit read back (both values), core sees 0, `jtag_nRst` retention and `reset_n` return to functional. Generated from the Top PHY pin list. Also `./test/run_tests.sh phymode`. |
 | `JtagTapIntegrationSpec_tb` | Supplied TAP connected to the real wrapper through an explicitly test-only decoder; all five banks, actual supplied SNAP/STEP opcodes, and new speed fields. |
 
 The width test forces only the MBTrain output boundary to walk each physical

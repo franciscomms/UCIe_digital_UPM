@@ -11,9 +11,9 @@ cd "$test_dir"
 selection=${1:-all}
 if (($#)); then shift; fi
 case "$selection" in
-  all) tests=(bringup backpressure 128b digital blockmodes) ;;
-  bringup|backpressure|128b|digital|blockmodes) tests=("$selection") ;;
-  *) echo 'Usage: run_tests.sh [all|bringup|backpressure|128b|digital|blockmodes] [+PLUSARGS...]' >&2; exit 2 ;;
+  all) tests=(bringup backpressure 128b digital blockmodes phymode) ;;
+  bringup|backpressure|128b|digital|blockmodes|phymode) tests=("$selection") ;;
+  *) echo 'Usage: run_tests.sh [all|bringup|backpressure|128b|digital|blockmodes|phymode] [+PLUSARGS...]' >&2; exit 2 ;;
 esac
 simulator=${VERILATOR:-verilator}
 if ! command -v "$simulator" >/dev/null 2>&1; then
@@ -32,6 +32,7 @@ for name in "${tests[@]}"; do
     128b) top=D2DAdapterLinkMgmtTopIntegrated128Spec_tb ;;
     digital) top=UcieDigitalTopTestModeDigitalSpec_tb ;;
     blockmodes) top=UcieDigitalTopBlockTestModesSpec_tb ;;
+    phymode) top=UcieDigitalTopJtagPhyModeSpec_tb ;;
   esac
   output_dir="$build_root/$name"
   mkdir -p "$output_dir"

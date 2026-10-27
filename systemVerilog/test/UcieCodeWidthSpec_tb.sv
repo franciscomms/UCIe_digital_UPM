@@ -10,7 +10,7 @@ module UcieCodeWidthSpec_tb;
     .tdr_tck(1'b0), .tdr_tdi(1'b0), .tdr_capture(1'b0),
     .tdr_shift(1'b0), .tdr_update(1'b0),
     .sel_ctrl(1'b0), .sel_dig(1'b0), .sel_fdi(1'b0),
-    .sel_rdi(1'b0), .sel_ltsm(1'b0),
+    .sel_rdi(1'b0), .sel_ltsm(1'b0), .sel_phy(1'b0),
     .ltsm_linkSpeed_requestedSpeed(requested_speed),
     .ltsm_flagFromAnalog_linkSpeed_speedApplied(speed_applied)
   );
@@ -24,7 +24,8 @@ module UcieCodeWidthSpec_tb;
   );
   UcieDigitalTop standalone_top (
     .clock(1'b0), .reset_n(1'b0), .testModeDigital(1'b0),
-    .testModeFdi(1'b0), .testModeRdi(1'b0), .testModeLtsm(1'b0)
+    .testModeFdi(1'b0), .testModeRdi(1'b0), .testModeLtsm(1'b0),
+    .testModePhy(1'b0)
   );
   logic [19:0] valid_code = '0;
   logic [319:0] data_codes = '0;

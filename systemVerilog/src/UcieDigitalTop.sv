@@ -32,16 +32,29 @@
 //   is done in UcieDigitalCore; see its header. In a block test the rest of
 //   the core is held in reset and the block's functional pins read 0.
 //
+// PHY isolation test (jtagPhy_<name>, testModePhy), muxed here:
+//   Covers the analog-facing LTSM pins: every ltsm_flagToAnalog_* output and
+//   every ltsm_flagFromAnalog_* input plus ltsm_stable_clk/pll_locked/
+//   stable_supply. The PHY is driven either by the core (normal path) or by
+//   the jtagPhy_* TDR pins.
+//                     testModePhy = 0               testModePhy = 1
+//   flagToAnalog pin  driven by the core            driven by jtagPhy_<name>
+//   PHY status input  drives the core               drives jtagPhy_<name>
+//                     (jtagPhy_<name> held at 0)    (core sees 0)
+//   The whole core is held in reset during PHY test; every other functional
+//   output (FDI, sideband, debug) stays at its reset value.
+//
 //   At most one testMode* may be set (UcieDigitalTopJtag drives them one-hot
 //   from its control register). There is no priority logic: setting more than
 //   one is not supported and is reported as an error in simulation.
 //
-//   Digital  Fdi  Rdi  Ltsm   mode
-//      0      0    0    0     functional
-//      1      0    0    0     digital test (jtag_*)
-//      0      1    0    0     FDI isolation test (jtagFdi_*)
-//      0      0    1    0     RDI isolation test (jtagRdi_*)
-//      0      0    0    1     LTSM isolation test (jtagLtsm_*)
+//   Digital  Fdi  Rdi  Ltsm  Phy   mode
+//      0      0    0    0     0    functional
+//      1      0    0    0     0    digital test (jtag_*)
+//      0      1    0    0     0    FDI isolation test (jtagFdi_*)
+//      0      0    1    0     0    RDI isolation test (jtagRdi_*)
+//      0      0    0    1     0    LTSM isolation test (jtagLtsm_*)
+//      0      0    0    0     1    PHY isolation test (jtagPhy_*)
 //
 // Parameters are identical to UcieDigitalCore and passed straight through.
 // ============================================================================
@@ -108,12 +121,14 @@ module UcieDigitalTop #(
   // testModeDigital = 1: jtag_* (TDR) pins drive/observe the core.
   // testModeFdi / testModeRdi / testModeLtsm = 1:
   // jtagFdi_* / jtagRdi_* / jtagLtsm_* pins drive/observe only that block.
+  // testModePhy = 1: jtagPhy_* pins drive/observe the analog PHY pins.
   // All 0: functional pins drive/observe the core. At most one may be set.
   // ==========================================================================
   input wire logic testModeDigital,
   input wire logic testModeFdi,
   input wire logic testModeRdi,
   input wire logic testModeLtsm,
+  input wire logic testModePhy,
 
   // ##########################################################################
   // FUNCTIONAL PINS (testModeDigital = 0)
@@ -919,17 +934,167 @@ module UcieDigitalTop #(
   output var logic [3:0] jtagLtsm_dbg_mbtrainLinkSpeedD2cSenderState,
   output var logic [3:0] jtagLtsm_dbg_mbtrainLinkSpeedD2cReceiverState,
   output var logic [15:0] jtagLtsm_dbg_mbtrainLastErrorCount,
-  output var logic [15:0] jtagLtsm_dbg_mbtrainRetryCount
+  output var logic [15:0] jtagLtsm_dbg_mbtrainRetryCount,
+
+  // ##########################################################################
+  // JTAG PHY TDR PINS (testModePhy = 1, all other test modes 0)
+  // One pin per analog-facing LTSM pin, prefixed with jtagPhy_. The TDR
+  // drives the flagToAnalog_* pins and observes the analog status inputs.
+  // Inputs are ignored and outputs held at 0 outside this test mode.
+  // ##########################################################################
+
+  // Toward the PHY (drive ltsm_flagToAnalog_*).
+  input wire logic jtagPhy_ltsm_flagToAnalog_RepairClkState,
+  input wire logic jtagPhy_ltsm_flagToAnalog_SendClkPatterns,
+  input wire logic jtagPhy_ltsm_flagToAnalog_RepairValState,
+  input wire logic jtagPhy_ltsm_flagToAnalog_SendValTrainPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_RepairMbSendLaneIDPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_RepairMbSetReceiver,
+  input wire logic jtagPhy_ltsm_flagToAnalog_LaneReversalApplied,
+  input wire logic jtagPhy_ltsm_flagToAnalog_linkInit_resetLfsrScrambler,
+  input wire logic jtagPhy_ltsm_flagToAnalog_valVref_sendPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_valVref_applyRxVref,
+  input wire logic [validVrefCodeWidth-1:0] jtagPhy_ltsm_flagToAnalog_valVref_rxVrefCode,
+  input wire logic jtagPhy_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold,
+  input wire logic jtagPhy_ltsm_flagToAnalog_valVref_comparisonMode,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_valVref_iterationCountSettings,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_valVref_idleCountSettings,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_valVref_burstCountSettings,
+  input wire logic jtagPhy_ltsm_flagToAnalog_valVref_patternMode,
+  input wire logic [3:0] jtagPhy_ltsm_flagToAnalog_valVref_clockPhaseControl,
+  input wire logic [2:0] jtagPhy_ltsm_flagToAnalog_valVref_validPattern,
+  input wire logic [2:0] jtagPhy_ltsm_flagToAnalog_valVref_dataPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_valVref_clearComparisonErrors,
+  input wire logic jtagPhy_ltsm_flagToAnalog_valVref_resetLocalTxScrambler,
+  input wire logic jtagPhy_ltsm_flagToAnalog_dataVref_sendPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_dataVref_applyRxVref,
+  input wire logic [dataLaneCount*dataVrefCodeWidth-1:0] jtagPhy_ltsm_flagToAnalog_dataVref_rxVrefCodes,
+  input wire logic jtagPhy_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold,
+  input wire logic jtagPhy_ltsm_flagToAnalog_dataVref_comparisonMode,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_dataVref_iterationCountSettings,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_dataVref_idleCountSettings,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_dataVref_burstCountSettings,
+  input wire logic jtagPhy_ltsm_flagToAnalog_dataVref_patternMode,
+  input wire logic [3:0] jtagPhy_ltsm_flagToAnalog_dataVref_clockPhaseControl,
+  input wire logic [2:0] jtagPhy_ltsm_flagToAnalog_dataVref_validPattern,
+  input wire logic [2:0] jtagPhy_ltsm_flagToAnalog_dataVref_dataPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_dataVref_clearComparisonErrors,
+  input wire logic jtagPhy_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler,
+  input wire logic jtagPhy_ltsm_flagToAnalog_rxClkCal_doCalibration,
+  input wire logic jtagPhy_ltsm_flagToAnalog_rxClkCal_sendClockTrack,
+  input wire logic jtagPhy_ltsm_flagToAnalog_d2cSender_sendValTrainPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_d2cSender_resetLocalScrambler,
+  input wire logic jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxClockPhase,
+  input wire logic [d2cPiCodeWidth-1:0] jtagPhy_ltsm_flagToAnalog_d2cSender_txClockPhaseCode,
+  input wire logic jtagPhy_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold,
+  input wire logic jtagPhy_ltsm_flagToAnalog_d2cReceiver_comparisonMode,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_d2cReceiver_idleCountSettings,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_d2cReceiver_burstCountSettings,
+  input wire logic jtagPhy_ltsm_flagToAnalog_d2cReceiver_patternMode,
+  input wire logic [3:0] jtagPhy_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl,
+  input wire logic [2:0] jtagPhy_ltsm_flagToAnalog_d2cReceiver_validPattern,
+  input wire logic [2:0] jtagPhy_ltsm_flagToAnalog_d2cReceiver_dataPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler,
+  input wire logic jtagPhy_ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew,
+  input wire logic [64*d2cTxDeskewCodeWidth-1:0] jtagPhy_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes,
+  input wire logic jtagPhy_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler,
+  input wire logic jtagPhy_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew,
+  input wire logic [dataLaneCount*rxDeskewCodeWidth-1:0] jtagPhy_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes,
+  input wire logic jtagPhy_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold,
+  input wire logic jtagPhy_ltsm_flagToAnalog_rxDeskew_comparisonMode,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_rxDeskew_iterationCountSettings,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_rxDeskew_idleCountSettings,
+  input wire logic [15:0] jtagPhy_ltsm_flagToAnalog_rxDeskew_burstCountSettings,
+  input wire logic jtagPhy_ltsm_flagToAnalog_rxDeskew_patternMode,
+  input wire logic [3:0] jtagPhy_ltsm_flagToAnalog_rxDeskew_clockPhaseControl,
+  input wire logic [2:0] jtagPhy_ltsm_flagToAnalog_rxDeskew_validPattern,
+  input wire logic [2:0] jtagPhy_ltsm_flagToAnalog_rxDeskew_dataPattern,
+  input wire logic jtagPhy_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors,
+  input wire logic [1:0] jtagPhy_ltsm_flagToAnalog_linkSpeed_speedCode,
+  input wire logic jtagPhy_ltsm_flagToAnalog_linkSpeed_applySpeed,
+  input wire logic jtagPhy_ltsm_flagToAnalog_linkSpeed_electricalIdle,
+
+  // From the PHY (copies of ltsm_flagFromAnalog_* and readiness inputs).
+  output var logic jtagPhy_ltsm_stable_clk,
+  output var logic jtagPhy_ltsm_pll_locked,
+  output var logic jtagPhy_ltsm_stable_supply,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns,
+  output var logic jtagPhy_ltsm_flagFromAnalog_FinishedClkPatterns,
+  output var logic jtagPhy_ltsm_flagFromAnalog_FinishedValTrainPattern,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern,
+  output var logic jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L,
+  output var logic jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L,
+  output var logic jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ValTrainPatternReceived,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14,
+  output var logic jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14,
+  output var logic jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15,
+  output var logic jtagPhy_ltsm_flagFromAnalog_valVref_detectedValPattern,
+  output var logic jtagPhy_ltsm_flagFromAnalog_valVref_finishedPattern,
+  output var logic jtagPhy_ltsm_flagFromAnalog_valVref_rxVrefApplied,
+  output var logic [dataLaneCount-1:0] jtagPhy_ltsm_flagFromAnalog_dataVref_detectedDataPattern,
+  output var logic jtagPhy_ltsm_flagFromAnalog_dataVref_finishedPattern,
+  output var logic jtagPhy_ltsm_flagFromAnalog_dataVref_rxVrefApplied,
+  output var logic jtagPhy_ltsm_flagFromAnalog_rxClkCal_done,
+  output var logic jtagPhy_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent,
+  output var logic jtagPhy_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied,
+  output var logic [15:0] jtagPhy_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
+  output var logic [63:0] jtagPhy_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  output var logic jtagPhy_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
+  output var logic jtagPhy_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied,
+  output var logic jtagPhy_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
+  output var logic jtagPhy_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied,
+  output var logic [dataLaneCount-1:0] jtagPhy_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern,
+  output var logic [15:0] jtagPhy_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
+  output var logic jtagPhy_ltsm_flagFromAnalog_linkSpeed_speedApplied
 );
 
   // --------------------------------------------------------------------------
   // Test mode select: at most one testMode* may be set (no priority logic).
   // --------------------------------------------------------------------------
 `ifndef SYNTHESIS
-  always @(testModeDigital or testModeFdi or testModeRdi or testModeLtsm)
-    if ($countones({testModeDigital, testModeFdi, testModeRdi, testModeLtsm}) > 1)
-      $error("UcieDigitalTop: several test modes set (digital=%b fdi=%b rdi=%b ltsm=%b); at most one is supported",
-             testModeDigital, testModeFdi, testModeRdi, testModeLtsm);
+  always @(testModeDigital or testModeFdi or testModeRdi or testModeLtsm or testModePhy)
+    if ($countones({testModeDigital, testModeFdi, testModeRdi, testModeLtsm, testModePhy}) > 1)
+      $error("UcieDigitalTop: several test modes set (digital=%b fdi=%b rdi=%b ltsm=%b phy=%b); at most one is supported",
+             testModeDigital, testModeFdi, testModeRdi, testModeLtsm, testModePhy);
 `endif
 
   // --------------------------------------------------------------------------
@@ -1140,7 +1305,8 @@ module UcieDigitalTop #(
                       testModeFdi     ? jtagFdi_clock  :
                       testModeRdi     ? jtagRdi_clock  :
                       testModeLtsm    ? jtagLtsm_clock : clock;
-  assign core_reset_n = testModeDigital ? jtag_reset_n : reset_n;
+  // In PHY test the core does not own the PHY: hold it in reset.
+  assign core_reset_n = testModeDigital ? jtag_reset_n : (reset_n & ~testModePhy);
   assign core_fdi_lp_state_req = testModeDigital ? jtag_fdi_lp_state_req : fdi_lp_state_req;
   assign core_fdi_lp_linkerror = testModeDigital ? jtag_fdi_lp_linkerror : fdi_lp_linkerror;
   assign core_fdi_lp_rx_active_sts = testModeDigital ? jtag_fdi_lp_rx_active_sts : fdi_lp_rx_active_sts;
@@ -1150,69 +1316,69 @@ module UcieDigitalTop #(
   assign core_cycles_1us = testModeDigital ? jtag_cycles_1us : cycles_1us;
   assign core_timeout_disable = testModeDigital ? jtag_timeout_disable : timeout_disable;
   assign core_ltsm_start = testModeDigital ? jtag_ltsm_start : ltsm_start;
-  assign core_ltsm_stable_clk = testModeDigital ? jtag_ltsm_stable_clk : ltsm_stable_clk;
-  assign core_ltsm_pll_locked = testModeDigital ? jtag_ltsm_pll_locked : ltsm_pll_locked;
-  assign core_ltsm_stable_supply = testModeDigital ? jtag_ltsm_stable_supply : ltsm_stable_supply;
-  assign core_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns = testModeDigital ? jtag_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns : ltsm_flagFromAnalog_ReadyToExchangeClkPatterns;
-  assign core_ltsm_flagFromAnalog_FinishedClkPatterns = testModeDigital ? jtag_ltsm_flagFromAnalog_FinishedClkPatterns : ltsm_flagFromAnalog_FinishedClkPatterns;
-  assign core_ltsm_flagFromAnalog_FinishedValTrainPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_FinishedValTrainPattern : ltsm_flagFromAnalog_FinishedValTrainPattern;
-  assign core_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern : ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern;
-  assign core_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern : ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern;
-  assign core_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L = testModeDigital ? jtag_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L : ltsm_flagFromAnalog_clkPatternReceivedRTRK_L;
-  assign core_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L = testModeDigital ? jtag_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L : ltsm_flagFromAnalog_clkPatternReceivedRCKN_L;
-  assign core_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L = testModeDigital ? jtag_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L : ltsm_flagFromAnalog_clkPatternReceivedRCKP_L;
-  assign core_ltsm_flagFromAnalog_ValTrainPatternReceived = testModeDigital ? jtag_ltsm_flagFromAnalog_ValTrainPatternReceived : ltsm_flagFromAnalog_ValTrainPatternReceived;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14;
-  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14;
-  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15;
-  assign core_ltsm_flagFromAnalog_valVref_detectedValPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_valVref_detectedValPattern : ltsm_flagFromAnalog_valVref_detectedValPattern;
-  assign core_ltsm_flagFromAnalog_valVref_finishedPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_valVref_finishedPattern : ltsm_flagFromAnalog_valVref_finishedPattern;
-  assign core_ltsm_flagFromAnalog_valVref_rxVrefApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_valVref_rxVrefApplied : ltsm_flagFromAnalog_valVref_rxVrefApplied;
-  assign core_ltsm_flagFromAnalog_dataVref_detectedDataPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_dataVref_detectedDataPattern : ltsm_flagFromAnalog_dataVref_detectedDataPattern;
-  assign core_ltsm_flagFromAnalog_dataVref_finishedPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_dataVref_finishedPattern : ltsm_flagFromAnalog_dataVref_finishedPattern;
-  assign core_ltsm_flagFromAnalog_dataVref_rxVrefApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_dataVref_rxVrefApplied : ltsm_flagFromAnalog_dataVref_rxVrefApplied;
-  assign core_ltsm_flagFromAnalog_rxClkCal_done = testModeDigital ? jtag_ltsm_flagFromAnalog_rxClkCal_done : ltsm_flagFromAnalog_rxClkCal_done;
-  assign core_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent : ltsm_flagFromAnalog_d2cSender_valTrainPatternSent;
-  assign core_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied : ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied;
-  assign core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo;
-  assign core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
-  assign core_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent : ltsm_flagFromAnalog_d2cSender_lfsrPatternSent;
-  assign core_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied : ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied;
-  assign core_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent = testModeDigital ? jtag_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent : ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent;
-  assign core_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied : ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied;
-  assign core_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern : ltsm_flagFromAnalog_rxDeskew_detectedDataPattern;
-  assign core_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful : ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
+  assign core_ltsm_stable_clk = testModeDigital ? jtag_ltsm_stable_clk : testModePhy ? '0 : ltsm_stable_clk;
+  assign core_ltsm_pll_locked = testModeDigital ? jtag_ltsm_pll_locked : testModePhy ? '0 : ltsm_pll_locked;
+  assign core_ltsm_stable_supply = testModeDigital ? jtag_ltsm_stable_supply : testModePhy ? '0 : ltsm_stable_supply;
+  assign core_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns = testModeDigital ? jtag_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns : testModePhy ? '0 : ltsm_flagFromAnalog_ReadyToExchangeClkPatterns;
+  assign core_ltsm_flagFromAnalog_FinishedClkPatterns = testModeDigital ? jtag_ltsm_flagFromAnalog_FinishedClkPatterns : testModePhy ? '0 : ltsm_flagFromAnalog_FinishedClkPatterns;
+  assign core_ltsm_flagFromAnalog_FinishedValTrainPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_FinishedValTrainPattern : testModePhy ? '0 : ltsm_flagFromAnalog_FinishedValTrainPattern;
+  assign core_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern;
+  assign core_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern;
+  assign core_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L = testModeDigital ? jtag_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L : testModePhy ? '0 : ltsm_flagFromAnalog_clkPatternReceivedRTRK_L;
+  assign core_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L = testModeDigital ? jtag_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L : testModePhy ? '0 : ltsm_flagFromAnalog_clkPatternReceivedRCKN_L;
+  assign core_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L = testModeDigital ? jtag_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L : testModePhy ? '0 : ltsm_flagFromAnalog_clkPatternReceivedRCKP_L;
+  assign core_ltsm_flagFromAnalog_ValTrainPatternReceived = testModeDigital ? jtag_ltsm_flagFromAnalog_ValTrainPatternReceived : testModePhy ? '0 : ltsm_flagFromAnalog_ValTrainPatternReceived;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14;
+  assign core_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15 = testModeDigital ? jtag_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15 : testModePhy ? '0 : ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14;
+  assign core_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15 = testModeDigital ? jtag_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15 : testModePhy ? '0 : ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15;
+  assign core_ltsm_flagFromAnalog_valVref_detectedValPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_valVref_detectedValPattern : testModePhy ? '0 : ltsm_flagFromAnalog_valVref_detectedValPattern;
+  assign core_ltsm_flagFromAnalog_valVref_finishedPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_valVref_finishedPattern : testModePhy ? '0 : ltsm_flagFromAnalog_valVref_finishedPattern;
+  assign core_ltsm_flagFromAnalog_valVref_rxVrefApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_valVref_rxVrefApplied : testModePhy ? '0 : ltsm_flagFromAnalog_valVref_rxVrefApplied;
+  assign core_ltsm_flagFromAnalog_dataVref_detectedDataPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_dataVref_detectedDataPattern : testModePhy ? '0 : ltsm_flagFromAnalog_dataVref_detectedDataPattern;
+  assign core_ltsm_flagFromAnalog_dataVref_finishedPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_dataVref_finishedPattern : testModePhy ? '0 : ltsm_flagFromAnalog_dataVref_finishedPattern;
+  assign core_ltsm_flagFromAnalog_dataVref_rxVrefApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_dataVref_rxVrefApplied : testModePhy ? '0 : ltsm_flagFromAnalog_dataVref_rxVrefApplied;
+  assign core_ltsm_flagFromAnalog_rxClkCal_done = testModeDigital ? jtag_ltsm_flagFromAnalog_rxClkCal_done : testModePhy ? '0 : ltsm_flagFromAnalog_rxClkCal_done;
+  assign core_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent : testModePhy ? '0 : ltsm_flagFromAnalog_d2cSender_valTrainPatternSent;
+  assign core_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied : testModePhy ? '0 : ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied;
+  assign core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : testModePhy ? '0 : ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo;
+  assign core_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : testModePhy ? '0 : ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
+  assign core_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent : testModePhy ? '0 : ltsm_flagFromAnalog_d2cSender_lfsrPatternSent;
+  assign core_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied : testModePhy ? '0 : ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied;
+  assign core_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent = testModeDigital ? jtag_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent : testModePhy ? '0 : ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent;
+  assign core_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied : testModePhy ? '0 : ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied;
+  assign core_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern = testModeDigital ? jtag_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern : testModePhy ? '0 : ltsm_flagFromAnalog_rxDeskew_detectedDataPattern;
+  assign core_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful = testModeDigital ? jtag_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful : testModePhy ? '0 : ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
   assign core_ltsm_linkSpeed_requestedSpeed = testModeDigital ? jtag_ltsm_linkSpeed_requestedSpeed : ltsm_linkSpeed_requestedSpeed;
-  assign core_ltsm_flagFromAnalog_linkSpeed_speedApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_linkSpeed_speedApplied : ltsm_flagFromAnalog_linkSpeed_speedApplied;
+  assign core_ltsm_flagFromAnalog_linkSpeed_speedApplied = testModeDigital ? jtag_ltsm_flagFromAnalog_linkSpeed_speedApplied : testModePhy ? '0 : ltsm_flagFromAnalog_linkSpeed_speedApplied;
   assign core_sb_rx_din = testModeDigital ? jtag_sb_rx_din : sb_rx_din;
   assign core_sb_rx_clk = testModeDigital ? jtag_sb_rx_clk : sb_rx_clk;
 
@@ -1233,23 +1399,23 @@ module UcieDigitalTop #(
   assign jtag_fdi_pl_stall_req = testModeDigital ? core_fdi_pl_stall_req : '0;
   assign fdi_active = testModeDigital ? '0 : core_fdi_active;
   assign jtag_fdi_active = testModeDigital ? core_fdi_active : '0;
-  assign ltsm_flagToAnalog_RepairClkState = testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairClkState;
+  assign ltsm_flagToAnalog_RepairClkState = testModePhy ? jtagPhy_ltsm_flagToAnalog_RepairClkState : testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairClkState;
   assign jtag_ltsm_flagToAnalog_RepairClkState = testModeDigital ? core_ltsm_flagToAnalog_RepairClkState : '0;
-  assign ltsm_flagToAnalog_SendClkPatterns = testModeDigital ? '0 : core_ltsm_flagToAnalog_SendClkPatterns;
+  assign ltsm_flagToAnalog_SendClkPatterns = testModePhy ? jtagPhy_ltsm_flagToAnalog_SendClkPatterns : testModeDigital ? '0 : core_ltsm_flagToAnalog_SendClkPatterns;
   assign jtag_ltsm_flagToAnalog_SendClkPatterns = testModeDigital ? core_ltsm_flagToAnalog_SendClkPatterns : '0;
-  assign ltsm_flagToAnalog_RepairValState = testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairValState;
+  assign ltsm_flagToAnalog_RepairValState = testModePhy ? jtagPhy_ltsm_flagToAnalog_RepairValState : testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairValState;
   assign jtag_ltsm_flagToAnalog_RepairValState = testModeDigital ? core_ltsm_flagToAnalog_RepairValState : '0;
-  assign ltsm_flagToAnalog_SendValTrainPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_SendValTrainPattern;
+  assign ltsm_flagToAnalog_SendValTrainPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_SendValTrainPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_SendValTrainPattern;
   assign jtag_ltsm_flagToAnalog_SendValTrainPattern = testModeDigital ? core_ltsm_flagToAnalog_SendValTrainPattern : '0;
-  assign ltsm_flagToAnalog_ReversalMbSendLaneIDPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern;
+  assign ltsm_flagToAnalog_ReversalMbSendLaneIDPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern;
   assign jtag_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern = testModeDigital ? core_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern : '0;
-  assign ltsm_flagToAnalog_RepairMbSendLaneIDPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairMbSendLaneIDPattern;
+  assign ltsm_flagToAnalog_RepairMbSendLaneIDPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_RepairMbSendLaneIDPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairMbSendLaneIDPattern;
   assign jtag_ltsm_flagToAnalog_RepairMbSendLaneIDPattern = testModeDigital ? core_ltsm_flagToAnalog_RepairMbSendLaneIDPattern : '0;
-  assign ltsm_flagToAnalog_RepairMbSetReceiver = testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairMbSetReceiver;
+  assign ltsm_flagToAnalog_RepairMbSetReceiver = testModePhy ? jtagPhy_ltsm_flagToAnalog_RepairMbSetReceiver : testModeDigital ? '0 : core_ltsm_flagToAnalog_RepairMbSetReceiver;
   assign jtag_ltsm_flagToAnalog_RepairMbSetReceiver = testModeDigital ? core_ltsm_flagToAnalog_RepairMbSetReceiver : '0;
-  assign ltsm_flagToAnalog_LaneReversalApplied = testModeDigital ? '0 : core_ltsm_flagToAnalog_LaneReversalApplied;
+  assign ltsm_flagToAnalog_LaneReversalApplied = testModePhy ? jtagPhy_ltsm_flagToAnalog_LaneReversalApplied : testModeDigital ? '0 : core_ltsm_flagToAnalog_LaneReversalApplied;
   assign jtag_ltsm_flagToAnalog_LaneReversalApplied = testModeDigital ? core_ltsm_flagToAnalog_LaneReversalApplied : '0;
-  assign ltsm_flagToAnalog_linkInit_resetLfsrScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_linkInit_resetLfsrScrambler;
+  assign ltsm_flagToAnalog_linkInit_resetLfsrScrambler = testModePhy ? jtagPhy_ltsm_flagToAnalog_linkInit_resetLfsrScrambler : testModeDigital ? '0 : core_ltsm_flagToAnalog_linkInit_resetLfsrScrambler;
   assign jtag_ltsm_flagToAnalog_linkInit_resetLfsrScrambler = testModeDigital ? core_ltsm_flagToAnalog_linkInit_resetLfsrScrambler : '0;
   assign ltsm_state = testModeDigital ? '0 : core_ltsm_state;
   assign jtag_ltsm_state = testModeDigital ? core_ltsm_state : '0;
@@ -1269,140 +1435,140 @@ module UcieDigitalTop #(
   assign jtag_ltsm_dbg_mbinitSubstate = testModeDigital ? core_ltsm_dbg_mbinitSubstate : '0;
   assign ltsm_dbg_mbinitReversalMbReceivedSuccessCount = testModeDigital ? '0 : core_ltsm_dbg_mbinitReversalMbReceivedSuccessCount;
   assign jtag_ltsm_dbg_mbinitReversalMbReceivedSuccessCount = testModeDigital ? core_ltsm_dbg_mbinitReversalMbReceivedSuccessCount : '0;
-  assign ltsm_flagToAnalog_valVref_sendPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_sendPattern;
+  assign ltsm_flagToAnalog_valVref_sendPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_sendPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_sendPattern;
   assign jtag_ltsm_flagToAnalog_valVref_sendPattern = testModeDigital ? core_ltsm_flagToAnalog_valVref_sendPattern : '0;
-  assign ltsm_flagToAnalog_valVref_applyRxVref = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_applyRxVref;
+  assign ltsm_flagToAnalog_valVref_applyRxVref = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_applyRxVref : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_applyRxVref;
   assign jtag_ltsm_flagToAnalog_valVref_applyRxVref = testModeDigital ? core_ltsm_flagToAnalog_valVref_applyRxVref : '0;
-  assign ltsm_flagToAnalog_valVref_rxVrefCode = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_rxVrefCode;
+  assign ltsm_flagToAnalog_valVref_rxVrefCode = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_rxVrefCode : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_rxVrefCode;
   assign jtag_ltsm_flagToAnalog_valVref_rxVrefCode = testModeDigital ? core_ltsm_flagToAnalog_valVref_rxVrefCode : '0;
-  assign ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest;
+  assign ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest;
   assign jtag_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest = testModeDigital ? core_ltsm_flagToAnalog_valVref_configureRxInitD2CPointTest : '0;
-  assign ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold;
+  assign ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold;
   assign jtag_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold = testModeDigital ? core_ltsm_flagToAnalog_valVref_maximumComparisonErrorThreshold : '0;
-  assign ltsm_flagToAnalog_valVref_comparisonMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_comparisonMode;
+  assign ltsm_flagToAnalog_valVref_comparisonMode = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_comparisonMode : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_comparisonMode;
   assign jtag_ltsm_flagToAnalog_valVref_comparisonMode = testModeDigital ? core_ltsm_flagToAnalog_valVref_comparisonMode : '0;
-  assign ltsm_flagToAnalog_valVref_iterationCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_iterationCountSettings;
+  assign ltsm_flagToAnalog_valVref_iterationCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_iterationCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_iterationCountSettings;
   assign jtag_ltsm_flagToAnalog_valVref_iterationCountSettings = testModeDigital ? core_ltsm_flagToAnalog_valVref_iterationCountSettings : '0;
-  assign ltsm_flagToAnalog_valVref_idleCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_idleCountSettings;
+  assign ltsm_flagToAnalog_valVref_idleCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_idleCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_idleCountSettings;
   assign jtag_ltsm_flagToAnalog_valVref_idleCountSettings = testModeDigital ? core_ltsm_flagToAnalog_valVref_idleCountSettings : '0;
-  assign ltsm_flagToAnalog_valVref_burstCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_burstCountSettings;
+  assign ltsm_flagToAnalog_valVref_burstCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_burstCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_burstCountSettings;
   assign jtag_ltsm_flagToAnalog_valVref_burstCountSettings = testModeDigital ? core_ltsm_flagToAnalog_valVref_burstCountSettings : '0;
-  assign ltsm_flagToAnalog_valVref_patternMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_patternMode;
+  assign ltsm_flagToAnalog_valVref_patternMode = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_patternMode : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_patternMode;
   assign jtag_ltsm_flagToAnalog_valVref_patternMode = testModeDigital ? core_ltsm_flagToAnalog_valVref_patternMode : '0;
-  assign ltsm_flagToAnalog_valVref_clockPhaseControl = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_clockPhaseControl;
+  assign ltsm_flagToAnalog_valVref_clockPhaseControl = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_clockPhaseControl : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_clockPhaseControl;
   assign jtag_ltsm_flagToAnalog_valVref_clockPhaseControl = testModeDigital ? core_ltsm_flagToAnalog_valVref_clockPhaseControl : '0;
-  assign ltsm_flagToAnalog_valVref_validPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_validPattern;
+  assign ltsm_flagToAnalog_valVref_validPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_validPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_validPattern;
   assign jtag_ltsm_flagToAnalog_valVref_validPattern = testModeDigital ? core_ltsm_flagToAnalog_valVref_validPattern : '0;
-  assign ltsm_flagToAnalog_valVref_dataPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_dataPattern;
+  assign ltsm_flagToAnalog_valVref_dataPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_dataPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_dataPattern;
   assign jtag_ltsm_flagToAnalog_valVref_dataPattern = testModeDigital ? core_ltsm_flagToAnalog_valVref_dataPattern : '0;
-  assign ltsm_flagToAnalog_valVref_clearComparisonErrors = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_clearComparisonErrors;
+  assign ltsm_flagToAnalog_valVref_clearComparisonErrors = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_clearComparisonErrors : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_clearComparisonErrors;
   assign jtag_ltsm_flagToAnalog_valVref_clearComparisonErrors = testModeDigital ? core_ltsm_flagToAnalog_valVref_clearComparisonErrors : '0;
-  assign ltsm_flagToAnalog_valVref_resetLocalTxScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_resetLocalTxScrambler;
+  assign ltsm_flagToAnalog_valVref_resetLocalTxScrambler = testModePhy ? jtagPhy_ltsm_flagToAnalog_valVref_resetLocalTxScrambler : testModeDigital ? '0 : core_ltsm_flagToAnalog_valVref_resetLocalTxScrambler;
   assign jtag_ltsm_flagToAnalog_valVref_resetLocalTxScrambler = testModeDigital ? core_ltsm_flagToAnalog_valVref_resetLocalTxScrambler : '0;
-  assign ltsm_flagToAnalog_dataVref_sendPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_sendPattern;
+  assign ltsm_flagToAnalog_dataVref_sendPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_sendPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_sendPattern;
   assign jtag_ltsm_flagToAnalog_dataVref_sendPattern = testModeDigital ? core_ltsm_flagToAnalog_dataVref_sendPattern : '0;
-  assign ltsm_flagToAnalog_dataVref_applyRxVref = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_applyRxVref;
+  assign ltsm_flagToAnalog_dataVref_applyRxVref = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_applyRxVref : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_applyRxVref;
   assign jtag_ltsm_flagToAnalog_dataVref_applyRxVref = testModeDigital ? core_ltsm_flagToAnalog_dataVref_applyRxVref : '0;
-  assign ltsm_flagToAnalog_dataVref_rxVrefCodes = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_rxVrefCodes;
+  assign ltsm_flagToAnalog_dataVref_rxVrefCodes = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_rxVrefCodes : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_rxVrefCodes;
   assign jtag_ltsm_flagToAnalog_dataVref_rxVrefCodes = testModeDigital ? core_ltsm_flagToAnalog_dataVref_rxVrefCodes : '0;
-  assign ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest;
+  assign ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest;
   assign jtag_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest = testModeDigital ? core_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest : '0;
-  assign ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
+  assign ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold;
   assign jtag_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold = testModeDigital ? core_ltsm_flagToAnalog_dataVref_maximumComparisonErrorThreshold : '0;
-  assign ltsm_flagToAnalog_dataVref_comparisonMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_comparisonMode;
+  assign ltsm_flagToAnalog_dataVref_comparisonMode = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_comparisonMode : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_comparisonMode;
   assign jtag_ltsm_flagToAnalog_dataVref_comparisonMode = testModeDigital ? core_ltsm_flagToAnalog_dataVref_comparisonMode : '0;
-  assign ltsm_flagToAnalog_dataVref_iterationCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_iterationCountSettings;
+  assign ltsm_flagToAnalog_dataVref_iterationCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_iterationCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_iterationCountSettings;
   assign jtag_ltsm_flagToAnalog_dataVref_iterationCountSettings = testModeDigital ? core_ltsm_flagToAnalog_dataVref_iterationCountSettings : '0;
-  assign ltsm_flagToAnalog_dataVref_idleCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_idleCountSettings;
+  assign ltsm_flagToAnalog_dataVref_idleCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_idleCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_idleCountSettings;
   assign jtag_ltsm_flagToAnalog_dataVref_idleCountSettings = testModeDigital ? core_ltsm_flagToAnalog_dataVref_idleCountSettings : '0;
-  assign ltsm_flagToAnalog_dataVref_burstCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_burstCountSettings;
+  assign ltsm_flagToAnalog_dataVref_burstCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_burstCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_burstCountSettings;
   assign jtag_ltsm_flagToAnalog_dataVref_burstCountSettings = testModeDigital ? core_ltsm_flagToAnalog_dataVref_burstCountSettings : '0;
-  assign ltsm_flagToAnalog_dataVref_patternMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_patternMode;
+  assign ltsm_flagToAnalog_dataVref_patternMode = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_patternMode : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_patternMode;
   assign jtag_ltsm_flagToAnalog_dataVref_patternMode = testModeDigital ? core_ltsm_flagToAnalog_dataVref_patternMode : '0;
-  assign ltsm_flagToAnalog_dataVref_clockPhaseControl = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_clockPhaseControl;
+  assign ltsm_flagToAnalog_dataVref_clockPhaseControl = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_clockPhaseControl : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_clockPhaseControl;
   assign jtag_ltsm_flagToAnalog_dataVref_clockPhaseControl = testModeDigital ? core_ltsm_flagToAnalog_dataVref_clockPhaseControl : '0;
-  assign ltsm_flagToAnalog_dataVref_validPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_validPattern;
+  assign ltsm_flagToAnalog_dataVref_validPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_validPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_validPattern;
   assign jtag_ltsm_flagToAnalog_dataVref_validPattern = testModeDigital ? core_ltsm_flagToAnalog_dataVref_validPattern : '0;
-  assign ltsm_flagToAnalog_dataVref_dataPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_dataPattern;
+  assign ltsm_flagToAnalog_dataVref_dataPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_dataPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_dataPattern;
   assign jtag_ltsm_flagToAnalog_dataVref_dataPattern = testModeDigital ? core_ltsm_flagToAnalog_dataVref_dataPattern : '0;
-  assign ltsm_flagToAnalog_dataVref_clearComparisonErrors = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_clearComparisonErrors;
+  assign ltsm_flagToAnalog_dataVref_clearComparisonErrors = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_clearComparisonErrors : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_clearComparisonErrors;
   assign jtag_ltsm_flagToAnalog_dataVref_clearComparisonErrors = testModeDigital ? core_ltsm_flagToAnalog_dataVref_clearComparisonErrors : '0;
-  assign ltsm_flagToAnalog_dataVref_resetLocalTxScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler;
+  assign ltsm_flagToAnalog_dataVref_resetLocalTxScrambler = testModePhy ? jtagPhy_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler : testModeDigital ? '0 : core_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler;
   assign jtag_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler = testModeDigital ? core_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler : '0;
-  assign ltsm_flagToAnalog_rxClkCal_doCalibration = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxClkCal_doCalibration;
+  assign ltsm_flagToAnalog_rxClkCal_doCalibration = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxClkCal_doCalibration : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxClkCal_doCalibration;
   assign jtag_ltsm_flagToAnalog_rxClkCal_doCalibration = testModeDigital ? core_ltsm_flagToAnalog_rxClkCal_doCalibration : '0;
-  assign ltsm_flagToAnalog_rxClkCal_sendClockTrack = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxClkCal_sendClockTrack;
+  assign ltsm_flagToAnalog_rxClkCal_sendClockTrack = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxClkCal_sendClockTrack : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxClkCal_sendClockTrack;
   assign jtag_ltsm_flagToAnalog_rxClkCal_sendClockTrack = testModeDigital ? core_ltsm_flagToAnalog_rxClkCal_sendClockTrack : '0;
-  assign ltsm_flagToAnalog_d2cSender_sendValTrainPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_sendValTrainPattern;
+  assign ltsm_flagToAnalog_d2cSender_sendValTrainPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cSender_sendValTrainPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_sendValTrainPattern;
   assign jtag_ltsm_flagToAnalog_d2cSender_sendValTrainPattern = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_sendValTrainPattern : '0;
-  assign ltsm_flagToAnalog_d2cSender_resetLocalScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_resetLocalScrambler;
+  assign ltsm_flagToAnalog_d2cSender_resetLocalScrambler = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cSender_resetLocalScrambler : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_resetLocalScrambler;
   assign jtag_ltsm_flagToAnalog_d2cSender_resetLocalScrambler = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_resetLocalScrambler : '0;
-  assign ltsm_flagToAnalog_d2cSender_applyTxClockPhase = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_applyTxClockPhase;
+  assign ltsm_flagToAnalog_d2cSender_applyTxClockPhase = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxClockPhase : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_applyTxClockPhase;
   assign jtag_ltsm_flagToAnalog_d2cSender_applyTxClockPhase = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_applyTxClockPhase : '0;
-  assign ltsm_flagToAnalog_d2cSender_txClockPhaseCode = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode;
+  assign ltsm_flagToAnalog_d2cSender_txClockPhaseCode = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cSender_txClockPhaseCode : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode;
   assign jtag_ltsm_flagToAnalog_d2cSender_txClockPhaseCode = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest;
+  assign ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold;
+  assign ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_comparisonMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_comparisonMode;
+  assign ltsm_flagToAnalog_d2cReceiver_comparisonMode = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_comparisonMode : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_comparisonMode;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_comparisonMode = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_comparisonMode : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_iterationCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings;
+  assign ltsm_flagToAnalog_d2cReceiver_iterationCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_idleCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_idleCountSettings;
+  assign ltsm_flagToAnalog_d2cReceiver_idleCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_idleCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_idleCountSettings;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_idleCountSettings = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_idleCountSettings : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_burstCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_burstCountSettings;
+  assign ltsm_flagToAnalog_d2cReceiver_burstCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_burstCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_burstCountSettings;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_burstCountSettings = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_burstCountSettings : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_patternMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_patternMode;
+  assign ltsm_flagToAnalog_d2cReceiver_patternMode = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_patternMode : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_patternMode;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_patternMode = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_patternMode : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_clockPhaseControl = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl;
+  assign ltsm_flagToAnalog_d2cReceiver_clockPhaseControl = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_validPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_validPattern;
+  assign ltsm_flagToAnalog_d2cReceiver_validPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_validPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_validPattern;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_validPattern = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_validPattern : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_dataPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_dataPattern;
+  assign ltsm_flagToAnalog_d2cReceiver_dataPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_dataPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_dataPattern;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_dataPattern = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_dataPattern : '0;
-  assign ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler;
+  assign ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler;
   assign jtag_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler = testModeDigital ? core_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler : '0;
-  assign ltsm_flagToAnalog_d2cSender_sendLfsrPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_sendLfsrPattern;
+  assign ltsm_flagToAnalog_d2cSender_sendLfsrPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cSender_sendLfsrPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_sendLfsrPattern;
   assign jtag_ltsm_flagToAnalog_d2cSender_sendLfsrPattern = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_sendLfsrPattern : '0;
-  assign ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew;
+  assign ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew;
   assign jtag_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew : '0;
-  assign ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes = testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
+  assign ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes = testModePhy ? jtagPhy_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes : testModeDigital ? '0 : core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
   assign jtag_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes = testModeDigital ? core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes : '0;
-  assign ltsm_flagToAnalog_rxDeskew_sendLfsrPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern;
+  assign ltsm_flagToAnalog_rxDeskew_sendLfsrPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern;
   assign jtag_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern : '0;
-  assign ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler;
+  assign ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler;
   assign jtag_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler : '0;
-  assign ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew;
+  assign ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew;
   assign jtag_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew : '0;
-  assign ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes;
+  assign ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes;
   assign jtag_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes : '0;
-  assign ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest;
+  assign ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest;
   assign jtag_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest : '0;
-  assign ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold;
+  assign ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold;
   assign jtag_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_maximumComparisonErrorThreshold : '0;
-  assign ltsm_flagToAnalog_rxDeskew_comparisonMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_comparisonMode;
+  assign ltsm_flagToAnalog_rxDeskew_comparisonMode = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_comparisonMode : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_comparisonMode;
   assign jtag_ltsm_flagToAnalog_rxDeskew_comparisonMode = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_comparisonMode : '0;
-  assign ltsm_flagToAnalog_rxDeskew_iterationCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_iterationCountSettings;
+  assign ltsm_flagToAnalog_rxDeskew_iterationCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_iterationCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_iterationCountSettings;
   assign jtag_ltsm_flagToAnalog_rxDeskew_iterationCountSettings = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_iterationCountSettings : '0;
-  assign ltsm_flagToAnalog_rxDeskew_idleCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_idleCountSettings;
+  assign ltsm_flagToAnalog_rxDeskew_idleCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_idleCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_idleCountSettings;
   assign jtag_ltsm_flagToAnalog_rxDeskew_idleCountSettings = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_idleCountSettings : '0;
-  assign ltsm_flagToAnalog_rxDeskew_burstCountSettings = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_burstCountSettings;
+  assign ltsm_flagToAnalog_rxDeskew_burstCountSettings = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_burstCountSettings : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_burstCountSettings;
   assign jtag_ltsm_flagToAnalog_rxDeskew_burstCountSettings = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_burstCountSettings : '0;
-  assign ltsm_flagToAnalog_rxDeskew_patternMode = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_patternMode;
+  assign ltsm_flagToAnalog_rxDeskew_patternMode = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_patternMode : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_patternMode;
   assign jtag_ltsm_flagToAnalog_rxDeskew_patternMode = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_patternMode : '0;
-  assign ltsm_flagToAnalog_rxDeskew_clockPhaseControl = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_clockPhaseControl;
+  assign ltsm_flagToAnalog_rxDeskew_clockPhaseControl = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_clockPhaseControl : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_clockPhaseControl;
   assign jtag_ltsm_flagToAnalog_rxDeskew_clockPhaseControl = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_clockPhaseControl : '0;
-  assign ltsm_flagToAnalog_rxDeskew_validPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_validPattern;
+  assign ltsm_flagToAnalog_rxDeskew_validPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_validPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_validPattern;
   assign jtag_ltsm_flagToAnalog_rxDeskew_validPattern = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_validPattern : '0;
-  assign ltsm_flagToAnalog_rxDeskew_dataPattern = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_dataPattern;
+  assign ltsm_flagToAnalog_rxDeskew_dataPattern = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_dataPattern : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_dataPattern;
   assign jtag_ltsm_flagToAnalog_rxDeskew_dataPattern = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_dataPattern : '0;
-  assign ltsm_flagToAnalog_rxDeskew_clearComparisonErrors = testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors;
+  assign ltsm_flagToAnalog_rxDeskew_clearComparisonErrors = testModePhy ? jtagPhy_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors : testModeDigital ? '0 : core_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors;
   assign jtag_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors = testModeDigital ? core_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors : '0;
   assign ltsm_flagToLtsm_linkSpeed_phyInRetrain = testModeDigital ? '0 : core_ltsm_flagToLtsm_linkSpeed_phyInRetrain;
-  assign ltsm_flagToAnalog_linkSpeed_speedCode = testModeDigital ? '0 : core_ltsm_flagToAnalog_linkSpeed_speedCode;
-  assign ltsm_flagToAnalog_linkSpeed_applySpeed = testModeDigital ? '0 : core_ltsm_flagToAnalog_linkSpeed_applySpeed;
-  assign ltsm_flagToAnalog_linkSpeed_electricalIdle = testModeDigital ? '0 : core_ltsm_flagToAnalog_linkSpeed_electricalIdle;
+  assign ltsm_flagToAnalog_linkSpeed_speedCode = testModePhy ? jtagPhy_ltsm_flagToAnalog_linkSpeed_speedCode : testModeDigital ? '0 : core_ltsm_flagToAnalog_linkSpeed_speedCode;
+  assign ltsm_flagToAnalog_linkSpeed_applySpeed = testModePhy ? jtagPhy_ltsm_flagToAnalog_linkSpeed_applySpeed : testModeDigital ? '0 : core_ltsm_flagToAnalog_linkSpeed_applySpeed;
+  assign ltsm_flagToAnalog_linkSpeed_electricalIdle = testModePhy ? jtagPhy_ltsm_flagToAnalog_linkSpeed_electricalIdle : testModeDigital ? '0 : core_ltsm_flagToAnalog_linkSpeed_electricalIdle;
   assign jtag_ltsm_flagToLtsm_linkSpeed_phyInRetrain = testModeDigital ? core_ltsm_flagToLtsm_linkSpeed_phyInRetrain : '0;
   assign jtag_ltsm_flagToAnalog_linkSpeed_speedCode = testModeDigital ? core_ltsm_flagToAnalog_linkSpeed_speedCode : '0;
   assign jtag_ltsm_flagToAnalog_linkSpeed_applySpeed = testModeDigital ? core_ltsm_flagToAnalog_linkSpeed_applySpeed : '0;
@@ -1455,6 +1621,73 @@ module UcieDigitalTop #(
   assign jtag_debug_rx_drop_unknown = testModeDigital ? core_debug_rx_drop_unknown : '0;
   assign debug_rx_fire = testModeDigital ? '0 : core_debug_rx_fire;
   assign jtag_debug_rx_fire = testModeDigital ? core_debug_rx_fire : '0;
+
+  // --------------------------------------------------------------------------
+  // PHY test: analog status inputs -> jtagPhy_* (0 outside PHY test). The
+  // ltsm_flagToAnalog_* side of this mode is in the output muxes above.
+  // --------------------------------------------------------------------------
+  assign jtagPhy_ltsm_stable_clk = testModePhy ? ltsm_stable_clk : '0;
+  assign jtagPhy_ltsm_pll_locked = testModePhy ? ltsm_pll_locked : '0;
+  assign jtagPhy_ltsm_stable_supply = testModePhy ? ltsm_stable_supply : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns = testModePhy ? ltsm_flagFromAnalog_ReadyToExchangeClkPatterns : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_FinishedClkPatterns = testModePhy ? ltsm_flagFromAnalog_FinishedClkPatterns : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_FinishedValTrainPattern = testModePhy ? ltsm_flagFromAnalog_FinishedValTrainPattern : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern = testModePhy ? ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern = testModePhy ? ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L = testModePhy ? ltsm_flagFromAnalog_clkPatternReceivedRTRK_L : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L = testModePhy ? ltsm_flagFromAnalog_clkPatternReceivedRCKN_L : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L = testModePhy ? ltsm_flagFromAnalog_clkPatternReceivedRCKP_L : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ValTrainPatternReceived = testModePhy ? ltsm_flagFromAnalog_ValTrainPatternReceived : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15 = testModePhy ? ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15 = testModePhy ? ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15 : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_valVref_detectedValPattern = testModePhy ? ltsm_flagFromAnalog_valVref_detectedValPattern : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_valVref_finishedPattern = testModePhy ? ltsm_flagFromAnalog_valVref_finishedPattern : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_valVref_rxVrefApplied = testModePhy ? ltsm_flagFromAnalog_valVref_rxVrefApplied : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_dataVref_detectedDataPattern = testModePhy ? ltsm_flagFromAnalog_dataVref_detectedDataPattern : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_dataVref_finishedPattern = testModePhy ? ltsm_flagFromAnalog_dataVref_finishedPattern : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_dataVref_rxVrefApplied = testModePhy ? ltsm_flagFromAnalog_dataVref_rxVrefApplied : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_rxClkCal_done = testModePhy ? ltsm_flagFromAnalog_rxClkCal_done : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent = testModePhy ? ltsm_flagFromAnalog_d2cSender_valTrainPatternSent : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied = testModePhy ? ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo = testModePhy ? ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload = testModePhy ? ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent = testModePhy ? ltsm_flagFromAnalog_d2cSender_lfsrPatternSent : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied = testModePhy ? ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent = testModePhy ? ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied = testModePhy ? ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern = testModePhy ? ltsm_flagFromAnalog_rxDeskew_detectedDataPattern : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful = testModePhy ? ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful : '0;
+  assign jtagPhy_ltsm_flagFromAnalog_linkSpeed_speedApplied = testModePhy ? ltsm_flagFromAnalog_linkSpeed_speedApplied : '0;
 
   // --------------------------------------------------------------------------
   // Core top
