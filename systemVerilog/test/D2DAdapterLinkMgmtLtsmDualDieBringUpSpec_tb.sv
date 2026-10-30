@@ -1,4 +1,4 @@
-// Two-die Reset-to-Active test of D2DAdapterLinkMgmtLtsmSBTop, including
+// Two-die Reset-to-Active test of UcieDigitalCore, including
 // its integrated serializers, deserializers, CDC and RX holding mailboxes.
 // The dies exchange only one-bit sideband data and forwarded clocks. Parallel
 // packet signals below are local observation points, never a die-to-die bypass.
@@ -11,13 +11,32 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
   // Include serialization of all training and adapter-management packets.
   parameter int unsigned MAX_LTSM_BRINGUP_CYCLES = 12_000_000,
   parameter int unsigned MAX_LINKMGMT_CYCLES = 250_000,
-  parameter int unsigned SERIAL_DRAIN_CYCLES = 32
+  parameter int unsigned SERIAL_DRAIN_CYCLES = 32,
+  // 01: one receiver fails at code 3; 11: both fail. Both must recover at 2.
+  // 00 preserves the original passing bring-up at code 3.
+  parameter logic [1:0] LINK_SPEED_FAIL_TOP_RATE_MASK = 2'b00,
+  // With a nonzero mask, fail every rate and expect 3->2->1->0->TRAINERROR.
+  parameter bit LINK_SPEED_FAIL_ALL_RATES = 1'b0,
+  // 1: each die is UcieDigitalTop in testModeDigital, driven only via jtag_*.
+  parameter bit TEST_MODE_DIGITAL = 1'b0
 );
   import UcieUPM_interfaces_pkg::*;
   import UcieUPM_d2dadapter_pkg::*;
 
   localparam logic [3:0] LTSM_RESET  = 4'd0;
   localparam logic [3:0] LTSM_ACTIVE = 4'd8;
+  localparam logic [3:0] LTSM_TRAIN_ERROR = 4'd9;
+  localparam bit EXPECT_SPEED_FALLBACK = (LINK_SPEED_FAIL_TOP_RATE_MASK != 2'b00);
+  localparam bit EXPECT_TERMINAL_TRAIN_ERROR =
+    EXPECT_SPEED_FALLBACK && LINK_SPEED_FAIL_ALL_RATES;
+  localparam int unsigned EXPECTED_SPEED_APPLY_COUNT =
+    EXPECT_TERMINAL_TRAIN_ERROR ? 4 : (EXPECT_SPEED_FALLBACK ? 2 : 1);
+  localparam logic [1:0] EXPECTED_FINAL_SPEED =
+    EXPECT_TERMINAL_TRAIN_ERROR ? 2'd0 : (EXPECT_SPEED_FALLBACK ? 2'd2 : 2'd3);
+  localparam logic [3:0] EXPECTED_TERMINAL_LTSM_STATE =
+    EXPECT_TERMINAL_TRAIN_ERROR ? LTSM_TRAIN_ERROR : LTSM_ACTIVE;
+  localparam logic [3:0] EXPECTED_VERIFIED_SPEED_STAGES =
+    EXPECT_TERMINAL_TRAIN_ERROR ? 4'b1111 : (EXPECT_SPEED_FALLBACK ? 4'b1100 : 4'b1000);
 
   // New MBTRAIN sequence in the revised LinkTrainingFSM.  Every executable
   // stage (1 through C) and the COMPLETE state (E) must be visited.  State D
@@ -48,6 +67,7 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
   logic [2:0] die1_mbinit_substate;
   logic [3:0] die0_mbtrain_state;
   logic [3:0] die1_mbtrain_state;
+  // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   logic [11:0] die0_mbtrain_active_substate;
   logic [11:0] die1_mbtrain_active_substate;
   logic die0_ltsm_train_error;
@@ -90,7 +110,11 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     end
   endtask
 
-  D2DAdapterLinkMgmtLtsmDualDieHarness dut (
+  D2DAdapterLinkMgmtLtsmDualDieHarness #(
+    .LINK_SPEED_FAIL_TOP_RATE_MASK(LINK_SPEED_FAIL_TOP_RATE_MASK),
+    .LINK_SPEED_FAIL_ALL_RATES(LINK_SPEED_FAIL_ALL_RATES),
+    .TEST_MODE_DIGITAL(TEST_MODE_DIGITAL)
+  ) dut (
     .clock(clock),
     .reset_n(reset_n),
     .start(start),
@@ -147,6 +171,64 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     .wire_completed_1_to_0(wire_completed_1_to_0)
   );
 
+  // Observe the analog pins of the shared behavioral die model, irrespective
+  // of whether its DUT uses core pins or the digital-test mux. Fault injection
+  // changes only the receiver result; no internal FSM state or rate is forced.
+  wire [1:0] observedSpeedCode [0:1];
+  wire [1:0] observedSpeedApply;
+  wire [1:0] observedTrainError;
+  wire [3:0] observedLtsmState [0:1];
+  wire [3:0] observedMbtrainState [0:1];
+  logic [3:0] verifiedSpeedStages [0:1];
+  logic [1:0] previousSpeedApply;
+  integer unsigned speedApplyCount [0:1];
+  integer unsigned elapsedCycles;
+  assign observedSpeedCode[0] = dut.die0.ltsm_flagToAnalog_linkSpeed_speedCode;
+  assign observedSpeedCode[1] = dut.die1.ltsm_flagToAnalog_linkSpeed_speedCode;
+  assign observedSpeedApply = {dut.die1.ltsm_flagToAnalog_linkSpeed_applySpeed,
+                               dut.die0.ltsm_flagToAnalog_linkSpeed_applySpeed};
+  assign observedTrainError = {die1_ltsm_train_error, die0_ltsm_train_error};
+  assign observedLtsmState[0] = die0_ltsm_state;
+  assign observedLtsmState[1] = die1_ltsm_state;
+  assign observedMbtrainState[0] = die0_mbtrain_state;
+  assign observedMbtrainState[1] = die1_mbtrain_state;
+
+  always @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      previousSpeedApply <= '0;
+      elapsedCycles <= 0;
+      speedApplyCount[0] <= 0;
+      speedApplyCount[1] <= 0;
+      verifiedSpeedStages[0] <= '0;
+      verifiedSpeedStages[1] <= '0;
+    end else begin
+      previousSpeedApply <= observedSpeedApply;
+      elapsedCycles <= elapsedCycles + 1;
+      for (int die = 0; die < 2; die++) begin
+        if (observedMbtrainState[die] == 4'hc)
+          verifiedSpeedStages[die] <= verifiedSpeedStages[die] |
+                                      (4'b0001 << observedSpeedCode[die]);
+        if (observedSpeedApply[die] && !previousSpeedApply[die]) begin
+          if (speedApplyCount[die] >= EXPECTED_SPEED_APPLY_COUNT ||
+              observedSpeedCode[die] !== 2'(3 - speedApplyCount[die]))
+            $fatal(1, "Die%0d unexpected speed apply: code=%0d prior applies=%0d",
+                   die, observedSpeedCode[die], speedApplyCount[die]);
+          speedApplyCount[die] <= speedApplyCount[die] + 1;
+        end
+        if (observedLtsmState[die] == LTSM_ACTIVE &&
+            (EXPECT_TERMINAL_TRAIN_ERROR ||
+             (speedApplyCount[die] != EXPECTED_SPEED_APPLY_COUNT) ||
+             (observedSpeedCode[die] !== EXPECTED_FINAL_SPEED)))
+          $fatal(1, "Die%0d reached Active before the required speed sequence completed", die);
+        // A floor-test error is expected only after all four rates were
+        // applied. An earlier unrelated failure must still fail this test.
+        if (EXPECT_TERMINAL_TRAIN_ERROR && observedTrainError[die] &&
+            ((speedApplyCount[die] != 4) || (observedSpeedCode[die] !== 2'd0)))
+          $fatal(1, "Die%0d reported TRAINERROR before reaching minimum speed", die);
+      end
+    end
+  end
+
   // Keep the error checks running during all phases, including final drain.
   always @(posedge clock) begin
     if (reset_n) begin
@@ -155,7 +237,7 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
       if (serial_error)
         $fatal(1, "Serial packet scoreboard failed: completed 0->1=%0d 1->0=%0d",
                wire_completed_0_to_1, wire_completed_1_to_0);
-      if (any_train_error)
+      if (any_train_error && !EXPECT_TERMINAL_TRAIN_ERROR)
         $fatal(1, "Training error: LTSM=(%0d,%0d) MBTRAIN=(%0h,%0h) substate=(0x%03h,0x%03h)",
                die0_ltsm_state, die1_ltsm_state, die0_mbtrain_state, die1_mbtrain_state,
                die0_mbtrain_active_substate, die1_mbtrain_active_substate);
@@ -164,9 +246,22 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     end
   end
 
+  task automatic report_training_progress(input int unsigned cycle);
+    $display("TRAIN cycle=%0d LTSM=%0d/%0d MBTRAIN=%h/%h sub=%03h/%03h speed=%0d/%0d apply=%b ack=%b count=%0d/%0d verified=%h/%h packets=%0d/%0d",
+      cycle, die0_ltsm_state, die1_ltsm_state, die0_mbtrain_state, die1_mbtrain_state,
+      die0_mbtrain_active_substate, die1_mbtrain_active_substate,
+      observedSpeedCode[0], observedSpeedCode[1], observedSpeedApply,
+      {dut.die1.ltsm_flagFromAnalog_linkSpeed_speedApplied,
+       dut.die0.ltsm_flagFromAnalog_linkSpeed_speedApplied},
+      speedApplyCount[0], speedApplyCount[1], verifiedSpeedStages[0], verifiedSpeedStages[1],
+      wire_completed_0_to_1, wire_completed_1_to_0);
+  endtask
+
   initial begin : run_test
     int unsigned cycle;
     int unsigned quiet_cycles;
+    int unsigned ltsm_cycle_limit, ltsm_terminal_cycle;
+    bit trace_training;
     logic sawDie0LtsmGrant;
     logic sawDie1LtsmGrant;
     logic sawDie0RdiGrant;
@@ -186,7 +281,10 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     logic [7:0] die0FdiInitVisited;
     logic [7:0] die1FdiInitVisited;
 
-    if (MAX_LTSM_BRINGUP_CYCLES < 1 || MAX_LINKMGMT_CYCLES < 1 ||
+    ltsm_cycle_limit = MAX_LTSM_BRINGUP_CYCLES;
+    if ($value$plusargs("MAX_LTSM_CYCLES=%d", ltsm_cycle_limit)) begin end
+    trace_training = $test$plusargs("TRACE_TRAINING");
+    if (ltsm_cycle_limit < 1 || MAX_LINKMGMT_CYCLES < 1 ||
         SERIAL_DRAIN_CYCLES < 1)
       $fatal(1, "Cycle limits and SERIAL_DRAIN_CYCLES must be positive");
 
@@ -245,10 +343,13 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     die0MbtrainVisited = 16'h0001 << die0_mbtrain_state;
     die1MbtrainVisited = 16'h0001 << die1_mbtrain_state;
 
-    // Phase 1: both physical LTSMs complete SBINIT, MBINIT and MBTRAIN.
+    // Phase 1: both physical LTSMs complete bring-up, or the selected fault
+    // drives every supported rate to the terminal TRAINERROR exchange.
     cycle = 0;
-    while (cycle < MAX_LTSM_BRINGUP_CYCLES &&
-           (die0_ltsm_state != LTSM_ACTIVE || die1_ltsm_state != LTSM_ACTIVE)) begin
+    while (cycle < ltsm_cycle_limit &&
+           (die0_ltsm_state != EXPECTED_TERMINAL_LTSM_STATE ||
+            die1_ltsm_state != EXPECTED_TERMINAL_LTSM_STATE)) begin
+      if (trace_training && ((cycle % 100000) == 0)) report_training_progress(cycle);
       sawDie0LtsmGrant |= die0_grant_ltsm;
       sawDie1LtsmGrant |= die1_grant_ltsm;
       sawDie0RdiGrant |= die0_grant_rdi;
@@ -269,13 +370,52 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
       die0MbtrainVisited |= 16'h0001 << die0_mbtrain_state;
       die1MbtrainVisited |= 16'h0001 << die1_mbtrain_state;
 
-      if (die0_ltsm_train_error || die1_ltsm_train_error)
+      if ((die0_ltsm_train_error || die1_ltsm_train_error) && !EXPECT_TERMINAL_TRAIN_ERROR)
         $fatal(1, "LTSM training error during phase 1 at cycle %0d", cycle);
       step(1);
       cycle++;
     end
-    if (cycle >= MAX_LTSM_BRINGUP_CYCLES)
-      $fatal(1, "Timed out waiting for both LTSMs Active: die0=%0d die1=%0d", die0_ltsm_state, die1_ltsm_state);
+    ltsm_terminal_cycle = cycle;
+    if (cycle >= ltsm_cycle_limit) begin
+      report_training_progress(cycle);
+      $fatal(1, "Timed out waiting for LTSM terminal state %0d: die0=%0d die1=%0d",
+             EXPECTED_TERMINAL_LTSM_STATE, die0_ltsm_state, die1_ltsm_state);
+    end
+
+    if (EXPECT_TERMINAL_TRAIN_ERROR) begin
+      // Complete the real wire exchange before accepting terminal failure;
+      // the continuous serial scoreboard and overflow checks stay enabled.
+      cycle = 0;
+      quiet_cycles = 0;
+      while (cycle < MAX_LINKMGMT_CYCLES && quiet_cycles < SERIAL_DRAIN_CYCLES) begin
+        step(1);
+        cycle++;
+        if (serial_idle && !serial_error)
+          quiet_cycles++;
+        else
+          quiet_cycles = 0;
+      end
+      if (quiet_cycles < SERIAL_DRAIN_CYCLES ||
+          die0_ltsm_state !== LTSM_TRAIN_ERROR || die1_ltsm_state !== LTSM_TRAIN_ERROR ||
+          !die0_ltsm_train_error || !die1_ltsm_train_error ||
+          (wire_completed_0_to_1 == 0) || (wire_completed_1_to_0 == 0))
+        $fatal(1, "Minimum-rate TRAINERROR did not settle on both dies and drain the wire");
+      for (int die = 0; die < 2; die++) begin
+        if (speedApplyCount[die] != 4 || observedSpeedCode[die] !== 2'd0 ||
+            observedSpeedApply[die] || verifiedSpeedStages[die] !== 4'b1111)
+          $fatal(1, "Die%0d did not retain speed 0 after exactly 3->2->1->0 applies", die);
+      end
+      if ((die0MbtrainVisited & 16'h1ffe) != 16'h1ffe ||
+          (die1MbtrainVisited & 16'h1ffe) != 16'h1ffe)
+        $fatal(1, "Floor fallback skipped an executable MBTRAIN stage");
+      $display("PASS: elapsed LTSM=%0d cycles; total after reset=%0d cycles", ltsm_terminal_cycle, elapsedCycles);
+      $display("PASS: dual-die speed fault mask=%b, 3->2->1->0->TRAINERROR (%s)",
+               LINK_SPEED_FAIL_TOP_RATE_MASK,
+               TEST_MODE_DIGITAL ? "digital test mux" : "core");
+      $display("PASS: one-bit wire packets 0->1=%0d 1->0=%0d; serial paths drained",
+               wire_completed_0_to_1, wire_completed_1_to_0);
+      $finish;
+    end
 
     // Phase 2: RDI Active and FDI parameter exchange while protocol remains NOP.
     cycle = 0;
@@ -371,6 +511,14 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     if (die0_ltsm_train_error || die1_ltsm_train_error)
       $fatal(1, "LTSM training error at completion");
 
+    for (int die = 0; die < 2; die++) begin
+      if (speedApplyCount[die] != EXPECTED_SPEED_APPLY_COUNT ||
+          observedSpeedCode[die] !== EXPECTED_FINAL_SPEED || observedSpeedApply[die] ||
+          verifiedSpeedStages[die] !== EXPECTED_VERIFIED_SPEED_STAGES)
+        $fatal(1, "Die%0d terminal speed/fallback count mismatch: code=%0d applies=%0d",
+               die, observedSpeedCode[die], speedApplyCount[die]);
+    end
+
     sawAnyInternalTransfer |= any_internal_transfer;
     sawUnknownDrop |= any_unknown_drop;
 
@@ -420,7 +568,11 @@ module D2DAdapterLinkMgmtLtsmDualDieBringUpSpec_tb #(
     if (!(sawDie0FdiGrant && sawDie1FdiGrant))
       $fatal(1, "The shared arbiter never granted one of the FDI producers");
 
-    $display("PASS: D2DAdapterLinkMgmtLtsmDualDieBringUpSpec");
+    $display("PASS: elapsed LTSM=%0d cycles; total after reset=%0d cycles", ltsm_terminal_cycle, elapsedCycles);
+    $display("PASS: D2DAdapterLinkMgmtLtsmDualDieBringUpSpec (%s)",
+             TEST_MODE_DIGITAL ? "UcieDigitalTop testModeDigital, jtag_* pins only" : "UcieDigitalCore");
+    $display("PASS: speed fault mask=%b; both dies retained code %0d after %0d apply request(s)",
+             LINK_SPEED_FAIL_TOP_RATE_MASK, EXPECTED_FINAL_SPEED, EXPECTED_SPEED_APPLY_COUNT);
     $display("PASS: revised MBTRAIN states visited: die0=0x%04h die1=0x%04h",
              die0MbtrainVisited, die1MbtrainVisited);
     $display("PASS: one-bit wire packets 0->1=%0d 1->0=%0d; serial paths drained",

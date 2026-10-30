@@ -912,6 +912,24 @@ package SidebandMsgGenerator_pkg;
     msgMbtrainLinkSpeedDoneReq = msgWithoutPayloadBase(16'd0, 8'hB5, 8'h19, src_id, dst_id);
   endfunction
 
+  // UCIe 2.0 Table 7-9: LINKSPEED exit-to-speed-degrade is a separate
+  // request/response exchange after the LINKSPEED error exchange.
+  function automatic logic [127:0] msgMbtrainLinkSpeedExitToSpeedDegradeReq(
+    input logic [2:0] src_id,
+    input logic [2:0] dst_id
+  );
+    msgMbtrainLinkSpeedExitToSpeedDegradeReq =
+      msgWithoutPayloadBase(16'h0000, 8'hB5, 8'h18, src_id, dst_id);
+  endfunction
+
+  function automatic logic [127:0] msgMbtrainLinkSpeedExitToSpeedDegradeResp(
+    input logic [2:0] src_id,
+    input logic [2:0] dst_id
+  );
+    msgMbtrainLinkSpeedExitToSpeedDegradeResp =
+      msgWithoutPayloadBase(16'h0000, 8'hBA, 8'h18, src_id, dst_id);
+  endfunction
+
   function automatic logic [127:0] msgMbtrainLinkSpeedDoneResp(//correto
     input logic [2:0] src_id,
     input logic [2:0] dst_id

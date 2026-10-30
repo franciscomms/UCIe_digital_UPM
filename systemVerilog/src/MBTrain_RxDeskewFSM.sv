@@ -74,7 +74,11 @@ module MBTrainRxDeskewFSM #(
   input  wire logic                         flagFromAnalog_rxDeskewLfsrPatternSent,
   output      logic                         flagToAnalog_rxDeskewResetLocalTxScrambler,
 
-  output      logic [11:0]                  substate,
+  output      logic [3:0]                   dbg_localState,
+  output      logic [2:0]                   dbg_remoteState,
+  output      logic [3:0]                   dbg_sweepState,
+  output      logic [3:0]                   dbg_pointInitiatorState,
+  output      logic [3:0]                   dbg_pointResponderState,
   output      logic [15:0]                  lastErrorCount,
   output      logic [15:0]                  retryCount,
   output      logic [dataLaneCount*rxDeskewCodeWidth-1:0] selectedRxDeskewCodes,
@@ -393,7 +397,11 @@ module MBTrainRxDeskewFSM #(
     flagToAnalog_rxDeskewResetLocalTxScrambler = runningReg &&
                                          responderResetTxScrambler;
 
-    substate = {localStateReg, initiatorState, responderState};
+    dbg_localState = localStateReg;
+    dbg_remoteState = remoteStateReg;
+    dbg_sweepState = sweepState;
+    dbg_pointInitiatorState = initiatorState;
+    dbg_pointResponderState = responderState;
     lastErrorCount = sweepFailedLaneCount;
     retryCount = sweepRetryCount;
     selectedRxDeskewCodes = sweepFinalDeskewCodes;

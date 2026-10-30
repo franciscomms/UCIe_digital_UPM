@@ -5,9 +5,11 @@
 // D2C point test and returns the remote receiver's Valid-lane result with
 // point_test_done.
 //
-// PI codes are treated as a linear ordered interval. Code zero and code
-// PHASE_COUNT-1 are not adjacent; passing runs at the two boundaries are never
-// merged. If two passing runs have equal length, the lower-code run wins.
+// The internal phase index 0..263 sweeps eight 33-interval sectors once.
+// Physical controls are {lower_en[16:0], upper_en[16:0], s3,s2,s1,s0}.
+// Sector endpoints are not duplicated. Window selection keeps the existing
+// linear search cut: passing runs across the 263/0 wrap are not merged.
+// If two passing runs have equal length, the lower-index run wins.
 `default_nettype none
 
 module MBTrain_ValTrainCenterSweepEngine #(
@@ -37,13 +39,15 @@ module MBTrain_ValTrainCenterSweepEngine #(
   output var logic [3:0]  state,
   output var logic [15:0] lastFailedComparisons,
   output var logic [15:0] retryCount,
+  // Phase readbacks use the same physical encoding as tx_clock_phase_code.
   output var logic [PI_CODE_WIDTH-1:0] finalClockPhase,
   output var logic [PI_CODE_WIDTH-1:0] validLeftPhase,
   output var logic [PI_CODE_WIDTH-1:0] validRightPhase
 );
-  localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
-  // A passing run can contain every code, so its length needs one extra bit.
-  localparam int unsigned WINDOW_LENGTH_WIDTH = PI_CODE_WIDTH + 1;
+  localparam int unsigned PHASE_COUNT = LtsmParameters_pkg::D2C_PI_PHASE_COUNT;
+  localparam int unsigned PHASE_INDEX_WIDTH = LtsmParameters_pkg::D2C_PI_INDEX_WIDTH;
+  // Length must represent all 264 samples in an all-pass sweep.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(PHASE_COUNT + 1);
 
   typedef enum logic [3:0] {
     SweepState_IDLE               = 4'd0,
@@ -65,22 +69,22 @@ module MBTrain_ValTrainCenterSweepEngine #(
   (* keep = "true" *) logic errorReg;
   (* keep = "true" *) logic [15:0] lastFailedComparisonsReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
-  (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] phaseIndexReg;
-  (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] finalClockPhaseReg;
-  (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] validLeftPhaseReg;
-  (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] validRightPhaseReg;
+  (* keep = "true" *) logic [PHASE_INDEX_WIDTH-1:0] phaseIndexReg;
+  (* keep = "true" *) logic [PHASE_INDEX_WIDTH-1:0] finalClockPhaseReg;
+  (* keep = "true" *) logic [PHASE_INDEX_WIDTH-1:0] validLeftPhaseReg;
+  (* keep = "true" *) logic [PHASE_INDEX_WIDTH-1:0] validRightPhaseReg;
 
   // Accumulate the longest interval as samples arrive. The old bitmap scan
   // unrolled PHASE_COUNT dependent add/compare/mux steps into one clock path.
   // These registers limit each sample update to one narrow increment/compare.
   logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg, bestLengthReg;
-  logic [PI_CODE_WIDTH-1:0] runStartReg, bestStartReg;
+  logic [PHASE_INDEX_WIDTH-1:0] runStartReg, bestStartReg;
   wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength = runLengthReg + 1'b1;
 
   logic validWindowFoundCalc;
-  logic [PI_CODE_WIDTH-1:0] validLeftPhaseCalc;
-  logic [PI_CODE_WIDTH-1:0] validRightPhaseCalc;
-  logic [PI_CODE_WIDTH-1:0] validCenterPhaseCalc;
+  logic [PHASE_INDEX_WIDTH-1:0] validLeftPhaseCalc;
+  logic [PHASE_INDEX_WIDTH-1:0] validRightPhaseCalc;
+  logic [PHASE_INDEX_WIDTH-1:0] validCenterPhaseCalc;
 
   // Strictly-longer updates below retain the first (lowest-code) equal run.
   // Subtract before narrowing so the full-range passing window is preserved.
@@ -93,11 +97,43 @@ module MBTrain_ValTrainCenterSweepEngine #(
       validCenterPhaseCalc = '0;
     end else begin
       validLeftPhaseCalc = bestStartReg;
-      validRightPhaseCalc = bestStartReg + PI_CODE_WIDTH'(bestLengthReg - 1'b1);
+      validRightPhaseCalc = bestStartReg + PHASE_INDEX_WIDTH'(bestLengthReg - 1'b1);
       validCenterPhaseCalc =
-        bestStartReg + PI_CODE_WIDTH'((bestLengthReg - 1'b1) >> 1);
+        bestStartReg + PHASE_INDEX_WIDTH'((bestLengthReg - 1'b1) >> 1);
     end
   end
+
+  // Keep requested binary phase, registered decomposition, and physical word
+  // on separate clock boundaries. APPLY states also serve as decode waits;
+  // an early/stale analog acknowledge cannot advance the state machine.
+  logic [PHASE_INDEX_WIDTH-1:0] encodedPhaseIndex;
+  logic phaseCodeValid;
+  wire phaseCodeReady = phaseCodeValid && (encodedPhaseIndex == phaseIndexReg);
+  logic [PHASE_INDEX_WIDTH-1:0] encodedFinalPhaseIndex;
+  logic finalPhaseCodeValid;
+  wire finalPhaseCodeReady = finalPhaseCodeValid &&
+    (encodedFinalPhaseIndex == finalClockPhaseReg);
+  MBTrain_DllPiEncoder u_phase_encoder (
+    .clock(clock), .reset_n(reset_n), .phase_index(phaseIndexReg),
+    .phase_code(tx_clock_phase_code),
+    .phase_index_out(encodedPhaseIndex), .valid(phaseCodeValid)
+  );
+
+  // Debug/readback words use the same registered physical encoder. They settle
+  // two clocks after their index changes, before final point-test completion.
+  MBTrain_DllPiEncoder u_finalClockPhase_encoder (
+    .clock(clock), .reset_n(reset_n), .phase_index(finalClockPhaseReg),
+    .phase_code(finalClockPhase),
+    .phase_index_out(encodedFinalPhaseIndex), .valid(finalPhaseCodeValid)
+  );
+  MBTrain_DllPiEncoder u_validLeftPhase_encoder (
+    .clock(clock), .reset_n(reset_n), .phase_index(validLeftPhaseReg),
+    .phase_code(validLeftPhase), .phase_index_out(), .valid()
+  );
+  MBTrain_DllPiEncoder u_validRightPhase_encoder (
+    .clock(clock), .reset_n(reset_n), .phase_index(validRightPhaseReg),
+    .phase_code(validRightPhase), .phase_index_out(), .valid()
+  );
 
   always_comb begin
     busy = (stateReg != SweepState_IDLE) &&
@@ -109,14 +145,10 @@ module MBTrain_ValTrainCenterSweepEngine #(
     state = stateReg;
     lastFailedComparisons = lastFailedComparisonsReg;
     retryCount = retryCountReg;
-    finalClockPhase = finalClockPhaseReg;
-    validLeftPhase = validLeftPhaseReg;
-    validRightPhase = validRightPhaseReg;
 
-    tx_clock_phase_code = phaseIndexReg;
-    apply_tx_clock_phase =
-      (stateReg == SweepState_APPLY_SWEEP_PHASE) ||
-      (stateReg == SweepState_APPLY_FINAL_PHASE);
+    apply_tx_clock_phase = phaseCodeReady &&
+      ((stateReg == SweepState_APPLY_SWEEP_PHASE) ||
+       ((stateReg == SweepState_APPLY_FINAL_PHASE) && finalPhaseCodeReady));
 
     point_test_start =
       (stateReg == SweepState_START_SWEEP_TEST) ||
@@ -161,7 +193,7 @@ module MBTrain_ValTrainCenterSweepEngine #(
           SweepState_IDLE: ;
 
           SweepState_APPLY_SWEEP_PHASE: begin
-            if (tx_clock_phase_applied)
+            if (apply_tx_clock_phase && tx_clock_phase_applied)
               stateReg <= SweepState_START_SWEEP_TEST;
           end
 
@@ -189,7 +221,7 @@ module MBTrain_ValTrainCenterSweepEngine #(
             lastFailedComparisonsReg <=
               point_test_valid_pass ? 16'd0 : 16'd1;
 
-            if (phaseIndexReg == {PI_CODE_WIDTH{1'b1}}) begin
+            if (phaseIndexReg == PHASE_INDEX_WIDTH'(PHASE_COUNT - 1)) begin
               stateReg <= SweepState_CALCULATE_CENTER;
             end else begin
               phaseIndexReg <= phaseIndexReg + 1'b1;
@@ -224,7 +256,7 @@ module MBTrain_ValTrainCenterSweepEngine #(
           end
 
           SweepState_APPLY_FINAL_PHASE: begin
-            if (tx_clock_phase_applied)
+            if (apply_tx_clock_phase && tx_clock_phase_applied)
               stateReg <= SweepState_START_FINAL_TEST;
           end
 
@@ -270,9 +302,19 @@ module MBTrain_ValTrainCenterSweepEngine #(
   end
 
 `ifndef SYNTHESIS
+  // The analog side samples a bundled control word and acknowledges only
+  // after its safe-update and settling policy has completed.
+  a_phase_request_stable: assert property (@(posedge clock) disable iff (!reset_n)
+    (apply_tx_clock_phase && !tx_clock_phase_applied) |=>
+      (apply_tx_clock_phase && $stable(tx_clock_phase_code)));
+  a_phase_index_in_range: assert property (@(posedge clock) disable iff (!reset_n)
+    phaseIndexReg < PHASE_COUNT);
+  a_phase_decode_matches_request: assert property (@(posedge clock) disable iff (!reset_n)
+    apply_tx_clock_phase |->
+      (tx_clock_phase_code == LtsmParameters_pkg::encode_d2c_phase(phaseIndexReg)));
   initial begin
-    if ((PI_CODE_WIDTH < 2) || (PI_CODE_WIDTH > 10))
-      $error("PI_CODE_WIDTH must be in the range 2..10");
+    if (PI_CODE_WIDTH != LtsmParameters_pkg::D2C_PI_CONTROL_WIDTH)
+      $error("PI_CODE_WIDTH must be 38 for the DLL mux and complementary PI bank controls");
     if ((MIN_VALID_WINDOW_STEPS < 1) ||
         (MIN_VALID_WINDOW_STEPS > PHASE_COUNT))
       $error("MIN_VALID_WINDOW_STEPS is outside the PI sweep range");

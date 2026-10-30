@@ -24,7 +24,8 @@ module MBTrainRxClkCalFSM #(
   output var logic         flagToAnalog_rxClkCalDoCalibration,
   input wire logic         flagFromAnalog_rxClkCalDone,
   output var logic         flagToAnalog_rxClkCalSendClockTrack,
-  output var logic [7:0]   substate
+  output var logic [2:0]   dbg_senderState,
+  output var logic [2:0]   dbg_receiverState
 );
   import SidebandMsgGenerator_pkg::*;
 
@@ -105,7 +106,8 @@ module MBTrainRxClkCalFSM #(
     trainError  = trainErrorReg;
 
     // Chisel assigned a 10-bit Cat into an 8-bit output. Preserve the low 8 bits.
-    substate = {2'b0, rxClkCalReceiverStateReg, rxClkCalSenderStateReg};
+    dbg_senderState = rxClkCalSenderStateReg;
+    dbg_receiverState = rxClkCalReceiverStateReg;
 
     flagToAnalog_rxClkCalDoCalibration = running &&
       ((rxClkCalSenderStateReg == RxClkCalSenderState_startAnalogCal) ||
@@ -144,6 +146,9 @@ module MBTrainRxClkCalFSM #(
       prevRxValid <= sb_rx_valid;
 
       if (startPulse) begin
+        // Give a new rate-training run priority over sticky finish states.
+        sbTxValid <= 1'b0;
+        sbTxDin <= '0;
         running <= 1'b1;
         doneReg <= 1'b0;
         trainErrorReg <= 1'b0;
@@ -157,69 +162,70 @@ module MBTrainRxClkCalFSM #(
         flagSentRxClkCalDoneResp <= 1'b0;
         rxClkCalSenderStateReg <= RxClkCalSenderState_sendStartReq;
         rxClkCalReceiverStateReg <= RxClkCalReceiverState_waitStartReq;
-      end
+      end else begin
 
-      if (running && rxValidRisingEdge) begin
-        if (sb_rx_dout == MBTRAIN_RXCLKCAL_START_REQ)
-          flagReceivedRxClkCalStartReq <= 1'b1;
-        if (sb_rx_dout == MBTRAIN_RXCLKCAL_START_RESP)
-          flagReceivedRxClkCalStartResp <= 1'b1;
-        if (sb_rx_dout == MBTRAIN_RXCLKCAL_DONE_REQ)
-          flagReceivedRxClkCalDoneReq <= 1'b1;
-        if (sb_rx_dout == MBTRAIN_RXCLKCAL_DONE_RESP)
-          flagReceivedRxClkCalDoneResp <= 1'b1;
-      end
+        if (running && rxValidRisingEdge) begin
+          if (sb_rx_dout == MBTRAIN_RXCLKCAL_START_REQ)
+            flagReceivedRxClkCalStartReq <= 1'b1;
+          if (sb_rx_dout == MBTRAIN_RXCLKCAL_START_RESP)
+            flagReceivedRxClkCalStartResp <= 1'b1;
+          if (sb_rx_dout == MBTRAIN_RXCLKCAL_DONE_REQ)
+            flagReceivedRxClkCalDoneReq <= 1'b1;
+          if (sb_rx_dout == MBTRAIN_RXCLKCAL_DONE_RESP)
+            flagReceivedRxClkCalDoneResp <= 1'b1;
+        end
 
-      if (running && sb_tx_ready && !sbTxValid) begin
-        if ((rxClkCalReceiverStateReg == RxClkCalReceiverState_sendDoneResp) && !flagSentRxClkCalDoneResp)
-          flagSentRxClkCalDoneResp <= 1'b1;
-        else if ((rxClkCalSenderStateReg == RxClkCalSenderState_sendDoneReq) && !flagSentRxClkCalDoneReq)
-          flagSentRxClkCalDoneReq <= 1'b1;
-        else if ((rxClkCalReceiverStateReg == RxClkCalReceiverState_sendStartResp) && !flagSentRxClkCalStartResp)
-          flagSentRxClkCalStartResp <= 1'b1;
-        else if ((rxClkCalSenderStateReg == RxClkCalSenderState_sendStartReq) && !flagSentRxClkCalStartReq)
-          flagSentRxClkCalStartReq <= 1'b1;
-      end
+        if (running && sb_tx_ready && !sbTxValid) begin
+          if ((rxClkCalReceiverStateReg == RxClkCalReceiverState_sendDoneResp) && !flagSentRxClkCalDoneResp)
+            flagSentRxClkCalDoneResp <= 1'b1;
+          else if ((rxClkCalSenderStateReg == RxClkCalSenderState_sendDoneReq) && !flagSentRxClkCalDoneReq)
+            flagSentRxClkCalDoneReq <= 1'b1;
+          else if ((rxClkCalReceiverStateReg == RxClkCalReceiverState_sendStartResp) && !flagSentRxClkCalStartResp)
+            flagSentRxClkCalStartResp <= 1'b1;
+          else if ((rxClkCalSenderStateReg == RxClkCalSenderState_sendStartReq) && !flagSentRxClkCalStartReq)
+            flagSentRxClkCalStartReq <= 1'b1;
+        end
 
-      unique case (rxClkCalSenderStateReg)
-        RxClkCalSenderState_sendStartReq:
-          if (flagSentRxClkCalStartReq) rxClkCalSenderStateReg <= RxClkCalSenderState_waitStartResp;
-        RxClkCalSenderState_waitStartResp:
-          if (flagReceivedRxClkCalStartResp) rxClkCalSenderStateReg <= RxClkCalSenderState_startAnalogCal;
-        RxClkCalSenderState_startAnalogCal:
-          rxClkCalSenderStateReg <= RxClkCalSenderState_waitAnalogCalDone;
-        RxClkCalSenderState_waitAnalogCalDone:
-          if (flagFromAnalog_rxClkCalDone) rxClkCalSenderStateReg <= RxClkCalSenderState_sendDoneReq;
-        RxClkCalSenderState_sendDoneReq:
-          if (flagSentRxClkCalDoneReq) rxClkCalSenderStateReg <= RxClkCalSenderState_waitDoneResp;
-        RxClkCalSenderState_waitDoneResp:
-          if (flagReceivedRxClkCalDoneResp) rxClkCalSenderStateReg <= RxClkCalSenderState_finish;
-        RxClkCalSenderState_finish:
-          rxClkCalSenderStateReg <= RxClkCalSenderState_finish;
-        default: rxClkCalSenderStateReg <= RxClkCalSenderState_sendStartReq;
-      endcase
+        unique case (rxClkCalSenderStateReg)
+          RxClkCalSenderState_sendStartReq:
+            if (flagSentRxClkCalStartReq) rxClkCalSenderStateReg <= RxClkCalSenderState_waitStartResp;
+          RxClkCalSenderState_waitStartResp:
+            if (flagReceivedRxClkCalStartResp) rxClkCalSenderStateReg <= RxClkCalSenderState_startAnalogCal;
+          RxClkCalSenderState_startAnalogCal:
+            rxClkCalSenderStateReg <= RxClkCalSenderState_waitAnalogCalDone;
+          RxClkCalSenderState_waitAnalogCalDone:
+            if (flagFromAnalog_rxClkCalDone) rxClkCalSenderStateReg <= RxClkCalSenderState_sendDoneReq;
+          RxClkCalSenderState_sendDoneReq:
+            if (flagSentRxClkCalDoneReq) rxClkCalSenderStateReg <= RxClkCalSenderState_waitDoneResp;
+          RxClkCalSenderState_waitDoneResp:
+            if (flagReceivedRxClkCalDoneResp) rxClkCalSenderStateReg <= RxClkCalSenderState_finish;
+          RxClkCalSenderState_finish:
+            rxClkCalSenderStateReg <= RxClkCalSenderState_finish;
+          default: rxClkCalSenderStateReg <= RxClkCalSenderState_sendStartReq;
+        endcase
 
-      unique case (rxClkCalReceiverStateReg)
-        RxClkCalReceiverState_waitStartReq:
-          if (flagReceivedRxClkCalStartReq) rxClkCalReceiverStateReg <= RxClkCalReceiverState_startClockTrack;
-        RxClkCalReceiverState_startClockTrack:
-          rxClkCalReceiverStateReg <= RxClkCalReceiverState_sendStartResp;
-        RxClkCalReceiverState_sendStartResp:
-          if (flagSentRxClkCalStartResp) rxClkCalReceiverStateReg <= RxClkCalReceiverState_waitDoneReq;
-        RxClkCalReceiverState_waitDoneReq:
-          if (flagReceivedRxClkCalDoneReq) rxClkCalReceiverStateReg <= RxClkCalReceiverState_sendDoneResp;
-        RxClkCalReceiverState_sendDoneResp:
-          if (flagSentRxClkCalDoneResp) rxClkCalReceiverStateReg <= RxClkCalReceiverState_finish;
-        RxClkCalReceiverState_finish:
-          rxClkCalReceiverStateReg <= RxClkCalReceiverState_finish;
-        default: rxClkCalReceiverStateReg <= RxClkCalReceiverState_waitStartReq;
-      endcase
+        unique case (rxClkCalReceiverStateReg)
+          RxClkCalReceiverState_waitStartReq:
+            if (flagReceivedRxClkCalStartReq) rxClkCalReceiverStateReg <= RxClkCalReceiverState_startClockTrack;
+          RxClkCalReceiverState_startClockTrack:
+            rxClkCalReceiverStateReg <= RxClkCalReceiverState_sendStartResp;
+          RxClkCalReceiverState_sendStartResp:
+            if (flagSentRxClkCalStartResp) rxClkCalReceiverStateReg <= RxClkCalReceiverState_waitDoneReq;
+          RxClkCalReceiverState_waitDoneReq:
+            if (flagReceivedRxClkCalDoneReq) rxClkCalReceiverStateReg <= RxClkCalReceiverState_sendDoneResp;
+          RxClkCalReceiverState_sendDoneResp:
+            if (flagSentRxClkCalDoneResp) rxClkCalReceiverStateReg <= RxClkCalReceiverState_finish;
+          RxClkCalReceiverState_finish:
+            rxClkCalReceiverStateReg <= RxClkCalReceiverState_finish;
+          default: rxClkCalReceiverStateReg <= RxClkCalReceiverState_waitStartReq;
+        endcase
 
-      if (running &&
-          (rxClkCalSenderStateReg == RxClkCalSenderState_finish) &&
-          (rxClkCalReceiverStateReg == RxClkCalReceiverState_finish)) begin
-        doneReg <= 1'b1;
-        running <= 1'b0;
+        if (running &&
+            (rxClkCalSenderStateReg == RxClkCalSenderState_finish) &&
+            (rxClkCalReceiverStateReg == RxClkCalReceiverState_finish)) begin
+          doneReg <= 1'b1;
+          running <= 1'b0;
+        end
       end
     end
   end

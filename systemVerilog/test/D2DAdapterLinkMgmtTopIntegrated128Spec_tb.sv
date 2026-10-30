@@ -1,7 +1,7 @@
 // SystemVerilog translation of D2DAdapterLinkMgmtTopIntegrated128Spec(1).scala.
 // Revised to run the complete UCIe 2.0 LTSM training sequence and every
 // directed message through production one-bit sideband serializers.
-// Each die model instantiates D2DAdapterLinkMgmtLtsmSBTop, including its
+// Each die model instantiates UcieDigitalCore, including its
 // serializer, clock-domain crossing, and controller receive mailbox.
 // The bfm_send_* / bfm_received_* API carries 128-bit test transactions.
 // Both die instances expose only one-bit sideband data and forwarded clocks.
@@ -11,12 +11,15 @@
 `timescale 1ns/1ps
 `default_nettype none
 
-module D2DAdapterLinkMgmtTopIntegrated128Spec_tb;
+module D2DAdapterLinkMgmtTopIntegrated128Spec_tb #(
+  // Serializing full 264-phase/20-tap sweeps can exceed the former 1.5M
+  // clocks. Match the existing serial dual-die test's configurable budget.
+  parameter int unsigned MAX_LTSM_BRINGUP_CYCLES = 12_000_000
+);
   import UcieUPM_interfaces_pkg::*;
   import UcieUPM_d2dadapter_pkg::*;
 
   localparam logic [15:0] REQUIRED_MBTRAIN_STATE_MASK = 16'h5FFE;
-  localparam int unsigned MAX_LTSM_BRINGUP_CYCLES = 1_500_000;
 
   logic clock = 1'b0;
   logic reset_n = 1'b1;

@@ -4,6 +4,8 @@
 // using receiver-initiated D2C point tests.  The containing LTSM is responsible
 // for running the state at 4 GT/s and with the forwarded clock at the best-known
 // center.
+// Vref code ports carry 20-bit one-hot tap selections; bit 0 is the lowest tap.
+// Selected/window outputs are zero before a valid window is found.
 `default_nettype none
 
 module MBTrainDataVrefFSM #(
@@ -20,7 +22,7 @@ module MBTrainDataVrefFSM #(
   parameter int unsigned dataVrefValueCount =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
   parameter int unsigned dataVrefCodeWidth =
-    (dataVrefValueCount <= 1) ? 1 : $clog2(dataVrefValueCount),
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH,
   parameter int unsigned dataVrefMinimumMillivolts =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
   parameter int unsigned dataVrefMaximumMillivolts =
@@ -68,7 +70,11 @@ module MBTrainDataVrefFSM #(
   input  wire logic flagFromAnalog_dataVrefFinishedPattern,
   output      logic flagToAnalog_dataVrefResetLocalTxScrambler,
 
-  output      logic [11:0] substate,
+  output      logic [3:0]  dbg_localState,
+  output      logic [2:0]  dbg_remoteState,
+  output      logic [3:0]  dbg_sweepState,
+  output      logic [3:0]  dbg_pointInitiatorState,
+  output      logic [3:0]  dbg_pointResponderState,
   output      logic [15:0] lastErrorCount,
   output      logic [15:0] retryCount,
   output      logic [dataLaneCount*dataVrefCodeWidth-1:0]
@@ -142,7 +148,11 @@ module MBTrainDataVrefFSM #(
     .flagToAnalog_resetLocalTxScrambler(
       flagToAnalog_dataVrefResetLocalTxScrambler
     ),
-    .substate(substate),
+    .dbg_localState(dbg_localState),
+    .dbg_remoteState(dbg_remoteState),
+    .dbg_sweepState(dbg_sweepState),
+    .dbg_pointInitiatorState(dbg_pointInitiatorState),
+    .dbg_pointResponderState(dbg_pointResponderState),
     .lastErrorCount(lastErrorCount),
     .retryCount(retryCount),
     .selectedVrefCodes(selectedVrefCodes),

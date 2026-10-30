@@ -1,7 +1,9 @@
 // Linear receiver-Vref sweep used by MBTRAIN.VALVREF and
 // MBTRAIN.VALTRAINVREF.
 //
-// The engine treats Vref codes as a linear, non-wrapping range.  It tests every
+// The 20-bit Vref interface uses one-hot codes: bit 0 selects the lowest
+// voltage tap and bit 19 the highest. Sweep arithmetic uses binary tap indices.
+// The engine treats Vref taps as a linear, non-wrapping range.  It tests every
 // code, selects the lower midpoint of the longest contiguous passing interval,
 // applies that code, and performs one final verification point test.  Ties are
 // resolved in favor of the lower-code interval.  The analog PHY is responsible
@@ -10,9 +12,8 @@
 `default_nettype none
 
 module MBTrain_ValidVrefSweepEngine #(
-  parameter int unsigned VREF_VALUE_COUNT = 16,
-  parameter int unsigned VREF_CODE_WIDTH =
-    (VREF_VALUE_COUNT <= 1) ? 1 : $clog2(VREF_VALUE_COUNT),
+  parameter int unsigned VREF_VALUE_COUNT = 20,
+  parameter int unsigned VREF_CODE_WIDTH = 20,
   parameter int unsigned MIN_PASSING_WINDOW_VALUES = 1,
   parameter int unsigned MAX_TRAINING_RETRIES = 1
 ) (
@@ -57,16 +58,32 @@ module MBTrain_ValidVrefSweepEngine #(
   // complete bitmap unrolls into VREF_VALUE_COUNT dependent compare/mux stages.
   // The length needs one extra value for an all-passing, full-range window.
   localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(VREF_VALUE_COUNT + 1);
-  logic [VREF_CODE_WIDTH-1:0] runStartReg, bestStartReg;
+  localparam int unsigned VREF_INDEX_WIDTH =
+    (VREF_VALUE_COUNT <= 1) ? 1 : $clog2(VREF_VALUE_COUNT);
+  logic [VREF_INDEX_WIDTH-1:0] runStartReg, bestStartReg;
   logic [WINDOW_LENGTH_WIDTH-1:0] runLengthReg, bestLengthReg;
   wire [WINDOW_LENGTH_WIDTH-1:0] extendedRunLength = runLengthReg + 1'b1;
   wire [WINDOW_LENGTH_WIDTH-1:0] bestSpan = bestLengthReg - 1'b1;
-  (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] currentCodeReg;
+  (* keep = "true" *) logic [VREF_INDEX_WIDTH-1:0] currentCodeReg;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] finalCodeReg;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] leftCodeReg;
   (* keep = "true" *) logic [VREF_CODE_WIDTH-1:0] rightCodeReg;
   (* keep = "true" *) logic [15:0] failedPointCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
+
+  // Selected/window code outputs are zero until a valid window is selected.
+  // During a sweep/apply, the analog control always selects exactly one tap.
+  function automatic logic [VREF_CODE_WIDTH-1:0] encodeVrefIndex(
+    input logic [VREF_INDEX_WIDTH-1:0] tapIndex
+  );
+    logic [VREF_CODE_WIDTH-1:0] code;
+    begin
+      code = '0;
+      if (int'(tapIndex) < VREF_VALUE_COUNT)
+        code[tapIndex] = 1'b1;
+      return code;
+    end
+  endfunction
 
   always_comb begin
     busy                 = (stateReg != SweepState_idle) &&
@@ -89,7 +106,7 @@ module MBTrain_ValidVrefSweepEngine #(
         (stateReg == SweepState_done))
       rx_vref_code = finalCodeReg;
     else
-      rx_vref_code = currentCodeReg;
+      rx_vref_code = encodeVrefIndex(currentCodeReg);
 
     point_test_start = (stateReg == SweepState_startSweepPoint) ||
                        (stateReg == SweepState_startFinalPoint);
@@ -154,7 +171,7 @@ module MBTrain_ValidVrefSweepEngine #(
               if (!point_test_pass)
                 failedPointCountReg <= failedPointCountReg + 16'd1;
 
-              if (currentCodeReg == VREF_CODE_WIDTH'(VREF_VALUE_COUNT - 1)) begin
+              if (currentCodeReg == VREF_INDEX_WIDTH'(VREF_VALUE_COUNT - 1)) begin
                 stateReg <= SweepState_analyze;
               end else begin
                 currentCodeReg <= currentCodeReg + 1'b1;
@@ -166,9 +183,11 @@ module MBTrain_ValidVrefSweepEngine #(
           SweepState_analyze: begin
             if (bestLengthReg >= WINDOW_LENGTH_WIDTH'(MIN_PASSING_WINDOW_VALUES)) begin
               // Lower midpoint for an even-width window.
-              finalCodeReg <= bestStartReg + VREF_CODE_WIDTH'(bestSpan >> 1);
-              leftCodeReg  <= bestStartReg;
-              rightCodeReg <= bestStartReg + VREF_CODE_WIDTH'(bestSpan);
+              finalCodeReg <= encodeVrefIndex(
+                bestStartReg + VREF_INDEX_WIDTH'(bestSpan >> 1));
+              leftCodeReg  <= encodeVrefIndex(bestStartReg);
+              rightCodeReg <= encodeVrefIndex(
+                bestStartReg + VREF_INDEX_WIDTH'(bestSpan));
               stateReg     <= SweepState_applyFinalCode;
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg        <= retryCountReg + 16'd1;
@@ -222,10 +241,10 @@ module MBTrain_ValidVrefSweepEngine #(
 
 `ifndef SYNTHESIS
   initial begin
-    if (VREF_VALUE_COUNT < 2)
-      $error("VREF_VALUE_COUNT must be at least 2");
-    if (VREF_VALUE_COUNT > (1 << VREF_CODE_WIDTH))
-      $error("VREF_CODE_WIDTH cannot represent every Vref value");
+    if ((VREF_VALUE_COUNT < 1) || (VREF_VALUE_COUNT > 20))
+      $error("VREF_VALUE_COUNT must be between 1 and 20");
+    if (VREF_CODE_WIDTH != 20)
+      $error("VREF_CODE_WIDTH must be 20 for the one-hot analog interface");
     if ((MIN_PASSING_WINDOW_VALUES < 1) ||
         (MIN_PASSING_WINDOW_VALUES > VREF_VALUE_COUNT))
       $error("MIN_PASSING_WINDOW_VALUES is outside the Vref sweep range");

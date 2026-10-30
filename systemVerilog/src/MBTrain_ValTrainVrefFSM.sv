@@ -3,6 +3,8 @@
 // This optional state repeats Valid receiver Vref optimization at the
 // negotiated operating data rate.  Its point-test and sweep behavior is shared
 // with VALVREF; only the outer sideband messages and placement in MBTRAIN differ.
+// Vref code ports carry 20-bit one-hot tap selections; bit 0 is the lowest tap.
+// Selected/window outputs are zero before a valid window is found.
 `default_nettype none
 
 module MBTrainValTrainVrefFSM #(
@@ -16,7 +18,7 @@ module MBTrainValTrainVrefFSM #(
   parameter int unsigned validVrefValueCount =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_VALUE_COUNT,
   parameter int unsigned validVrefCodeWidth =
-    (validVrefValueCount <= 1) ? 1 : $clog2(validVrefValueCount),
+    LtsmParameters_pkg::DEFAULT_VREF_CODE_WIDTH,
   parameter int unsigned validVrefMinimumMillivolts =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_MINIMUM_MILLIVOLTS,
   parameter int unsigned validVrefMaximumMillivolts =
@@ -62,7 +64,11 @@ module MBTrainValTrainVrefFSM #(
   input  wire logic                         flagFromAnalog_valTrainVrefFinishedPattern,
   output      logic                         flagToAnalog_valTrainVrefResetLocalTxScrambler,
 
-  output      logic [11:0]                  substate,
+  output      logic [3:0]                   dbg_localState,
+  output      logic [2:0]                   dbg_remoteState,
+  output      logic [3:0]                   dbg_sweepState,
+  output      logic [3:0]                   dbg_pointInitiatorState,
+  output      logic [3:0]                   dbg_pointResponderState,
   output      logic [15:0]                  lastErrorCount,
   output      logic [15:0]                  retryCount,
   output      logic [validVrefCodeWidth-1:0] selectedVrefCode,
@@ -112,7 +118,11 @@ module MBTrainValTrainVrefFSM #(
     .flagToAnalog_sendValTrainPattern(flagToAnalog_valTrainVrefSendPattern),
     .flagFromAnalog_valTrainPatternSent(flagFromAnalog_valTrainVrefFinishedPattern),
     .flagToAnalog_resetLocalTxScrambler(flagToAnalog_valTrainVrefResetLocalTxScrambler),
-    .substate(substate),
+    .dbg_localState(dbg_localState),
+    .dbg_remoteState(dbg_remoteState),
+    .dbg_sweepState(dbg_sweepState),
+    .dbg_pointInitiatorState(dbg_pointInitiatorState),
+    .dbg_pointResponderState(dbg_pointResponderState),
     .lastErrorCount(lastErrorCount),
     .retryCount(retryCount),
     .selectedVrefCode(selectedVrefCode),

@@ -1,4 +1,4 @@
-// Directed two-die bring-up through D2DAdapterLinkMgmtLtsmSBTop on each die.
+// Directed two-die bring-up through UcieDigitalCore on each die.
 // Stall packet acceptance at the serializer FIFO input; the forwarded serial
 // clocks and data wires are never gated by the testbench.
 // Reset convention: asynchronous active-low reset_n.

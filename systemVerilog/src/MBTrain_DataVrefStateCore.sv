@@ -13,6 +13,8 @@
 // RxInitD2CPointTestReceiverFSM and RxInitD2CPointTestSenderFSM modules supply
 // the sequencing.  The project-owned TxInitD2CPointTest* modules remain in the
 // build for transmitter-initiated states but cannot replace these Rx-init roles.
+// Vref code ports carry 20-bit one-hot tap selections; bit 0 is the lowest tap.
+// Selected/window outputs are zero before a valid window is found.
 `default_nettype none
 
 module MBTrain_DataVrefStateCore #(
@@ -21,9 +23,8 @@ module MBTrain_DataVrefStateCore #(
   parameter int unsigned DATA_LANE_COUNT = 16,
   parameter logic [DATA_LANE_COUNT-1:0] ACTIVE_DATA_LANE_MASK =
     {DATA_LANE_COUNT{1'b1}},
-  parameter int unsigned VREF_VALUE_COUNT = 16,
-  parameter int unsigned VREF_CODE_WIDTH =
-    (VREF_VALUE_COUNT <= 1) ? 1 : $clog2(VREF_VALUE_COUNT),
+  parameter int unsigned VREF_VALUE_COUNT = 20,
+  parameter int unsigned VREF_CODE_WIDTH = 20,
   parameter logic [15:0] MAXIMUM_COMPARISON_ERROR_THRESHOLD = 16'd0,
   parameter int unsigned MIN_PASSING_WINDOW_VALUES = 1,
   parameter int unsigned MAX_TRAINING_RETRIES = 1
@@ -63,7 +64,11 @@ module MBTrain_DataVrefStateCore #(
   input  wire logic                         flagFromAnalog_lfsrPatternSent,
   output      logic                         flagToAnalog_resetLocalTxScrambler,
 
-  output      logic [11:0]                  substate,
+  output      logic [3:0]                   dbg_localState,
+  output      logic [2:0]                   dbg_remoteState,
+  output      logic [3:0]                   dbg_sweepState,
+  output      logic [3:0]                   dbg_pointInitiatorState,
+  output      logic [3:0]                   dbg_pointResponderState,
   output      logic [15:0]                  lastErrorCount,
   output      logic [15:0]                  retryCount,
   output      logic [DATA_LANE_COUNT*VREF_CODE_WIDTH-1:0] selectedVrefCodes,
@@ -381,7 +386,11 @@ module MBTrain_DataVrefStateCore #(
     flagToAnalog_resetLocalTxScrambler = runningReg &&
                                          responderResetTxScrambler;
 
-    substate = {localStateReg, initiatorState, responderState};
+    dbg_localState = localStateReg;
+    dbg_remoteState = remoteStateReg;
+    dbg_sweepState = sweepState;
+    dbg_pointInitiatorState = initiatorState;
+    dbg_pointResponderState = responderState;
     lastErrorCount = sweepFailedLaneCount;
     retryCount = sweepRetryCount;
     selectedVrefCodes = sweepFinalCodes;

@@ -4,16 +4,21 @@
 // All active Data receiver lanes are swept in parallel with the same code.
 // Every lane independently selects the lower midpoint of its longest linear,
 // non-wrapping passing interval.  The selected per-lane vector is then applied
-// and verified with one final point test.
+// and verified with one final point test. Binary half-step indices are internal;
+// outputs use the same 20-bit, two-cell switch encoding as TXDESKEW (0..19 ps).
+// Index arithmetic and physical-code encoding are separated by registers.
+// A preparation cycle encodes each sweep index before apply; final selection
+// latches midpoint/endpoints, then encodes them in a separate cycle.
 `default_nettype none
 
 module MBTrain_RxDeskewSweepEngine #(
   parameter int unsigned DATA_LANE_COUNT = 16,
   parameter logic [DATA_LANE_COUNT-1:0] ACTIVE_DATA_LANE_MASK =
     {DATA_LANE_COUNT{1'b1}},
-  parameter int unsigned RX_DESKEW_VALUE_COUNT = 16,
+  parameter int unsigned RX_DESKEW_VALUE_COUNT =
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_VALUE_COUNT,
   parameter int unsigned RX_DESKEW_CODE_WIDTH =
-    (RX_DESKEW_VALUE_COUNT <= 1) ? 1 : $clog2(RX_DESKEW_VALUE_COUNT),
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_CODE_WIDTH,
   parameter int unsigned MIN_PASSING_WINDOW_VALUES = 1,
   parameter int unsigned MAX_TRAINING_RETRIES = 1
 ) (
@@ -27,7 +32,9 @@ module MBTrain_RxDeskewSweepEngine #(
 
   // During the linear sweep every active lane receives the same delay code.
   // During final application, each lane receives its independently selected
-  // delay code.  Code polarity/range are PHY implementation details.
+  // delay code. Cell 1 occupies [9:0], cell 2 [19:10] in each lane slice;
+  // each cell uses bit 0 for 0.5 ps and bits 1..9 for 1 ps each.
+  // Fill cell 1 through 9.5 ps before adding delay in cell 2.
   output      logic apply_rx_lane_deskew,
   output      logic [DATA_LANE_COUNT*RX_DESKEW_CODE_WIDTH-1:0]
                     rx_lane_deskew_codes,
@@ -57,21 +64,32 @@ module MBTrain_RxDeskewSweepEngine #(
     SweepState_startFinalPoint  = 4'h6,
     SweepState_waitFinalPoint   = 4'h7,
     SweepState_done             = 4'h8,
-    SweepState_error            = 4'h9
+    SweepState_error            = 4'h9,
+    SweepState_prepareSweepCode = 4'ha,
+    SweepState_encodeFinalCodes = 4'hb
   } SweepState_t;
 
   (* keep = "true" *) SweepState_t stateReg;
   // Track one accepted sample per cycle instead of rescanning the complete
   // bitmap combinationally.  The extra length bit represents an all-pass sweep.
   localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(RX_DESKEW_VALUE_COUNT + 1);
-  typedef logic [RX_DESKEW_CODE_WIDTH-1:0] code_t;
+  localparam int unsigned INDEX_WIDTH =
+    (RX_DESKEW_VALUE_COUNT <= 1) ? 1 : $clog2(RX_DESKEW_VALUE_COUNT);
+  typedef logic [INDEX_WIDTH-1:0] index_t;
   typedef logic [WINDOW_LENGTH_WIDTH-1:0] window_length_t;
-  code_t runStartReg [0:DATA_LANE_COUNT-1];
-  code_t bestStartReg [0:DATA_LANE_COUNT-1];
+  index_t runStartReg [0:DATA_LANE_COUNT-1];
+  index_t bestStartReg [0:DATA_LANE_COUNT-1];
+  // The analyze state performs only index arithmetic. The following encode
+  // state reads these flops, so midpoint/endpoint addition cannot feed the
+  // two-cell encoder within the same register-to-register path.
+  index_t selectedIndexReg [0:DATA_LANE_COUNT-1];
+  index_t leftIndexReg [0:DATA_LANE_COUNT-1];
+  index_t rightIndexReg [0:DATA_LANE_COUNT-1];
   window_length_t runLengthReg [0:DATA_LANE_COUNT-1];
   window_length_t bestLengthReg [0:DATA_LANE_COUNT-1];
   window_length_t nextRunLength [0:DATA_LANE_COUNT-1];
-  (* keep = "true" *) logic [RX_DESKEW_CODE_WIDTH-1:0] currentCodeReg;
+  (* keep = "true" *) logic [INDEX_WIDTH-1:0] currentIndexReg;
+  logic [RX_DESKEW_CODE_WIDTH-1:0] sweepCodeReg;
   (* keep = "true" *) logic [DATA_LANE_COUNT*RX_DESKEW_CODE_WIDTH-1:0]
     finalCodeVectorReg;
   (* keep = "true" *) logic [DATA_LANE_COUNT*RX_DESKEW_CODE_WIDTH-1:0]
@@ -140,7 +158,7 @@ module MBTrain_RxDeskewSweepEngine #(
         if (ACTIVE_DATA_LANE_MASK[output_lane])
           rx_lane_deskew_codes[
             output_lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH
-          ] = currentCodeReg;
+          ] = sweepCodeReg;
       end
     end
   end
@@ -148,7 +166,8 @@ module MBTrain_RxDeskewSweepEngine #(
   always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
       stateReg           <= SweepState_idle;
-      currentCodeReg     <= '0;
+      currentIndexReg    <= '0;
+      sweepCodeReg       <= '0;
       finalCodeVectorReg <= '0;
       leftCodeVectorReg  <= '0;
       rightCodeVectorReg <= '0;
@@ -159,6 +178,9 @@ module MBTrain_RxDeskewSweepEngine #(
            reset_lane = reset_lane + 1) begin
         runStartReg[reset_lane] <= '0;
         bestStartReg[reset_lane] <= '0;
+        selectedIndexReg[reset_lane] <= '0;
+        leftIndexReg[reset_lane] <= '0;
+        rightIndexReg[reset_lane] <= '0;
         runLengthReg[reset_lane] <= '0;
         bestLengthReg[reset_lane] <= '0;
       end
@@ -166,8 +188,9 @@ module MBTrain_RxDeskewSweepEngine #(
       if (start && ((stateReg == SweepState_idle) ||
                     (stateReg == SweepState_done) ||
                     (stateReg == SweepState_error))) begin
-        stateReg           <= SweepState_applySweepCode;
-        currentCodeReg     <= '0;
+        stateReg           <= SweepState_prepareSweepCode;
+        currentIndexReg    <= '0;
+        sweepCodeReg       <= '0;
         finalCodeVectorReg <= '0;
         leftCodeVectorReg  <= '0;
         rightCodeVectorReg <= '0;
@@ -178,12 +201,23 @@ module MBTrain_RxDeskewSweepEngine #(
              start_lane = start_lane + 1) begin
           runStartReg[start_lane] <= '0;
           bestStartReg[start_lane] <= '0;
+          selectedIndexReg[start_lane] <= '0;
+          leftIndexReg[start_lane] <= '0;
+          rightIndexReg[start_lane] <= '0;
           runLengthReg[start_lane] <= '0;
           bestLengthReg[start_lane] <= '0;
         end
       end else begin
         unique case (stateReg)
           SweepState_idle: ;
+
+          // currentIndexReg was set on the preceding edge. Register its
+          // physical control word before requesting the analog apply.
+          SweepState_prepareSweepCode: begin
+            sweepCodeReg <= LtsmParameters_pkg::encode_tx_deskew(
+              LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH'(currentIndexReg));
+            stateReg <= SweepState_applySweepCode;
+          end
 
           SweepState_applySweepCode: begin
             if (rx_lane_deskew_applied)
@@ -201,14 +235,14 @@ module MBTrain_RxDeskewSweepEngine #(
                 if (ACTIVE_DATA_LANE_MASK[capture_lane]) begin
                   if (point_test_pass[capture_lane]) begin
                     if (runLengthReg[capture_lane] == '0)
-                      runStartReg[capture_lane] <= currentCodeReg;
+                      runStartReg[capture_lane] <= currentIndexReg;
                     runLengthReg[capture_lane] <= nextRunLength[capture_lane];
                     // Strict > keeps the first (lowest-code) window on ties.
                     if (nextRunLength[capture_lane] > bestLengthReg[capture_lane]) begin
                       bestLengthReg[capture_lane] <= nextRunLength[capture_lane];
                       bestStartReg[capture_lane] <=
                         (runLengthReg[capture_lane] == '0) ?
-                        currentCodeReg : runStartReg[capture_lane];
+                        currentIndexReg : runStartReg[capture_lane];
                     end
                   end else begin
                     runLengthReg[capture_lane] <= '0;
@@ -218,11 +252,11 @@ module MBTrain_RxDeskewSweepEngine #(
               failedLaneCountReg <= failedLaneCountReg +
                                     16'(failedCountTree[1]);
 
-              if (currentCodeReg == (RX_DESKEW_VALUE_COUNT - 1)) begin
+              if (currentIndexReg == (RX_DESKEW_VALUE_COUNT - 1)) begin
                 stateReg <= SweepState_analyze;
               end else begin
-                currentCodeReg <= currentCodeReg + 1'b1;
-                stateReg       <= SweepState_applySweepCode;
+                currentIndexReg <= currentIndexReg + 1'b1;
+                stateReg       <= SweepState_prepareSweepCode;
               end
             end
           end
@@ -235,39 +269,22 @@ module MBTrain_RxDeskewSweepEngine #(
                    select_lane < DATA_LANE_COUNT;
                    select_lane = select_lane + 1) begin
                 if (ACTIVE_DATA_LANE_MASK[select_lane]) begin
-                  finalCodeVectorReg[
-                    select_lane*RX_DESKEW_CODE_WIDTH +:
-                    RX_DESKEW_CODE_WIDTH
-                  ] <= bestStartReg[select_lane] +
-                       code_t'((bestLengthReg[select_lane] - window_length_t'(1)) >> 1);
-                  leftCodeVectorReg[
-                    select_lane*RX_DESKEW_CODE_WIDTH +:
-                    RX_DESKEW_CODE_WIDTH
-                  ] <= bestStartReg[select_lane];
-                  rightCodeVectorReg[
-                    select_lane*RX_DESKEW_CODE_WIDTH +:
-                    RX_DESKEW_CODE_WIDTH
-                  ] <= bestStartReg[select_lane] +
-                       code_t'(bestLengthReg[select_lane] - window_length_t'(1));
+                  selectedIndexReg[select_lane] <= bestStartReg[select_lane] +
+                    index_t'((bestLengthReg[select_lane] - window_length_t'(1)) >> 1);
+                  leftIndexReg[select_lane] <= bestStartReg[select_lane];
+                  rightIndexReg[select_lane] <= bestStartReg[select_lane] +
+                    index_t'(bestLengthReg[select_lane] - window_length_t'(1));
                 end else begin
-                  finalCodeVectorReg[
-                    select_lane*RX_DESKEW_CODE_WIDTH +:
-                    RX_DESKEW_CODE_WIDTH
-                  ] <= '0;
-                  leftCodeVectorReg[
-                    select_lane*RX_DESKEW_CODE_WIDTH +:
-                    RX_DESKEW_CODE_WIDTH
-                  ] <= '0;
-                  rightCodeVectorReg[
-                    select_lane*RX_DESKEW_CODE_WIDTH +:
-                    RX_DESKEW_CODE_WIDTH
-                  ] <= '0;
+                  selectedIndexReg[select_lane] <= '0;
+                  leftIndexReg[select_lane] <= '0;
+                  rightIndexReg[select_lane] <= '0;
                 end
               end
-              stateReg <= SweepState_applyFinalCodes;
+              stateReg <= SweepState_encodeFinalCodes;
             end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
               retryCountReg      <= retryCountReg + 16'd1;
-              currentCodeReg     <= '0;
+              currentIndexReg    <= '0;
+              sweepCodeReg       <= '0;
               failedLaneCountReg <= 16'd0;
               for (int unsigned retry_lane = 0;
                    retry_lane < DATA_LANE_COUNT;
@@ -277,10 +294,44 @@ module MBTrain_RxDeskewSweepEngine #(
                 runLengthReg[retry_lane] <= '0;
                 bestLengthReg[retry_lane] <= '0;
               end
-              stateReg <= SweepState_applySweepCode;
+              stateReg <= SweepState_prepareSweepCode;
             end else begin
               stateReg <= SweepState_error;
             end
+          end
+
+          // Encoder inputs are only registered indices; all three vectors
+          // become registered before the final apply handshake can be sampled.
+          SweepState_encodeFinalCodes: begin
+            for (int unsigned encode_lane = 0;
+                 encode_lane < DATA_LANE_COUNT;
+                 encode_lane = encode_lane + 1) begin
+              if (ACTIVE_DATA_LANE_MASK[encode_lane]) begin
+                finalCodeVectorReg[
+                  encode_lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH
+                ] <= LtsmParameters_pkg::encode_tx_deskew(
+                  LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH'(selectedIndexReg[encode_lane]));
+                leftCodeVectorReg[
+                  encode_lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH
+                ] <= LtsmParameters_pkg::encode_tx_deskew(
+                  LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH'(leftIndexReg[encode_lane]));
+                rightCodeVectorReg[
+                  encode_lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH
+                ] <= LtsmParameters_pkg::encode_tx_deskew(
+                  LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH'(rightIndexReg[encode_lane]));
+              end else begin
+                finalCodeVectorReg[
+                  encode_lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH
+                ] <= '0;
+                leftCodeVectorReg[
+                  encode_lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH
+                ] <= '0;
+                rightCodeVectorReg[
+                  encode_lane*RX_DESKEW_CODE_WIDTH +: RX_DESKEW_CODE_WIDTH
+                ] <= '0;
+              end
+            end
+            stateReg <= SweepState_applyFinalCodes;
           end
 
           SweepState_applyFinalCodes: begin
@@ -297,7 +348,8 @@ module MBTrain_RxDeskewSweepEngine #(
                 stateReg <= SweepState_done;
               end else if (retryCountReg < MAX_TRAINING_RETRIES) begin
                 retryCountReg      <= retryCountReg + 16'd1;
-                currentCodeReg     <= '0;
+                currentIndexReg    <= '0;
+                sweepCodeReg       <= '0;
                 failedLaneCountReg <= 16'd0;
                 for (int unsigned verify_retry_lane = 0;
                      verify_retry_lane < DATA_LANE_COUNT;
@@ -307,7 +359,7 @@ module MBTrain_RxDeskewSweepEngine #(
                   runLengthReg[verify_retry_lane] <= '0;
                   bestLengthReg[verify_retry_lane] <= '0;
                 end
-                stateReg <= SweepState_applySweepCode;
+                stateReg <= SweepState_prepareSweepCode;
               end else begin
                 failedLaneCountReg <= failedLaneCountReg +
                                       16'(failedCountTree[1]);
@@ -332,8 +384,10 @@ module MBTrain_RxDeskewSweepEngine #(
       $error("ACTIVE_DATA_LANE_MASK must enable at least one lane");
     if (RX_DESKEW_VALUE_COUNT < 2)
       $error("RX_DESKEW_VALUE_COUNT must be at least 2");
-    if (RX_DESKEW_VALUE_COUNT > (1 << RX_DESKEW_CODE_WIDTH))
-      $error("RX_DESKEW_CODE_WIDTH cannot represent every deskew value");
+    if (RX_DESKEW_VALUE_COUNT > LtsmParameters_pkg::TX_DESKEW_MAX_HALF_STEPS + 1)
+      $error("RX_DESKEW_VALUE_COUNT must not exceed the 39 physical delay settings");
+    if (RX_DESKEW_CODE_WIDTH != LtsmParameters_pkg::TX_DESKEW_CONTROL_WIDTH)
+      $error("RX_DESKEW_CODE_WIDTH must be 20 for the two-cell deskew controls");
     if ((MIN_PASSING_WINDOW_VALUES < 1) ||
         (MIN_PASSING_WINDOW_VALUES > RX_DESKEW_VALUE_COUNT))
       $error("MIN_PASSING_WINDOW_VALUES is outside the RX deskew sweep range");

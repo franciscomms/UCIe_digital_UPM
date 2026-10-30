@@ -16,8 +16,10 @@
 // use half-ps steps separately from this PHY control-word width.
 //
 // PI phase convention:
-//   0, 1, ... PHASE_COUNT-1 is one linear ordered search range.
-//   Phase 0 and phase PHASE_COUNT-1 are not adjacent and are never merged.
+//   The internal index 0..263 sweeps eight 33-interval sectors once.
+//   Physical controls are {lower_en[16:0], upper_en[16:0], s3,s2,s1,s0}.
+//   Sector endpoints are not duplicated. Window selection keeps the existing
+//   linear search cut: passing runs across the 263/0 wrap are not merged.
 `default_nettype none
 
 module MBTrain_DataTrainCenter1SweepEngine #(
@@ -61,6 +63,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   output var  logic [4:0]  state,
   output var  logic [15:0] lastFailedComparisons,
   output var  logic [15:0] retryCount,
+  // Phase readback uses the same physical encoding as tx_clock_phase_code.
   output var  logic [PI_CODE_WIDTH-1:0] finalClockPhase
 );
   localparam int unsigned MAX_DATA_LANES   = 64;
@@ -70,14 +73,15 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   // (three levels per cycle). No inactive-lane sentinel branches are needed.
   localparam int unsigned CENTER_GROUP_LANES = ucieA ? 8 : 4;
   localparam int unsigned CENTER_GROUP_COUNT = ACTIVE_DATA_LANES / CENTER_GROUP_LANES;
-  localparam int unsigned PHASE_COUNT = (1 << PI_CODE_WIDTH);
-  // Length must include the full all-pass range (2**PI_CODE_WIDTH).
-  localparam int unsigned WINDOW_LENGTH_WIDTH = PI_CODE_WIDTH + 1;
+  localparam int unsigned PHASE_COUNT = LtsmParameters_pkg::D2C_PI_PHASE_COUNT;
+  localparam int unsigned PHASE_INDEX_WIDTH = LtsmParameters_pkg::D2C_PI_INDEX_WIDTH;
+  // Length must represent all 264 samples in an all-pass sweep.
+  localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(PHASE_COUNT + 1);
   localparam int unsigned DESKEW_STEP_WIDTH =
     (DESKEW_STEPS_PER_PI < 2) ? 1 :
     $clog2({1'b0, DESKEW_STEPS_PER_PI} + 33'd1);
   localparam int unsigned DESKEW_PRODUCT_WIDTH =
-    PI_CODE_WIDTH + DESKEW_STEP_WIDTH;
+    PHASE_INDEX_WIDTH + DESKEW_STEP_WIDTH;
 
   localparam logic [63:0] ACTIVE_LANE_MASK =
     ucieA ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
@@ -116,37 +120,37 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   (* keep = "true" *) logic errorReg;
   (* keep = "true" *) logic [15:0] lastFailedComparisonsReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
-  (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] phaseIndexReg;
-  (* keep = "true" *) logic [PI_CODE_WIDTH-1:0] finalClockPhaseReg;
+  (* keep = "true" *) logic [PHASE_INDEX_WIDTH-1:0] phaseIndexReg;
+  (* keep = "true" *) logic [PHASE_INDEX_WIDTH-1:0] finalClockPhaseReg;
   (* keep = "true" *) logic [64*TX_DESKEW_CODE_WIDTH-1:0] deskewCodesReg;
 
   // Update the longest passing interval as each result arrives. A hardware
   // loop over the entire stored sweep would unroll into PHASE_COUNT serial
   // increment/compare/mux stages. These registers reduce that path to one
   // narrow increment and comparison, independent of the sweep length.
-  logic [PI_CODE_WIDTH-1:0] laneRunStartReg [0:MAX_DATA_LANES-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneRunStartReg [0:MAX_DATA_LANES-1];
   logic [WINDOW_LENGTH_WIDTH-1:0] laneRunLengthReg [0:MAX_DATA_LANES-1];
-  logic [PI_CODE_WIDTH-1:0] laneBestStartReg [0:MAX_DATA_LANES-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneBestStartReg [0:MAX_DATA_LANES-1];
   logic [WINDOW_LENGTH_WIDTH-1:0] laneBestLengthReg [0:MAX_DATA_LANES-1];
-  logic [PI_CODE_WIDTH-1:0] globalRunStartReg;
+  logic [PHASE_INDEX_WIDTH-1:0] globalRunStartReg;
   logic [WINDOW_LENGTH_WIDTH-1:0] globalRunLengthReg;
-  logic [PI_CODE_WIDTH-1:0] globalBestStartReg;
+  logic [PHASE_INDEX_WIDTH-1:0] globalBestStartReg;
   logic [WINDOW_LENGTH_WIDTH-1:0] globalBestLengthReg;
 
   // Register the arithmetic stages between finding lane centers and applying
   // deskew: center -> group extrema -> target -> delta -> scale -> range
   // -> physical switch encoding. The encoder is fed only a 6-bit checked value.
-  logic [PI_CODE_WIDTH-1:0] laneLeftPhaseReg [0:MAX_DATA_LANES-1];
-  logic [PI_CODE_WIDTH-1:0] laneRightPhaseReg [0:MAX_DATA_LANES-1];
-  logic [PI_CODE_WIDTH-1:0] laneCenterPhaseReg [0:MAX_DATA_LANES-1];
-  logic [PI_CODE_WIDTH-1:0] groupCenterPhaseReg [0:CENTER_GROUP_COUNT-1];
-  logic [PI_CODE_WIDTH-1:0] targetLaneCenterReg;
-  logic [PI_CODE_WIDTH-1:0] deskewDeltaReg [0:MAX_DATA_LANES-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneLeftPhaseReg [0:MAX_DATA_LANES-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneRightPhaseReg [0:MAX_DATA_LANES-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneCenterPhaseReg [0:MAX_DATA_LANES-1];
+  logic [PHASE_INDEX_WIDTH-1:0] groupCenterPhaseReg [0:CENTER_GROUP_COUNT-1];
+  logic [PHASE_INDEX_WIDTH-1:0] targetLaneCenterReg;
+  logic [PHASE_INDEX_WIDTH-1:0] deskewDeltaReg [0:MAX_DATA_LANES-1];
   logic [DESKEW_PRODUCT_WIDTH-1:0] deskewProductReg [0:MAX_DATA_LANES-1];
   logic [LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH-1:0]
     selectedDeskewStepsReg [0:MAX_DATA_LANES-1];
-  logic [PI_CODE_WIDTH-1:0] globalLeftPhaseReg;
-  logic [PI_CODE_WIDTH-1:0] globalRightPhaseReg;
+  logic [PHASE_INDEX_WIDTH-1:0] globalLeftPhaseReg;
+  logic [PHASE_INDEX_WIDTH-1:0] globalRightPhaseReg;
 
   wire allActiveDataLanesPass = &(point_test_lane_pass | ~ACTIVE_LANE_MASK);
   wire pointTestAllPass = point_test_valid_pass &&
@@ -158,8 +162,8 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   wire [6:0] failedLaneTree [1:2*MAX_DATA_LANES-1];
   wire [6:0] failedComparisonsCalc =
     failedLaneTree[1] + {6'b0, !point_test_valid_pass};
-  wire [PI_CODE_WIDTH-1:0] groupCenterResult [0:CENTER_GROUP_COUNT-1];
-  wire [PI_CODE_WIDTH-1:0] targetCenterTree [1:2*CENTER_GROUP_COUNT-1];
+  wire [PHASE_INDEX_WIDTH-1:0] groupCenterResult [0:CENTER_GROUP_COUNT-1];
+  wire [PHASE_INDEX_WIDTH-1:0] targetCenterTree [1:2*CENTER_GROUP_COUNT-1];
   wire [MAX_DATA_LANES-1:0] laneWindowValid;
   wire [MAX_DATA_LANES-1:0] deskewCodeFits;
   wire initialWindowsValidCalc = &laneWindowValid;
@@ -187,7 +191,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   // Stage 1 reduces only active lanes, in parallel groups. The polarity is
   // an elaboration-time constant, so each node implements either max or min.
   for (genvar group = 0; group < CENTER_GROUP_COUNT; group++) begin : gen_center_groups
-    wire [PI_CODE_WIDTH-1:0] centerTree [1:2*CENTER_GROUP_LANES-1];
+    wire [PHASE_INDEX_WIDTH-1:0] centerTree [1:2*CENTER_GROUP_LANES-1];
     for (genvar lane = 0; lane < CENTER_GROUP_LANES; lane++) begin : gen_leaves
       assign centerTree[CENTER_GROUP_LANES+lane] =
         laneCenterPhaseReg[group*CENTER_GROUP_LANES+lane];
@@ -214,11 +218,35 @@ module MBTrain_DataTrainCenter1SweepEngine #(
 
   wire globalWindowValidCalc =
     globalBestLengthReg >= WINDOW_LENGTH_WIDTH'(MIN_COMMON_WINDOW_STEPS);
-  wire [PI_CODE_WIDTH-1:0] globalLeftPhaseCalc = globalBestStartReg;
-  wire [PI_CODE_WIDTH-1:0] globalRightPhaseCalc =
-    globalBestStartReg + PI_CODE_WIDTH'(globalBestLengthReg - 1'b1);
-  wire [PI_CODE_WIDTH-1:0] globalCenterPhaseCalc =
-    globalBestStartReg + PI_CODE_WIDTH'((globalBestLengthReg - 1'b1) >> 1);
+  wire [PHASE_INDEX_WIDTH-1:0] globalLeftPhaseCalc = globalBestStartReg;
+  wire [PHASE_INDEX_WIDTH-1:0] globalRightPhaseCalc =
+    globalBestStartReg + PHASE_INDEX_WIDTH'(globalBestLengthReg - 1'b1);
+  wire [PHASE_INDEX_WIDTH-1:0] globalCenterPhaseCalc =
+    globalBestStartReg + PHASE_INDEX_WIDTH'((globalBestLengthReg - 1'b1) >> 1);
+
+  // Keep requested binary phase, registered decomposition, and physical word
+  // on separate clock boundaries. APPLY states also serve as decode waits;
+  // an early/stale analog acknowledge cannot advance the state machine.
+  logic [PHASE_INDEX_WIDTH-1:0] encodedPhaseIndex;
+  logic phaseCodeValid;
+  wire phaseCodeReady = phaseCodeValid && (encodedPhaseIndex == phaseIndexReg);
+  logic [PHASE_INDEX_WIDTH-1:0] encodedFinalPhaseIndex;
+  logic finalPhaseCodeValid;
+  wire finalPhaseCodeReady = finalPhaseCodeValid &&
+    (encodedFinalPhaseIndex == finalClockPhaseReg);
+  MBTrain_DllPiEncoder u_phase_encoder (
+    .clock(clock), .reset_n(reset_n), .phase_index(phaseIndexReg),
+    .phase_code(tx_clock_phase_code),
+    .phase_index_out(encodedPhaseIndex), .valid(phaseCodeValid)
+  );
+
+  // Debug/readback words use the same registered physical encoder. They settle
+  // two clocks after their index changes, before final point-test completion.
+  MBTrain_DllPiEncoder u_finalClockPhase_encoder (
+    .clock(clock), .reset_n(reset_n), .phase_index(finalClockPhaseReg),
+    .phase_code(finalClockPhase),
+    .phase_index_out(encodedFinalPhaseIndex), .valid(finalPhaseCodeValid)
+  );
 
   always_comb begin
     busy = (stateReg != SweepState_IDLE) &&
@@ -229,15 +257,13 @@ module MBTrain_DataTrainCenter1SweepEngine #(
     state = stateReg;
     lastFailedComparisons = lastFailedComparisonsReg;
     retryCount = retryCountReg;
-    finalClockPhase = finalClockPhaseReg;
 
-    tx_clock_phase_code = phaseIndexReg;
     tx_lane_deskew_codes = deskewCodesReg;
 
-    apply_tx_clock_phase =
-      (stateReg == SweepState_APPLY_INITIAL_PHASE) ||
-      (stateReg == SweepState_APPLY_VERIFY_PHASE) ||
-      (stateReg == SweepState_APPLY_GLOBAL_PHASE);
+    apply_tx_clock_phase = phaseCodeReady &&
+      ((stateReg == SweepState_APPLY_INITIAL_PHASE) ||
+       (stateReg == SweepState_APPLY_VERIFY_PHASE) ||
+       ((stateReg == SweepState_APPLY_GLOBAL_PHASE) && finalPhaseCodeReady));
 
     apply_tx_lane_deskew =
       (stateReg == SweepState_APPLY_ZERO_DESKEW) ||
@@ -329,7 +355,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_APPLY_INITIAL_PHASE: begin
-            if (tx_clock_phase_applied)
+            if (apply_tx_clock_phase && tx_clock_phase_applied)
               stateReg <= SweepState_START_INITIAL_TEST;
           end
 
@@ -363,7 +389,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
               end
             end
             lastFailedComparisonsReg <= {9'b0, failedComparisonsCalc};
-            if (phaseIndexReg == {PI_CODE_WIDTH{1'b1}}) begin
+            if (phaseIndexReg == PHASE_INDEX_WIDTH'(PHASE_COUNT - 1)) begin
               stateReg <= SweepState_CALCULATE_DESKEW;
             end else begin
               phaseIndexReg <= phaseIndexReg + 1'b1;
@@ -378,9 +404,9 @@ module MBTrain_DataTrainCenter1SweepEngine #(
                 if (ACTIVE_LANE_MASK[clearLaneIdx]) begin
                   laneLeftPhaseReg[clearLaneIdx] <= laneBestStartReg[clearLaneIdx];
                   laneRightPhaseReg[clearLaneIdx] <= laneBestStartReg[clearLaneIdx] +
-                    PI_CODE_WIDTH'(laneBestLengthReg[clearLaneIdx] - 1'b1);
+                    PHASE_INDEX_WIDTH'(laneBestLengthReg[clearLaneIdx] - 1'b1);
                   laneCenterPhaseReg[clearLaneIdx] <= laneBestStartReg[clearLaneIdx] +
-                    PI_CODE_WIDTH'((laneBestLengthReg[clearLaneIdx] - 1'b1) >> 1);
+                    PHASE_INDEX_WIDTH'((laneBestLengthReg[clearLaneIdx] - 1'b1) >> 1);
                 end
               end
               stateReg <= SweepState_REDUCE_CENTER_GROUPS;
@@ -474,7 +500,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_APPLY_VERIFY_PHASE: begin
-            if (tx_clock_phase_applied)
+            if (apply_tx_clock_phase && tx_clock_phase_applied)
               stateReg <= SweepState_START_VERIFY_TEST;
           end
 
@@ -501,7 +527,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
               globalRunLengthReg <= '0;
             end
             lastFailedComparisonsReg <= {9'b0, failedComparisonsCalc};
-            if (phaseIndexReg == {PI_CODE_WIDTH{1'b1}}) begin
+            if (phaseIndexReg == PHASE_INDEX_WIDTH'(PHASE_COUNT - 1)) begin
               stateReg <= SweepState_CALCULATE_GLOBAL;
             end else begin
               phaseIndexReg <= phaseIndexReg + 1'b1;
@@ -528,7 +554,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_APPLY_GLOBAL_PHASE: begin
-            if (tx_clock_phase_applied)
+            if (apply_tx_clock_phase && tx_clock_phase_applied)
               stateReg <= SweepState_START_FINAL_TEST;
           end
 
@@ -566,9 +592,19 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   end
 
 `ifndef SYNTHESIS
+  // The analog side samples a bundled control word and acknowledges only
+  // after its safe-update and settling policy has completed.
+  a_phase_request_stable: assert property (@(posedge clock) disable iff (!reset_n)
+    (apply_tx_clock_phase && !tx_clock_phase_applied) |=>
+      (apply_tx_clock_phase && $stable(tx_clock_phase_code)));
+  a_phase_index_in_range: assert property (@(posedge clock) disable iff (!reset_n)
+    phaseIndexReg < PHASE_COUNT);
+  a_phase_decode_matches_request: assert property (@(posedge clock) disable iff (!reset_n)
+    apply_tx_clock_phase |->
+      (tx_clock_phase_code == LtsmParameters_pkg::encode_d2c_phase(phaseIndexReg)));
   initial begin
-    if ((PI_CODE_WIDTH < 2) || (PI_CODE_WIDTH > 10))
-      $error("PI_CODE_WIDTH must be in the range 2..10");
+    if (PI_CODE_WIDTH != LtsmParameters_pkg::D2C_PI_CONTROL_WIDTH)
+      $error("PI_CODE_WIDTH must be 38 for the DLL mux and complementary PI bank controls");
     if (TX_DESKEW_CODE_WIDTH != LtsmParameters_pkg::TX_DESKEW_CONTROL_WIDTH)
       $error("TX_DESKEW_CODE_WIDTH must be 20 for the two-cell TX deskew controls");
     if (DESKEW_STEPS_PER_PI < 1)
