@@ -19,6 +19,7 @@ timescale.sv
 ../src/LinkMgmtSidebandPacketArbiter.sv
 ../src/LinkMgmtTimeoutConfig.sv
 ../src/LinkTrainingFSM.sv
+../../LtsmPhyPatternAdapter/LtsmPhyPatternAdapter.sv
 ../src/LtsmSidebandRxPulseAdapter.sv
 ../src/LtsmSidebandTxCapture.sv
 ../src/MBInitFSM.sv
