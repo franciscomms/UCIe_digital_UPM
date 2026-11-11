@@ -16,7 +16,10 @@ module MBTrain_DataTrainCenter1 #(
   parameter logic [15:0] d2cMaximumComparisonErrorThreshold = LtsmParameters_pkg::DEFAULT_D2C_MAX_COMPARISON_ERROR_THRESHOLD,
   parameter int unsigned d2cMinLaneWindowSteps = LtsmParameters_pkg::DEFAULT_D2C_MIN_LANE_WINDOW_STEPS,
   parameter int unsigned d2cMinCommonWindowSteps = LtsmParameters_pkg::DEFAULT_D2C_MIN_COMMON_WINDOW_STEPS,
-  parameter int unsigned d2cMaxTrainingRetries = LtsmParameters_pkg::DEFAULT_D2C_MAX_TRAINING_RETRIES
+  parameter int unsigned d2cMaxTrainingRetries = LtsmParameters_pkg::DEFAULT_D2C_MAX_TRAINING_RETRIES,
+  parameter int unsigned dataLaneCount = ucieA ? 64 : 16,
+  parameter logic [dataLaneCount-1:0] activeDataLaneMask = '1,
+  parameter bit WAIT_FOR_CENTER_LANE = 1'b0
 ) (
   input wire logic         clock,
   input wire logic         reset_n,
@@ -51,14 +54,16 @@ module MBTrain_DataTrainCenter1 #(
   output var logic [2:0]   flagToAnalog_d2cReceiver_dataPattern,
   output var logic         flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  input wire logic [dataLaneCount-1:0]  flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
   output var logic [3:0]   dbg_senderState,
   output var logic [2:0]   dbg_receiverState,
   output var logic [3:0]   dbg_d2cSenderState,
   output var logic [3:0]   dbg_d2cReceiverState,
   output var logic [4:0]   dbg_sweepState,
   output var logic [15:0]  lastErrorCount,
-  output var logic [15:0]  retryCount
+  output var logic [15:0]  retryCount,
+  input wire logic d2cCenter_pointArmed,
+  input wire logic d2cCenter_resultReady
 );
   import SidebandMsgGenerator_pkg::*;
 
@@ -105,6 +110,7 @@ module MBTrain_DataTrainCenter1 #(
   (* keep = "true" *) logic d2cReceiver_receivedPointTestStartReq;
   (* keep = "true" *) logic d2cReceiver_receivedLfsrClearReq;
   (* keep = "true" *) logic d2cReceiver_receivedResultsReq;
+  logic d2cReceiver_resultLogged;
   (* keep = "true" *) logic d2cReceiver_receivedEndPointTestReq;
 
   (* keep = "true" *) logic flagSentStartReq;
@@ -125,7 +131,7 @@ module MBTrain_DataTrainCenter1 #(
   (* keep = "true" *) logic [15:0] logErrorCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
   (* keep = "true" *) logic [15:0] d2cReceiver_loggedResultsMsgInfo;
-  (* keep = "true" *) logic [63:0] d2cReceiver_loggedResultsPayload;
+  (* keep = "true" *) logic [dataLaneCount-1:0] d2cReceiver_loggedResultsPayload;
 
   (* keep = "true" *) logic [15:0] d2c_maximumComparisonErrorThresholdReg;
   (* keep = "true" *) logic d2c_comparisonModeReg;
@@ -154,7 +160,7 @@ module MBTrain_DataTrainCenter1 #(
   logic [15:0] sweepEngine_retryCount;
   logic [d2cPiCodeWidth-1:0] sweepEngine_finalClockPhase;
 
-  logic [63:0] d2cSender_resultsLanePassReg;
+  logic [dataLaneCount-1:0] d2cSender_resultsLanePassReg;
   logic d2cSender_resultsValidPassReg;
   logic d2cSender_resultsCumulativePassReg;
 
@@ -215,6 +221,7 @@ module MBTrain_DataTrainCenter1 #(
     msgMbtrainLfsrClearErrorResp(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
   wire [127:0] TX_INIT_RESULTS_REQ =
     msgMbtrainTxInitD2CResultsReq(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY);
+  wire resultsReqNow = rxValidRisingEdge && (sb_rx_dout == TX_INIT_RESULTS_REQ);
   wire [127:0] TX_INIT_RESULTS_RESP_TEMPLATE =
     msgMbtrainTxInitD2CResultsResp(ENDPOINT_PHY, ENDPOINT_REMOTE_PHY, 16'd0, 64'd0);
   wire [127:0] END_POINT_TEST_REQ =
@@ -306,7 +313,9 @@ module MBTrain_DataTrainCenter1 #(
     .DESKEW_ADD_DELAY_INCREASES_PHASE(d2cDeskewAddDelayIncreasesPhase),
     .MIN_LANE_WINDOW_STEPS(d2cMinLaneWindowSteps),
     .MIN_COMMON_WINDOW_STEPS(d2cMinCommonWindowSteps),
-    .MAX_TRAINING_RETRIES(d2cMaxTrainingRetries)
+    .MAX_TRAINING_RETRIES(d2cMaxTrainingRetries),
+    .DATA_LANE_COUNT(dataLaneCount),
+    .ACTIVE_LANE_MASK(activeDataLaneMask)
   ) sweepEngine (
     .clock(clock),
     .reset_n(reset_n),
@@ -422,18 +431,20 @@ module MBTrain_DataTrainCenter1 #(
       end
       else if (receiverPointArmed && !d2cReceiver_start &&
                (receiverStateReg == DataTrainCenter1ReceiverState_runPointTest) &&
-               d2cReceiver_sendTxInitD2CResultsResp && !d2cReceiver_sentResultsResp) begin
+               d2cReceiver_sendTxInitD2CResultsResp && !d2cReceiver_sentResultsResp &&
+               d2cReceiver_resultLogged) begin
         nextSbTxDin = msgMbtrainTxInitD2CResultsResp(
           ENDPOINT_PHY, ENDPOINT_REMOTE_PHY,
           d2cReceiver_loggedResultsMsgInfo,
-          d2cReceiver_loggedResultsPayload
+          64'(d2cReceiver_loggedResultsPayload)
         );
         nextSbTxValid = 1'b1;
         selectReceiverResultsResp = 1'b1;
       end
       else if (receiverPointArmed && !d2cReceiver_start &&
                (receiverStateReg == DataTrainCenter1ReceiverState_runPointTest) &&
-               d2cReceiver_sendLfsrClearErrorResp && !d2cReceiver_sentLfsrClearResp) begin
+               d2cReceiver_sendLfsrClearErrorResp && !d2cReceiver_sentLfsrClearResp &&
+               (!WAIT_FOR_CENTER_LANE || d2cCenter_pointArmed)) begin
         nextSbTxDin = LFSR_CLEAR_ERROR_RESP;
         nextSbTxValid = 1'b1;
         selectReceiverLfsrResp = 1'b1;
@@ -518,6 +529,7 @@ module MBTrain_DataTrainCenter1 #(
       d2cReceiver_receivedPointTestStartReq <= 1'b0;
       d2cReceiver_receivedLfsrClearReq <= 1'b0;
       d2cReceiver_receivedResultsReq <= 1'b0;
+      d2cReceiver_resultLogged <= 1'b0;
       d2cReceiver_receivedEndPointTestReq <= 1'b0;
       flagSentStartReq <= 1'b0;
       flagSentDoneReq <= 1'b0;
@@ -534,7 +546,7 @@ module MBTrain_DataTrainCenter1 #(
       logErrorCountReg <= 16'b0;
       retryCountReg <= 16'b0;
       d2cReceiver_loggedResultsMsgInfo <= 16'b0;
-      d2cReceiver_loggedResultsPayload <= 64'b0;
+      d2cReceiver_loggedResultsPayload <= '0;
       d2c_maximumComparisonErrorThresholdReg <= 16'b0;
       d2c_comparisonModeReg <= 1'b0;
       d2c_iterationCountSettingsReg <= 16'b0;
@@ -544,7 +556,7 @@ module MBTrain_DataTrainCenter1 #(
       d2c_clockPhaseControlReg <= 4'b0;
       d2c_validPatternReg <= 3'b0;
       d2c_dataPatternReg <= 3'b0;
-      d2cSender_resultsLanePassReg <= 64'b0;
+      d2cSender_resultsLanePassReg <= '0;
       d2cSender_resultsValidPassReg <= 1'b0;
       d2cSender_resultsCumulativePassReg <= 1'b0;
 
@@ -575,6 +587,7 @@ module MBTrain_DataTrainCenter1 #(
         d2cReceiver_receivedPointTestStartReq <= 1'b0;
         d2cReceiver_receivedLfsrClearReq <= 1'b0;
         d2cReceiver_receivedResultsReq <= 1'b0;
+        d2cReceiver_resultLogged <= 1'b0;
         d2cReceiver_receivedEndPointTestReq <= 1'b0;
         flagSentStartReq <= 1'b0;
         flagSentDoneReq <= 1'b0;
@@ -591,8 +604,8 @@ module MBTrain_DataTrainCenter1 #(
         logErrorCountReg <= 16'b0;
         retryCountReg <= 16'b0;
         d2cReceiver_loggedResultsMsgInfo <= 16'b0;
-        d2cReceiver_loggedResultsPayload <= 64'b0;
-        d2cSender_resultsLanePassReg <= 64'b0;
+        d2cReceiver_loggedResultsPayload <= '0;
+        d2cSender_resultsLanePassReg <= '0;
         d2cSender_resultsValidPassReg <= 1'b0;
         d2cSender_resultsCumulativePassReg <= 1'b0;
       end
@@ -624,14 +637,11 @@ module MBTrain_DataTrainCenter1 #(
           d2cReceiver_receivedLfsrClearReq <= 1'b1;
         else if (sb_rx_dout == LFSR_CLEAR_ERROR_RESP)
           d2cSender_receivedLfsrClearResp <= 1'b1;
-        else if (sb_rx_dout == TX_INIT_RESULTS_REQ) begin
-        d2cReceiver_loggedResultsMsgInfo <= flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo;
-        d2cReceiver_loggedResultsPayload <= flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
-        d2cReceiver_receivedResultsReq <= 1'b1;
-        end
+        else if (resultsReqNow)
+          d2cReceiver_receivedResultsReq <= 1'b1;
         else if (isTxInitResultsResp) begin
           d2cSender_receivedResultsResp <= 1'b1;
-          d2cSender_resultsLanePassReg <= sb_rx_dout[127:64];
+          d2cSender_resultsLanePassReg <= sb_rx_dout[64 +: dataLaneCount];
           d2cSender_resultsValidPassReg <= sb_rx_dout[45];
           d2cSender_resultsCumulativePassReg <= sb_rx_dout[44];
         end
@@ -639,6 +649,16 @@ module MBTrain_DataTrainCenter1 #(
           d2cReceiver_receivedEndPointTestReq <= 1'b1;
         else if (sb_rx_dout == END_POINT_TEST_RESP)
           d2cSender_receivedEndPointTestResp <= 1'b1;
+      end
+
+      // The Results request closes the PHY window. Capture the completed
+      // snapshot once and hold it while the sideband transmitter is busy.
+      if (running && !startPulse && receiverPointArmed && !d2cReceiver_resultLogged &&
+          (resultsReqNow || d2cReceiver_receivedResultsReq) &&
+          (!WAIT_FOR_CENTER_LANE || d2cCenter_resultReady)) begin
+        d2cReceiver_loggedResultsMsgInfo <= flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo;
+        d2cReceiver_loggedResultsPayload <= flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
+        d2cReceiver_resultLogged <= 1'b1;
       end
 
       if (d2cSender_start) begin
@@ -652,7 +672,7 @@ module MBTrain_DataTrainCenter1 #(
         d2cSender_sentResultsReq <= 1'b0;
         d2cSender_sentEndPointTestReq <= 1'b0;
         logErrorCountReg <= 16'b0;
-        d2cSender_resultsLanePassReg <= 64'b0;
+        d2cSender_resultsLanePassReg <= '0;
         d2cSender_resultsValidPassReg <= 1'b0;
         d2cSender_resultsCumulativePassReg <= 1'b0;
       end
@@ -668,6 +688,7 @@ module MBTrain_DataTrainCenter1 #(
         receiverPointArmed <= 1'b1;
         d2cReceiver_receivedLfsrClearReq <= 1'b0;
         d2cReceiver_receivedResultsReq <= 1'b0;
+        d2cReceiver_resultLogged <= 1'b0;
         d2cReceiver_receivedEndPointTestReq <= 1'b0;
         d2cReceiver_sentPointTestStartResp <= 1'b0;
         d2cReceiver_sentLfsrClearResp <= 1'b0;

@@ -13,9 +13,15 @@ module MBTrainSpeedIdleFSM #(
   input wire logic         clock,
   input wire logic         reset_n,
   input wire logic         start,
+  // Initialize the retained physical code to the 2 GHz boot rate.
+  input wire logic         initialize,
+  input wire logic [1:0]   initialSpeed,
+  input wire logic         degrade,
+  input wire logic         trainErrorRequest,
   input wire logic         speedApplied,
-  input wire logic         speedDegradeAtFloor,
-  input wire logic [31:0]  cycles_1us,
+  output var logic [1:0]   speedCode,
+  output wire logic        applySpeed,
+  output wire logic        electricalIdle,
   output var logic         busy,
   output var logic         done,
   output var logic         trainError,
@@ -50,12 +56,22 @@ module MBTrainSpeedIdleFSM #(
   logic running, doneReg, trainErrorReg;
   logic prevStart, prevRxValid;
   logic errorModeReg, localErrorRequestReg, appliedReg;
+  logic ackLowObserved, applyPending;
+  logic speedAppliedSync;
+  // Clear the old acknowledgement before presenting another physical request.
+  tc_sync #(.Stages(2)) u_speed_applied_sync (
+    .clk_i(clock), .rst_ni(reset_n),
+    .serial_i(speedApplied), .serial_o(speedAppliedSync)
+  );
+  // Qualify synchronizer contents after reset; this shift register fills once.
+  logic [1:0] ackSyncValid;
+  always_ff @(posedge clock or negedge reset_n) begin
+    if (!reset_n) ackSyncValid <= 2'b00;
+    else ackSyncValid <= {ackSyncValid[0], 1'b1};
+  end
   logic receivedReq, receivedResp, sentReq, sentResp;
   SpeedIdleSenderState_t speedIdleSenderStateReg;
   SpeedIdleReceiverState_t speedIdleReceiverStateReg;
-  logic [31:0] cyclesPerUsMinusOneReg, cycleCounter;
-  logic [12:0] microsecondCounter;
-  logic errorTimeoutReached;
 
   wire startPulse = start && !prevStart;
   wire rxValidRisingEdge = sb_rx_valid && !prevRxValid;
@@ -69,12 +85,11 @@ module MBTrainSpeedIdleFSM #(
   wire [127:0] selectedReq = errorModeReg ? ERROR_ENTRY_REQ : SPEED_DONE_REQ;
   wire [127:0] selectedResp = errorModeReg ? ERROR_ENTRY_RESP : SPEED_DONE_RESP;
   wire maySend = errorModeReg || appliedReg;
-  wire normalExchangeComplete = sentReq && receivedResp && receivedReq && sentResp &&
-                                !sbTxValid && !sb_rx_valid;
-  wire normalResidencyExpired = !errorModeReg &&
-    (cycleCounter == cyclesPerUsMinusOneReg) && (microsecondCounter == 13'd7999);
   wire peerErrorRequest = rxValidRisingEdge && sb_rx_dout == ERROR_ENTRY_REQ;
 
+  wire speedDegradeAtFloor = degrade && (speedCode == 2'd0);
+  assign applySpeed = applyPending;
+  assign electricalIdle = start || running || trainErrorReg;
   assign sb_tx_valid = sbTxValid;
   assign sb_tx_din = sbTxDin;
   assign busy = running;
@@ -85,6 +100,9 @@ module MBTrainSpeedIdleFSM #(
 
   always_ff @(posedge clock or negedge reset_n) begin
     if (!reset_n) begin
+      speedCode <= 2'd0;
+      ackLowObserved <= 1'b0;
+      applyPending <= 1'b0;
       sbTxValid <= 1'b0;
       sbTxDin <= '0;
       running <= 1'b0;
@@ -101,37 +119,62 @@ module MBTrainSpeedIdleFSM #(
       sentResp <= 1'b0;
       speedIdleSenderStateReg <= SpeedIdleSenderState_selectLinkSpeed;
       speedIdleReceiverStateReg <= SpeedIdleReceiverState_waitDoneReq;
-      cyclesPerUsMinusOneReg <= 32'd0;
-      cycleCounter <= '0;
-      microsecondCounter <= '0;
-      errorTimeoutReached <= 1'b0;
     end else begin
       prevStart <= start;
       prevRxValid <= sb_rx_valid;
-      if (startPulse) begin
+      if (initialize) begin
+        speedCode <= 2'd0;
         sbTxValid <= 1'b0;
         sbTxDin <= '0;
-        running <= 1'b1;
+        running <= 1'b0;
         doneReg <= 1'b0;
         trainErrorReg <= 1'b0;
-        errorModeReg <= speedDegradeAtFloor;
-        localErrorRequestReg <= speedDegradeAtFloor;
+        errorModeReg <= 1'b0;
+        localErrorRequestReg <= 1'b0;
         appliedReg <= 1'b0;
+        ackLowObserved <= 1'b0;
+        applyPending <= 1'b0;
         receivedReq <= 1'b0;
         receivedResp <= 1'b0;
         sentReq <= 1'b0;
         sentResp <= 1'b0;
         speedIdleSenderStateReg <= SpeedIdleSenderState_selectLinkSpeed;
         speedIdleReceiverStateReg <= SpeedIdleReceiverState_waitDoneReq;
-        // Zero is clamped to one clock/us to keep a test configuration finite.
-        // Store the terminal count once, keeping subtraction out of the timer
-        // comparison path during training.
-        cyclesPerUsMinusOneReg <= (cycles_1us == 0) ? 32'd0 : cycles_1us - 32'd1;
-        cycleCounter <= '0;
-        microsecondCounter <= '0;
-        errorTimeoutReached <= 1'b0;
+      end else if (startPulse) begin
+        sbTxValid <= 1'b0;
+        sbTxDin <= '0;
+        running <= 1'b1;
+        doneReg <= 1'b0;
+        trainErrorReg <= 1'b0;
+        errorModeReg <= trainErrorRequest || speedDegradeAtFloor || peerErrorRequest;
+        localErrorRequestReg <= (trainErrorRequest || speedDegradeAtFloor) && !peerErrorRequest;
+        // The negotiated maximum implies support for every lower code.
+        // Rate changes only when entering SPEEDIDLE and remains held afterward.
+        if (!trainErrorRequest && !speedDegradeAtFloor && !peerErrorRequest)
+          speedCode <= degrade ? speedCode - 2'd1 : initialSpeed;
+        ackLowObserved <= 1'b0;
+        applyPending <= 1'b0;
+        appliedReg <= 1'b0;
+        receivedReq <= peerErrorRequest ||
+          (!(trainErrorRequest || speedDegradeAtFloor) && rxValidRisingEdge &&
+           sb_rx_dout == SPEED_DONE_REQ);
+        receivedResp <= 1'b0;
+        sentReq <= 1'b0;
+        sentResp <= 1'b0;
+        speedIdleSenderStateReg <= SpeedIdleSenderState_selectLinkSpeed;
+        speedIdleReceiverStateReg <= SpeedIdleReceiverState_waitDoneReq;
       end else if (running) begin
-        if (speedApplied && !errorModeReg) appliedReg <= 1'b1;
+        if (!errorModeReg && ackSyncValid[1]) begin
+          if (!ackLowObserved && !speedAppliedSync && !peerErrorRequest) begin
+            ackLowObserved <= 1'b1;
+            applyPending <= 1'b1;
+          end
+        end
+        // An accepted PHY change completes even if a peer requests TRAINERROR.
+        if (applyPending && speedAppliedSync) begin
+          applyPending <= 1'b0;
+          appliedReg <= 1'b1;
+        end
 
         // Keep a pending packet unchanged until the receiver accepts it.
         if (txFire) begin
@@ -139,7 +182,7 @@ module MBTrainSpeedIdleFSM #(
           sbTxDin <= '0;
           if (sbTxDin == selectedReq) sentReq <= 1'b1;
           if (sbTxDin == selectedResp) sentResp <= 1'b1;
-        end else if (!sbTxValid && maySend && !normalResidencyExpired) begin
+        end else if (!sbTxValid && maySend) begin
           if (receivedReq && !sentResp) begin
             sbTxValid <= 1'b1;
             sbTxDin <= selectedResp;
@@ -172,27 +215,11 @@ module MBTrainSpeedIdleFSM #(
           default: ;
         endcase
 
-        // UCIe 2.0 4.5 bounds normal SPEEDIDLE residency to 8 ms, including
-        // the PLL/applied wait and its done exchange. On expiry, enter the
-        // TRAINERROR handshake and restart the counter. Section 4.5.3.8 then
-        // permits entry after 8 ms without a response to our accepted request.
-        // Nested counters avoid a timing-critical cycles_1us * 8000 multiply.
-        if ((!errorModeReg && !normalExchangeComplete) ||
-            (errorModeReg && sentReq && !receivedResp && !errorTimeoutReached)) begin
-          if (cycleCounter == cyclesPerUsMinusOneReg) begin
-            cycleCounter <= '0;
-            if (microsecondCounter == 13'd7999) begin
-              if (errorModeReg) errorTimeoutReached <= 1'b1;
-            end
-            else microsecondCounter <= microsecondCounter + 1'b1;
-          end else cycleCounter <= cycleCounter + 1'b1;
-        end
-
         // Complete accepted writes and any peer request before reporting an
         // exit. The parent capture queue must also drain before a global reset.
-        if (!sbTxValid && !sb_rx_valid &&
+        if (!sbTxValid && !sb_rx_valid && !applyPending &&
             (errorModeReg ?
-              ((localErrorRequestReg ? (sentReq && (receivedResp || errorTimeoutReached)) :
+              ((localErrorRequestReg ? (sentReq && receivedResp) :
                                       (receivedReq && sentResp)) && (!receivedReq || sentResp)) :
               (sentReq && receivedResp && receivedReq && sentResp))) begin
           running <= 1'b0;
@@ -200,14 +227,12 @@ module MBTrainSpeedIdleFSM #(
           else doneReg <= 1'b1;
         end
 
-        // Either an explicit partner error or our residency watchdog aborts
-        // normal SPEEDIDLE. Preserve outstanding packets and drain them before
-        // the error exchange. A simultaneous peer request needs only a reply.
-        if (!errorModeReg && (peerErrorRequest ||
-                              (normalResidencyExpired && !normalExchangeComplete))) begin
+        // A partner error aborts normal SPEEDIDLE. Preserve any accepted
+        // outstanding packet and acknowledge the explicit error request.
+        if (!errorModeReg && peerErrorRequest) begin
           errorModeReg <= 1'b1;
-          localErrorRequestReg <= !peerErrorRequest;
-          receivedReq <= peerErrorRequest;
+          localErrorRequestReg <= 1'b0;
+          receivedReq <= 1'b1;
           receivedResp <= 1'b0;
           sentReq <= 1'b0;
           sentResp <= 1'b0;
@@ -215,9 +240,6 @@ module MBTrainSpeedIdleFSM #(
           running <= 1'b1;
           speedIdleSenderStateReg <= SpeedIdleSenderState_selectLinkSpeed;
           speedIdleReceiverStateReg <= SpeedIdleReceiverState_waitDoneReq;
-          cycleCounter <= '0;
-          microsecondCounter <= '0;
-          errorTimeoutReached <= 1'b0;
         end
       end
     end

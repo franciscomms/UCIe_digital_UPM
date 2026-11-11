@@ -5,11 +5,13 @@
 // TxInitD2CPointTestReceiverFSM: in a Tx-initiated test the receiver is the
 // responder and returns results over sideband, while in an Rx-initiated test
 // the receiver sends Start/End requests and captures the local comparison
-// result when the remote transmitter reports Tx Count Done.
+// result after the remote transmitter reports Tx Count Done. In a Valid
+// lane point test the result may arrive later via the checker return CDC.
 `default_nettype none
 
 module RxInitD2CPointTestReceiverFSM #(
-    parameter integer RESULT_WIDTH = 1
+    parameter integer RESULT_WIDTH = 1,
+    parameter bit WAIT_FOR_COMPARISON_RESULT = 1'b0
 ) (
   input  wire logic clock,
   input  wire logic reset_n,
@@ -39,7 +41,9 @@ module RxInitD2CPointTestReceiverFSM #(
   input  wire logic sentEndRxInitD2CPointTestReq,
   input  wire logic receivedEndRxInitD2CPointTestResp,
 
-  output      logic [RESULT_WIDTH-1:0] pointTestPass
+  output      logic [RESULT_WIDTH-1:0] pointTestPass,
+
+  input  wire logic comparisonResultReady
 );
   typedef enum logic [3:0] {
     RxInitReceiverState_idle              = 4'h0,
@@ -53,7 +57,8 @@ module RxInitD2CPointTestReceiverFSM #(
     RxInitReceiverState_sendCountDoneResp = 4'h8,
     RxInitReceiverState_sendEndReq        = 4'h9,
     RxInitReceiverState_waitEndResp       = 4'hA,
-    RxInitReceiverState_finish            = 4'hB
+    RxInitReceiverState_finish            = 4'hB,
+    RxInitReceiverState_waitComparisonResult = 4'hC
   } RxInitReceiverState_t;
 
   (* keep = "true" *) RxInitReceiverState_t stateReg;
@@ -126,6 +131,19 @@ module RxInitD2CPointTestReceiverFSM #(
 
           RxInitReceiverState_waitCountDoneReq: begin
             if (receivedRxInitD2CTxCountDoneReq) begin
+              if (!WAIT_FOR_COMPARISON_RESULT || comparisonResultReady) begin
+                pointTestPassReg <= detectedValidPattern;
+                stateReg <= RxInitReceiverState_sendCountDoneResp;
+              end else begin
+                // Remember the one-cycle sideband request while the receiver
+                // closes the observation and returns its qualified result.
+                stateReg <= RxInitReceiverState_waitComparisonResult;
+              end
+            end
+          end
+
+          RxInitReceiverState_waitComparisonResult: begin
+            if (comparisonResultReady) begin
               pointTestPassReg <= detectedValidPattern;
               stateReg <= RxInitReceiverState_sendCountDoneResp;
             end

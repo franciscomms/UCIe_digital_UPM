@@ -30,7 +30,8 @@ module MBTrainValTrainVrefFSM #(
   parameter int unsigned validVrefMaxTrainingRetries =
     LtsmParameters_pkg::DEFAULT_VALID_VREF_MAX_TRAINING_RETRIES,
   parameter bit performVrefTraining =
-    LtsmParameters_pkg::DEFAULT_VALTRAIN_VREF_ENABLE
+    LtsmParameters_pkg::DEFAULT_VALTRAIN_VREF_ENABLE,
+  parameter bit WAIT_FOR_VALID_LANE = 1'b0
 ) (
   input  wire logic                         clock,
   input  wire logic                         reset_n,
@@ -73,7 +74,11 @@ module MBTrainValTrainVrefFSM #(
   output      logic [15:0]                  retryCount,
   output      logic [validVrefCodeWidth-1:0] selectedVrefCode,
   output      logic [validVrefCodeWidth-1:0] validWindowLeftCode,
-  output      logic [validVrefCodeWidth-1:0] validWindowRightCode
+  output      logic [validVrefCodeWidth-1:0] validWindowRightCode,
+
+  // Per-point feedback from the Valid-lane controller when WAIT_FOR_VALID_LANE is set.
+  input wire logic valVref_pointArmed,
+  input wire logic valVref_pointResultReady
 );
   localparam int unsigned VREF_RANGE_MILLIVOLTS =
     validVrefMaximumMillivolts - validVrefMinimumMillivolts;
@@ -81,6 +86,7 @@ module MBTrainValTrainVrefFSM #(
   assign unusedVrefRange = (VREF_RANGE_MILLIVOLTS == 0);
 
   MBTrain_ValidVrefStateCore #(
+    .WAIT_FOR_VALID_LANE(WAIT_FOR_VALID_LANE),
     .IS_VALTRAIN_VREF(1'b1),
     .PERFORM_LOCAL_TRAINING(performVrefTraining),
     .VREF_VALUE_COUNT(validVrefValueCount),
@@ -115,6 +121,8 @@ module MBTrainValTrainVrefFSM #(
     .flagToAnalog_dataPattern(flagToAnalog_valTrainVrefDataPattern),
     .flagToAnalog_clearComparisonErrors(flagToAnalog_valTrainVrefClearComparisonErrors),
     .flagFromAnalog_detectedValPattern(flagFromAnalog_valTrainVrefDetectedValPattern),
+    .valVref_pointArmed(valVref_pointArmed),
+    .valVref_pointResultReady(valVref_pointResultReady),
     .flagToAnalog_sendValTrainPattern(flagToAnalog_valTrainVrefSendPattern),
     .flagFromAnalog_valTrainPatternSent(flagFromAnalog_valTrainVrefFinishedPattern),
     .flagToAnalog_resetLocalTxScrambler(flagToAnalog_valTrainVrefResetLocalTxScrambler),

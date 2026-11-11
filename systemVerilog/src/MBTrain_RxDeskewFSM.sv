@@ -335,6 +335,7 @@ module MBTrainRxDeskewFSM #(
     .sentLfsrClearErrorResp(initiatorClearRespSent),
     .receivedRxInitD2CTxCountDoneReq(receivedTxCountDoneReq),
     .detectedValidPattern(flagFromAnalog_rxDeskewDetectedDataPattern),
+    .comparisonResultReady(1'b1),
     .sendRxInitD2CTxCountDoneResp(initiatorSendCountResp),
     .sentRxInitD2CTxCountDoneResp(initiatorCountRespSent),
     .sendEndRxInitD2CPointTestReq(initiatorSendEndReq),

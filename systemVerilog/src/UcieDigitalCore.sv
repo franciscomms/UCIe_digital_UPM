@@ -105,7 +105,10 @@ module UcieDigitalCore #(
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_MIN_PASSING_WINDOW_VALUES,
   parameter int unsigned rxDeskewMaxTrainingRetries =
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES,
-  parameter int unsigned SB_TX_FIFO_ENTRIES = 4
+  parameter int unsigned SB_TX_FIFO_ENTRIES = 4,
+  parameter bit WAIT_FOR_VALID_LANE = 1'b0,
+  parameter bit WAIT_FOR_CENTER_LANE = 1'b0,
+  parameter bit WAIT_FOR_LINKSPEED_LANE = 1'b0
 ) (
   // ==========================================================================
   // COMMON CLOCK AND RESET
@@ -275,7 +278,7 @@ module UcieDigitalCore #(
   output var logic [2:0]     ltsm_flagToAnalog_d2cReceiver_dataPattern,
   output var logic           ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
   output var logic           ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
   input wire logic           ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
   output var logic           ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew,
@@ -303,14 +306,12 @@ module UcieDigitalCore #(
   output var logic           ltsm_flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] ltsm_flagFromAnalog_rxDeskew_detectedDataPattern,
 
-  // LTSM MBTRAIN.LINKSPEED interface.
-  output var logic           ltsm_flagToLtsm_linkSpeed_phyInRetrain,
-  output var logic [1:0]           ltsm_flagToAnalog_linkSpeed_speedCode,
-  output var logic           ltsm_flagToAnalog_linkSpeed_applySpeed,
-  output var logic           ltsm_flagToAnalog_linkSpeed_electricalIdle,
+  // LTSM MBTRAIN.SPEEDIDLE physical rate controls.
+  output var logic [1:0]           ltsm_flagToAnalog_speedIdle_speedCode,
+  output var logic           ltsm_flagToAnalog_speedIdle_applySpeed,
+  output var logic           ltsm_flagToAnalog_speedIdle_electricalIdle,
   input wire logic [15:0]    ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
-  input wire logic [1:0]    ltsm_linkSpeed_requestedSpeed,
-  input wire logic     ltsm_flagFromAnalog_linkSpeed_speedApplied,
+  input wire logic     ltsm_flagFromAnalog_speedIdle_speedApplied,
   output var logic [3:0]     ltsm_dbg_mbtrainState,
   // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    ltsm_dbg_mbtrainActiveSubstate,
@@ -582,7 +583,7 @@ module UcieDigitalCore #(
   output var logic [2:0] jtagLtsm_flagToAnalog_d2cReceiver_dataPattern,
   output var logic jtagLtsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0] jtagLtsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
-  input wire logic [63:0] jtagLtsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  input wire logic [dataLaneCount-1:0] jtagLtsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
   output var logic jtagLtsm_flagToAnalog_d2cSender_sendLfsrPattern,
   input wire logic jtagLtsm_flagFromAnalog_d2cSender_lfsrPatternSent,
   output var logic jtagLtsm_flagToAnalog_d2cSender_applyTxLaneDeskew,
@@ -606,13 +607,11 @@ module UcieDigitalCore #(
   output var logic [2:0] jtagLtsm_flagToAnalog_rxDeskew_dataPattern,
   output var logic jtagLtsm_flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] jtagLtsm_flagFromAnalog_rxDeskew_detectedDataPattern,
-  output var logic jtagLtsm_flagToLtsm_linkSpeed_phyInRetrain,
-  output var logic [1:0] jtagLtsm_flagToAnalog_linkSpeed_speedCode,
-  output var logic jtagLtsm_flagToAnalog_linkSpeed_applySpeed,
-  output var logic jtagLtsm_flagToAnalog_linkSpeed_electricalIdle,
+  output var logic [1:0] jtagLtsm_flagToAnalog_speedIdle_speedCode,
+  output var logic jtagLtsm_flagToAnalog_speedIdle_applySpeed,
+  output var logic jtagLtsm_flagToAnalog_speedIdle_electricalIdle,
   input wire logic [15:0] jtagLtsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
-  input wire logic [1:0] jtagLtsm_linkSpeed_requestedSpeed,
-  input wire logic  jtagLtsm_flagFromAnalog_linkSpeed_speedApplied,
+  input wire logic  jtagLtsm_flagFromAnalog_speedIdle_speedApplied,
   output var logic [3:0] jtagLtsm_dbg_mbtrainState,
   output var logic [11:0] jtagLtsm_dbg_mbtrainActiveSubstate,
   output var logic [3:0] jtagLtsm_dbg_mbtrainValVrefLocalState,
@@ -666,7 +665,18 @@ module UcieDigitalCore #(
   output var logic [3:0] jtagLtsm_dbg_mbtrainLinkSpeedD2cSenderState,
   output var logic [3:0] jtagLtsm_dbg_mbtrainLinkSpeedD2cReceiverState,
   output var logic [15:0] jtagLtsm_dbg_mbtrainLastErrorCount,
-  output var logic [15:0] jtagLtsm_dbg_mbtrainRetryCount
+  output var logic [15:0] jtagLtsm_dbg_mbtrainRetryCount,
+
+  // Live reversal receiver state used by the functional RX controller.
+  output var logic [2:0] ltsm_dbg_mbinitReversalMbReceiverState,
+
+  // Per-point feedback from the Valid-lane controller when WAIT_FOR_VALID_LANE is set.
+  input wire logic ltsm_valVref_pointArmed,
+  input wire logic ltsm_valVref_pointResultReady,
+  input wire logic ltsm_d2cCenter_pointArmed,
+  input wire logic ltsm_d2cCenter_resultReady,
+  input wire logic ltsm_linkSpeed_pointArmed,
+  input wire logic ltsm_linkSpeed_resultReady
 );
   import UcieUPM_interfaces_pkg::*;
   import UcieUPM_d2dadapter_pkg::*;
@@ -1166,7 +1176,7 @@ module UcieDigitalCore #(
   logic [2:0] ltsmCore_flagToAnalog_d2cReceiver_dataPattern;
   logic ltsmCore_flagToAnalog_d2cReceiver_resetLocalRxScrambler;
   logic [15:0] ltsmCore_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo;
-  logic [63:0] ltsmCore_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
+  logic [dataLaneCount-1:0] ltsmCore_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload;
   logic ltsmCore_flagToAnalog_d2cSender_sendLfsrPattern;
   logic ltsmCore_flagFromAnalog_d2cSender_lfsrPatternSent;
   logic ltsmCore_flagToAnalog_d2cSender_applyTxLaneDeskew;
@@ -1190,13 +1200,11 @@ module UcieDigitalCore #(
   logic [2:0] ltsmCore_flagToAnalog_rxDeskew_dataPattern;
   logic ltsmCore_flagToAnalog_rxDeskew_clearComparisonErrors;
   logic [dataLaneCount-1:0] ltsmCore_flagFromAnalog_rxDeskew_detectedDataPattern;
-  logic ltsmCore_flagToLtsm_linkSpeed_phyInRetrain;
-  logic [1:0] ltsmCore_flagToAnalog_linkSpeed_speedCode;
-  logic ltsmCore_flagToAnalog_linkSpeed_applySpeed;
-  logic ltsmCore_flagToAnalog_linkSpeed_electricalIdle;
+  logic [1:0] ltsmCore_flagToAnalog_speedIdle_speedCode;
+  logic ltsmCore_flagToAnalog_speedIdle_applySpeed;
+  logic ltsmCore_flagToAnalog_speedIdle_electricalIdle;
   logic [15:0] ltsmCore_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
-  logic [1:0] ltsmCore_linkSpeed_requestedSpeed;
-  logic  ltsmCore_flagFromAnalog_linkSpeed_speedApplied;
+  logic  ltsmCore_flagFromAnalog_speedIdle_speedApplied;
   logic [3:0] ltsmCore_dbg_mbtrainState;
   logic [11:0] ltsmCore_dbg_mbtrainActiveSubstate;
   logic [3:0] ltsmCore_dbg_mbtrainValVrefLocalState;
@@ -1319,8 +1327,7 @@ module UcieDigitalCore #(
   assign ltsmCore_flagFromAnalog_rxDeskew_rxLaneDeskewApplied = testModeLtsm ? jtagLtsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied : ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied;
   assign ltsmCore_flagFromAnalog_rxDeskew_detectedDataPattern = testModeLtsm ? jtagLtsm_flagFromAnalog_rxDeskew_detectedDataPattern : ltsm_flagFromAnalog_rxDeskew_detectedDataPattern;
   assign ltsmCore_flagFromAnalog_d2cReceiver_laneComparisonSuccessful = testModeLtsm ? jtagLtsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful : ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
-  assign ltsmCore_linkSpeed_requestedSpeed = testModeLtsm ? jtagLtsm_linkSpeed_requestedSpeed : ltsm_linkSpeed_requestedSpeed;
-  assign ltsmCore_flagFromAnalog_linkSpeed_speedApplied = testModeLtsm ? jtagLtsm_flagFromAnalog_linkSpeed_speedApplied : ltsm_flagFromAnalog_linkSpeed_speedApplied;
+  assign ltsmCore_flagFromAnalog_speedIdle_speedApplied = testModeLtsm ? jtagLtsm_flagFromAnalog_speedIdle_speedApplied : ltsm_flagFromAnalog_speedIdle_speedApplied;
 
   // Outputs of ltsm: normal sink or TDR pin (the other side is 0, so the
   // rest of the core sees an idle block in test mode).
@@ -1372,6 +1379,7 @@ module UcieDigitalCore #(
   assign jtagLtsm_dbg_mbinitRepairValReceiverState = testModeLtsm ? ltsmCore_dbg_mbinitRepairValReceiverState : '0;
   assign jtagLtsm_dbg_mbinitReversalMbSenderState = testModeLtsm ? ltsmCore_dbg_mbinitReversalMbSenderState : '0;
   assign jtagLtsm_dbg_mbinitReversalMbReceiverState = testModeLtsm ? ltsmCore_dbg_mbinitReversalMbReceiverState : '0;
+  assign ltsm_dbg_mbinitReversalMbReceiverState = testModeLtsm ? '0 : ltsmCore_dbg_mbinitReversalMbReceiverState;
   assign jtagLtsm_dbg_mbinitRepairMbSenderState = testModeLtsm ? ltsmCore_dbg_mbinitRepairMbSenderState : '0;
   assign jtagLtsm_dbg_mbinitRepairMbReceiverState = testModeLtsm ? ltsmCore_dbg_mbinitRepairMbReceiverState : '0;
   assign jtagLtsm_dbg_mbinitReversalMbReceivedSuccessCount = testModeLtsm ? ltsmCore_dbg_mbinitReversalMbReceivedSuccessCount : '0;
@@ -1506,14 +1514,12 @@ module UcieDigitalCore #(
   assign ltsm_flagToAnalog_rxDeskew_dataPattern = testModeLtsm ? '0 : ltsmCore_flagToAnalog_rxDeskew_dataPattern;
   assign jtagLtsm_flagToAnalog_rxDeskew_clearComparisonErrors = testModeLtsm ? ltsmCore_flagToAnalog_rxDeskew_clearComparisonErrors : '0;
   assign ltsm_flagToAnalog_rxDeskew_clearComparisonErrors = testModeLtsm ? '0 : ltsmCore_flagToAnalog_rxDeskew_clearComparisonErrors;
-  assign jtagLtsm_flagToLtsm_linkSpeed_phyInRetrain = testModeLtsm ? ltsmCore_flagToLtsm_linkSpeed_phyInRetrain : '0;
-  assign jtagLtsm_flagToAnalog_linkSpeed_speedCode = testModeLtsm ? ltsmCore_flagToAnalog_linkSpeed_speedCode : '0;
-  assign jtagLtsm_flagToAnalog_linkSpeed_applySpeed = testModeLtsm ? ltsmCore_flagToAnalog_linkSpeed_applySpeed : '0;
-  assign jtagLtsm_flagToAnalog_linkSpeed_electricalIdle = testModeLtsm ? ltsmCore_flagToAnalog_linkSpeed_electricalIdle : '0;
-  assign ltsm_flagToLtsm_linkSpeed_phyInRetrain = testModeLtsm ? '0 : ltsmCore_flagToLtsm_linkSpeed_phyInRetrain;
-  assign ltsm_flagToAnalog_linkSpeed_speedCode = testModeLtsm ? '0 : ltsmCore_flagToAnalog_linkSpeed_speedCode;
-  assign ltsm_flagToAnalog_linkSpeed_applySpeed = testModeLtsm ? '0 : ltsmCore_flagToAnalog_linkSpeed_applySpeed;
-  assign ltsm_flagToAnalog_linkSpeed_electricalIdle = testModeLtsm ? '0 : ltsmCore_flagToAnalog_linkSpeed_electricalIdle;
+  assign jtagLtsm_flagToAnalog_speedIdle_speedCode = testModeLtsm ? ltsmCore_flagToAnalog_speedIdle_speedCode : '0;
+  assign jtagLtsm_flagToAnalog_speedIdle_applySpeed = testModeLtsm ? ltsmCore_flagToAnalog_speedIdle_applySpeed : '0;
+  assign jtagLtsm_flagToAnalog_speedIdle_electricalIdle = testModeLtsm ? ltsmCore_flagToAnalog_speedIdle_electricalIdle : '0;
+  assign ltsm_flagToAnalog_speedIdle_speedCode = testModeLtsm ? '0 : ltsmCore_flagToAnalog_speedIdle_speedCode;
+  assign ltsm_flagToAnalog_speedIdle_applySpeed = testModeLtsm ? '0 : ltsmCore_flagToAnalog_speedIdle_applySpeed;
+  assign ltsm_flagToAnalog_speedIdle_electricalIdle = testModeLtsm ? '0 : ltsmCore_flagToAnalog_speedIdle_electricalIdle;
   assign jtagLtsm_dbg_mbtrainState = testModeLtsm ? ltsmCore_dbg_mbtrainState : '0;
   assign ltsm_dbg_mbtrainState = testModeLtsm ? '0 : ltsmCore_dbg_mbtrainState;
   assign jtagLtsm_dbg_mbtrainActiveSubstate = testModeLtsm ? ltsmCore_dbg_mbtrainActiveSubstate : '0;
@@ -1578,6 +1584,9 @@ module UcieDigitalCore #(
   // --------------------------------------------------------------------------
   // Port names below preserve the names used by the Chisel instance.
   LinkTrainingFSM #(
+    .WAIT_FOR_VALID_LANE(WAIT_FOR_VALID_LANE),
+    .WAIT_FOR_CENTER_LANE(WAIT_FOR_CENTER_LANE),
+    .WAIT_FOR_LINKSPEED_LANE(WAIT_FOR_LINKSPEED_LANE),
     .sbFeatureExtension                       (sbFeatureExtension),
     .ucieA                                    (ucieA),
     .moduleID                                 (moduleID),
@@ -1692,6 +1701,13 @@ module UcieDigitalCore #(
     .dbg_mbinitReversalMbReceivedSuccessCount                                  (ltsmCore_dbg_mbinitReversalMbReceivedSuccessCount),
     .flagToAnalog_valVref_sendPattern                                          (ltsmCore_flagToAnalog_valVref_sendPattern),
     .flagFromAnalog_valVref_detectedValPattern                                 (ltsmCore_flagFromAnalog_valVref_detectedValPattern),
+    // Isolation tests inject the existing pass bit directly.
+    .valVref_pointArmed(testModeLtsm || ltsm_valVref_pointArmed),
+    .d2cCenter_pointArmed(testModeLtsm || ltsm_d2cCenter_pointArmed),
+    .d2cCenter_resultReady(testModeLtsm || ltsm_d2cCenter_resultReady),
+    .linkSpeed_pointArmed(testModeLtsm || ltsm_linkSpeed_pointArmed),
+    .linkSpeed_resultReady(testModeLtsm || ltsm_linkSpeed_resultReady),
+    .valVref_pointResultReady(testModeLtsm || ltsm_valVref_pointResultReady),
     .flagFromAnalog_valVref_finishedPattern                                    (ltsmCore_flagFromAnalog_valVref_finishedPattern),
     .flagToAnalog_valVref_applyRxVref                                          (ltsmCore_flagToAnalog_valVref_applyRxVref),
     .flagToAnalog_valVref_rxVrefCode                                           (ltsmCore_flagToAnalog_valVref_rxVrefCode),
@@ -1771,13 +1787,11 @@ module UcieDigitalCore #(
     .flagToAnalog_rxDeskew_dataPattern                                         (ltsmCore_flagToAnalog_rxDeskew_dataPattern),
     .flagToAnalog_rxDeskew_clearComparisonErrors                               (ltsmCore_flagToAnalog_rxDeskew_clearComparisonErrors),
     .flagFromAnalog_rxDeskew_detectedDataPattern                               (ltsmCore_flagFromAnalog_rxDeskew_detectedDataPattern),
-    .flagToLtsm_linkSpeed_phyInRetrain                                         (ltsmCore_flagToLtsm_linkSpeed_phyInRetrain),
-    .flagToAnalog_linkSpeed_speedCode                                         (ltsmCore_flagToAnalog_linkSpeed_speedCode),
-    .flagToAnalog_linkSpeed_applySpeed                                         (ltsmCore_flagToAnalog_linkSpeed_applySpeed),
-    .flagToAnalog_linkSpeed_electricalIdle                                         (ltsmCore_flagToAnalog_linkSpeed_electricalIdle),
+    .flagToAnalog_speedIdle_speedCode                                         (ltsmCore_flagToAnalog_speedIdle_speedCode),
+    .flagToAnalog_speedIdle_applySpeed                                         (ltsmCore_flagToAnalog_speedIdle_applySpeed),
+    .flagToAnalog_speedIdle_electricalIdle                                         (ltsmCore_flagToAnalog_speedIdle_electricalIdle),
     .flagFromAnalog_d2cReceiver_laneComparisonSuccessful             (ltsmCore_flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
-    .linkSpeed_requestedSpeed             (ltsmCore_linkSpeed_requestedSpeed),
-    .flagFromAnalog_linkSpeed_speedApplied             (ltsmCore_flagFromAnalog_linkSpeed_speedApplied),
+    .flagFromAnalog_speedIdle_speedApplied             (ltsmCore_flagFromAnalog_speedIdle_speedApplied),
     .dbg_mbtrainState                                                          (ltsmCore_dbg_mbtrainState),
     // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     .dbg_mbtrainActiveSubstate                                                 (ltsmCore_dbg_mbtrainActiveSubstate),

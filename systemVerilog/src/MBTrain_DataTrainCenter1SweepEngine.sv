@@ -12,7 +12,7 @@
 // Each lane exports 20 physical controls: cell 1 [9:0], cell 2 [19:10].
 // Within each cell, bit 0 is the 0.5 ps LSB; bits 1..9 are the 1 ps
 // thermometer switches sw-4..sw4. Cell 1 fills to 9.5 ps before cell 2.
-// Inactive UCIe-S lanes [63:16] are held at zero. Numeric delay calculations
+// Unused deskew outputs are held at zero. Numeric delay calculations
 // use half-ps steps separately from this PHY control-word width.
 //
 // PI phase convention:
@@ -30,7 +30,9 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   parameter bit          DESKEW_ADD_DELAY_INCREASES_PHASE = LtsmParameters_pkg::DEFAULT_D2C_DESKEW_ADD_DELAY_INCREASES_PHASE,
   parameter int unsigned MIN_LANE_WINDOW_STEPS          = LtsmParameters_pkg::DEFAULT_D2C_MIN_LANE_WINDOW_STEPS,
   parameter int unsigned MIN_COMMON_WINDOW_STEPS        = LtsmParameters_pkg::DEFAULT_D2C_MIN_COMMON_WINDOW_STEPS,
-  parameter int unsigned MAX_TRAINING_RETRIES           = LtsmParameters_pkg::DEFAULT_D2C_MAX_TRAINING_RETRIES
+  parameter int unsigned MAX_TRAINING_RETRIES           = LtsmParameters_pkg::DEFAULT_D2C_MAX_TRAINING_RETRIES,
+  parameter int unsigned DATA_LANE_COUNT = ucieA ? 64 : 16,
+  parameter logic [DATA_LANE_COUNT-1:0] ACTIVE_LANE_MASK = '1
 ) (
   input  wire logic clock,
   input  wire logic reset_n,
@@ -56,7 +58,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   // currently applied local clock phase.
   output var  logic point_test_start,
   input  wire logic point_test_done,
-  input  wire logic [63:0] point_test_lane_pass,
+  input  wire logic [DATA_LANE_COUNT-1:0] point_test_lane_pass,
   input  wire logic        point_test_valid_pass,
   input  wire logic        point_test_cumulative_pass,
 
@@ -66,13 +68,11 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   // Phase readback uses the same physical encoding as tx_clock_phase_code.
   output var  logic [PI_CODE_WIDTH-1:0] finalClockPhase
 );
-  localparam int unsigned MAX_DATA_LANES   = 64;
-  localparam int unsigned ACTIVE_DATA_LANES = ucieA ? 64 : 16;
-  // Split the target reduction evenly at a register boundary: 4 groups of
-  // 4 lanes (two compare/select levels per cycle), or 8 groups of 8 lanes
-  // (three levels per cycle). No inactive-lane sentinel branches are needed.
-  localparam int unsigned CENTER_GROUP_LANES = ucieA ? 8 : 4;
-  localparam int unsigned CENTER_GROUP_COUNT = ACTIVE_DATA_LANES / CENTER_GROUP_LANES;
+  // Divide the lane-center reduction across two registered stages.
+  localparam int unsigned CENTER_TREE_DEPTH = $clog2(DATA_LANE_COUNT);
+  localparam int unsigned CENTER_GROUP_LANES = 1 << (CENTER_TREE_DEPTH / 2);
+  localparam int unsigned CENTER_GROUP_COUNT = (1 << CENTER_TREE_DEPTH) / CENTER_GROUP_LANES;
+  localparam int unsigned FAILURE_COUNT_WIDTH = $clog2(DATA_LANE_COUNT + 2);
   localparam int unsigned PHASE_COUNT = LtsmParameters_pkg::D2C_PI_PHASE_COUNT;
   localparam int unsigned PHASE_INDEX_WIDTH = LtsmParameters_pkg::D2C_PI_INDEX_WIDTH;
   // Length must represent all 264 samples in an all-pass sweep.
@@ -82,9 +82,6 @@ module MBTrain_DataTrainCenter1SweepEngine #(
     $clog2({1'b0, DESKEW_STEPS_PER_PI} + 33'd1);
   localparam int unsigned DESKEW_PRODUCT_WIDTH =
     PHASE_INDEX_WIDTH + DESKEW_STEP_WIDTH;
-
-  localparam logic [63:0] ACTIVE_LANE_MASK =
-    ucieA ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
 
   typedef enum logic [4:0] {
     SweepState_IDLE                  = 5'd0,
@@ -128,10 +125,10 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   // loop over the entire stored sweep would unroll into PHASE_COUNT serial
   // increment/compare/mux stages. These registers reduce that path to one
   // narrow increment and comparison, independent of the sweep length.
-  logic [PHASE_INDEX_WIDTH-1:0] laneRunStartReg [0:MAX_DATA_LANES-1];
-  logic [WINDOW_LENGTH_WIDTH-1:0] laneRunLengthReg [0:MAX_DATA_LANES-1];
-  logic [PHASE_INDEX_WIDTH-1:0] laneBestStartReg [0:MAX_DATA_LANES-1];
-  logic [WINDOW_LENGTH_WIDTH-1:0] laneBestLengthReg [0:MAX_DATA_LANES-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneRunStartReg [0:DATA_LANE_COUNT-1];
+  logic [WINDOW_LENGTH_WIDTH-1:0] laneRunLengthReg [0:DATA_LANE_COUNT-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneBestStartReg [0:DATA_LANE_COUNT-1];
+  logic [WINDOW_LENGTH_WIDTH-1:0] laneBestLengthReg [0:DATA_LANE_COUNT-1];
   logic [PHASE_INDEX_WIDTH-1:0] globalRunStartReg;
   logic [WINDOW_LENGTH_WIDTH-1:0] globalRunLengthReg;
   logic [PHASE_INDEX_WIDTH-1:0] globalBestStartReg;
@@ -140,15 +137,15 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   // Register the arithmetic stages between finding lane centers and applying
   // deskew: center -> group extrema -> target -> delta -> scale -> range
   // -> physical switch encoding. The encoder is fed only a 6-bit checked value.
-  logic [PHASE_INDEX_WIDTH-1:0] laneLeftPhaseReg [0:MAX_DATA_LANES-1];
-  logic [PHASE_INDEX_WIDTH-1:0] laneRightPhaseReg [0:MAX_DATA_LANES-1];
-  logic [PHASE_INDEX_WIDTH-1:0] laneCenterPhaseReg [0:MAX_DATA_LANES-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneLeftPhaseReg [0:DATA_LANE_COUNT-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneRightPhaseReg [0:DATA_LANE_COUNT-1];
+  logic [PHASE_INDEX_WIDTH-1:0] laneCenterPhaseReg [0:DATA_LANE_COUNT-1];
   logic [PHASE_INDEX_WIDTH-1:0] groupCenterPhaseReg [0:CENTER_GROUP_COUNT-1];
   logic [PHASE_INDEX_WIDTH-1:0] targetLaneCenterReg;
-  logic [PHASE_INDEX_WIDTH-1:0] deskewDeltaReg [0:MAX_DATA_LANES-1];
-  logic [DESKEW_PRODUCT_WIDTH-1:0] deskewProductReg [0:MAX_DATA_LANES-1];
+  logic [PHASE_INDEX_WIDTH-1:0] deskewDeltaReg [0:DATA_LANE_COUNT-1];
+  logic [DESKEW_PRODUCT_WIDTH-1:0] deskewProductReg [0:DATA_LANE_COUNT-1];
   logic [LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH-1:0]
-    selectedDeskewStepsReg [0:MAX_DATA_LANES-1];
+    selectedDeskewStepsReg [0:DATA_LANE_COUNT-1];
   logic [PHASE_INDEX_WIDTH-1:0] globalLeftPhaseReg;
   logic [PHASE_INDEX_WIDTH-1:0] globalRightPhaseReg;
 
@@ -158,20 +155,20 @@ module MBTrain_DataTrainCenter1SweepEngine #(
                           allActiveDataLanesPass;
 
   // Explicit balanced reductions avoid serial lane-to-lane dependencies.
-  // Failure counts need only seven bits for 64 data lanes plus Valid.
-  wire [6:0] failedLaneTree [1:2*MAX_DATA_LANES-1];
-  wire [6:0] failedComparisonsCalc =
-    failedLaneTree[1] + {6'b0, !point_test_valid_pass};
+  // The count includes the Valid lane as well as the active data lanes.
+  wire [FAILURE_COUNT_WIDTH-1:0] failedLaneTree [1:2*DATA_LANE_COUNT-1];
+  wire [FAILURE_COUNT_WIDTH-1:0] failedComparisonsCalc =
+    failedLaneTree[1] + FAILURE_COUNT_WIDTH'(!point_test_valid_pass);
   wire [PHASE_INDEX_WIDTH-1:0] groupCenterResult [0:CENTER_GROUP_COUNT-1];
   wire [PHASE_INDEX_WIDTH-1:0] targetCenterTree [1:2*CENTER_GROUP_COUNT-1];
-  wire [MAX_DATA_LANES-1:0] laneWindowValid;
-  wire [MAX_DATA_LANES-1:0] deskewCodeFits;
+  wire [DATA_LANE_COUNT-1:0] laneWindowValid;
+  wire [DATA_LANE_COUNT-1:0] deskewCodeFits;
   wire initialWindowsValidCalc = &laneWindowValid;
   wire allDeskewCodesFit = &deskewCodeFits;
 
-  for (genvar lane = 0; lane < MAX_DATA_LANES; lane++) begin : gen_lane_reductions
-    assign failedLaneTree[MAX_DATA_LANES+lane] =
-      {6'b0, ACTIVE_LANE_MASK[lane] && !point_test_lane_pass[lane]};
+  for (genvar lane = 0; lane < DATA_LANE_COUNT; lane++) begin : gen_lane_reductions
+    assign failedLaneTree[DATA_LANE_COUNT+lane] =
+      FAILURE_COUNT_WIDTH'(ACTIVE_LANE_MASK[lane] && !point_test_lane_pass[lane]);
     assign laneWindowValid[lane] = !ACTIVE_LANE_MASK[lane] ||
       (laneBestLengthReg[lane] >= WINDOW_LENGTH_WIDTH'(MIN_LANE_WINDOW_STEPS));
     // Twenty control pins provide 39 legal settings, not 2**20 delays.
@@ -184,7 +181,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
       assign deskewCodeFits[lane] = 1'b1;
     end
   end
-  for (genvar node = 1; node < MAX_DATA_LANES; node++) begin : gen_balanced_reductions
+  for (genvar node = 1; node < DATA_LANE_COUNT; node++) begin : gen_balanced_reductions
     assign failedLaneTree[node] = failedLaneTree[2*node] + failedLaneTree[2*node+1];
   end
 
@@ -193,8 +190,13 @@ module MBTrain_DataTrainCenter1SweepEngine #(
   for (genvar group = 0; group < CENTER_GROUP_COUNT; group++) begin : gen_center_groups
     wire [PHASE_INDEX_WIDTH-1:0] centerTree [1:2*CENTER_GROUP_LANES-1];
     for (genvar lane = 0; lane < CENTER_GROUP_LANES; lane++) begin : gen_leaves
-      assign centerTree[CENTER_GROUP_LANES+lane] =
-        laneCenterPhaseReg[group*CENTER_GROUP_LANES+lane];
+      localparam int unsigned LANE_INDEX = group*CENTER_GROUP_LANES + lane;
+      // Shifting past the physical lane count also selects a neutral leaf.
+      if (1'(ACTIVE_LANE_MASK >> LANE_INDEX)) begin : gen_active
+        assign centerTree[CENTER_GROUP_LANES+lane] = laneCenterPhaseReg[LANE_INDEX];
+      end else begin : gen_inactive
+        assign centerTree[CENTER_GROUP_LANES+lane] = DESKEW_ADD_DELAY_INCREASES_PHASE ? '0 : '1;
+      end
     end
     for (genvar node = 1; node < CENTER_GROUP_LANES; node++) begin : gen_nodes
       assign centerTree[node] =
@@ -299,7 +301,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
         groupCenterPhaseReg[clearLaneIdx] <= '0;
       end
       for (clearLaneIdx = 0;
-           clearLaneIdx < MAX_DATA_LANES;
+           clearLaneIdx < DATA_LANE_COUNT;
            clearLaneIdx = clearLaneIdx + 1) begin
         laneRunStartReg[clearLaneIdx] <= '0;
         laneRunLengthReg[clearLaneIdx] <= '0;
@@ -329,7 +331,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
         // Streaming window trackers are cleared when zero deskew is accepted;
         // the same path initializes both a new training run and every retry.
         for (clearLaneIdx = 0;
-             clearLaneIdx < MAX_DATA_LANES;
+             clearLaneIdx < DATA_LANE_COUNT;
              clearLaneIdx = clearLaneIdx + 1) begin
           laneLeftPhaseReg[clearLaneIdx] <= '0;
           laneRightPhaseReg[clearLaneIdx] <= '0;
@@ -343,7 +345,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           SweepState_APPLY_ZERO_DESKEW: begin
             if (tx_lane_deskew_applied) begin
               phaseIndexReg <= '0;
-              for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+              for (clearLaneIdx = 0; clearLaneIdx < DATA_LANE_COUNT;
                    clearLaneIdx = clearLaneIdx + 1) begin
                 laneRunStartReg[clearLaneIdx] <= '0;
                 laneRunLengthReg[clearLaneIdx] <= '0;
@@ -369,7 +371,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_STORE_INITIAL_RESULT: begin
-            for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+            for (clearLaneIdx = 0; clearLaneIdx < DATA_LANE_COUNT;
                  clearLaneIdx = clearLaneIdx + 1) begin
               if (ACTIVE_LANE_MASK[clearLaneIdx]) begin
                 if (point_test_lane_pass[clearLaneIdx]) begin
@@ -388,7 +390,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
                 end
               end
             end
-            lastFailedComparisonsReg <= {9'b0, failedComparisonsCalc};
+            lastFailedComparisonsReg <= 16'(failedComparisonsCalc);
             if (phaseIndexReg == PHASE_INDEX_WIDTH'(PHASE_COUNT - 1)) begin
               stateReg <= SweepState_CALCULATE_DESKEW;
             end else begin
@@ -399,7 +401,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
 
           SweepState_CALCULATE_DESKEW: begin
             if (initialWindowsValidCalc) begin
-              for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+              for (clearLaneIdx = 0; clearLaneIdx < DATA_LANE_COUNT;
                    clearLaneIdx = clearLaneIdx + 1) begin
                 if (ACTIVE_LANE_MASK[clearLaneIdx]) begin
                   laneLeftPhaseReg[clearLaneIdx] <= laneBestStartReg[clearLaneIdx];
@@ -435,7 +437,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_CALCULATE_DELTA: begin
-            for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+            for (clearLaneIdx = 0; clearLaneIdx < DATA_LANE_COUNT;
                  clearLaneIdx = clearLaneIdx + 1) begin
               if (ACTIVE_LANE_MASK[clearLaneIdx])
                 deskewDeltaReg[clearLaneIdx] <= DESKEW_ADD_DELAY_INCREASES_PHASE ?
@@ -446,7 +448,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_SCALE_DESKEW: begin
-            for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+            for (clearLaneIdx = 0; clearLaneIdx < DATA_LANE_COUNT;
                  clearLaneIdx = clearLaneIdx + 1) begin
               if (ACTIVE_LANE_MASK[clearLaneIdx])
                 deskewProductReg[clearLaneIdx] <=
@@ -458,7 +460,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
 
           SweepState_CHECK_DESKEW: begin
             if (allDeskewCodesFit) begin
-              for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+              for (clearLaneIdx = 0; clearLaneIdx < DATA_LANE_COUNT;
                    clearLaneIdx = clearLaneIdx + 1) begin
                 selectedDeskewStepsReg[clearLaneIdx] <= ACTIVE_LANE_MASK[clearLaneIdx] ?
                   LtsmParameters_pkg::TX_DESKEW_HALF_STEP_WIDTH'(deskewProductReg[clearLaneIdx]) :
@@ -477,7 +479,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_ENCODE_DESKEW: begin
-            for (clearLaneIdx = 0; clearLaneIdx < MAX_DATA_LANES;
+            for (clearLaneIdx = 0; clearLaneIdx < DATA_LANE_COUNT;
                  clearLaneIdx = clearLaneIdx + 1) begin
               deskewCodesReg[clearLaneIdx*TX_DESKEW_CODE_WIDTH +: TX_DESKEW_CODE_WIDTH] <=
                 LtsmParameters_pkg::encode_tx_deskew(selectedDeskewStepsReg[clearLaneIdx]);
@@ -526,7 +528,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
             end else begin
               globalRunLengthReg <= '0;
             end
-            lastFailedComparisonsReg <= {9'b0, failedComparisonsCalc};
+            lastFailedComparisonsReg <= 16'(failedComparisonsCalc);
             if (phaseIndexReg == PHASE_INDEX_WIDTH'(PHASE_COUNT - 1)) begin
               stateReg <= SweepState_CALCULATE_GLOBAL;
             end else begin
@@ -568,7 +570,7 @@ module MBTrain_DataTrainCenter1SweepEngine #(
           end
 
           SweepState_CHECK_FINAL_TEST: begin
-            lastFailedComparisonsReg <= {9'b0, failedComparisonsCalc};
+            lastFailedComparisonsReg <= 16'(failedComparisonsCalc);
             if (pointTestAllPass) begin
               doneReg <= 1'b1;
               stateReg <= SweepState_DONE;

@@ -24,7 +24,8 @@ module MBTrain_ValidVrefStateCore #(
   parameter int unsigned VREF_CODE_WIDTH = 20,
   parameter logic [15:0] MAXIMUM_COMPARISON_ERROR_THRESHOLD = 16'd0,
   parameter int unsigned MIN_PASSING_WINDOW_VALUES = 1,
-  parameter int unsigned MAX_TRAINING_RETRIES = 1
+  parameter int unsigned MAX_TRAINING_RETRIES = 1,
+  parameter bit WAIT_FOR_VALID_LANE = 1'b0
 ) (
   input  wire logic                         clock,
   input  wire logic                         reset_n,
@@ -70,7 +71,11 @@ module MBTrain_ValidVrefStateCore #(
   output      logic [15:0]                  retryCount,
   output      logic [VREF_CODE_WIDTH-1:0]   selectedVrefCode,
   output      logic [VREF_CODE_WIDTH-1:0]   validWindowLeftCode,
-  output      logic [VREF_CODE_WIDTH-1:0]   validWindowRightCode
+  output      logic [VREF_CODE_WIDTH-1:0]   validWindowRightCode,
+
+  // Per-point feedback from the Valid-lane controller when WAIT_FOR_VALID_LANE is set.
+  input wire logic valVref_pointArmed,
+  input wire logic valVref_pointResultReady
 );
   import SidebandMsgGenerator_pkg::*;
 
@@ -304,7 +309,9 @@ module MBTrain_ValidVrefStateCore #(
     .validRightCode(sweepRightCode)
   );
 
-  RxInitD2CPointTestReceiverFSM pointInitiator (
+  RxInitD2CPointTestReceiverFSM #(
+    .WAIT_FOR_COMPARISON_RESULT(WAIT_FOR_VALID_LANE)
+  ) pointInitiator (
     .clock(clock),
     .reset_n(reset_n),
     .start(runningReg && sweepPointStart),
@@ -318,6 +325,7 @@ module MBTrain_ValidVrefStateCore #(
     .sentLfsrClearErrorResp(initiatorClearRespSent),
     .receivedRxInitD2CTxCountDoneReq(receivedTxCountDoneReq),
     .detectedValidPattern(flagFromAnalog_detectedValPattern),
+    .comparisonResultReady(valVref_pointResultReady),
     .sendRxInitD2CTxCountDoneResp(initiatorSendCountResp),
     .sentRxInitD2CTxCountDoneResp(initiatorCountRespSent),
     .sendEndRxInitD2CPointTestReq(initiatorSendEndReq),
@@ -417,7 +425,9 @@ module MBTrain_ValidVrefStateCore #(
         txLoadValid  = 1'b1;
         txLoadDin    = TX_COUNT_DONE_REQ;
         txLoadSource = TxSource_pointResponderCountReq;
-      end else if (initiatorSendClearResp) begin
+      end else if (initiatorSendClearResp &&
+                   (!WAIT_FOR_VALID_LANE || valVref_pointArmed)) begin
+        // The peer may transmit as soon as it sees this response.
         txLoadValid  = 1'b1;
         txLoadDin    = CLEAR_ERROR_RESP;
         txLoadSource = TxSource_pointInitiatorClearResp;

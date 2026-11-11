@@ -14,8 +14,7 @@ module MBInitFSM #(
   input wire logic reset_n,
   input wire logic           start,
   // UCIe speed encodings: 0=4, 1=8, 2=12, 3=16 GT/s (2/4/6/8 GHz).
-  // Sampled on start; changing the request cannot alter an active negotiation.
-  input wire logic [1:0]     requestedSpeed,
+  // Negotiate the highest rate supported by both endpoint capabilities.
   output var logic [1:0]    negotiatedSpeed,
   output var logic           busy,
   output var logic           done,
@@ -391,6 +390,7 @@ module MBInitFSM #(
   (* keep = "true" *) RepairMbReceiverState_t repairMbReceiverStateReg;
   (* keep = "true" *) logic [15:0] repairMb_DetectedLaneIDPatternLog;
   (* keep = "true" *) logic [15:0] reversalMbLaneStatusLog;
+  // Sender retry bookkeeping. Both attempts transmit the same lane IDs.
   (* keep = "true" *) logic reversalMb_LaneReversalApplied;
   (* keep = "true" *) logic [4:0] reversalMb_ReceivedSuccessCount;
   (* keep = "true" *) logic mbinitRepairClk_logClkPatternReceivedRTRK_L;
@@ -399,15 +399,8 @@ module MBInitFSM #(
   (* keep = "true" *) logic [63:0] remoteParamReqPayload;
   (* keep = "true" *) logic [63:0] remoteParamRespPayload;
   logic [3:0] localSpeedCapReg;
-  wire [1:0] cappedRequestedSpeed;
-  generate
-    if (maxLinkSpeed < 4'd3) begin : g_limited_speed_cap
-      assign cappedRequestedSpeed = ({2'b0, requestedSpeed} > maxLinkSpeed) ?
-                                     maxLinkSpeed[1:0] : requestedSpeed;
-    end else begin : g_full_speed_cap
-      assign cappedRequestedSpeed = requestedSpeed;
-    end
-  endgenerate
+  localparam logic [3:0] LOCAL_SPEED_CAP =
+    (maxLinkSpeed > 4'd3) ? 4'd3 : maxLinkSpeed;
   (* keep = "true" *) logic prevStart;
   (* keep = "true" *) logic prevRxValid;
 
@@ -699,7 +692,7 @@ module MBInitFSM #(
         sbTxValid <= 1'b0;
         sbTxDin <= 128'b0;
         // Encodings 0..5 are defined, but this PHY implements through 16 GT/s.
-        localSpeedCapReg <= {2'b0, cappedRequestedSpeed};
+        localSpeedCapReg <= LOCAL_SPEED_CAP;
         negotiatedSpeed <= 2'd0;
         flagMbinitParam_ReceivedReqHeader <= 1'b0;
         flagMbinitParam_ReceivedReqPayload <= 1'b0;
@@ -1414,6 +1407,8 @@ module MBInitFSM #(
             end
           end
           MBInitState_REVERSALMB: begin
+            // A retry repeats CLEAR and RESULT. Consume each send completion
+            // so the next trial waits for its own sideband transaction.
             unique case (reversalMbSenderStateReg)
               ReversalMbSenderState_initReq: begin
                 if (flagMbinitReversalMb_SentInitReq) begin
@@ -1432,6 +1427,7 @@ module MBInitFSM #(
               ReversalMbSenderState_sendClearErrorReq: begin
                 if (flagMbinitReversalMb_SentClearErrorReq) begin
                   flagMbinitReversalMb_SendClearErrorReq <= 1'b0;
+                  flagMbinitReversalMb_SentClearErrorReq <= 1'b0;
                   reversalMbSenderStateReg <= ReversalMbSenderState_waitClearErrorResp;
                 end
                 else begin
@@ -1455,6 +1451,7 @@ module MBInitFSM #(
               ReversalMbSenderState_sendResultReq: begin
                 if (flagMbinitReversalMb_SentResultReq) begin
                   flagMbinitReversalMb_SendResultReq <= 1'b0;
+                  flagMbinitReversalMb_SentResultReq <= 1'b0;
                   reversalMbSenderStateReg <= ReversalMbSenderState_waitResultResp;
                 end
                 else begin
@@ -1517,6 +1514,7 @@ module MBInitFSM #(
               ReversalMbReceiverState_sendClearErrorResp: begin
                 if (flagMbinitReversalMb_SentClearErrorResp) begin
                   flagMbinitReversalMb_SendClearErrorResp <= 1'b0;
+                  flagMbinitReversalMb_SentClearErrorResp <= 1'b0;
                   reversalMbReceiverStateReg <= ReversalMbReceiverState_waitResultReq;
                 end
                 else begin
@@ -1533,6 +1531,7 @@ module MBInitFSM #(
               ReversalMbReceiverState_sendResultResp: begin
                 if (flagMbinitReversalMb_SentResultResp) begin
                   flagMbinitReversalMb_SendResultResp <= 1'b0;
+                  flagMbinitReversalMb_SentResultResp <= 1'b0;
                   reversalMbReceiverStateReg <= ReversalMbReceiverState_waitDoneReqOrClearErrorReq;
                 end
                 else begin

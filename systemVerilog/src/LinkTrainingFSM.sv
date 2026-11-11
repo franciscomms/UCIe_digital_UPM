@@ -47,7 +47,10 @@ module LinkTrainingFSM #(
   parameter int unsigned rxDeskewMinPassingWindowValues =
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_MIN_PASSING_WINDOW_VALUES,
   parameter int unsigned rxDeskewMaxTrainingRetries =
-    LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES,
+  parameter bit WAIT_FOR_VALID_LANE = 1'b0,
+  parameter bit WAIT_FOR_CENTER_LANE = 1'b0,
+  parameter bit WAIT_FOR_LINKSPEED_LANE = 1'b0
 ) (
   input wire logic clock,
   input wire logic [31:0] cycles_1us,
@@ -190,7 +193,7 @@ module LinkTrainingFSM #(
   output var logic [2:0]     flagToAnalog_d2cReceiver_dataPattern,
   output var logic           flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  input wire logic [dataLaneCount-1:0] flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
   output var logic           flagToAnalog_d2cSender_sendLfsrPattern,
   input wire logic           flagFromAnalog_d2cSender_lfsrPatternSent,
   output var logic           flagToAnalog_d2cSender_applyTxLaneDeskew,
@@ -215,13 +218,11 @@ module LinkTrainingFSM #(
   output var logic [2:0]     flagToAnalog_rxDeskew_dataPattern,
   output var logic           flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] flagFromAnalog_rxDeskew_detectedDataPattern,
-  output var logic           flagToLtsm_linkSpeed_phyInRetrain,
-  output var logic [1:0]           flagToAnalog_linkSpeed_speedCode,
-  output var logic           flagToAnalog_linkSpeed_applySpeed,
-  output var logic           flagToAnalog_linkSpeed_electricalIdle,
+  output var logic [1:0]           flagToAnalog_speedIdle_speedCode,
+  output var logic           flagToAnalog_speedIdle_applySpeed,
+  output var logic           flagToAnalog_speedIdle_electricalIdle,
   input wire logic [15:0]    flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
-  input wire logic [1:0]    linkSpeed_requestedSpeed,
-  input wire logic     flagFromAnalog_linkSpeed_speedApplied,
+  input wire logic     flagFromAnalog_speedIdle_speedApplied,
   output var logic [3:0]     dbg_mbtrainState,
   // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    dbg_mbtrainActiveSubstate,
@@ -276,7 +277,15 @@ module LinkTrainingFSM #(
   output var logic [3:0]     dbg_mbtrainLinkSpeedD2cSenderState,
   output var logic [3:0]     dbg_mbtrainLinkSpeedD2cReceiverState,
   output var logic [15:0]    dbg_mbtrainLastErrorCount,
-  output var logic [15:0]    dbg_mbtrainRetryCount
+  output var logic [15:0]    dbg_mbtrainRetryCount,
+
+  // Per-point feedback from the Valid-lane controller when WAIT_FOR_VALID_LANE is set.
+  input wire logic valVref_pointArmed,
+  input wire logic valVref_pointResultReady,
+  input wire logic d2cCenter_pointArmed,
+  input wire logic d2cCenter_resultReady,
+  input wire logic linkSpeed_pointArmed,
+  input wire logic linkSpeed_resultReady
 );
   import SidebandMsgGenerator_pkg::*;
 
@@ -419,10 +428,9 @@ module LinkTrainingFSM #(
   logic [2:0] mbTrainFsm_flagToAnalog_rxDeskew_dataPattern;
   logic mbTrainFsm_flagToAnalog_rxDeskew_clearComparisonErrors;
   logic [1:0] mbInitFsm_negotiatedSpeed;
-  logic mbTrainFsm_flagToLtsm_linkSpeed_phyInRetrain;
-  logic [1:0] mbTrainFsm_flagToAnalog_linkSpeed_speedCode;
-  logic mbTrainFsm_flagToAnalog_linkSpeed_applySpeed;
-  logic mbTrainFsm_flagToAnalog_linkSpeed_electricalIdle;
+  logic [1:0] mbTrainFsm_flagToAnalog_speedIdle_speedCode;
+  logic mbTrainFsm_flagToAnalog_speedIdle_applySpeed;
+  logic mbTrainFsm_flagToAnalog_speedIdle_electricalIdle;
   logic [3:0] mbTrainFsm_state;
   // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   logic [11:0] mbTrainFsm_activeSubstate;
@@ -488,7 +496,6 @@ module LinkTrainingFSM #(
     .voltageSwing        (voltageSwing),
     .maxLinkSpeed        (maxLinkSpeed)
   ) mbInitFsm (
-    .requestedSpeed(linkSpeed_requestedSpeed),
     .negotiatedSpeed(mbInitFsm_negotiatedSpeed),
     .clock                                                                    (clock),
     .reset_n                                                                  (reset_n),
@@ -568,6 +575,9 @@ module LinkTrainingFSM #(
   );
 
   MBTrainFSM #(
+    .WAIT_FOR_VALID_LANE(WAIT_FOR_VALID_LANE),
+    .WAIT_FOR_CENTER_LANE(WAIT_FOR_CENTER_LANE),
+    .WAIT_FOR_LINKSPEED_LANE(WAIT_FOR_LINKSPEED_LANE),
     .sbFeatureExtension (sbFeatureExtension),
     .ucieA               (ucieA),
     .moduleID            (moduleID),
@@ -623,6 +633,12 @@ module LinkTrainingFSM #(
     .sb_rx_dout                                                               (sb_rx_dout),
     .flagToAnalog_valVref_sendPattern                                         (mbTrainFsm_flagToAnalog_valVref_sendPattern),
     .flagFromAnalog_valVref_detectedValPattern                                (flagFromAnalog_valVref_detectedValPattern),
+    .valVref_pointArmed(valVref_pointArmed),
+    .d2cCenter_pointArmed(d2cCenter_pointArmed),
+    .d2cCenter_resultReady(d2cCenter_resultReady),
+    .linkSpeed_pointArmed(linkSpeed_pointArmed),
+    .linkSpeed_resultReady(linkSpeed_resultReady),
+    .valVref_pointResultReady(valVref_pointResultReady),
     .flagFromAnalog_valVref_finishedPattern                                   (flagFromAnalog_valVref_finishedPattern),
     .flagToAnalog_valVref_applyRxVref                                         (mbTrainFsm_flagToAnalog_valVref_applyRxVref),
     .flagToAnalog_valVref_rxVrefCode                                          (mbTrainFsm_flagToAnalog_valVref_rxVrefCode),
@@ -702,13 +718,12 @@ module LinkTrainingFSM #(
     .flagToAnalog_rxDeskew_dataPattern                                          (mbTrainFsm_flagToAnalog_rxDeskew_dataPattern),
     .flagToAnalog_rxDeskew_clearComparisonErrors                                (mbTrainFsm_flagToAnalog_rxDeskew_clearComparisonErrors),
     .flagFromAnalog_rxDeskew_detectedDataPattern                                (flagFromAnalog_rxDeskew_detectedDataPattern),
-    .flagToLtsm_linkSpeed_phyInRetrain                                        (mbTrainFsm_flagToLtsm_linkSpeed_phyInRetrain),
-    .flagToAnalog_linkSpeed_speedCode                                        (mbTrainFsm_flagToAnalog_linkSpeed_speedCode),
-    .flagToAnalog_linkSpeed_applySpeed                                        (mbTrainFsm_flagToAnalog_linkSpeed_applySpeed),
-    .flagToAnalog_linkSpeed_electricalIdle                                        (mbTrainFsm_flagToAnalog_linkSpeed_electricalIdle),
+    .flagToAnalog_speedIdle_speedCode                                        (mbTrainFsm_flagToAnalog_speedIdle_speedCode),
+    .flagToAnalog_speedIdle_applySpeed                                        (mbTrainFsm_flagToAnalog_speedIdle_applySpeed),
+    .flagToAnalog_speedIdle_electricalIdle                                        (mbTrainFsm_flagToAnalog_speedIdle_electricalIdle),
     .flagFromAnalog_d2cReceiver_laneComparisonSuccessful            (flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
     .initialSpeed(mbInitFsm_negotiatedSpeed),
-    .flagFromAnalog_linkSpeed_speedApplied            (flagFromAnalog_linkSpeed_speedApplied),
+    .flagFromAnalog_speedIdle_speedApplied            (flagFromAnalog_speedIdle_speedApplied),
     .state                                                                    (mbTrainFsm_state),
     // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
     .activeSubstate                                                           (mbTrainFsm_activeSubstate),
@@ -935,11 +950,10 @@ module LinkTrainingFSM #(
     flagToAnalog_rxDeskew_validPattern = mbTrainFsm_flagToAnalog_rxDeskew_validPattern;
     flagToAnalog_rxDeskew_dataPattern = mbTrainFsm_flagToAnalog_rxDeskew_dataPattern;
     flagToAnalog_rxDeskew_clearComparisonErrors = mbTrainFsm_flagToAnalog_rxDeskew_clearComparisonErrors;
-    flagToLtsm_linkSpeed_phyInRetrain = mbTrainFsm_flagToLtsm_linkSpeed_phyInRetrain;
-    flagToAnalog_linkSpeed_speedCode = mbTrainFsm_flagToAnalog_linkSpeed_speedCode;
-    flagToAnalog_linkSpeed_applySpeed = mbTrainFsm_flagToAnalog_linkSpeed_applySpeed;
-    flagToAnalog_linkSpeed_electricalIdle = (stateReg == LTState_TRAIN_ERROR) ||
-      mbTrainFsm_flagToAnalog_linkSpeed_electricalIdle;
+    flagToAnalog_speedIdle_speedCode = mbTrainFsm_flagToAnalog_speedIdle_speedCode;
+    flagToAnalog_speedIdle_applySpeed = mbTrainFsm_flagToAnalog_speedIdle_applySpeed;
+    flagToAnalog_speedIdle_electricalIdle = (stateReg == LTState_TRAIN_ERROR) ||
+      mbTrainFsm_flagToAnalog_speedIdle_electricalIdle;
   end
 
   always_ff @(posedge clock or negedge reset_n) begin

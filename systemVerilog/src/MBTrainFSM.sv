@@ -55,15 +55,18 @@ module MBTrainFSM #(
   parameter int unsigned rxDeskewMinPassingWindowValues =
     LtsmParameters_pkg::DEFAULT_RX_DESKEW_MIN_PASSING_WINDOW_VALUES,
   parameter int unsigned rxDeskewMaxTrainingRetries =
-    LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES
+    LtsmParameters_pkg::DEFAULT_RX_DESKEW_MAX_TRAINING_RETRIES,
+  parameter bit WAIT_FOR_VALID_LANE = 1'b0,
+  parameter bit WAIT_FOR_CENTER_LANE = 1'b0,
+  parameter bit WAIT_FOR_LINKSPEED_LANE = 1'b0
 ) (
   input wire logic clock,
   input wire logic [31:0] cycles_1us,
   input wire logic [1:0] initialSpeed,
-  input wire logic flagFromAnalog_linkSpeed_speedApplied,
-  output var logic [1:0] flagToAnalog_linkSpeed_speedCode,
-  output var logic flagToAnalog_linkSpeed_applySpeed,
-  output var logic flagToAnalog_linkSpeed_electricalIdle,
+  input wire logic flagFromAnalog_speedIdle_speedApplied,
+  output var logic [1:0] flagToAnalog_speedIdle_speedCode,
+  output var logic flagToAnalog_speedIdle_applySpeed,
+  output var logic flagToAnalog_speedIdle_electricalIdle,
   input wire logic reset_n,
   input wire logic           start,
   output var logic           busy,
@@ -131,7 +134,7 @@ module MBTrainFSM #(
   output var logic [2:0]     flagToAnalog_d2cReceiver_dataPattern,
   output var logic           flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo,
-  input wire logic [63:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
+  input wire logic [dataLaneCount-1:0]    flagFromAnalog_d2cReceiver_txInitD2CResultsPayload,
   output var logic           flagToAnalog_d2cSender_sendLfsrPattern,
   input wire logic           flagFromAnalog_d2cSender_lfsrPatternSent,
   output var logic           flagToAnalog_d2cSender_applyTxLaneDeskew,
@@ -156,8 +159,9 @@ module MBTrainFSM #(
   output var logic [2:0]     flagToAnalog_rxDeskew_dataPattern,
   output var logic           flagToAnalog_rxDeskew_clearComparisonErrors,
   input wire logic [dataLaneCount-1:0] flagFromAnalog_rxDeskew_detectedDataPattern,
-  output var logic           flagToLtsm_linkSpeed_phyInRetrain,
   input wire logic [15:0]    flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
+  input wire logic           linkSpeed_pointArmed,
+  input wire logic           linkSpeed_resultReady,
   output var logic [3:0]     state,
   // TODO(debug-review): MBTrainFSM.activeSubstate is redundant with the dbg_mbtrain*State pins (packed view of the active MBTRAIN substate); kept for top-level/testbench compatibility, review for removal.
   output var logic [11:0]    activeSubstate,
@@ -212,8 +216,17 @@ module MBTrainFSM #(
   output var logic [3:0]     dbg_mbtrainLinkSpeedD2cSenderState,
   output var logic [3:0]     dbg_mbtrainLinkSpeedD2cReceiverState,
   output var logic [15:0]    lastErrorCount,
-  output var logic [15:0]    retryCount
+  output var logic [15:0]    retryCount,
+
+  // Per-point feedback from the Valid-lane controller when WAIT_FOR_VALID_LANE is set.
+  input wire logic valVref_pointArmed,
+  input wire logic valVref_pointResultReady,
+  input wire logic d2cCenter_pointArmed,
+  input wire logic d2cCenter_resultReady
 );
+  if (dataLaneCount < 1 || dataLaneCount > 64) begin : g_invalid_lane_count
+    $error("The D2C results message supports 1 through 64 data lanes");
+  end
   typedef enum logic [3:0] {
     State_IDLE = 4'h0,
     State_VALVREF = 4'h1,
@@ -236,30 +249,16 @@ module MBTrainFSM #(
   (* keep = "true" *) State_t stateReg;
   (* keep = "true" *) logic errorReg;
   State_t previousStateReg;
-  logic [1:0] selectedSpeedReg;
-  logic speedChangeAccepted;
-  logic speedAppliedSync;
-  // The PHY acknowledgement may originate in the PLL/control domain. The
-  // requested rate remains stable until this synchronized acknowledgement.
-  tc_sync #(.Stages(2)) u_speed_applied_sync (
-    .clk_i(clock), .rst_ni(reset_n),
-    .serial_i(flagFromAnalog_linkSpeed_speedApplied),
-    .serial_o(speedAppliedSync)
-  );
-  logic speedDegradeAtFloorReg;
+  logic speedDegradeReg;
+  logic speedIdleTrainErrorReg;
+  logic speedIdle_electricalIdle;
   logic [15:0] speedDegradeCountReg;
   logic linkSpeed_exitToSpeedDegrade;
   wire stageSettled = (stateReg == previousStateReg);
 
-  // Zero-based rate code: 0=2GHz/4GT/s, 1=4GHz/8GT/s,
-  // 2=6GHz/12GT/s, 3=8GHz/16GT/s. Retain it while ACTIVE.
-  assign flagToAnalog_linkSpeed_speedCode = selectedSpeedReg;
-  assign flagToAnalog_linkSpeed_electricalIdle =
-    (stateReg == State_SPEEDIDLE) || (stateReg == State_ERROR) || errorReg;
-  assign flagToAnalog_linkSpeed_applySpeed =
-    (stateReg == State_SPEEDIDLE) && stageSettled && !speedChangeAccepted &&
-    !speedDegradeAtFloorReg;
-
+  // SPEEDIDLE owns the retained physical speed and its apply handshake.
+  assign flagToAnalog_speedIdle_electricalIdle = speedIdle_electricalIdle ||
+    (stateReg == State_ERROR) || errorReg;
 
   // Private sub-FSM interfaces: only the selected state owns the PHY ports.
   logic stage_flagToAnalog_valVref_sendPattern;
@@ -316,7 +315,7 @@ module MBTrainFSM #(
   logic [2:0] stage_flagToAnalog_d2cReceiver_valTrainCenter_dataPattern;
   logic stage_flagToAnalog_d2cReceiver_valTrainCenter_resetLocalRxScrambler;
   logic [15:0] stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsMsgInfo;
-  logic [63:0] stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload;
+  logic [dataLaneCount-1:0] stage_flagFromAnalog_d2cReceiver_valTrainCenter_txInitD2CResultsPayload;
   logic stage_flagToAnalog_valTrainVref_sendPattern;
   logic stage_flagFromAnalog_valTrainVref_detectedValPattern;
   logic stage_flagFromAnalog_valTrainVref_finishedPattern;
@@ -356,7 +355,7 @@ module MBTrainFSM #(
   logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter1_dataPattern;
   logic stage_flagToAnalog_d2cReceiver_dataTrainCenter1_resetLocalRxScrambler;
   logic [15:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsMsgInfo;
-  logic [63:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload;
+  logic [dataLaneCount-1:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter1_txInitD2CResultsPayload;
   logic stage_flagToAnalog_dataTrainVref_sendPattern;
   logic [dataLaneCount-1:0] stage_flagFromAnalog_dataTrainVref_detectedDataPattern;
   logic stage_flagFromAnalog_dataTrainVref_finishedPattern;
@@ -393,7 +392,7 @@ module MBTrainFSM #(
   logic [2:0] stage_flagToAnalog_d2cReceiver_dataTrainCenter2_dataPattern;
   logic stage_flagToAnalog_d2cReceiver_dataTrainCenter2_resetLocalRxScrambler;
   logic [15:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsMsgInfo;
-  logic [63:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload;
+  logic [dataLaneCount-1:0] stage_flagFromAnalog_d2cReceiver_dataTrainCenter2_txInitD2CResultsPayload;
   logic stage_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern;
   logic stage_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent;
   logic stage_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler;
@@ -806,6 +805,7 @@ module MBTrainFSM #(
   logic [15:0] linkSpeed_retryCount;
 
   MBTrainValVrefFSM #(
+    .WAIT_FOR_VALID_LANE(WAIT_FOR_VALID_LANE),
     .sbFeatureExtension(sbFeatureExtension),
     .ucieA(ucieA),
     .moduleID(moduleID),
@@ -847,6 +847,8 @@ module MBTrainFSM #(
     .flagToAnalog_valRefDataPattern(stage_flagToAnalog_valVref_dataPattern),
     .flagToAnalog_valRefClearComparisonErrors(stage_flagToAnalog_valVref_clearComparisonErrors),
     .flagFromAnalog_valRefDetectedValPattern(stage_flagFromAnalog_valVref_detectedValPattern),
+    .valVref_pointArmed(valVref_pointArmed),
+    .valVref_pointResultReady(valVref_pointResultReady),
     .flagToAnalog_valRefSendPattern(stage_flagToAnalog_valVref_sendPattern),
     .flagFromAnalog_valRefFinishedPattern(stage_flagFromAnalog_valVref_finishedPattern),
     .flagToAnalog_valRefResetLocalTxScrambler(stage_flagToAnalog_valVref_resetLocalTxScrambler),
@@ -950,9 +952,14 @@ module MBTrainFSM #(
     .voltageSwing(voltageSwing),
     .maxLinkSpeed(maxLinkSpeed)
   ) speedIdle (
-    .cycles_1us(cycles_1us),
-    .speedApplied(speedChangeAccepted),
-    .speedDegradeAtFloor(speedDegradeAtFloorReg),
+    .initialize((stateReg == State_IDLE) && start),
+    .initialSpeed(initialSpeed),
+    .degrade(speedDegradeReg),
+    .trainErrorRequest(speedIdleTrainErrorReg),
+    .speedApplied(flagFromAnalog_speedIdle_speedApplied),
+    .speedCode(flagToAnalog_speedIdle_speedCode),
+    .applySpeed(flagToAnalog_speedIdle_applySpeed),
+    .electricalIdle(speedIdle_electricalIdle),
     .clock(clock),
     .reset_n(reset_n),
     .start(stateReg == State_SPEEDIDLE),
@@ -1017,6 +1024,8 @@ module MBTrainFSM #(
     .dbg_receiverState(rxClkCal_dbg_receiverState)
   );
   MBTrain_ValTrainCenter #(
+    .WAIT_FOR_CENTER_LANE(WAIT_FOR_CENTER_LANE),
+    .dataLaneCount(dataLaneCount),
     .sbFeatureExtension(sbFeatureExtension),
     .ucieA(ucieA),
     .moduleID(moduleID),
@@ -1029,6 +1038,8 @@ module MBTrainFSM #(
     .d2cMinCommonWindowSteps(d2cMinCommonWindowSteps),
     .d2cMaxTrainingRetries(d2cMaxTrainingRetries)
   ) valTrainCenter (
+    .d2cCenter_pointArmed(d2cCenter_pointArmed),
+    .d2cCenter_resultReady(d2cCenter_resultReady),
     .clock(clock),
     .reset_n(reset_n),
     .start(stateReg == State_VALTRAINCENTER),
@@ -1068,6 +1079,7 @@ module MBTrainFSM #(
     .retryCount(valTrainCenter_retryCount)
   );
   MBTrainValTrainVrefFSM #(
+    .WAIT_FOR_VALID_LANE(WAIT_FOR_VALID_LANE),
     .sbFeatureExtension(sbFeatureExtension),
     .ucieA(ucieA),
     .moduleID(moduleID),
@@ -1110,6 +1122,8 @@ module MBTrainFSM #(
     .flagToAnalog_valTrainVrefDataPattern(stage_flagToAnalog_valTrainVref_dataPattern),
     .flagToAnalog_valTrainVrefClearComparisonErrors(stage_flagToAnalog_valTrainVref_clearComparisonErrors),
     .flagFromAnalog_valTrainVrefDetectedValPattern(stage_flagFromAnalog_valTrainVref_detectedValPattern),
+    .valVref_pointArmed(valVref_pointArmed),
+    .valVref_pointResultReady(valVref_pointResultReady),
     .flagToAnalog_valTrainVrefSendPattern(stage_flagToAnalog_valTrainVref_sendPattern),
     .flagFromAnalog_valTrainVrefFinishedPattern(stage_flagFromAnalog_valTrainVref_finishedPattern),
     .flagToAnalog_valTrainVrefResetLocalTxScrambler(stage_flagToAnalog_valTrainVref_resetLocalTxScrambler),
@@ -1125,6 +1139,9 @@ module MBTrainFSM #(
     .validWindowRightCode(valTrainVref_rightCode)
   );
   MBTrain_DataTrainCenter1 #(
+    .WAIT_FOR_CENTER_LANE(WAIT_FOR_CENTER_LANE),
+    .dataLaneCount(dataLaneCount),
+    .activeDataLaneMask(activeDataLaneMask),
     .sbFeatureExtension(sbFeatureExtension),
     .ucieA(ucieA),
     .moduleID(moduleID),
@@ -1141,6 +1158,8 @@ module MBTrainFSM #(
     .d2cMinCommonWindowSteps(d2cMinCommonWindowSteps),
     .d2cMaxTrainingRetries(d2cMaxTrainingRetries)
   ) dataTrainCenter1 (
+    .d2cCenter_pointArmed(d2cCenter_pointArmed),
+    .d2cCenter_resultReady(d2cCenter_resultReady),
     .clock(clock),
     .reset_n(reset_n),
     .start(stateReg == State_DATATRAINCENTER1),
@@ -1356,6 +1375,9 @@ module MBTrainFSM #(
     .validWindowRightCodes(rxDeskew_rightCodes)
   );
   MBTrain_DataTrainCenter2 #(
+    .WAIT_FOR_CENTER_LANE(WAIT_FOR_CENTER_LANE),
+    .dataLaneCount(dataLaneCount),
+    .activeDataLaneMask(activeDataLaneMask),
     .sbFeatureExtension(sbFeatureExtension),
     .ucieA(ucieA),
     .moduleID(moduleID),
@@ -1368,6 +1390,8 @@ module MBTrainFSM #(
     .d2cMinCommonWindowSteps(d2cMinCommonWindowSteps),
     .d2cMaxTrainingRetries(d2cMaxTrainingRetries)
   ) dataTrainCenter2 (
+    .d2cCenter_pointArmed(d2cCenter_pointArmed),
+    .d2cCenter_resultReady(d2cCenter_resultReady),
     .clock(clock),
     .reset_n(reset_n),
     .start(stateReg == State_DATATRAINCENTER2),
@@ -1413,10 +1437,14 @@ module MBTrainFSM #(
     .clkPhase(clkPhase),
     .clkMode(clkMode),
     .voltageSwing(voltageSwing),
-    .maxLinkSpeed(maxLinkSpeed)
+    .maxLinkSpeed(maxLinkSpeed),
+    .activeDataLaneMask(16'(activeDataLaneMask)),
+    .WAIT_FOR_LINKSPEED_LANE(WAIT_FOR_LINKSPEED_LANE)
   ) linkSpeed (
     .cycles_1us(cycles_1us),
     .exitToSpeedDegrade(linkSpeed_exitToSpeedDegrade),
+    .linkSpeed_pointArmed(linkSpeed_pointArmed),
+    .linkSpeed_resultReady(linkSpeed_resultReady),
     .clock(clock),
     .reset_n(reset_n),
     .start(stateReg == State_LINKSPEED),
@@ -1428,7 +1456,6 @@ module MBTrainFSM #(
     .sb_tx_din(linkSpeed_sb_tx_din),
     .sb_rx_valid(sb_rx_valid && (stateReg == State_LINKSPEED)),
     .sb_rx_dout(sb_rx_dout),
-    .flagToLtsm_phyInRetrain(flagToLtsm_linkSpeed_phyInRetrain),
     .flagToAnalog_d2cSender_sendLfsrPattern(stage_flagToAnalog_d2cSender_linkSpeed_sendLfsrPattern),
     .flagFromAnalog_d2cSender_lfsrPatternSent(stage_flagFromAnalog_d2cSender_linkSpeed_lfsrPatternSent),
     .flagToAnalog_d2cSender_resetLocalScrambler(stage_flagToAnalog_d2cSender_linkSpeed_resetLocalScrambler),
@@ -1650,27 +1677,21 @@ module MBTrainFSM #(
       stateReg <= State_IDLE;
       errorReg <= 1'b0;
       previousStateReg <= State_IDLE;
-      selectedSpeedReg <= 2'd0;
-      speedChangeAccepted <= 1'b0;
-      speedDegradeAtFloorReg <= 1'b0;
+      speedDegradeReg <= 1'b0;
+      speedIdleTrainErrorReg <= 1'b0;
       speedDegradeCountReg <= 16'd0;
     end else begin
       previousStateReg <= stateReg;
-      if (stateReg != State_SPEEDIDLE)
-        speedChangeAccepted <= 1'b0;
-      else if (flagToAnalog_linkSpeed_applySpeed && speedAppliedSync)
-        speedChangeAccepted <= 1'b1;
       if ((stateReg == State_IDLE) && start) begin
         stateReg <= State_VALVREF;
         errorReg <= 1'b0;
-        selectedSpeedReg <= 2'd0;
-        speedChangeAccepted <= 1'b0;
-        speedDegradeAtFloorReg <= 1'b0;
+        speedDegradeReg <= 1'b0;
+        speedIdleTrainErrorReg <= 1'b0;
         speedDegradeCountReg <= 16'd0;
       end else if (activeChildError) begin
         if (stateReg == State_LINKSPEED) begin
           // A negotiation timeout also uses the terminal TRAINERROR exchange.
-          speedDegradeAtFloorReg <= 1'b1;
+          speedIdleTrainErrorReg <= 1'b1;
           stateReg <= State_SPEEDIDLE;
         end else begin
           stateReg <= State_ERROR;
@@ -1685,8 +1706,8 @@ module MBTrainFSM #(
           end
           State_DATAVREF: begin
             if (stageSettled && dataVref_done) begin
-              selectedSpeedReg <= initialSpeed;
-              speedDegradeAtFloorReg <= 1'b0;
+              speedDegradeReg <= 1'b0;
+              speedIdleTrainErrorReg <= 1'b0;
               stateReg <= State_SPEEDIDLE;
             end
           end
@@ -1731,13 +1752,9 @@ module MBTrainFSM #(
               // The child has completed all required ERROR and DEGRADE
               // exchanges. Change the analog rate only in electrical idle.
               stateReg <= State_SPEEDIDLE;
-              if (selectedSpeedReg != 2'd0) begin
-                selectedSpeedReg <= selectedSpeedReg - 2'd1;
-                speedDegradeAtFloorReg <= 1'b0;
+              speedDegradeReg <= 1'b1;
+              if (flagToAnalog_speedIdle_speedCode != 2'd0)
                 speedDegradeCountReg <= speedDegradeCountReg + 16'd1;
-              end else begin
-                speedDegradeAtFloorReg <= 1'b1;
-              end
             end else if (stageSettled && linkSpeed_done)
               stateReg <= State_COMPLETE;
           end
@@ -1760,11 +1777,11 @@ module MBTrainFSM #(
   end
 `ifndef SYNTHESIS
   a_speed_apply_in_idle: assert property (@(posedge clock) disable iff (!reset_n)
-    flagToAnalog_linkSpeed_applySpeed |-> flagToAnalog_linkSpeed_electricalIdle)
+    flagToAnalog_speedIdle_applySpeed |-> flagToAnalog_speedIdle_electricalIdle)
     else $error("Speed change outside electrical idle");
   a_speed_hold_until_ack: assert property (@(posedge clock) disable iff (!reset_n)
-    (flagToAnalog_linkSpeed_applySpeed && $past(flagToAnalog_linkSpeed_applySpeed))
-    |-> $stable(selectedSpeedReg))
+    (flagToAnalog_speedIdle_applySpeed && $past(flagToAnalog_speedIdle_applySpeed))
+    |-> $stable(flagToAnalog_speedIdle_speedCode))
     else $error("Speed code changed while PHY request outstanding");
 `endif
 endmodule

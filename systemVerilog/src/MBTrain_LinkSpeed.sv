@@ -8,7 +8,9 @@ module MBTrain_LinkSpeed #(
   parameter bit clkPhase            = LtsmParameters_pkg::DEFAULT_CLK_PHASE,
   parameter bit clkMode             = LtsmParameters_pkg::DEFAULT_CLK_MODE,
   parameter logic [4:0] voltageSwing = LtsmParameters_pkg::DEFAULT_VOLTAGE_SWING,
-  parameter logic [3:0] maxLinkSpeed = LtsmParameters_pkg::DEFAULT_MAX_LINK_SPEED
+  parameter logic [3:0] maxLinkSpeed = LtsmParameters_pkg::DEFAULT_MAX_LINK_SPEED,
+  parameter logic [15:0] activeDataLaneMask = 16'hffff,
+  parameter bit WAIT_FOR_LINKSPEED_LANE = 1'b0
 ) (
   input wire logic         clock,
   input wire logic         reset_n,
@@ -22,7 +24,6 @@ module MBTrain_LinkSpeed #(
   // The parent enters SPEEDIDLE, selects the next supported rate, and handles
   // the minimum-rate TRAINERROR case. This stage never changes analog rate.
   output var logic         exitToSpeedDegrade,
-  output var logic         flagToLtsm_phyInRetrain,
   input wire logic         sb_tx_ready,
   output var logic         sb_tx_valid,
   output var logic [127:0] sb_tx_din,
@@ -43,6 +44,8 @@ module MBTrain_LinkSpeed #(
   output var logic [2:0]   flagToAnalog_d2cReceiver_dataPattern,
   output var logic         flagToAnalog_d2cReceiver_resetLocalRxScrambler,
   input wire logic [15:0]  flagFromAnalog_d2cReceiver_laneComparisonSuccessful,
+  input wire logic         linkSpeed_pointArmed,
+  input wire logic         linkSpeed_resultReady,
   output var logic [3:0]   dbg_senderState,
   output var logic [2:0]   dbg_receiverState,
   output var logic [3:0]   dbg_d2cSenderState,
@@ -121,6 +124,7 @@ module MBTrain_LinkSpeed #(
   (* keep = "true" *) logic [15:0] logErrorCountReg;
   (* keep = "true" *) logic [15:0] retryCountReg;
   (* keep = "true" *) logic [15:0] d2cReceiver_loggedLaneComparisonSuccessful;
+  logic d2cReceiver_resultLogged;
   // Split the 16-lane result count across a register boundary. Four parallel
   // four-lane trees are captured with the result; the final two adder levels
   // are evaluated on the following clock before notifying the point-test FSM.
@@ -155,7 +159,6 @@ module MBTrain_LinkSpeed #(
   logic flagSentDegradeReq;
   logic flagReceivedDegradeResp;
   logic flagSentDegradeResp;
-  (* keep = "true" *) logic phyInRetrainReg;
 
   (* keep = "true" *) logic sbTxValid;
   (* keep = "true" *) logic [127:0] sbTxDin;
@@ -274,7 +277,8 @@ module MBTrain_LinkSpeed #(
     (!errorRequested || flagSentErrorResp) &&
     localPointTestComplete && remotePointTestComplete;
 
-  // This implementation uses the low 16 lane bits. A passing summary cannot
+  // Both peers use the same active mask. Inactive lanes report zero and are
+  // excluded from the pass summary and error count. A passing summary cannot
   // override a failing bitmap, invalid lane-comparison flag, or malformed
   // reserved payload. Keep the observed failure until the stage restarts.
   function automatic logic [2:0] countFailedFour(input logic [3:0] failed);
@@ -286,11 +290,15 @@ module MBTrain_LinkSpeed #(
     end
   endfunction
 
+  wire [15:0] failedActiveLanes = ~sb_rx_dout[79:64] & activeDataLaneMask;
+  wire allActiveLanesPassed = (|activeDataLaneMask) &&
+                             (d2cReceiver_loggedLaneComparisonSuccessful == activeDataLaneMask);
+
   // Named combinational values retained from the Chisel source.
   wire [15:0] txInitD2CResultsMsgInfo = {
     10'b0,
     1'b1,
-    (&d2cReceiver_loggedLaneComparisonSuccessful),
+    allActiveLanesPassed,
     4'b0
   };
   wire [63:0] txInitD2CResultsPayload = {
@@ -298,6 +306,7 @@ module MBTrain_LinkSpeed #(
     d2cReceiver_loggedLaneComparisonSuccessful
   };
 
+  logic senderPointArmed, receiverPointArmed;
   logic d2cSender_sendStartTxInitD2CPointTestReq;
   logic d2cSender_sendLfsrClearErrorReq;
   logic d2cSender_sendTxInitD2CResultsReq;
@@ -376,10 +385,9 @@ module MBTrain_LinkSpeed #(
     dbg_d2cReceiverState = d2cReceiver_state;
     lastErrorCount = logErrorCountReg;
     retryCount = retryCountReg;
-    flagToLtsm_phyInRetrain = phyInRetrainReg;
 
-    flagToAnalog_d2cSender_sendLfsrPattern = running && d2cSender_sendDefinedPattern;
-    flagToAnalog_d2cSender_resetLocalScrambler = running && d2cSender_resetLocalScrambler;
+    flagToAnalog_d2cSender_sendLfsrPattern = running && !startPulse && senderPointArmed && !d2cSender_start && d2cSender_sendDefinedPattern;
+    flagToAnalog_d2cSender_resetLocalScrambler = running && !startPulse && senderPointArmed && !d2cSender_start && d2cSender_resetLocalScrambler;
     flagToAnalog_d2cReceiver_configureTxInitD2CPointTest = flagToAnalog_d2cReceiver_configureAnalogPulse;
     flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold = d2c_maximumComparisonErrorThresholdReg;
     flagToAnalog_d2cReceiver_comparisonMode = d2c_comparisonModeReg;
@@ -390,7 +398,7 @@ module MBTrain_LinkSpeed #(
     flagToAnalog_d2cReceiver_clockPhaseControl = d2c_clockPhaseControlReg;
     flagToAnalog_d2cReceiver_validPattern = d2c_validPatternReg;
     flagToAnalog_d2cReceiver_dataPattern = d2c_dataPatternReg;
-    flagToAnalog_d2cReceiver_resetLocalRxScrambler = running && d2cReceiver_resetLocalRxScrambler;
+    flagToAnalog_d2cReceiver_resetLocalRxScrambler = running && !startPulse && receiverPointArmed && !d2cReceiver_start && d2cReceiver_resetLocalRxScrambler;
   end
 
   // Registered ready/valid TX arbiter and point-test handshake pulses.
@@ -401,7 +409,7 @@ module MBTrain_LinkSpeed #(
     senderSentLfsrPulse = 1'b0;
     senderSentResultsPulse = 1'b0;
     senderSentEndPulse = 1'b0;
-    flagToAnalog_d2cReceiver_configureAnalogPulse = running && rxValidRisingEdge && isStartPointTestReq;
+    flagToAnalog_d2cReceiver_configureAnalogPulse = running && !startPulse && rxValidRisingEdge && isStartPointTestReq;
 
     nextSbTxValid = sbTxValid;
     nextSbTxDin = sbTxDin;
@@ -493,12 +501,15 @@ module MBTrain_LinkSpeed #(
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxDoneResp;
       end
-      else if ((receiverStateReg == LinkSpeedReceiverState_runPointTest) && d2cReceiver_sendEndTxInitD2CPointTestResp && !d2cReceiver_sentEndPointTestResp) begin
+      else if (receiverPointArmed && !d2cReceiver_start &&
+               (receiverStateReg == LinkSpeedReceiverState_runPointTest) && d2cReceiver_sendEndTxInitD2CPointTestResp && !d2cReceiver_sentEndPointTestResp) begin
         nextSbTxDin = END_POINT_TEST_RESP;
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxReceiverEndResp;
       end
-      else if ((receiverStateReg == LinkSpeedReceiverState_runPointTest) && d2cReceiver_sendTxInitD2CResultsResp && !d2cReceiver_sentResultsResp) begin
+      else if (receiverPointArmed && !d2cReceiver_start &&
+               (receiverStateReg == LinkSpeedReceiverState_runPointTest) && d2cReceiver_sendTxInitD2CResultsResp && !d2cReceiver_sentResultsResp &&
+               d2cReceiver_resultLogged) begin
         nextSbTxDin = msgMbtrainTxInitD2CResultsResp(
           ENDPOINT_PHY, ENDPOINT_REMOTE_PHY,
           txInitD2CResultsMsgInfo,
@@ -507,12 +518,15 @@ module MBTrain_LinkSpeed #(
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxReceiverResultsResp;
       end
-      else if ((receiverStateReg == LinkSpeedReceiverState_runPointTest) && d2cReceiver_sendLfsrClearErrorResp && !d2cReceiver_sentLfsrClearResp) begin
+      else if (receiverPointArmed && !d2cReceiver_start &&
+               (receiverStateReg == LinkSpeedReceiverState_runPointTest) && d2cReceiver_sendLfsrClearErrorResp && !d2cReceiver_sentLfsrClearResp &&
+               (!WAIT_FOR_LINKSPEED_LANE || linkSpeed_pointArmed)) begin
         nextSbTxDin = LFSR_CLEAR_ERROR_RESP;
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxReceiverLfsrResp;
       end
-      else if ((receiverStateReg == LinkSpeedReceiverState_runPointTest) && d2cReceiver_sendStartTxInitD2CPointTestResp && !d2cReceiver_sentPointTestStartResp) begin
+      else if (receiverPointArmed && !d2cReceiver_start &&
+               (receiverStateReg == LinkSpeedReceiverState_runPointTest) && d2cReceiver_sendStartTxInitD2CPointTestResp && !d2cReceiver_sentPointTestStartResp) begin
         nextSbTxDin = START_POINT_TEST_RESP;
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxReceiverStartResp;
@@ -532,22 +546,26 @@ module MBTrain_LinkSpeed #(
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxDoneReq;
       end
-      else if ((senderStateReg == LinkSpeedSenderState_waitPointTest) && d2cSender_sendEndTxInitD2CPointTestReq && !d2cSender_sentEndPointTestReq) begin
+      else if (senderPointArmed && !d2cSender_start &&
+               (senderStateReg == LinkSpeedSenderState_waitPointTest) && d2cSender_sendEndTxInitD2CPointTestReq && !d2cSender_sentEndPointTestReq) begin
         nextSbTxDin = END_POINT_TEST_REQ;
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxSenderEndReq;
       end
-      else if ((senderStateReg == LinkSpeedSenderState_waitPointTest) && d2cSender_sendTxInitD2CResultsReq && !d2cSender_sentResultsReq) begin
+      else if (senderPointArmed && !d2cSender_start &&
+               (senderStateReg == LinkSpeedSenderState_waitPointTest) && d2cSender_sendTxInitD2CResultsReq && !d2cSender_sentResultsReq) begin
         nextSbTxDin = TX_INIT_RESULTS_REQ;
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxSenderResultsReq;
       end
-      else if ((senderStateReg == LinkSpeedSenderState_waitPointTest) && d2cSender_sendLfsrClearErrorReq && !d2cSender_sentLfsrClearReq) begin
+      else if (senderPointArmed && !d2cSender_start &&
+               (senderStateReg == LinkSpeedSenderState_waitPointTest) && d2cSender_sendLfsrClearErrorReq && !d2cSender_sentLfsrClearReq) begin
         nextSbTxDin = LFSR_CLEAR_ERROR_REQ;
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxSenderLfsrReq;
       end
-      else if ((senderStateReg == LinkSpeedSenderState_waitPointTest) && d2cSender_sendStartTxInitD2CPointTestReq && !d2cSender_sentPointTestStartReq) begin
+      else if (senderPointArmed && !d2cSender_start &&
+               (senderStateReg == LinkSpeedSenderState_waitPointTest) && d2cSender_sendStartTxInitD2CPointTestReq && !d2cSender_sentPointTestStartReq) begin
         nextSbTxDin = START_POINT_TEST_REQ;
         nextSbTxValid = 1'b1;
         nextSbTxKind = TxSenderStartReq;
@@ -565,6 +583,8 @@ module MBTrain_LinkSpeed #(
       senderStateReg <= LinkSpeedSenderState_idle;
       receiverStateReg <= LinkSpeedReceiverState_idle;
       running <= 1'b0;
+      senderPointArmed <= 1'b0;
+      receiverPointArmed <= 1'b0;
       doneReg <= 1'b0;
       trainErrorReg <= 1'b0;
       prevStart <= 1'b0;
@@ -603,6 +623,7 @@ module MBTrain_LinkSpeed #(
       resultMalformedReg <= 1'b0;
       resultCountPendingReg <= 1'b0;
       d2cReceiver_loggedLaneComparisonSuccessful <= 16'b0;
+      d2cReceiver_resultLogged <= 1'b0;
       d2c_maximumComparisonErrorThresholdReg <= 16'b0;
       d2c_comparisonModeReg <= 1'b0;
       d2c_iterationCountSettingsReg <= 16'b0;
@@ -623,7 +644,6 @@ module MBTrain_LinkSpeed #(
       flagSentDegradeReq <= 1'b0;
       flagReceivedDegradeResp <= 1'b0;
       flagSentDegradeResp <= 1'b0;
-      phyInRetrainReg <= 1'b0;
       sbTxValid <= 1'b0;
       sbTxDin <= 128'b0;
       sbTxKind <= TxNone;
@@ -651,13 +671,14 @@ module MBTrain_LinkSpeed #(
       end
 
       if (startPulse) begin
+        senderPointArmed <= 1'b0;
+        receiverPointArmed <= 1'b0;
         timeoutCyclesMinusOneReg <= (cycles_1us == 32'd0) ? 32'd0 : cycles_1us - 32'd1;
         timeoutCycleReg <= 32'd0;
         timeoutMicrosecondsReg <= 13'd0;
         running <= 1'b1;
         doneReg <= 1'b0;
         trainErrorReg <= 1'b0;
-        phyInRetrainReg <= 1'b0;
         localFailureReg <= 1'b0;
         degradeExchangeReg <= 1'b0;
         exitToSpeedDegradeReg <= 1'b0;
@@ -703,6 +724,7 @@ module MBTrain_LinkSpeed #(
         resultCountPendingReg <= 1'b0;
         resultMalformedReg <= 1'b0;
         d2cReceiver_loggedLaneComparisonSuccessful <= 16'b0;
+        d2cReceiver_resultLogged <= 1'b0;
       end
 
       if (running && !startPulse && rxValidRisingEdge) begin
@@ -742,18 +764,17 @@ module MBTrain_LinkSpeed #(
           d2cReceiver_receivedLfsrClearReq <= 1'b1;
         else if (sb_rx_dout == LFSR_CLEAR_ERROR_RESP)
           d2cSender_receivedLfsrClearResp <= 1'b1;
-        else if (sb_rx_dout == TX_INIT_RESULTS_REQ) begin
-          d2cReceiver_loggedLaneComparisonSuccessful <= flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
+        else if (sb_rx_dout == TX_INIT_RESULTS_REQ)
           d2cReceiver_receivedResultsReq <= 1'b1;
-        end
         else if (((sb_rx_dout[61:56] == TX_INIT_RESULTS_RESP_TEMPLATE[61:56]) &&
          (sb_rx_dout[39:0]  == TX_INIT_RESULTS_RESP_TEMPLATE[39:0]))) begin
           if (d2cSender_sentResultsReq && !d2cSender_receivedResultsResp &&
               !resultCountPendingReg) begin
             for (int groupIndex = 0; groupIndex < 4; groupIndex++)
               resultFailedGroupsReg[groupIndex] <=
-                countFailedFour(~sb_rx_dout[64 + 4*groupIndex +: 4]);
-            resultMalformedReg <= !sb_rx_dout[45] || !sb_rx_dout[44] ||
+                countFailedFour(failedActiveLanes[4*groupIndex +: 4]);
+            resultMalformedReg <= (activeDataLaneMask == '0) ||
+                                  !sb_rx_dout[45] || !sb_rx_dout[44] ||
                                   (sb_rx_dout[127:80] != 48'd0);
             resultCountPendingReg <= 1'b1;
           end
@@ -764,6 +785,18 @@ module MBTrain_LinkSpeed #(
           d2cSender_receivedEndPointTestResp <= 1'b1;
       end
 
+      // The peer's Results request closes the physical observation. Wait for
+      // the RX controller to collect the final lane ACKs, then retain exactly
+      // one bitmap through sideband backpressure and response completion.
+      if (running && !startPulse && receiverPointArmed && !d2cReceiver_start &&
+          d2cReceiver_receivedResultsReq &&
+          !d2cReceiver_resultLogged &&
+          (!WAIT_FOR_LINKSPEED_LANE || linkSpeed_resultReady)) begin
+        d2cReceiver_loggedLaneComparisonSuccessful <=
+          flagFromAnalog_d2cReceiver_laneComparisonSuccessful & activeDataLaneMask;
+        d2cReceiver_resultLogged <= 1'b1;
+      end
+
       if (running && !startPulse && resultCountPendingReg) begin
         logErrorCountReg <= (resultMalformedReg && (resultFailedCount == 5'd0))
                          ? 16'd1 : {11'd0, resultFailedCount};
@@ -772,6 +805,7 @@ module MBTrain_LinkSpeed #(
       end
 
       if (d2cSender_start) begin
+        senderPointArmed <= 1'b1;
         d2cSender_receivedPointTestStartResp <= 1'b0;
         d2cSender_receivedLfsrClearResp <= 1'b0;
         d2cSender_receivedResultsResp <= 1'b0;
@@ -788,6 +822,8 @@ module MBTrain_LinkSpeed #(
         d2cReceiver_receivedPointTestStartReq <= 1'b0;
 
       if (d2cReceiver_start) begin
+        receiverPointArmed <= 1'b1;
+        d2cReceiver_resultLogged <= 1'b0;
         d2cReceiver_receivedLfsrClearReq <= 1'b0;
         d2cReceiver_receivedResultsReq <= 1'b0;
         d2cReceiver_receivedEndPointTestReq <= 1'b0;
@@ -937,7 +973,6 @@ module MBTrain_LinkSpeed #(
             (localFailureReg || flagReceivedDegradeReq) && !sbTxValid) begin
           exitToSpeedDegradeReg <= 1'b1;
           trainErrorReg <= 1'b0;
-          phyInRetrainReg <= 1'b0;
           doneReg <= 1'b0;
           running <= 1'b0;
           senderStateReg <= LinkSpeedSenderState_finish;
@@ -952,7 +987,6 @@ module MBTrain_LinkSpeed #(
       if (stageTimeoutNow) begin
         trainErrorReg <= 1'b1;
         exitToSpeedDegradeReg <= 1'b0;
-        phyInRetrainReg <= 1'b0;
         doneReg <= 1'b0;
         running <= 1'b0;
         sbTxValid <= 1'b0;

@@ -19,7 +19,9 @@ module MBTrain_DataTrainCenter2SweepEngine #(
   parameter bit          ucieA                   = LtsmParameters_pkg::DEFAULT_UCIE_A,
   parameter int unsigned PI_CODE_WIDTH           = LtsmParameters_pkg::DEFAULT_D2C_PI_CODE_WIDTH,
   parameter int unsigned MIN_COMMON_WINDOW_STEPS = LtsmParameters_pkg::DEFAULT_D2C_MIN_COMMON_WINDOW_STEPS,
-  parameter int unsigned MAX_TRAINING_RETRIES    = LtsmParameters_pkg::DEFAULT_D2C_MAX_TRAINING_RETRIES
+  parameter int unsigned MAX_TRAINING_RETRIES    = LtsmParameters_pkg::DEFAULT_D2C_MAX_TRAINING_RETRIES,
+  parameter int unsigned DATA_LANE_COUNT = ucieA ? 64 : 16,
+  parameter logic [DATA_LANE_COUNT-1:0] ACTIVE_LANE_MASK = '1
 ) (
   input  wire logic clock,
   input  wire logic reset_n,
@@ -35,7 +37,7 @@ module MBTrain_DataTrainCenter2SweepEngine #(
 
   output var logic        point_test_start,
   input  wire logic        point_test_done,
-  input  wire logic [63:0] point_test_lane_pass,
+  input  wire logic [DATA_LANE_COUNT-1:0] point_test_lane_pass,
   input  wire logic        point_test_valid_pass,
   input  wire logic        point_test_cumulative_pass,
 
@@ -47,14 +49,13 @@ module MBTrain_DataTrainCenter2SweepEngine #(
   output var logic [PI_CODE_WIDTH-1:0] globalLeftPhase,
   output var logic [PI_CODE_WIDTH-1:0] globalRightPhase
 );
-  localparam int unsigned MAX_DATA_LANES = 64;
+  localparam int unsigned COUNT_LEVELS = $clog2(DATA_LANE_COUNT);
+  localparam int unsigned COUNT_LEAVES = 1 << COUNT_LEVELS;
+  localparam int unsigned FAILURE_COUNT_WIDTH = $clog2(DATA_LANE_COUNT + 2);
   localparam int unsigned PHASE_COUNT = LtsmParameters_pkg::D2C_PI_PHASE_COUNT;
   localparam int unsigned PHASE_INDEX_WIDTH = LtsmParameters_pkg::D2C_PI_INDEX_WIDTH;
   // Length must represent all 264 samples in an all-pass sweep.
   localparam int unsigned WINDOW_LENGTH_WIDTH = $clog2(PHASE_COUNT + 1);
-
-  localparam logic [63:0] ACTIVE_LANE_MASK =
-    ucieA ? 64'hFFFF_FFFF_FFFF_FFFF : 64'h0000_0000_0000_FFFF;
 
   typedef enum logic [3:0] {
     SweepState_IDLE               = 4'd0,
@@ -94,13 +95,16 @@ module MBTrain_DataTrainCenter2SweepEngine #(
                           point_test_cumulative_pass &&
                           allActiveDataLanesPass;
 
-  // Balanced population count: six adder levels for 64 lanes, with only
-  // enough bits at each level for its partial count. Inactive lanes are zero.
-  for (genvar level = 0; level <= 6; level = level + 1) begin : genFailureCount
-    wire [level:0] count [0:(MAX_DATA_LANES >> level)-1];
-    for (genvar node = 0; node < (MAX_DATA_LANES >> level); node = node + 1) begin : genNode
+  // Each level counts a pair of partial sums. Unused leaves contribute zero.
+  for (genvar level = 0; level <= COUNT_LEVELS; level = level + 1) begin : genFailureCount
+    wire [level:0] count [0:(COUNT_LEAVES >> level)-1];
+    for (genvar node = 0; node < (COUNT_LEAVES >> level); node = node + 1) begin : genNode
       if (level == 0) begin : genLeaf
-        assign count[node] = ACTIVE_LANE_MASK[node] && !point_test_lane_pass[node];
+        if (node < DATA_LANE_COUNT) begin : gen_lane
+          assign count[node] = ACTIVE_LANE_MASK[node] && !point_test_lane_pass[node];
+        end else begin : gen_padding
+          assign count[node] = 1'b0;
+        end
       end else begin : genSum
         assign count[node] =
           {1'b0, genFailureCount[level-1].count[2*node]} +
@@ -108,11 +112,11 @@ module MBTrain_DataTrainCenter2SweepEngine #(
       end
     end
   end
-  wire [6:0] failedLaneAndValidCount =
-    genFailureCount[6].count[0] + {6'b0, !point_test_valid_pass};
+  wire [FAILURE_COUNT_WIDTH-1:0] failedLaneAndValidCount =
+    FAILURE_COUNT_WIDTH'(genFailureCount[COUNT_LEVELS].count[0]) + FAILURE_COUNT_WIDTH'(!point_test_valid_pass);
   wire [15:0] failedComparisons =
     (!point_test_cumulative_pass && (failedLaneAndValidCount == 0)) ?
-    16'd1 : {9'b0, failedLaneAndValidCount};
+    16'd1 : 16'(failedLaneAndValidCount);
 
   logic globalWindowValidCalc;
   logic [PHASE_INDEX_WIDTH-1:0] globalLeftPhaseCalc;
