@@ -1,0 +1,25 @@
+PASS LTSM owner0 init2 train0 kind0 count768
+PASS LTSM owner1 init3 train0 kind1 count128
+PASS LTSM owner2 init4 train0 kind2 count256
+PASS LTSM owner3 init5 train0 kind2 count256
+PASS LTSM owner4 init0 train1 kind1 count128
+PASS LTSM owner5 init0 train2 kind3 count128
+PASS LTSM owner6 init0 train6 kind1 count128
+PASS LTSM owner4 init0 train7 kind1 count128
+PASS LTSM owner7 init0 train8 kind3 count128
+PASS LTSM owner5 init0 train9 kind3 count128
+PASS LTSM owner8 init0 train10 kind3 count128
+PASS LTSM owner7 init0 train11 kind3 count128
+PASS LTSM owner7 init0 train12 kind3 count128
+PASS state-change abort then pending one-cycle request
+PASS LTSM owner7 init0 train8 kind3 count128
+PASS wrong-state command rejection
+PASS simultaneous request rejection
+PASS empty mask rejection
+PASS pending queue overflow reporting
+PASS LTSM owner2 init4 train0 kind2 count256
+LTSM_SPECIALIZED_REGRESSION_PASS
+- /workspace/scratch/464a38d0b952/ucie_phy_control_specialized/tests/tb_ltsm_specialized.sv:450: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.49
+- Verilator: $finish at 5us; walltime 0.030 s; speed 178.773 us/s
+- Verilator: cpu 0.030 s on 1 threads; allocated 0 MB

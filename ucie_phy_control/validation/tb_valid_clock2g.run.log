@@ -1,0 +1,33 @@
+PASS scalar CLOCK=0 MSB_FIRST=1 units=128 full finish return
+PASS scalar CLOCK=0 MSB_FIRST=0 units=128 full finish return
+PASS scalar CLOCK=0 MSB_FIRST=1 abort before_start=0 accepted=12
+PASS scalar CLOCK=0 MSB_FIRST=0 abort before_start=0 accepted=12
+PASS scalar CLOCK=0 MSB_FIRST=1 units=128 full finish return
+PASS scalar CLOCK=0 MSB_FIRST=0 units=128 full finish return
+PASS scalar CLOCK=0 MSB_FIRST=1 abort before_start=1 accepted=0
+PASS scalar CLOCK=0 MSB_FIRST=0 abort before_start=1 accepted=0
+PASS scalar CLOCK=0 MSB_FIRST=1 units=128 full finish return
+PASS scalar CLOCK=0 MSB_FIRST=0 units=128 full finish return
+PASS scalar CLOCK=1 MSB_FIRST=1 units=768 full finish return
+PASS scalar CLOCK=1 MSB_FIRST=0 units=768 full finish return
+PASS scalar CLOCK=1 MSB_FIRST=1 abort before_start=0 accepted=14
+PASS scalar CLOCK=1 MSB_FIRST=0 abort before_start=0 accepted=14
+PASS scalar CLOCK=1 MSB_FIRST=1 units=768 full finish return
+PASS scalar CLOCK=1 MSB_FIRST=0 units=768 full finish return
+PASS scalar CLOCK=1 MSB_FIRST=1 abort before_start=1 accepted=0
+PASS scalar CLOCK=1 MSB_FIRST=0 abort before_start=1 accepted=0
+PASS scalar CLOCK=1 MSB_FIRST=1 units=768 full finish return
+PASS scalar CLOCK=1 MSB_FIRST=0 units=768 full finish return
+PASS CLOCK MSB_FIRST=1 abort exactly after16 active periods
+PASS CLOCK MSB_FIRST=0 abort exactly after16 active periods
+PASS scalar CLOCK=1 MSB_FIRST=1 units=768 full finish return
+PASS scalar CLOCK=1 MSB_FIRST=0 units=768 full finish return
+PASS CLOCK MSB_FIRST=1 cancellation during finish-ack return
+PASS CLOCK MSB_FIRST=0 cancellation during finish-ack return
+PASS scalar CLOCK=1 MSB_FIRST=1 units=768 full finish return
+PASS scalar CLOCK=1 MSB_FIRST=0 units=768 full finish return
+VALID_CLOCK_REGRESSION_PASS
+- /workspace/scratch/464a38d0b952/ucie_phy_control_specialized/tests/tb_valid_clock2g.sv:225: Verilog $finish
+- S i m u l a t i o n   R e p o r t: Verilator 5.49
+- Verilator: $finish at 4us; walltime 0.331 s; speed 11.494 us/s
+- Verilator: cpu 0.330 s on 1 threads; allocated 0 MB

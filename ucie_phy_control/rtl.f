@@ -1,0 +1,5 @@
+LtsmPhyPatternCtrl800.sv
+PhyPatternTx500.sv
+PhyPatternData2g.sv
+PhyPatternValid2g.sv
+PhyPatternClock2g.sv
