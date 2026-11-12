@@ -1,144 +1,144 @@
 `default_nettype none
-
-// Dedicated CLOCK-lane pattern endpoint; one local 2 GHz clock domain.
-//
-// Analog interface: a single level control bit, phyDigControl.
+// ============================================================================
+// PhyPatternClock2g -- forwarded-clock control endpoint (2 GHz domain)
+// ============================================================================
+// Decides when the analog clock transmitter sends the forwarded clock. The
+// clock pattern itself is generated in the analog block; this module only
+// drives one registered, glitch-free level bit:
 //   phyDigControl = 1 -> the analog front end transmits the forwarded clock.
-//   phyDigControl = 0 -> the analog front end does not transmit the clock.
-// The pattern itself is generated in the analog block; this endpoint only
-// decides how long the clock is sent. phyDigControl is a registered,
-// glitch-free output.
+//   phyDigControl = 0 -> the analog front end sends zeros (no clock).
 //
-// Duration: each command holds phyDigControl high for ITERATIONS valid-pattern
-// iterations (default 130). One iteration lasts CYCLES_PER_ITERATION
-// clock_tx2g cycles (default 1, i.e. one 8-UI pattern per local cycle). The
-// bit is therefore high for exactly ITERATIONS*CYCLES_PER_ITERATION cycles.
+// Command inputs (levels from the 800 MHz controller, asynchronous here):
+//   cmd_req_active    : send the clock continuously (normal operation).
+//   cmd_req_clk_train : send the clock-training pattern (ITERATIONS
+//                       iterations, default 130), then stop.
+// Both are synchronized locally with SYNC_STAGES flops before use.
 //
-// Source command protocol (unchanged): assert cmd_req_async_i and hold it
-// until cmd_ack_o has been synchronized back to the source. Then lower request.
-// If cancelling, hold cmd_cancel_async_i until acknowledgment, then lower it.
-// Cancellation drops phyDigControl on the next local edge. The endpoint holds
-// cmd_ack_o until BOTH request and cancel synchronize low. cmd_aborted_o is
-// stable while acknowledgment is high. There is no command payload.
+// Behaviour, in priority order:
+//   1. cmd_req_active = 1:
+//      phyDigControl goes to 1 and stays there without any break. The
+//      cycle after phyDigControl is 1, cmd_ack_o goes to 1. Both stay high
+//      until cmd_req_active returns to 0. Active pre-empts a training in
+//      progress (the training is abandoned; a later request restarts it).
+//   2. cmd_req_clk_train = 1 (and active = 0):
+//      phyDigControl is held at 1 for ITERATIONS*CYCLES_PER_ITERATION
+//      clock_tx2g cycles, then drops to 0 and cmd_ack_o goes to 1. cmd_ack_o
+//      stays high until cmd_req_clk_train returns to 0 (four-phase
+//      handshake). If cmd_req_clk_train drops before the training finishes,
+//      the training is aborted: phyDigControl drops, no ack is given.
+//   3. Both requests 0:
+//      phyDigControl = 0 (zeros are sent) and cmd_ack_o = 0.
+//
+// cmd_ack_o is a registered level returned asynchronously to the 800 MHz
+// controller, which must synchronize it. Because both requests share the one
+// ack, the controller must not use the ack to detect training completion
+// while it is also requesting active mode.
 //
 // Common asynchronous reset assertion is required with the command source;
-// reset release is synchronized locally below.
+// reset release is synchronized locally (reset_clock2g_n).
+// ============================================================================
 module PhyPatternClock2g #(
   parameter integer SYNC_STAGES = 3,           // flops per CDC synchronizer (>= 2)
-  parameter integer ITERATIONS = 130,          // valid-pattern iterations per command
+  parameter integer ITERATIONS = 130,          // clock-pattern iterations per training
   parameter integer CYCLES_PER_ITERATION = 1   // clock_tx2g cycles per iteration
 ) (
   // ---- Local 2 GHz domain -------------------------------------------------
   input  wire  clock_tx2g,          // local control clock
   input  wire  reset_n,             // async reset (assert anywhere, release synced)
-
-  // ---- Command link from the 800 MHz controller (asynchronous) ------------
-  input  wire  cmd_req_async_i,     // request: held high until cmd_ack_o seen
-  input  wire  cmd_cancel_async_i,  // cancel: held high until cmd_ack_o seen
-  output logic cmd_ack_o,           // completion: held until req/cancel low
-  output logic cmd_aborted_o,       // 1 = command was cancelled; stable with ack
   output wire  reset_clock2g_n,     // locally synchronized reset (for neighbours)
 
+  // ---- Commands from the 800 MHz controller (asynchronous levels) ---------
+  input  wire  cmd_req_clk_train,   // 1 = send the 130-iteration training pattern
+  input  wire  cmd_req_active,      // 1 = send the clock continuously (priority)
+  output logic cmd_ack_o,           // acknowledgment, held until the request drops
+
   // ---- Analog front end ---------------------------------------------------
-  output logic phyDigControl        // 1 = send forwarded clock, 0 = no clock
+  output logic phyDigControl        // 1 = send forwarded clock, 0 = send zeros
 );
-  // Number of local cycles phyDigControl stays high for one full command,
-  // and the counter width needed to hold that value.
+  // Number of cycles phyDigControl is high for one training, and the counter
+  // width needed to hold that value.
   localparam integer TOTAL_CYCLES = ITERATIONS * CYCLES_PER_ITERATION;
   localparam integer CW = $clog2(TOTAL_CYCLES + 1);
 
-  // IDLE         : waiting for a synchronized request.
-  // RUN          : phyDigControl high, counting down remaining_q.
-  // WAIT_REQ_LOW : ack high, waiting for the source to drop request/cancel.
-  typedef enum logic [1:0] {IDLE, RUN, WAIT_REQ_LOW} state_t;
+  // IDLE       : no request, sending zeros.
+  // ACTIVE     : continuous clock (cmd_req_active).
+  // TRAIN      : training pattern, counting down remaining_q.
+  // TRAIN_DONE : training finished, ack held until cmd_req_clk_train drops.
+  typedef enum logic [1:0] {IDLE, ACTIVE, TRAIN, TRAIN_DONE} state_t;
   state_t state_q;
-  logic [CW-1:0] remaining_q;  // cycles left with the clock enabled
-  wire req_sync;               // cmd_req_async_i after the synchronizer
-  wire cancel_sync;            // cmd_cancel_async_i after the synchronizer
+  logic [CW-1:0] remaining_q;  // training cycles left with the clock enabled
+  wire train_sync;             // cmd_req_clk_train after the synchronizer
+  wire active_sync;            // cmd_req_active after the synchronizer
 
-  // Reset release and command inputs are synchronized into clock_tx2g
-  // before any logic uses them.
+  // Synchronize the reset release and both request levels into clock_tx2g.
   PhyClock2gCtrlResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx2g), .arst_ni(reset_n), .rst_no(reset_clock2g_n)
   );
-  PhyClock2gCtrlSyncBit #(.STAGES(SYNC_STAGES)) u_req_sync (
+  PhyClock2gCtrlSyncBit #(.STAGES(SYNC_STAGES)) u_train_sync (
     .clk_i(clock_tx2g), .rst_ni(reset_clock2g_n),
-    .async_i(cmd_req_async_i), .sync_o(req_sync)
+    .async_i(cmd_req_clk_train), .sync_o(train_sync)
   );
-  PhyClock2gCtrlSyncBit #(.STAGES(SYNC_STAGES)) u_cancel_sync (
+  PhyClock2gCtrlSyncBit #(.STAGES(SYNC_STAGES)) u_active_sync (
     .clk_i(clock_tx2g), .rst_ni(reset_clock2g_n),
-    .async_i(cmd_cancel_async_i), .sync_o(cancel_sync)
+    .async_i(cmd_req_active), .sync_o(active_sync)
   );
 
-  // Main control FSM. phyDigControl is a flop so the analog sees a clean,
-  // glitch-free level.
+  // Control FSM. Priority: active > clock training > idle. phyDigControl and
+  // cmd_ack_o are flops, so the analog and the controller see clean levels.
   always_ff @(posedge clock_tx2g or negedge reset_clock2g_n) begin
     if (!reset_clock2g_n) begin
       state_q <= IDLE;
       remaining_q <= '0;
       phyDigControl <= 1'b0;
       cmd_ack_o <= 1'b0;
-      cmd_aborted_o <= 1'b0;
-    end else begin
+    end else if (active_sync) begin
+      // 1) Active: clock on continuously. Ack follows one cycle after
+      //    phyDigControl is already 1. Any training in progress is dropped.
+      state_q <= ACTIVE;
+      remaining_q <= '0;
+      phyDigControl <= 1'b1;
+      cmd_ack_o <= phyDigControl;
+    end else if (train_sync) begin
+      // 2) Clock training.
       case (state_q)
-        // New command: clear the previous result, then either start the
-        // clock or, if already cancelled, complete immediately.
-        IDLE: if (req_sync) begin
-          cmd_aborted_o <= 1'b0;
-          if (cancel_sync) begin
-            // Cancelled before start: nothing is sent.
-            cmd_aborted_o <= 1'b1;
-            cmd_ack_o <= 1'b1;
-            state_q <= WAIT_REQ_LOW;
-          end else begin
-            // Load the full count and enable the clock from the next cycle.
-            remaining_q <= CW'(TOTAL_CYCLES);
-            phyDigControl <= 1'b1;
-            state_q <= RUN;
-          end
-        end
-
-        // Clock enabled. Each cycle here is one counted cycle; the bit is
-        // high for exactly TOTAL_CYCLES cycles unless cancelled.
-        RUN: begin
-          if (cancel_sync) begin
-            // Cancel: stop the clock now and report an aborted command.
-            phyDigControl <= 1'b0;
-            remaining_q <= '0;
-            cmd_aborted_o <= 1'b1;
-            cmd_ack_o <= 1'b1;
-            state_q <= WAIT_REQ_LOW;
-          end else if (remaining_q == CW'(1)) begin
-            // Last counted cycle: stop the clock and report normal completion.
+        TRAIN: begin
+          if (remaining_q == CW'(1)) begin
+            // Last training cycle: stop the clock and acknowledge.
             phyDigControl <= 1'b0;
             remaining_q <= '0;
             cmd_ack_o <= 1'b1;
-            state_q <= WAIT_REQ_LOW;
+            state_q <= TRAIN_DONE;
           end else begin
+            // Still sending: count one more cycle.
             remaining_q <= remaining_q - CW'(1);
           end
         end
-
-        // Four-phase return-to-zero: keep ack (and aborted) stable until the
-        // source has dropped both request and cancel, so neither can leak
-        // into the next command.
-        WAIT_REQ_LOW: if (!req_sync && !cancel_sync) begin
-          cmd_ack_o <= 1'b0;
-          state_q <= IDLE;
-        end
-
-        // Illegal state encoding: recover safely with the clock off.
-        default: begin
-          state_q <= IDLE;
+        TRAIN_DONE: begin
+          // Training finished: zeros on the lane, ack held until the
+          // request is removed.
           phyDigControl <= 1'b0;
+          cmd_ack_o <= 1'b1;
+        end
+        default: begin
+          // IDLE or ACTIVE (active just dropped): start a new training with
+          // the full count. Clock is on from the next cycle.
+          remaining_q <= CW'(TOTAL_CYCLES);
+          phyDigControl <= 1'b1;
           cmd_ack_o <= 1'b0;
+          state_q <= TRAIN;
         end
       endcase
+    end else begin
+      // 3) No request: send zeros, no ack. Also aborts an unfinished
+      //    training if cmd_req_clk_train dropped early.
+      state_q <= IDLE;
+      remaining_q <= '0;
+      phyDigControl <= 1'b0;
+      cmd_ack_o <= 1'b0;
     end
   end
 
-  // Simulation-only checks: parameter sanity, phyDigControl high only in
-  // RUN, and no acknowledgment while the clock is still enabled.
+  // Simulation-only checks: parameter sanity and output/state consistency.
 `ifndef SYNTHESIS
   initial begin
     assert (SYNC_STAGES >= 2)
@@ -148,11 +148,13 @@ module PhyPatternClock2g #(
   end
   always_ff @(posedge clock_tx2g) begin
     if (reset_clock2g_n) begin
-      assert (phyDigControl == (state_q == RUN))
-        else $error("phyDigControl must be high exactly while RUN");
-      if (cmd_ack_o)
-        assert (!phyDigControl)
-          else $error("Clock command acknowledged while clock still enabled");
+      // The clock is on only in ACTIVE or TRAIN.
+      assert (phyDigControl == (state_q == ACTIVE || state_q == TRAIN))
+        else $error("phyDigControl must be high exactly in ACTIVE or TRAIN");
+      // A training is never acknowledged while it is still sending.
+      if (state_q == TRAIN)
+        assert (!cmd_ack_o)
+          else $error("Clock training acknowledged while clock still enabled");
     end
   end
 `endif
@@ -180,7 +182,7 @@ module PhyClock2gCtrlResetSync #(
 endmodule
 
 // Single-bit level synchronizer (STAGES-flop chain) for the asynchronous
-// request/cancel inputs. Only use for level signals held for several cycles.
+// request inputs. Only use for level signals held for several cycles.
 module PhyClock2gCtrlSyncBit #(
   parameter integer STAGES = 3
 ) (

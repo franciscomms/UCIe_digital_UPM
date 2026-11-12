@@ -1,7 +1,8 @@
 `default_nettype none
 // PHYSICAL REGION 1: 800 MHz LTSM command capture / dispatch / completion.
 // Place this hierarchy near UCIe digital. Its only clock is the LTSM clock.
-// Four receivers: 500 MHz LFSR, 2 GHz data ID, 2 GHz valid, 2 GHz clock repair.
+// Four receivers: 500 MHz LFSR, 2 GHz data ID, 2 GHz valid, 2 GHz clock
+// (training pattern + continuous active clock).
 // Only the 500 MHz link carries a lane mask; all 2 GHz links are event-only.
 // Preserve hierarchy and apply the bundled-data timing constraints in README.
 module LtsmPhyPatternCtrl800 #(
@@ -40,6 +41,11 @@ module LtsmPhyPatternCtrl800 #(
   input wire ltsm_flagToAnalog_d2cSender_sendValTrainPattern,
   input wire ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
   input wire ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
+  // Level: 1 = forwarded clock must run continuously (forwarded to the clock
+  // endpoint as txclock2g_active_req_o). Has priority over clock training.
+  // TODO: placeholder port. Its source is not defined yet; the top currently
+  // ties it off. Change the driver (e.g. ltsm_state==ACTIVE) once decided.
+  input wire ltsm_clk_active_req,
   output wire ltsm_flagFromAnalog_FinishedClkPatterns,
   output wire ltsm_flagFromAnalog_FinishedValTrainPattern,
   output wire ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern,
@@ -65,6 +71,12 @@ module LtsmPhyPatternCtrl800 #(
   // A reseed resets all TX LFSRs. For a burst, masked-off lanes acknowledge
   // without transmitting. txdata2g_ack_i[lane] acknowledges lane-ID training.
   // The clock and valid engines each return a single ACK.
+  // The clock endpoint has two request levels sharing txclock2g_ack_i:
+  // txclock2g_clk_train_req_o (four-phase, 130-iteration training) and
+  // txclock2g_active_req_o (continuous clock, priority). A clock training is
+  // not launched while active is requested; a training pre-empted by active
+  // does not raise FinishedClkPatterns, and its return-to-zero (and so the
+  // next pattern command) waits until active is released.
   // Each enabled 500 MHz lane sends 4096 UI (128 32-bit words) per normal
   // or custom burst. The burst length is implicit.
   output wire tx500_req_o,
@@ -75,7 +87,8 @@ module LtsmPhyPatternCtrl800 #(
   input wire [LANES-1:0] txdata2g_ack_i,
   output wire txvalid2g_req_o,
   input wire txvalid2g_ack_i,
-  output wire txclock2g_req_o,
+  output wire txclock2g_clk_train_req_o,
+  output wire txclock2g_active_req_o,
   input wire txclock2g_ack_i
 );
   // Local destination selectors. Reset and burst share the 500 MHz endpoint.
@@ -181,7 +194,13 @@ module LtsmPhyPatternCtrl800 #(
   logic [1:0] active_kind;
   // Channel index follows the local pattern-kind enumeration.
   wire [3:0] channel_ready,channel_done;
-  wire selected_ready=channel_ready[pending_kind];
+  // Registered copy of the active-clock request, sent to the clock endpoint.
+  // While it is high the shared clock ACK means "active", so no clock
+  // training is launched.
+  logic clk_active_q;
+  logic clk_train_preempted; // in-flight training was overridden by active
+  wire selected_ready=channel_ready[pending_kind] &&
+    !(pending_kind==K_CLK && clk_active_q);
   wire select_reset = pending_reset && (!pending_valid || reset_first);
   wire launch_reset = (source_state==IDLE) && select_reset && channel_ready[K_LFSR];
   wire launch_pattern = (source_state==IDLE) && !select_reset && pending_valid && selected_ready;
@@ -199,7 +218,14 @@ module LtsmPhyPatternCtrl800 #(
       pending_reset<=0; reset_first<=0; previous_reset_flags<='0;
       active_kind<=K_CLK; previous_request<='0; previous_custom_train<=0; finished<='0;
       ltsm_pattern_error<='0;
+      clk_active_q<=0; clk_train_preempted<=0;
     end else begin
+      clk_active_q<=ltsm_clk_active_req;
+      // Active raised while a clock training is in flight: its ACK will come
+      // from active mode, so do not report it as a finished training.
+      if (launch_reset || launch_pattern) clk_train_preempted<=0;
+      else if (source_state==WAIT_DONE && active_kind==K_CLK && clk_active_q)
+        clk_train_preempted<=1;
       previous_request<=request;
       previous_reset_flags<=reset_flags;
       previous_custom_train<=custom_train_sync;
@@ -215,7 +241,9 @@ module LtsmPhyPatternCtrl800 #(
       if (source_state==WAIT_DONE) begin
         if (active_done) begin
           source_state<=RETURN_ZERO;
-          finished<=active_owner;
+          // Suppress the Finished flag of a pre-empted clock training.
+          finished<=(active_kind==K_CLK && (clk_train_preempted || clk_active_q)) ?
+            9'b0 : active_owner;
         end
       end
       if (source_state==RETURN_ZERO && active_ready) source_state<=IDLE;
@@ -272,8 +300,10 @@ module LtsmPhyPatternCtrl800 #(
     .src_clk_i(clock),.src_rst_ni(reset_ltsm_n),.src_req_i(1'b1),.src_valid_i(launch_pattern && pending_kind==K_CLK),
     .src_ready_o(channel_ready[K_CLK]),.src_data_i(1'b0),
     .src_done_o(channel_done[K_CLK]),
-    .link_req_o(txclock2g_req_o),.link_payload_o(unused_clock_payload),
+    .link_req_o(txclock2g_clk_train_req_o),.link_payload_o(unused_clock_payload),
     .link_ack_async_i(txclock2g_ack_i));
+  // Continuous-clock request level to the clock endpoint (registered source).
+  assign txclock2g_active_req_o=clk_active_q;
 
   assign {ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
     ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
@@ -287,7 +317,7 @@ module LtsmPhyPatternCtrl800 #(
 `ifndef SYNTHESIS
   initial assert (LANES>=1) else $fatal(1,"LANES must be positive");
   assert property (@(posedge clock) disable iff (!reset_ltsm_n) $onehot0(finished));
-  assert property (@(posedge clock) disable iff (!reset_ltsm_n) $onehot0({tx500_req_rst_o,tx500_req_o,txdata2g_req_o,txvalid2g_req_o,txclock2g_req_o}));
+  assert property (@(posedge clock) disable iff (!reset_ltsm_n) $onehot0({tx500_req_rst_o,tx500_req_o,txdata2g_req_o,txvalid2g_req_o,txclock2g_clk_train_req_o}));
 `endif
 endmodule
 `default_nettype wire

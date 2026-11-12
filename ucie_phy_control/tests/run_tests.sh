@@ -18,7 +18,7 @@ for rtl_top in LtsmPhyPatternCtrl800 PhyPatternTx500 PhyPatternData2g PhyPattern
     exit 1
   fi
 done
-for test_top in tb_data_lfsr tb_valid_clock2g tb_ltsm_specialized; do
+for test_top in tb_data_lfsr tb_valid_clock2g tb_clock2g tb_ltsm_specialized; do
   test_obj_dir="$test_build_root/$test_top"
   if ! "${test_simulator[@]}" --binary --timing --assert --output-split 0 --timescale-override 1ps/1ps \
       -j 2 --top-module "$test_top" --Mdir "$test_obj_dir" \

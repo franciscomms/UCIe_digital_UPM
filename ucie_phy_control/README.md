@@ -57,9 +57,15 @@ Instantiate one `PhyPatternClock2g` beside the clock transmitter. It drives a si
 - `phyDigControl = 1`: the analog front end sends the forwarded clock.
 - `phyDigControl = 0`: the clock is not sent.
 
-Each command holds `phyDigControl` high for `ITERATIONS` (default **130**) valid-pattern iterations of `CYCLES_PER_ITERATION` (default 1) `clock_tx2g` cycles each, then drops it and acknowledges. Cancellation behaves as for valid. The previous on/off clock-repair byte sequence (16 on + 8 low periods) is no longer generated here; the clock is sent continuously while the bit is high.
+It has two asynchronous request levels from the 800 MHz controller (synchronized locally) and one shared acknowledgment `cmd_ack_o`. In priority order:
 
-This controller implements the clock-pattern request only. Normal forwarded-clock operation during data/valid transmission remains part of the PHY clock policy. Physical pin selection, redundant clock/valid mapping, tristate controls and analog behavior are not inferred here.
+1. `cmd_req_active = 1`: `phyDigControl` goes high and stays high with no break; `cmd_ack_o` rises the cycle after and both stay high until `cmd_req_active` falls. Active pre-empts a training in progress.
+2. `cmd_req_clk_train = 1`: `phyDigControl` is held high for `ITERATIONS` (default **130**) iterations of `CYCLES_PER_ITERATION` (default 1) `clock_tx2g` cycles, then drops; `cmd_ack_o` then rises and stays high until `cmd_req_clk_train` falls. Dropping the request early aborts the training with no acknowledgment.
+3. Neither: `phyDigControl = 0` (zeros), `cmd_ack_o = 0`.
+
+On `LtsmPhyPatternCtrl800`, `txclock2g_clk_train_req_o` drives `cmd_req_clk_train`, `txclock2g_active_req_o` drives `cmd_req_active`, and `cmd_ack_o` returns to `txclock2g_ack_i`. The active request comes from the new `ltsm_clk_active_req` input, which is currently a placeholder tied to 0 in `UcieDigitalTopJtag` (TODO: define its source, e.g. LTSM ACTIVE). A clock training is not launched while active is requested; a training pre-empted by active does not raise `FinishedClkPatterns`.
+
+Physical pin selection, redundant clock/valid mapping, tristate controls and analog behavior are not inferred here.
 
 ## Front-end wiring
 
@@ -70,7 +76,7 @@ Keep all original LTSM request, state, lane-mask, completion and diagnostic port
 | `tx500_*` | `PhyPatternTx500` | Existing `tx500_payload_o[LANES+17:0]` to `cmd_payload_async_i` |
 | `txdata2g_*` | `PhyPatternData2g` | `txdata2g_lane_mask_o[LANES-1:0]` to `cmd_lane_mask_async_i` |
 | `txvalid2g_*` | `PhyPatternValid2g` | None from the front end yet; tie `cmd_sel_async_i` to `3'b010` |
-| `txclock2g_*` | `PhyPatternClock2g` | None |
+| `txclock2g_*` | `PhyPatternClock2g` | None; `_clk_train_req_o` + `_active_req_o` share `_ack_i` (see clock section) |
 
 For each prefix, connect `_req_o` to `cmd_req_async_i`, `_cancel_o` to `cmd_cancel_async_i`, `_ack_i` from `cmd_ack_o`, and `_aborted_i` from `cmd_aborted_o`. Valid and clock therefore need only four command/result wires each, in addition to clock/reset and their local PHY signals.
 

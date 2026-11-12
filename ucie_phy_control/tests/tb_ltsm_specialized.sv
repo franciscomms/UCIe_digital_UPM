@@ -49,12 +49,12 @@ module tb_ltsm_specialized;
   assign #390 cancelvalid2g_dst=cancelvalid2g_src;
   assign #220 ackvalid2g_src=ackvalid2g_dst;
   assign #610 abortedvalid2g_src=abortedvalid2g_dst;
-  wire reqclock2g_src,reqclock2g_dst,cancelclock2g_src,cancelclock2g_dst;
-  wire ackclock2g_src,ackclock2g_dst,abortedclock2g_src,abortedclock2g_dst;
-  assign #170 reqclock2g_dst=reqclock2g_src;
-  assign #390 cancelclock2g_dst=cancelclock2g_src;
+  // Clock link: training request + continuous-clock request, one shared ack.
+  wire trainclock2g_src,trainclock2g_dst,activeclock2g_src,activeclock2g_dst;
+  wire ackclock2g_src,ackclock2g_dst;
+  assign #170 trainclock2g_dst=trainclock2g_src;
+  assign #390 activeclock2g_dst=activeclock2g_src;
   assign #220 ackclock2g_src=ackclock2g_dst;
-  assign #610 abortedclock2g_src=abortedclock2g_dst;
   wire [19:0] payload500_src,payload500_dst;
   wire [1:0] data_mask_src,data_mask_dst;
   assign #430 payload500_dst=payload500_src;
@@ -75,6 +75,7 @@ module tb_ltsm_specialized;
     .ltsm_flagToAnalog_d2cSender_sendValTrainPattern(req[6]),
     .ltsm_flagToAnalog_d2cSender_sendLfsrPattern(req[7]),
     .ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(req[8]),
+    .ltsm_clk_active_req(1'b0), // continuous clock not exercised here
     .ltsm_flagFromAnalog_FinishedClkPatterns(done[0]),
     .ltsm_flagFromAnalog_FinishedValTrainPattern(done[1]),
     .ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(done[2]),
@@ -102,10 +103,9 @@ module tb_ltsm_specialized;
     .txvalid2g_cancel_o(cancelvalid2g_src),
     .txvalid2g_ack_i(ackvalid2g_src),
     .txvalid2g_aborted_i(abortedvalid2g_src),
-    .txclock2g_req_o(reqclock2g_src),
-    .txclock2g_cancel_o(cancelclock2g_src),
-    .txclock2g_ack_i(ackclock2g_src),
-    .txclock2g_aborted_i(abortedclock2g_src)
+    .txclock2g_clk_train_req_o(trainclock2g_src),
+    .txclock2g_active_req_o(activeclock2g_src),
+    .txclock2g_ack_i(ackclock2g_src)
   );
   PhyPatternTx500 #(.LANES(2)) u_500 (
     .clock_tx500(clock_tx500),
@@ -165,10 +165,9 @@ module tb_ltsm_specialized;
   PhyPatternClock2g  u_clock2g (
     .clock_tx2g(clock_tx2g),
     .reset_n(reset_n),
-    .cmd_req_async_i(reqclock2g_dst),
-    .cmd_cancel_async_i(cancelclock2g_dst),
+    .cmd_req_clk_train(trainclock2g_dst),
+    .cmd_req_active(activeclock2g_dst),
     .cmd_ack_o(ackclock2g_dst),
-    .cmd_aborted_o(abortedclock2g_dst),
     .reset_clock2g_n(reset_clock2g_n),
     .phyDigControl(phyDigControl)
   );

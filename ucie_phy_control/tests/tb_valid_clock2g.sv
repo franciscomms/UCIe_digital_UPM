@@ -1,7 +1,8 @@
 `timescale 1ps/1ps
 `default_nettype none
-// Checks the level-control VALID/CLOCK endpoints:
-//  - CLOCK drives phyDigControl, VALID drives {phyTrainLfsr,phyTrainValid,phyTrainLaneid}.
+// Checks the level-control VALID endpoint (the CLOCK endpoint is covered by
+// tb_clock2g.sv since it moved to the clk_train/active interface):
+//  - VALID drives {phyTrainLfsr,phyTrainValid,phyTrainLaneid}.
 //  - A normal command keeps the selected bit(s) high for exactly 130 cycles.
 //  - Cancellation mid-burst stops early; cancellation before start sends nothing.
 //  - Completion returns to the source only after the bit(s) are low again.
@@ -32,18 +33,9 @@ module scalar_pattern_case #(
   wire [2:0] bits;  // VALID: {lfsr,valid,laneid}; CLOCK: {0,phyDigControl,0}
   wire req_sync,cancel_sync;
   logic [2:0] expected_bits;
-  if(CLOCK_MODE) begin : gclock
-    wire phyDigControl;
-    PhyPatternClock2g u_endpoint(
-      .clock_tx2g(clk),.reset_n(arst_n),.cmd_req_async_i(req_dst),
-      .cmd_cancel_async_i(cancel_dst_wire),.cmd_ack_o(ack_dst),.cmd_aborted_o(abort_dst),
-      .reset_clock2g_n(local_rst_n),.phyDigControl(phyDigControl)
-    );
-    assign bits={1'b0,phyDigControl,1'b0};
-    assign req_sync=u_endpoint.req_sync;
-    assign cancel_sync=u_endpoint.cancel_sync;
-    initial expected_bits=3'b010;
-  end else begin : gvalid
+  // CLOCK_MODE is kept for compatibility but is no longer used: the clock
+  // endpoint has its own interface and testbench (tb_clock2g.sv).
+  if (1) begin : gvalid
     wire lfsr,valid,laneid;
     PhyPatternValid2g u_endpoint(
       .clock_tx2g(clk),.reset_n(arst_n),.cmd_req_async_i(req_dst),.cmd_sel_async_i(SEL),
@@ -126,9 +118,8 @@ module tb_valid_clock2g;
   scalar_pattern_case #(.CLOCK_MODE(0),.SEL(3'b100)) valid_lfsr();
   scalar_pattern_case #(.CLOCK_MODE(0),.SEL(3'b010)) valid_valid();
   scalar_pattern_case #(.CLOCK_MODE(0),.SEL(3'b001)) valid_laneid();
-  scalar_pattern_case #(.CLOCK_MODE(1)) clock();
   initial begin
-    fork valid_lfsr.run_all();valid_valid.run_all();valid_laneid.run_all();clock.run_all();join
+    fork valid_lfsr.run_all();valid_valid.run_all();valid_laneid.run_all();join
     $display("VALID_CLOCK_REGRESSION_PASS");$finish;
   end
   initial begin #100000000;$fatal(1,"Scalar endpoint timeout");end

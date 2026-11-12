@@ -251,7 +251,10 @@ module UcieDigitalTopJtag #(
   input wire logic [dataLaneCount-1:0] txdata2g_ack_i,
   output wire logic txvalid2g_req_o,
   input wire logic txvalid2g_ack_i,
-  output wire logic txclock2g_req_o,
+  // Clock endpoint: training request (four-phase) and continuous-clock
+  // request (level, priority) share one ACK.
+  output wire logic txclock2g_clk_train_req_o,
+  output wire logic txclock2g_active_req_o,
   input wire logic txclock2g_ack_i,
 
   // Static physical IDs for the sixteen x16 data lanes; reversal uses lane_reverse_o.
@@ -698,6 +701,10 @@ module UcieDigitalTopJtag #(
     .ltsm_flagToAnalog_d2cSender_sendValTrainPattern(pattern_normal_enable && ltsm_flagToAnalog_d2cSender_sendValTrainPattern),
     .ltsm_flagToAnalog_d2cSender_sendLfsrPattern(pattern_normal_enable && ltsm_flagToAnalog_d2cSender_sendLfsrPattern),
     .ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(pattern_normal_enable && ltsm_flagToAnalog_rxDeskew_sendLfsrPattern),
+    // TODO: continuous forwarded-clock request is tied off (clock only runs
+    // for training). Replace with the real condition, e.g.
+    // pattern_normal_enable && ltsm_state==4'd8 (ACTIVE), once decided.
+    .ltsm_clk_active_req(1'b0),
     .ltsm_flagFromAnalog_FinishedClkPatterns(ltsm_flagFromAnalog_FinishedClkPatterns),
     .ltsm_flagFromAnalog_FinishedValTrainPattern(ltsm_flagFromAnalog_FinishedValTrainPattern),
     .ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern),
@@ -715,7 +722,9 @@ module UcieDigitalTopJtag #(
     .tx500_ack_i(tx500_ack_i),
     .txdata2g_req_o(txdata2g_req_o), .txdata2g_ack_i(txdata2g_ack_i),
     .txvalid2g_req_o(txvalid2g_req_o), .txvalid2g_ack_i(txvalid2g_ack_i),
-    .txclock2g_req_o(txclock2g_req_o), .txclock2g_ack_i(txclock2g_ack_i)
+    .txclock2g_clk_train_req_o(txclock2g_clk_train_req_o),
+    .txclock2g_active_req_o(txclock2g_active_req_o),
+    .txclock2g_ack_i(txclock2g_ack_i)
   );
 
   // --------------------------------------------------------------------------
