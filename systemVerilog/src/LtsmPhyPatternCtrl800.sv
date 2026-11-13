@@ -1,10 +1,38 @@
 `default_nettype none
 // PHYSICAL REGION 1: 800 MHz LTSM command capture / dispatch / completion.
 // Place this hierarchy near UCIe digital. Its only clock is the LTSM clock.
-// Four receivers: 500 MHz LFSR, 2 GHz data ID, 2 GHz valid, 2 GHz clock
-// (training pattern + continuous active clock).
-// Only the 500 MHz link carries a lane mask; all 2 GHz links are event-only.
-// Preserve hierarchy and apply the bundled-data timing constraints in README.
+//
+// This controller talks over ONE CDC handshake (the seq_* link) to
+// PhyTxSequencer (ucie_phy_control/, 500 MHz). The sequencer is the only CDC
+// point on the PHY side and the only owner of TX pattern timing; it drives
+// the clock, valid, data lane-ID and 500 MHz LFSR endpoints together.
+//
+// Command set sent as seq_op_o:
+//   0 CLK_TRAIN  SendClkPatterns
+//   1 VAL_TRAIN  SendValTrainPattern, valVref_sendPattern,
+//                d2cSender_sendValTrainPattern
+//   2 LANEID     ReversalMbSendLaneIDPattern, RepairMbSendLaneIDPattern
+//   3 LFSR       dataVref_sendPattern, d2cSender_sendLfsrPattern,
+//                rxDeskew_sendLfsrPattern, custom JTAG burst (seq_mask_o)
+//   4 RESEED     any of the five reset-scrambler flags (edge detected)
+//   5 ACTIVE     launched once on each entry into ltsm_state == 8 (ACTIVE),
+//                stopped when ltsm_state != 8. Raises no Finished flag.
+// Training lengths are fixed in the sequencer (128 iterations).
+//
+// Link protocol (see PhyTxSequencer for the receiving side):
+//   seq_req_o   level; held until the synchronized ack is seen.
+//   seq_stop_o  level; raised to end the running command early, held until
+//               ack. Raised for ACTIVE when ltsm_state leaves 8 and for any
+//               other command when ltsm_state enters 9 (TRAIN_ERROR) or
+//               0 (RESET).
+//   seq_op_o, seq_mask_o  bundled; stable from before req rises until ack
+//               has fallen.
+//   seq_ack_i   synchronized here. Rises after the whole envelope (clock off).
+//   seq_aborted_i  bundled with ack (stable while ack is high). An aborted
+//               command does not raise its Finished flag.
+//
+// Preserve hierarchy and apply the bundled-data timing constraints in
+// ucie_phy_control/constraints/cdc_constraints.sdc.
 module LtsmPhyPatternCtrl800 #(
   parameter integer LANES=16,
   parameter integer SYNC_STAGES=3
@@ -41,11 +69,6 @@ module LtsmPhyPatternCtrl800 #(
   input wire ltsm_flagToAnalog_d2cSender_sendValTrainPattern,
   input wire ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
   input wire ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
-  // Level: 1 = forwarded clock must run continuously (forwarded to the clock
-  // endpoint as txclock2g_active_req_o). Has priority over clock training.
-  // TODO: placeholder port. Its source is not defined yet; the top currently
-  // ties it off. Change the driver (e.g. ltsm_state==ACTIVE) once decided.
-  input wire ltsm_clk_active_req,
   output wire ltsm_flagFromAnalog_FinishedClkPatterns,
   output wire ltsm_flagFromAnalog_FinishedValTrainPattern,
   output wire ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern,
@@ -55,44 +78,31 @@ module LtsmPhyPatternCtrl800 #(
   output wire ltsm_flagFromAnalog_d2cSender_valTrainPatternSent,
   output wire ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
   output wire ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
+  // High while a command is pending or running (including all of ACTIVE).
   output wire ltsm_pattern_busy,
-  // Sticky until common reset: [0] multiple LTSM edges or LTSM/JTAG collision,
-  // [1] LTSM request/state mismatch or zero custom mask, [2] queue overflow.
-  // A simultaneous LTSM/JTAG edge keeps LTSM priority and rejects the JTAG edge.
+  // Sticky until common reset: [0] multiple LTSM edges or LTSM/JTAG (or
+  // ACTIVE-entry/JTAG) collision, [1] LTSM request/state mismatch or zero
+  // custom mask, [2] queue overflow. A simultaneous LTSM/JTAG edge keeps LTSM
+  // priority and rejects the JTAG edge. Discarding a queued command on
+  // TRAIN_ERROR/RESET entry does not set an error bit.
   output logic [2:0] ltsm_pattern_error,
   output wire reset_ltsm_n,
-  // Inter-region links. Payload is held through the entire four-phase handshake.
-  // These are CDC links, not synchronous ready/valid ports across the floorplan.
-  // Each lane raises its ACK when it has handled the request and holds it
-  // until it observes REQ low. REQ falls after every lane has acknowledged;
-  // the next command waits until every ACK has returned low.
-  // Commands run to completion; only common reset can interrupt a command.
-  // tx500_ack_i[lane] covers either a burst or a reseed on that lane.
-  // A reseed resets all TX LFSRs. For a burst, masked-off lanes acknowledge
-  // without transmitting. txdata2g_ack_i[lane] acknowledges lane-ID training.
-  // The clock and valid engines each return a single ACK.
-  // The clock endpoint has two request levels sharing txclock2g_ack_i:
-  // txclock2g_clk_train_req_o (four-phase, 130-iteration training) and
-  // txclock2g_active_req_o (continuous clock, priority). A clock training is
-  // not launched while active is requested; a training pre-empted by active
-  // does not raise FinishedClkPatterns, and its return-to-zero (and so the
-  // next pattern command) waits until active is released.
-  // Each enabled 500 MHz lane sends 4096 UI (128 32-bit words) per normal
-  // or custom burst. The burst length is implicit.
-  output wire tx500_req_o,
-  output wire tx500_req_rst_o,
-  output wire [LANES-1:0] tx500_payload_o,
-  input wire [LANES-1:0] tx500_ack_i,
-  output wire txdata2g_req_o,
-  input wire [LANES-1:0] txdata2g_ack_i,
-  output wire txvalid2g_req_o,
-  input wire txvalid2g_ack_i,
-  output wire txclock2g_clk_train_req_o,
-  output wire txclock2g_active_req_o,
-  input wire txclock2g_ack_i
+  // Status: PHY is in ACTIVE with its clock running (PRE finished).
+  // Synchronized copy of the sequencer's active_ready_o.
+  output wire ltsm_active_ready,
+  // ---- Link to PhyTxSequencer (CDC, see protocol above) --------------------
+  output wire seq_req_o,
+  output wire seq_stop_o,
+  output wire [2:0] seq_op_o,
+  output wire [LANES-1:0] seq_mask_o,
+  input wire seq_ack_i,
+  input wire seq_aborted_i,
+  input wire seq_active_ready_i
 );
-  // Local destination selectors. Reset and burst share the 500 MHz endpoint.
-  localparam logic [1:0] K_CLK=2'd0, K_VAL=2'd1, K_ID=2'd2, K_LFSR=2'd3;
+  // Command encoding (shared with PhyTxSequencer).
+  localparam logic [2:0] OP_CLK_TRAIN=3'd0, OP_VAL_TRAIN=3'd1, OP_LANEID=3'd2,
+                         OP_LFSR=3'd3, OP_RESEED=3'd4, OP_ACTIVE=3'd5;
+  localparam logic [3:0] ST_RESET=4'd0, ST_ACTIVE=4'd8, ST_TRAIN_ERROR=4'd9;
   localparam logic [LANES-1:0] ALL_LANES={LANES{1'b1}};
 
   Ltsm800ResetSync #(.STAGES(SYNC_STAGES)) u_rst_ltsm
@@ -104,6 +114,21 @@ module LtsmPhyPatternCtrl800 #(
     .clk_i(clock),.rst_ni(reset_ltsm_n),
     .async_i(custom_train_jtag),.sync_o(custom_train_sync));
   wire custom_rise=custom_train_sync && !previous_custom_train;
+
+  Ltsm800SyncBit #(.STAGES(SYNC_STAGES)) u_active_ready_sync (
+    .clk_i(clock),.rst_ni(reset_ltsm_n),
+    .async_i(seq_active_ready_i),.sync_o(ltsm_active_ready));
+
+  // LTSM state events. ACTIVE is entered/left on ltsm_state == 8. Trainings
+  // are stopped, and a queued training discarded, on ENTRY into TRAIN_ERROR
+  // or RESET. Entry (not level) is used so a custom JTAG burst can still be
+  // issued while the LTSM sits in RESET (PHY test mode).
+  logic [3:0] previous_state;
+  wire in_active = (ltsm_state == ST_ACTIVE);
+  wire active_entry = in_active && (previous_state != ST_ACTIVE);
+  wire in_abort_state = (ltsm_state == ST_TRAIN_ERROR) || (ltsm_state == ST_RESET);
+  wire was_abort_state = (previous_state == ST_TRAIN_ERROR) || (previous_state == ST_RESET);
+  wire abort_entry = in_abort_state && !was_abort_state;
 
   wire [8:0] request={ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
     ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
@@ -126,54 +151,56 @@ module LtsmPhyPatternCtrl800 #(
   wire reset_rise = |(reset_flags & ~previous_reset_flags);
   logic [8:0] previous_request, finished;
   wire [8:0] rise=request & ~previous_request;
-  wire custom_selected=custom_rise && !(|rise);
-  wire custom_collision=custom_rise && (|rise);
-  logic [1:0] decoded_kind;
+  // ACTIVE entry and LTSM flags have priority over a JTAG edge.
+  wire custom_selected=custom_rise && !(|rise) && !active_entry;
+  wire custom_collision=custom_rise && ((|rise) || active_entry);
+  logic [2:0] decoded_op;
   logic [LANES-1:0] decoded_mask;
   logic decoded_legal;
   wire multiple_rise=(rise != 0) && ((rise & (rise-9'd1)) != 0);
+  // Legality decode: MBINIT/MBTRAIN substate numbers unchanged.
   always_comb begin
-    decoded_kind=K_CLK;
+    decoded_op=OP_CLK_TRAIN;
     decoded_mask=ALL_LANES;
     decoded_legal=1'b0;
     case (rise)
       9'b000000001: decoded_legal=(ltsm_state==5 && ltsm_dbg_mbinitSubstate==2);
       9'b000000010: begin
-        decoded_kind=K_VAL;
+        decoded_op=OP_VAL_TRAIN;
         decoded_legal=(ltsm_state==5 && ltsm_dbg_mbinitSubstate==3);
       end
       9'b000000100,9'b000001000: begin
-        decoded_kind=K_ID;
+        decoded_op=OP_LANEID;
         decoded_legal=(ltsm_state==5 &&
           ((rise[2] && ltsm_dbg_mbinitSubstate==4) ||
            (rise[3] && ltsm_dbg_mbinitSubstate==5)));
       end
       9'b000010000: begin
-        decoded_kind=K_VAL;
+        decoded_op=OP_VAL_TRAIN;
         decoded_legal=(ltsm_state==6 && (ltsm_dbg_mbtrainState==1 || ltsm_dbg_mbtrainState==7));
       end
       9'b000100000: begin
-        decoded_kind=K_LFSR;
+        decoded_op=OP_LFSR;
         decoded_legal=(ltsm_state==6 &&
           (ltsm_dbg_mbtrainState==2 || ltsm_dbg_mbtrainState==9));
       end
       9'b001000000: begin
-        decoded_kind=K_VAL;
+        decoded_op=OP_VAL_TRAIN;
         decoded_legal=(ltsm_state==6 && ltsm_dbg_mbtrainState==6);
       end
       9'b010000000: begin
-        decoded_kind=K_LFSR;
+        decoded_op=OP_LFSR;
         decoded_legal=(ltsm_state==6 &&
           (ltsm_dbg_mbtrainState==8 || ltsm_dbg_mbtrainState==11 || ltsm_dbg_mbtrainState==12));
       end
       9'b100000000: begin
-        decoded_kind=K_LFSR;
+        decoded_op=OP_LFSR;
         decoded_legal=(ltsm_state==6 && ltsm_dbg_mbtrainState==10);
       end
       default: begin end
     endcase
     if (custom_selected) begin
-      decoded_kind=K_LFSR;
+      decoded_op=OP_LFSR;
       decoded_mask=ltsm_data_lane_mask;
       decoded_legal=(|ltsm_data_lane_mask);
     end
@@ -183,127 +210,109 @@ module LtsmPhyPatternCtrl800 #(
   // independently would lose short pulses and detach them from their state.
   // Keep one pending pattern and one pending reseed while a handshake runs.
   // Dispatch in capture order, with reset first for edges on the same cycle.
-  // State and mask legality are checked at capture. Later state changes or
-  // request deassertion do not discard an accepted active or pending command.
+  // State and mask legality are checked at capture. ACTIVE uses the same
+  // pattern slot, so a LINKINIT reseed captured earlier is sent before it.
+  // A queued ACTIVE is discarded if the state leaves 8 before it launches; a
+  // queued training is discarded on TRAIN_ERROR/RESET entry.
   typedef enum logic [1:0] {IDLE,WAIT_DONE,RETURN_ZERO} source_state_t;
   source_state_t source_state;
   logic pending_valid, pending_reset, reset_first;
   logic [LANES-1:0] pending_mask;
-  logic [1:0] pending_kind;
+  logic [2:0] pending_op, active_op;
   logic [8:0] pending_owner,active_owner;
-  logic [1:0] active_kind;
-  // Channel index follows the local pattern-kind enumeration.
-  wire [3:0] channel_ready,channel_done;
-  // Registered copy of the active-clock request, sent to the clock endpoint.
-  // While it is high the shared clock ACK means "active", so no clock
-  // training is launched.
-  logic clk_active_q;
-  logic clk_train_preempted; // in-flight training was overridden by active
-  wire selected_ready=channel_ready[pending_kind] &&
-    !(pending_kind==K_CLK && clk_active_q);
-  wire select_reset = pending_reset && (!pending_valid || reset_first);
-  wire launch_reset = (source_state==IDLE) && select_reset && channel_ready[K_LFSR];
-  wire launch_pattern = (source_state==IDLE) && !select_reset && pending_valid && selected_ready;
-  wire capture_reset = reset_rise && (!pending_reset || launch_reset);
-  wire pattern_rise = (|rise) || custom_rise;
+  wire src_ready, src_done, src_aborted;
+
+  wire pattern_rise = (|rise) || custom_selected;
   wire valid_pattern = pattern_rise && !multiple_rise && decoded_legal;
-  wire capture_pattern = valid_pattern && (!pending_valid || launch_pattern);
-  wire active_done=channel_done[active_kind];
-  wire active_ready=channel_ready[active_kind];
+  // ACTIVE entry never coincides with a legal LTSM training edge (those are
+  // only legal in MBINIT/MBTRAIN) and wins over a JTAG edge.
+  wire new_pattern = valid_pattern || active_entry;
+  wire [2:0] new_op = active_entry ? OP_ACTIVE : decoded_op;
+  wire [LANES-1:0] new_mask = active_entry ? ALL_LANES : decoded_mask;
+  wire [8:0] new_owner = active_entry ? 9'b0 : rise; // custom/ACTIVE: no owner
+
+  wire drop_pending = pending_valid &&
+    ((pending_op == OP_ACTIVE) ? !in_active : abort_entry);
+  wire select_reset = pending_reset && (!pending_valid || reset_first);
+  wire launch_reset = (source_state==IDLE) && select_reset && src_ready;
+  wire launch_pattern = (source_state==IDLE) && !select_reset && pending_valid &&
+    !drop_pending && src_ready;
+  wire pattern_slot_free = !pending_valid || launch_pattern || drop_pending;
+  wire capture_reset = reset_rise && (!pending_reset || launch_reset);
+  wire capture_pattern = new_pattern && pattern_slot_free;
+
+  // Early end of the running command. The source half latches it until ack.
+  wire stop_command = (source_state==WAIT_DONE) &&
+    ((active_op == OP_ACTIVE) ? !in_active : abort_entry);
+
   assign ltsm_pattern_busy=pending_reset || pending_valid || (source_state!=IDLE);
   always_ff @(posedge clock or negedge reset_ltsm_n) begin
     if (!reset_ltsm_n) begin
-      source_state<=IDLE; pending_valid<=0; pending_mask<='0; pending_kind<=K_CLK;
-      pending_owner<='0; active_owner<='0;
+      source_state<=IDLE; pending_valid<=0; pending_mask<='0; pending_op<=OP_CLK_TRAIN;
+      pending_owner<='0; active_owner<='0; active_op<=OP_CLK_TRAIN;
       pending_reset<=0; reset_first<=0; previous_reset_flags<='0;
-      active_kind<=K_CLK; previous_request<='0; previous_custom_train<=0; finished<='0;
+      previous_request<='0; previous_custom_train<=0; finished<='0;
+      previous_state<=ST_RESET;
       ltsm_pattern_error<='0;
-      clk_active_q<=0; clk_train_preempted<=0;
     end else begin
-      clk_active_q<=ltsm_clk_active_req;
-      // Active raised while a clock training is in flight: its ACK will come
-      // from active mode, so do not report it as a finished training.
-      if (launch_reset || launch_pattern) clk_train_preempted<=0;
-      else if (source_state==WAIT_DONE && active_kind==K_CLK && clk_active_q)
-        clk_train_preempted<=1;
       previous_request<=request;
       previous_reset_flags<=reset_flags;
       previous_custom_train<=custom_train_sync;
+      previous_state<=ltsm_state;
       finished<='0;
       if (custom_collision) ltsm_pattern_error[0]<=1;
       if (launch_reset) pending_reset<=0;
-      if (launch_pattern) pending_valid<=0;
+      if (launch_pattern || drop_pending) pending_valid<=0;
       if (launch_reset || launch_pattern) begin
         active_owner<=launch_reset ? 9'b0 : pending_owner;
-        active_kind<=launch_reset ? K_LFSR : pending_kind;
+        active_op<=launch_reset ? OP_RESEED : pending_op;
         source_state<=WAIT_DONE;
       end
-      if (source_state==WAIT_DONE) begin
-        if (active_done) begin
-          source_state<=RETURN_ZERO;
-          // Suppress the Finished flag of a pre-empted clock training.
-          finished<=(active_kind==K_CLK && (clk_train_preempted || clk_active_q)) ?
-            9'b0 : active_owner;
-        end
+      if (source_state==WAIT_DONE && src_done) begin
+        source_state<=RETURN_ZERO;
+        // An aborted command does not report Finished.
+        finished<=src_aborted ? 9'b0 : active_owner;
       end
-      if (source_state==RETURN_ZERO && active_ready) source_state<=IDLE;
+      if (source_state==RETURN_ZERO && src_ready) source_state<=IDLE;
       if (capture_reset) begin
         pending_reset<=1;
         // An older pattern still in its slot goes first. If both slots
         // receive new commands on this clock, the reset goes first.
-        reset_first<=!pending_valid || launch_pattern;
+        reset_first<=!pending_valid || launch_pattern || drop_pending;
       end else if (capture_pattern) begin
         // Any reset already waiting is older than this pattern.
         reset_first<=1;
       end
       if (capture_pattern) begin
         pending_valid<=1;
-        pending_mask<=decoded_mask;
-        pending_kind<=decoded_kind;
-        pending_owner<=rise; // custom burst has no LTSM completion owner
+        pending_mask<=new_mask;
+        pending_op<=new_op;
+        pending_owner<=new_owner;
       end
       if (multiple_rise) ltsm_pattern_error[0]<=1;
       else if (pattern_rise && !decoded_legal) ltsm_pattern_error[1]<=1;
-      if ((reset_rise && !capture_reset) || (valid_pattern && !capture_pattern))
+      if ((reset_rise && !capture_reset) || (new_pattern && !capture_pattern))
         ltsm_pattern_error[2]<=1;
     end
   end
 
-  // Four source halves and all return synchronizers remain in this region.
-  // Burst and reseed share the same per-lane ACKs and return-to-zero FSM.
+  // One source half for the single sequencer link. Payload = {op, mask}.
   Ltsm800CommandSource #(
-    .WIDTH(LANES), .STAGES(SYNC_STAGES), .REQ_WIDTH(2), .ACK_WIDTH(LANES)
-  ) u_src500 (
+    .WIDTH(3+LANES), .STAGES(SYNC_STAGES), .REQ_WIDTH(1), .ACK_WIDTH(1)
+  ) u_src_seq (
     .src_clk_i(clock),.src_rst_ni(reset_ltsm_n),
-    .src_valid_i(launch_reset || (launch_pattern && pending_kind==K_LFSR)),
-    .src_req_i({launch_reset,!launch_reset}),
-    .src_ready_o(channel_ready[K_LFSR]),.src_data_i(launch_reset ? ALL_LANES : pending_mask),
-    .src_done_o(channel_done[K_LFSR]),
-    .link_req_o({tx500_req_rst_o,tx500_req_o}),.link_payload_o(tx500_payload_o),
-    .link_ack_async_i(tx500_ack_i));
-  // All 2 GHz endpoints train all their relevant lanes. No lane mask is routed.
-  // Constant source payload bits are unconnected and can be removed by synthesis.
-  wire unused_id_payload,unused_valid_payload,unused_clock_payload;
-  Ltsm800CommandSource #(.WIDTH(1),.STAGES(SYNC_STAGES),.ACK_WIDTH(LANES)) u_srcdata2g (
-    .src_clk_i(clock),.src_rst_ni(reset_ltsm_n),.src_req_i(1'b1),.src_valid_i(launch_pattern && pending_kind==K_ID),
-    .src_ready_o(channel_ready[K_ID]),.src_data_i(1'b0),
-    .src_done_o(channel_done[K_ID]),
-    .link_req_o(txdata2g_req_o),.link_payload_o(unused_id_payload),
-    .link_ack_async_i(txdata2g_ack_i));
-  Ltsm800CommandSource #(.WIDTH(1),.STAGES(SYNC_STAGES)) u_srcvalid2g (
-    .src_clk_i(clock),.src_rst_ni(reset_ltsm_n),.src_req_i(1'b1),.src_valid_i(launch_pattern && pending_kind==K_VAL),
-    .src_ready_o(channel_ready[K_VAL]),.src_data_i(1'b0),
-    .src_done_o(channel_done[K_VAL]),
-    .link_req_o(txvalid2g_req_o),.link_payload_o(unused_valid_payload),
-    .link_ack_async_i(txvalid2g_ack_i));
-  Ltsm800CommandSource #(.WIDTH(1),.STAGES(SYNC_STAGES)) u_srcclock2g (
-    .src_clk_i(clock),.src_rst_ni(reset_ltsm_n),.src_req_i(1'b1),.src_valid_i(launch_pattern && pending_kind==K_CLK),
-    .src_ready_o(channel_ready[K_CLK]),.src_data_i(1'b0),
-    .src_done_o(channel_done[K_CLK]),
-    .link_req_o(txclock2g_clk_train_req_o),.link_payload_o(unused_clock_payload),
-    .link_ack_async_i(txclock2g_ack_i));
-  // Continuous-clock request level to the clock endpoint (registered source).
-  assign txclock2g_active_req_o=clk_active_q;
+    .src_valid_i(launch_reset || launch_pattern),
+    .src_req_i(1'b1),
+    .src_stop_i(stop_command),
+    .src_ready_o(src_ready),
+    .src_data_i(launch_reset ? {OP_RESEED, ALL_LANES} : {pending_op, pending_mask}),
+    .src_done_o(src_done),
+    .src_aborted_o(src_aborted),
+    .link_req_o(seq_req_o),
+    .link_stop_o(seq_stop_o),
+    .link_payload_o({seq_op_o, seq_mask_o}),
+    .link_ack_async_i(seq_ack_i),
+    .link_aborted_async_i(seq_aborted_i));
 
   assign {ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
     ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
@@ -317,7 +326,12 @@ module LtsmPhyPatternCtrl800 #(
 `ifndef SYNTHESIS
   initial assert (LANES>=1) else $fatal(1,"LANES must be positive");
   assert property (@(posedge clock) disable iff (!reset_ltsm_n) $onehot0(finished));
-  assert property (@(posedge clock) disable iff (!reset_ltsm_n) $onehot0({tx500_req_rst_o,tx500_req_o,txdata2g_req_o,txvalid2g_req_o,txclock2g_clk_train_req_o}));
+  assert property (@(posedge clock) disable iff (!reset_ltsm_n)
+    (pending_valid && pending_op==OP_ACTIVE) |-> pending_owner==9'b0)
+    else $error("ACTIVE must not own a Finished flag");
+  assert property (@(posedge clock) disable iff (!reset_ltsm_n)
+    seq_stop_o |-> seq_req_o)
+    else $error("stop raised without a request");
 `endif
 endmodule
 `default_nettype wire
@@ -365,6 +379,10 @@ endmodule
 // are explicit; no destination clock or destination flops exist in this module.
 // Payload uses a bundled-data CDC timing contract. Synchronize each ACK bit
 // before checking for unanimous completion or return to idle.
+// Early stop: src_stop_i while a command is outstanding raises link_stop_o,
+// held until the ack is seen (it falls together with link_req_o). The
+// destination returns link_aborted_async_i bundled with its ack; it is
+// sampled once the synchronized ack is high and reported with src_done_o.
 module Ltsm800CommandSource #(
   parameter integer WIDTH=34,
   parameter integer STAGES=3,
@@ -375,16 +393,23 @@ module Ltsm800CommandSource #(
   input wire src_rst_ni,
   input wire src_valid_i,
   input wire [REQ_WIDTH-1:0] src_req_i, // one-hot command, captured at launch
+  input wire src_stop_i,                // end the outstanding command early
   output wire src_ready_o,
   input wire [WIDTH-1:0] src_data_i,
-  output logic src_done_o,
+  output logic src_done_o,              // one-cycle completion pulse
+  output logic src_aborted_o,           // result, valid with src_done_o
   output wire [REQ_WIDTH-1:0] link_req_o,
+  output wire link_stop_o,
   output wire [WIDTH-1:0] link_payload_o,
-  input wire [ACK_WIDTH-1:0] link_ack_async_i
+  input wire [ACK_WIDTH-1:0] link_ack_async_i,
+  input wire link_aborted_async_i       // bundled with ack
 );
-  typedef enum logic [1:0] {SRC_IDLE,SRC_WAIT_ACK,SRC_WAIT_LOW} src_state_t;
+  // SRC_LAUNCH: payload already driven, request rises on the next edge, so
+  // the bundled payload is stable from BEFORE the request rises.
+  typedef enum logic [1:0] {SRC_IDLE,SRC_LAUNCH,SRC_WAIT_ACK,SRC_WAIT_LOW} src_state_t;
   src_state_t src_state_q;
-  logic [REQ_WIDTH-1:0] req_q;
+  logic [REQ_WIDTH-1:0] req_q, launch_req_q;
+  logic stop_q;
   logic [WIDTH-1:0] payload_q;
   wire [ACK_WIDTH-1:0] ack_sync;
   for (genvar lane = 0; lane < ACK_WIDTH; lane++) begin : g_lane_ack
@@ -396,21 +421,31 @@ module Ltsm800CommandSource #(
   wire all_ack_low = ~|ack_sync;
   assign src_ready_o=(src_state_q==SRC_IDLE) && all_ack_low;
   assign link_req_o=req_q;
+  assign link_stop_o=stop_q;
   assign link_payload_o=payload_q;
   always_ff @(posedge src_clk_i or negedge src_rst_ni) begin
     if (!src_rst_ni) begin
-      src_state_q<=SRC_IDLE; req_q<=0; payload_q<='0;
-      src_done_o<=0;
+      src_state_q<=SRC_IDLE; req_q<=0; launch_req_q<=0; stop_q<=0; payload_q<='0;
+      src_done_o<=0; src_aborted_o<=0;
     end else begin
       src_done_o<=0;
       case (src_state_q)
         SRC_IDLE: if (src_valid_i && src_ready_o) begin
-          payload_q<=src_data_i; req_q<=src_req_i;
+          payload_q<=src_data_i; launch_req_q<=src_req_i;
+          src_state_q<=SRC_LAUNCH;
+        end
+        SRC_LAUNCH: begin
+          req_q<=launch_req_q;
+          if (src_stop_i) stop_q<=1;  // stop requested at launch: raise with req
           src_state_q<=SRC_WAIT_ACK;
         end
         SRC_WAIT_ACK: if (all_ack_high) begin
-          // Completion acknowledgment: return req low and report done once.
-          src_done_o<=1; req_q<=0; src_state_q<=SRC_WAIT_LOW;
+          // Completion acknowledgment: return req/stop low, report done once.
+          // The aborted result is stable while the ack is high.
+          src_done_o<=1; src_aborted_o<=link_aborted_async_i;
+          req_q<=0; stop_q<=0; src_state_q<=SRC_WAIT_LOW;
+        end else if (src_stop_i) begin
+          stop_q<=1;
         end
         SRC_WAIT_LOW: if (all_ack_low) src_state_q<=SRC_IDLE;
         default: src_state_q<=SRC_IDLE;
@@ -423,6 +458,9 @@ module Ltsm800CommandSource #(
   assert property (@(posedge src_clk_i) disable iff (!src_rst_ni)
     (|req_q) && $past(|req_q) |-> $stable({req_q,payload_q}))
     else $error("Source changed held command payload while request active");
+  assert property (@(posedge src_clk_i) disable iff (!src_rst_ni)
+    stop_q |-> (|req_q))
+    else $error("Source stop held without a request");
 `endif
 endmodule
 

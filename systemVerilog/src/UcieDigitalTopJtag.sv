@@ -239,23 +239,20 @@ module UcieDigitalTopJtag #(
   // ==========================================================================
   // PHY PATTERN ENGINE INTERFACES
   // ==========================================================================
-  // Pattern-controller links to the physical transmit engines.
-  // Every data lane returns one asynchronous ACK for a 500 MHz burst or
-  // reseed, and one for a 2 GHz lane-ID request. A masked-off burst lane
-  // acknowledges without transmitting. Hold each ACK high until REQ drops.
-  output wire logic tx500_req_o,
-  output wire logic tx500_req_rst_o,
-  output wire logic [dataLaneCount-1:0] tx500_payload_o,
-  input wire logic [dataLaneCount-1:0] tx500_ack_i,
-  output wire logic txdata2g_req_o,
-  input wire logic [dataLaneCount-1:0] txdata2g_ack_i,
-  output wire logic txvalid2g_req_o,
-  input wire logic txvalid2g_ack_i,
-  // Clock endpoint: training request (four-phase) and continuous-clock
-  // request (level, priority) share one ACK.
-  output wire logic txclock2g_clk_train_req_o,
-  output wire logic txclock2g_active_req_o,
-  input wire logic txclock2g_ack_i,
+  // Single CDC link to PhyTxSequencer (ucie_phy_control/PhyTxControlTop,
+  // 500 MHz). req/stop are levels synchronized at the sequencer; op/mask are
+  // bundled with req (stable until ack falls); ack is synchronized in the
+  // controller; aborted is bundled with ack. active_ready is a 500 MHz level
+  // (ACTIVE, clock running) synchronized in the controller.
+  output wire logic seq_req_o,
+  output wire logic seq_stop_o,
+  output wire logic [2:0] seq_op_o,
+  output wire logic [dataLaneCount-1:0] seq_mask_o,
+  input wire logic seq_ack_i,
+  input wire logic seq_aborted_i,
+  input wire logic seq_active_ready_i,
+  // Status: synchronized copy of seq_active_ready_i.
+  output wire logic ltsm_active_ready,
 
   // Static physical IDs for the sixteen x16 data lanes; reversal uses lane_reverse_o.
   output wire logic [3:0] laneid0,
@@ -679,7 +676,7 @@ module UcieDigitalTopJtag #(
   );
 
   // The source controller owns its reset synchronizer. No destination-domain
-  // flops are inserted here: PHY endpoints implement the four-phase ACKs.
+  // flops are inserted here: PhyTxSequencer synchronizes req/stop and owns timing.
   LtsmPhyPatternCtrl800 #(.LANES(dataLaneCount)) u_pattern_ctrl (
     .clock(clock), .reset_n(reset_n),
     .ltsm_state(ltsm_state),
@@ -701,10 +698,6 @@ module UcieDigitalTopJtag #(
     .ltsm_flagToAnalog_d2cSender_sendValTrainPattern(pattern_normal_enable && ltsm_flagToAnalog_d2cSender_sendValTrainPattern),
     .ltsm_flagToAnalog_d2cSender_sendLfsrPattern(pattern_normal_enable && ltsm_flagToAnalog_d2cSender_sendLfsrPattern),
     .ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(pattern_normal_enable && ltsm_flagToAnalog_rxDeskew_sendLfsrPattern),
-    // TODO: continuous forwarded-clock request is tied off (clock only runs
-    // for training). Replace with the real condition, e.g.
-    // pattern_normal_enable && ltsm_state==4'd8 (ACTIVE), once decided.
-    .ltsm_clk_active_req(1'b0),
     .ltsm_flagFromAnalog_FinishedClkPatterns(ltsm_flagFromAnalog_FinishedClkPatterns),
     .ltsm_flagFromAnalog_FinishedValTrainPattern(ltsm_flagFromAnalog_FinishedValTrainPattern),
     .ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern),
@@ -717,14 +710,11 @@ module UcieDigitalTopJtag #(
     .ltsm_pattern_busy(ltsm_pattern_busy),
     .ltsm_pattern_error(ltsm_pattern_error),
     .reset_ltsm_n(reset_ltsm_n),
-    .tx500_req_o(tx500_req_o), .tx500_req_rst_o(tx500_req_rst_o),
-    .tx500_payload_o(tx500_payload_o),
-    .tx500_ack_i(tx500_ack_i),
-    .txdata2g_req_o(txdata2g_req_o), .txdata2g_ack_i(txdata2g_ack_i),
-    .txvalid2g_req_o(txvalid2g_req_o), .txvalid2g_ack_i(txvalid2g_ack_i),
-    .txclock2g_clk_train_req_o(txclock2g_clk_train_req_o),
-    .txclock2g_active_req_o(txclock2g_active_req_o),
-    .txclock2g_ack_i(txclock2g_ack_i)
+    .ltsm_active_ready(ltsm_active_ready),
+    .seq_req_o(seq_req_o), .seq_stop_o(seq_stop_o),
+    .seq_op_o(seq_op_o), .seq_mask_o(seq_mask_o),
+    .seq_ack_i(seq_ack_i), .seq_aborted_i(seq_aborted_i),
+    .seq_active_ready_i(seq_active_ready_i)
   );
 
   // --------------------------------------------------------------------------

@@ -1,29 +1,82 @@
-# Validation record: clock lane with eight-bit serializer input
+# Validation record: Ctrl800 + PhyTxSequencer TX pattern control
 
-> **2026-11-06 — not yet re-validated.** `PhyPatternValid2g.sv` and `PhyPatternClock2g.sv` were changed to analog level controls (`phyTrainLfsr`/`phyTrainValid`/`phyTrainLaneid`, `phyDigControl`, 130 iterations each), and `tests/tb_valid_clock2g.sv` / `tests/tb_ltsm_specialized.sv` were updated to match. These compiled cleanly with Questa `vlog` but were not simulated (no simulator license available). The results and hashes below describe the previous byte-interface versions.
+> **Status (2026-11-12): written, NOT yet run.** The RTL restructure (single seq_* link, `PhyTxSequencer`, synchronous endpoints) and the new testbenches below have not been linted or simulated. No Verilator was available in the authoring environment. Run `tests/run_tests.sh` and the `systemVerilog/test` regression, then replace this banner with the results (pass/fail counts, seeds, tool version) and the hashes of the tested sources.
+>
+> All results from earlier versions (byte-interface endpoints, four separate links) are obsolete, and their logs were removed from `validation/`.
 
-Validated 2026-10-31 using Verilator build `vUNKNOWN-built20260516-4e853d8` (simulation reports 5.49). All five production files independently elaborate as their own tops. All three assertion-enabled regression builds and simulations passed with no warnings or errors; warnings were treated as fatal.
+## How to run
 
-The clock controller now counts accepted eight-bit serializer words, not local control-clock periods. Tests assume each payload bit becomes one serialized physical output bit.
+```
+cd ucie_phy_control
+tests/run_tests.sh                     # lint + tb_phy_tx_sequencer (8 seeds) + tb_ltsm_specialized
+SEEDS="1 2 3 4 5 6 7 8 9 10" tests/run_tests.sh
+tclsh constraints/check_template.tcl   # SDC template syntax/binding guards (not STA)
+cd ../systemVerilog && test/run_tests.sh all   # full digital regression
+```
 
-| Test | Result and coverage |
-| --- | --- |
-| `tb_data_lfsr` | PASS: unchanged 500 MHz LFSR 128-word and data 256-byte paths; masks, stalls, exact stopping, delayed per-lane retirement, cancellation and reuse |
-| `tb_valid_clock2g` | PASS: valid 128-byte bursts in both bit orders; clock 768-byte bursts in both bit orders; four alternating plus two zero bytes per group; 128 groups; 512 alternating / 256 zero words; stalled output stability; zero/midburst/phase-boundary/late-finish cancellation; same-channel reuse |
-| Clock serialized-bit scoreboard | PASS: independently serializes all 6144 accepted bits and checks 128 groups of 16 active plus 8 low physical clock periods. Completion waits for the last modeled bit interval and the full finish acknowledgment return-to-zero. |
-| `tb_ltsm_specialized` | PASS: all 13 LTSM routes, now expecting 768 accepted clock bytes; nine completion outputs; queued cross-channel abort/restart, invalid/multiple/empty-mask/overflow errors and reset recovery |
-| CDC constraint-template check | PASS: unchanged 18 max-delay routes and two retirement false paths; real Tcl syntax/binding-guard test. Not STA. |
+`run_tests.sh` treats lint warnings as fatal. It lints `LtsmPhyPatternCtrl800`, `PhyTxSequencer`, `PhyPatternTx500`, `PhyPatternData2g`, `PhyPatternValid2g` and `PhyPatternClock2g` each as its own top, then lints `PhyTxControlTop` with its parts.
 
-The tests use unequal inter-region transport delays: request 170 ps, payload/mask 430 ps, cancel 390 ps, acknowledgment 220 ps and result 610 ps. These fit the conservative constraints and do not model metastability.
+## Test plan
 
-Run `tests/run_tests.sh` with Verilator installed. The script uses unsplit generated C++ for portability with the packaged compiler. Raw run and standalone-lint logs are in `validation/`.
+### `tests/tb_phy_tx_sequencer.sv`
 
-The serializer model verifies the output-bit sequence and completion ordering. It does not establish the real serializer bit rate, analog clock waveform timing, or gap-free throughput. At 16 Gb/s physical serialization, an alternating byte generates 8 GHz clock periods; ready pacing alone cannot make that a continuous 2 GHz clock. A 2 GHz physical forwarded clock requires 4 Gb/s bit serialization with this one-bit-to-one-bit mapping. Actual PHY/serializer integration and timing/CDC/RDC/MTBF sign-off remain required.
+Clocks: 2 GHz and 500 MHz phase aligned. 800 MHz runs at a random phase taken from `+SEED`. Link delays are unequal: req 170 ps, stop 390 ps, op/mask 430 ps, ack 220 ps. Three `PhyTxControlTop` configurations run in parallel from one 800 MHz source:
 
-## Tested source hashes
+| Case | PRE/POST | CLK_LEN | START_DELAY 2G / Tx500 |
+| --- | --- | --- | --- |
+| c0 default | 4 / 4 | 96 | 0 / 0 |
+| c1 trim | 4 / 4 | 96 | 3 / 0 (all four endpoints aligned) |
+| c2 longpre | 12 / 6 | 32 | 0 / 1 |
 
-- `LtsmPhyPatternCtrl800.sv`: `7796cd0a1bb821c3f53bef610621d424ffecdf0884e83a6a49b98668c8a48720`
-- `PhyPatternTx500.sv`: `276df8bed96d4d4c7c48fb8a738f30714d252b729c1bb39be8bff897e9c4f97a`
-- `PhyPatternData2g.sv`: `5b7951d7fa53a214377122e4561da4bb381d52a869b85162bfecf28b2081a151`
-- `PhyPatternValid2g.sv`: `dc291c0345fd39e28a9ac0f90bcc17bfcc7e0bdc917427692ca7b752dbeec658`
-- `PhyPatternClock2g.sv`: `f352bb0ae4333047406abcc4cd3eae98862ba5ab89ff117da3be67a227e51cfa`
+Checked continuously in every case:
+- **Legal rows.** Every cycle, the sequencer outputs form exactly one legal row of the endpoint table: Idle, clock-only, VAL, ID, LFSR with lanes = mask, SEED with all lanes, or ACTIVE with all lanes and ready.
+- **Envelope per command.** The run-length trace must be exact:
+  - Normal completion: PRE, then BODY for its exact length (32/64/128/`CLK_LEN`/1), then POST.
+  - Aborted command, one of:
+    - stopped before start (nothing sent);
+    - PRE then POST (stopped in PRE, `POST+1 .. PRE+POST` clock-only cycles);
+    - PRE, then a shortened BODY, then exactly POST.
+  - No idle gap inside a command. Ack rises only with the clock enable already off.
+- **Fixed latency.** Every edge of every endpoint output must equal the corresponding sequencer edge, delayed by exactly `(1+START_DELAY)` cycles, with the same value. This covers every Tx500 lane individually, so all lanes start on the same cycle and masked lanes stay OFF. The measured latency is printed as `LATENCY ...` lines.
+- **Data2g.** LSB first, alternating every cycle, `laneID_index` is 0 when disabled, the burst ends on MSB, and a completed burst is 256 cycles.
+- **Cross-checks on the endpoint outputs.**
+  - Valid/data/LFSR are never active without the clock.
+  - The RESEED word never appears with the clock, and its pulse lasts exactly one cycle.
+  - The ACTIVE word (0000) appears only with clock = 1, valid = 000 and data = 0.
+
+Scenarios:
+- Standalone Tx500 rows, including RAW (0001), masked lanes, a held SEED that gives a single pulse, and an unknown mode.
+- Every op completes normally, with LFSR masks 1111 and 1010.
+- RESEED then ACTIVE (LINKINIT order). ACTIVE endpoint outputs are checked explicitly.
+- Stop in PRE for VAL/ID/LFSR/ACTIVE (all cases must take the PRE path), stop in BODY for CLK/VAL/ID/LFSR, stop in ACTIVE, and stop raised together with req. Aborted must be 1 everywhere.
+- 16 back-to-back random commands.
+- Asynchronous reset in the middle of an LFSR burst: every output must be in the Idle row immediately, followed by recovery with LFSR and ACTIVE commands.
+
+### `tests/tb_ltsm_specialized.sv` (Ctrl800 + PhyTxControlTop, LANES = 2)
+
+- **LTSM routes.** All 13 legal state/substate routes of the 9 LTSM flags must produce:
+  - the expected op on the link, with the mask all ones;
+  - the expected PHY outputs;
+  - exactly one Finished pulse on the owner flag, and no retrigger while a flag is held.
+- **RESEED.** A reset-scrambler flag gives one RESEED, a one-cycle seed pulse on all lanes, no clock and no Finished.
+- **Custom JTAG burst.** Gives LFSR with the programmed mask and no Finished.
+- **LINKINIT then ACTIVE.** The reseed is sent before ACTIVE on the link and at the PHY. The ACTIVE PHY outputs are correct, and `busy` stays high in ACTIVE. When the state leaves 8:
+  - the command ends aborted, with no Finished;
+  - `ltsm_active_ready` falls;
+  - Tx500 returns to OFF.
+- **ACTIVE re-entry.** Each entry into 8 launches ACTIVE once. Entering TRAIN_ERROR also stops ACTIVE.
+- **TRAIN_ERROR during an LFSR training.** The running command is aborted without Finished, the queued training is discarded, and no error bit is set.
+- **Errors.** An illegal state sets `error[1]`. A third request while one runs and one is queued sets `error[2]`, and the queued request still completes.
+
+### `systemVerilog/test` regression
+
+Changes in that directory:
+- `sources.f` now lists `../src/LtsmPhyPatternCtrl800.sv`. It was missing although `UcieDigitalTopJtag` instantiates it.
+- The three benches that instantiate `UcieDigitalTopJtag` tie the new `seq_ack_i`, `seq_aborted_i` and `seq_active_ready_i` inputs to 0.
+
+No bench referenced the removed ports.
+
+## Limits
+
+- The tests do not model metastability or PHY/serializer behavior. The analog waveforms (VALTRAIN pattern, forwarded clock, lane-ID bytes, LFSR data) are outside this RTL.
+- The SDC template check is not STA. The 0.5 ns SEQ -> 2 GHz single-cycle paths must be closed in the real flow.

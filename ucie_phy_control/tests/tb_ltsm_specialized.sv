@@ -1,71 +1,66 @@
 `timescale 1ps/1ps
 `default_nettype none
+// =============================================================================
+// tb_ltsm_specialized: LtsmPhyPatternCtrl800 (800 MHz) + PhyTxControlTop
+// (500 MHz sequencer, 2 GHz endpoints, LANES x Tx500) over the single seq_*
+// CDC link with unequal inter-region delays.
+// Checks:
+//   - every LTSM flag (13 legal state/substate routes) issues the right op on
+//     the link, drives the right PHY outputs and returns exactly one Finished
+//     pulse on its own flag;
+//   - custom JTAG burst: LFSR op with the programmed mask, no Finished flag;
+//   - illegal state -> error[1]; queue overflow -> error[2];
+//   - LINKINIT reseed is sent before ACTIVE; ACTIVE raises ltsm_active_ready
+//     and exits (aborted, no Finished) when the state leaves 8;
+//   - TRAIN_ERROR entry stops a running training without Finished, discards a
+//     queued one, and sets no error bit.
+// =============================================================================
 module tb_ltsm_specialized;
-  logic clock=0, clock_tx500=0, clock_tx2g=0, reset_n=0;
-  always #625 clock=~clock;
-  initial begin #121; forever #1000 clock_tx500=~clock_tx500; end
-  initial begin #87; forever #250 clock_tx2g=~clock_tx2g; end
-  logic [3:0] ltsm_state=0, ltsm_dbg_mbtrainState=0;
-  logic [2:0] ltsm_dbg_mbinitSubstate=0;
-  logic [1:0] ltsm_data_lane_mask=2'b11;
-  logic [8:0] req=0;
+  localparam int LANES = 2;
+  localparam logic [2:0] OP_CLK=0, OP_VAL=1, OP_ID=2, OP_LFSR=3, OP_RESEED=4, OP_ACTIVE=5;
+
+  logic clock = 0, clock_tx500 = 0, clock_tx2g = 0, reset_n = 0;
+  always #625 clock = ~clock;
+  initial begin #87; forever #250 clock_tx2g = ~clock_tx2g; end
+  initial begin #87; #250; forever begin clock_tx500 = 1; #1000; clock_tx500 = 0; #1000; end end
+
+  logic [3:0] ltsm_state = 0, ltsm_dbg_mbtrainState = 0;
+  logic [2:0] ltsm_dbg_mbinitSubstate = 0;
+  logic [LANES-1:0] ltsm_data_lane_mask = '1;
+  logic custom_train_jtag = 0;
+  logic [8:0] req = 0;
+  logic [4:0] rst_flags = 0;  // {linkInit, rxDeskew, d2cSender, dataVref, valVref}
   wire [8:0] done;
-  wire busy, aborted;
+  wire busy, reset_ltsm_n, ltsm_active_ready;
   wire [2:0] errors;
-  wire reset_ltsm_n,reset_tx500_n,reset_tx2g_n;
-  logic [1:0] phy500_word_ready=0, phy500_fence_ready=3,phy500_retire_toggle=0;
-  wire phy500_active,phy500_word_valid,phy500_word_last,phy500_word_fire;
-  wire phy500_seed_load,phy500_fence_valid,phy500_fence_fire;
-  wire [1:0] phy500_lane_mask;
-  logic [1:0] phy2g_unit_ready=0,phy2g_fence_ready=3,phy2g_retire_toggle=0;
-  wire phy2g_active,phy2g_start,phy2g_unit_valid,phy2g_unit_last,phy2g_unit_fire;
-  wire phy2g_fence_valid,phy2g_fence_fire;
-  wire [1:0] phy2g_kind,phy2g_lane_mask;
-  // Explicitly instantiate all five real production tops. Signal aliases
-  // below serve only the common scoreboard; no generic2GHz engine exists.
-  wire reset_data2g_n,reset_valid2g_n,reset_clock2g_n;
-  wire phy_data_active,phy_data_start,phy_data_byte_valid,phy_data_byte_last;
-  wire phy_data_byte_fire,phy_data_fence_valid,phy_data_fence_fire;
-  wire [1:0] phy_data_lane_mask;
-  // VALID/CLOCK are level controls to the analog front end.
-  wire phyTrainLfsr,phyTrainValid,phyTrainLaneid,phyDigControl;
-  wire phy_valid_active,phy_clock_active;
-  logic prev_valid_on=0,prev_clock_on=0;
-  wire req500_src,req500_dst,cancel500_src,cancel500_dst;
-  wire ack500_src,ack500_dst,aborted500_src,aborted500_dst;
-  assign #170 req500_dst=req500_src;
-  assign #390 cancel500_dst=cancel500_src;
-  assign #220 ack500_src=ack500_dst;
-  assign #610 aborted500_src=aborted500_dst;
-  wire reqdata2g_src,reqdata2g_dst,canceldata2g_src,canceldata2g_dst;
-  wire ackdata2g_src,ackdata2g_dst,aborteddata2g_src,aborteddata2g_dst;
-  assign #170 reqdata2g_dst=reqdata2g_src;
-  assign #390 canceldata2g_dst=canceldata2g_src;
-  assign #220 ackdata2g_src=ackdata2g_dst;
-  assign #610 aborteddata2g_src=aborteddata2g_dst;
-  wire reqvalid2g_src,reqvalid2g_dst,cancelvalid2g_src,cancelvalid2g_dst;
-  wire ackvalid2g_src,ackvalid2g_dst,abortedvalid2g_src,abortedvalid2g_dst;
-  assign #170 reqvalid2g_dst=reqvalid2g_src;
-  assign #390 cancelvalid2g_dst=cancelvalid2g_src;
-  assign #220 ackvalid2g_src=ackvalid2g_dst;
-  assign #610 abortedvalid2g_src=abortedvalid2g_dst;
-  // Clock link: training request + continuous-clock request, one shared ack.
-  wire trainclock2g_src,trainclock2g_dst,activeclock2g_src,activeclock2g_dst;
-  wire ackclock2g_src,ackclock2g_dst;
-  assign #170 trainclock2g_dst=trainclock2g_src;
-  assign #390 activeclock2g_dst=activeclock2g_src;
-  assign #220 ackclock2g_src=ackclock2g_dst;
-  wire [19:0] payload500_src,payload500_dst;
-  wire [1:0] data_mask_src,data_mask_dst;
-  assign #430 payload500_dst=payload500_src;
-  assign #430 data_mask_dst=data_mask_src;
-  LtsmPhyPatternCtrl800 #(.LANES(2)) u_source (
-    .clock(clock),
-    .reset_n(reset_n),
+
+  // ---- Link with unequal inter-region delays ---------------------------------
+  wire req_src, stop_src, ack_dst, aborted_dst, ready_dst;
+  wire [2:0] op_src;
+  wire [LANES-1:0] mask_src;
+  wire req_dst, stop_dst, ack_src, aborted_src, ready_src;
+  wire [2:0] op_dst;
+  wire [LANES-1:0] mask_dst;
+  assign #170 req_dst = req_src;
+  assign #390 stop_dst = stop_src;
+  assign #430 op_dst = op_src;
+  assign #430 mask_dst = mask_src;
+  assign #220 ack_src = ack_dst;
+  assign #610 aborted_src = aborted_dst;
+  assign #300 ready_src = ready_dst;
+
+  LtsmPhyPatternCtrl800 #(.LANES(LANES)) u_ctrl (
+    .clock(clock), .reset_n(reset_n),
     .ltsm_state(ltsm_state),
     .ltsm_dbg_mbinitSubstate(ltsm_dbg_mbinitSubstate),
     .ltsm_dbg_mbtrainState(ltsm_dbg_mbtrainState),
     .ltsm_data_lane_mask(ltsm_data_lane_mask),
+    .custom_train_jtag(custom_train_jtag),
+    .ltsm_flagToAnalog_linkInit_resetLfsrScrambler(rst_flags[4]),
+    .ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler(rst_flags[3]),
+    .ltsm_flagToAnalog_d2cSender_resetLocalScrambler(rst_flags[2]),
+    .ltsm_flagToAnalog_dataVref_resetLocalTxScrambler(rst_flags[1]),
+    .ltsm_flagToAnalog_valVref_resetLocalTxScrambler(rst_flags[0]),
     .ltsm_flagToAnalog_SendClkPatterns(req[0]),
     .ltsm_flagToAnalog_SendValTrainPattern(req[1]),
     .ltsm_flagToAnalog_ReversalMbSendLaneIDPattern(req[2]),
@@ -75,7 +70,6 @@ module tb_ltsm_specialized;
     .ltsm_flagToAnalog_d2cSender_sendValTrainPattern(req[6]),
     .ltsm_flagToAnalog_d2cSender_sendLfsrPattern(req[7]),
     .ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(req[8]),
-    .ltsm_clk_active_req(1'b0), // continuous clock not exercised here
     .ltsm_flagFromAnalog_FinishedClkPatterns(done[0]),
     .ltsm_flagFromAnalog_FinishedValTrainPattern(done[1]),
     .ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(done[2]),
@@ -86,331 +80,223 @@ module tb_ltsm_specialized;
     .ltsm_flagFromAnalog_d2cSender_lfsrPatternSent(done[7]),
     .ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent(done[8]),
     .ltsm_pattern_busy(busy),
-    .ltsm_pattern_aborted(aborted),
     .ltsm_pattern_error(errors),
     .reset_ltsm_n(reset_ltsm_n),
-    .tx500_req_o(req500_src),
-    .tx500_payload_o(payload500_src),
-    .tx500_cancel_o(cancel500_src),
-    .tx500_ack_i(ack500_src),
-    .tx500_aborted_i(aborted500_src),
-    .txdata2g_req_o(reqdata2g_src),
-    .txdata2g_lane_mask_o(data_mask_src),
-    .txdata2g_cancel_o(canceldata2g_src),
-    .txdata2g_ack_i(ackdata2g_src),
-    .txdata2g_aborted_i(aborteddata2g_src),
-    .txvalid2g_req_o(reqvalid2g_src),
-    .txvalid2g_cancel_o(cancelvalid2g_src),
-    .txvalid2g_ack_i(ackvalid2g_src),
-    .txvalid2g_aborted_i(abortedvalid2g_src),
-    .txclock2g_clk_train_req_o(trainclock2g_src),
-    .txclock2g_active_req_o(activeclock2g_src),
-    .txclock2g_ack_i(ackclock2g_src)
-  );
-  PhyPatternTx500 #(.LANES(2)) u_500 (
-    .clock_tx500(clock_tx500),
-    .reset_n(reset_n),
-    .cmd_req_async_i(req500_dst),
-    .cmd_payload_async_i(payload500_dst),
-    .cmd_cancel_async_i(cancel500_dst),
-    .cmd_ack_o(ack500_dst),
-    .cmd_aborted_o(aborted500_dst),
-    .reset_tx500_n(reset_tx500_n),
-    .phy500_word_ready(phy500_word_ready),
-    .phy500_fence_ready(phy500_fence_ready),
-    .phy500_retire_toggle(phy500_retire_toggle),
-    .phy500_active(phy500_active),
-    .phy500_lane_mask(phy500_lane_mask),
-    .phy500_word_valid(phy500_word_valid),
-    .phy500_word_last(phy500_word_last),
-    .phy500_word_fire(phy500_word_fire),
-    .phy500_seed_load(phy500_seed_load),
-    .phy500_fence_valid(phy500_fence_valid),
-    .phy500_fence_fire(phy500_fence_fire)
-  );
-  PhyPatternData2g #(.LANES(2)) u_data2g (
-    .clock_tx2g(clock_tx2g),
-    .reset_n(reset_n),
-    .cmd_req_async_i(reqdata2g_dst),
-    .cmd_lane_mask_async_i(data_mask_dst),
-    .cmd_cancel_async_i(canceldata2g_dst),
-    .cmd_ack_o(ackdata2g_dst),
-    .cmd_aborted_o(aborteddata2g_dst),
-    .reset_data2g_n(reset_data2g_n),
-    .phy_data_byte_ready(phy2g_unit_ready),
-    .phy_data_fence_ready(phy2g_fence_ready),
-    .phy_data_retire_toggle(phy2g_retire_toggle),
-    .phy_data_active(phy_data_active),
-    .phy_data_lane_mask(phy_data_lane_mask),
-    .phy_data_start(phy_data_start),
-    .phy_data_byte_valid(phy_data_byte_valid),
-    .phy_data_byte_last(phy_data_byte_last),
-    .phy_data_byte_fire(phy_data_byte_fire),
-    .phy_data_fence_valid(phy_data_fence_valid),
-    .phy_data_fence_fire(phy_data_fence_fire)
-  );
-  PhyPatternValid2g  u_valid2g (
-    .clock_tx2g(clock_tx2g),
-    .reset_n(reset_n),
-    .cmd_req_async_i(reqvalid2g_dst),
-    .cmd_sel_async_i(3'b010), // controller issues VALTRAIN only
-    .cmd_cancel_async_i(cancelvalid2g_dst),
-    .cmd_ack_o(ackvalid2g_dst),
-    .cmd_aborted_o(abortedvalid2g_dst),
-    .reset_valid2g_n(reset_valid2g_n),
-    .phyTrainLfsr(phyTrainLfsr),
-    .phyTrainValid(phyTrainValid),
-    .phyTrainLaneid(phyTrainLaneid)
-  );
-  PhyPatternClock2g  u_clock2g (
-    .clock_tx2g(clock_tx2g),
-    .reset_n(reset_n),
-    .cmd_req_clk_train(trainclock2g_dst),
-    .cmd_req_active(activeclock2g_dst),
-    .cmd_ack_o(ackclock2g_dst),
-    .reset_clock2g_n(reset_clock2g_n),
-    .phyDigControl(phyDigControl)
-  );
-  assign reset_tx2g_n=reset_data2g_n && reset_valid2g_n && reset_clock2g_n;
-  assign phy_valid_active=phyTrainLfsr || phyTrainValid || phyTrainLaneid;
-  assign phy_clock_active=phyDigControl;
-  assign phy2g_active=phy_data_active || phy_valid_active || phy_clock_active;
-  assign phy2g_kind=phy_data_active?2'd2:(phy_valid_active?2'd1:2'd0);
-  assign phy2g_lane_mask=phy_data_active?phy_data_lane_mask:2'b01;
-  // For the level-control endpoints every high cycle is one pattern iteration;
-  // the rising edge is the start and the falling edge is the finish.
-  assign phy2g_start=phy_data_start || (phy_valid_active && !prev_valid_on) ||
-    (phy_clock_active && !prev_clock_on);
-  assign phy2g_unit_valid=phy_data_byte_valid || phy_valid_active || phy_clock_active;
-  assign phy2g_unit_last=phy_data_byte_last ||
-    (phy_valid_active && u_valid2g.remaining_q==1) ||
-    (phy_clock_active && u_clock2g.remaining_q==1);
-  assign phy2g_unit_fire=phy_data_byte_fire || phy_valid_active || phy_clock_active;
-  assign phy2g_fence_valid=phy_data_fence_valid;
-  assign phy2g_fence_fire=phy_data_fence_fire ||
-    (!phy_valid_active && prev_valid_on) ||
-    (!phy_clock_active && prev_clock_on);
+    .ltsm_active_ready(ltsm_active_ready),
+    .seq_req_o(req_src), .seq_stop_o(stop_src),
+    .seq_op_o(op_src), .seq_mask_o(mask_src),
+    .seq_ack_i(ack_src), .seq_aborted_i(aborted_src),
+    .seq_active_ready_i(ready_src));
 
-  always @(posedge clock_tx2g or negedge reset_tx2g_n) begin
-    if(!reset_tx2g_n) begin
-      prev_valid_on<=0;prev_clock_on<=0;
-    end else begin
-      prev_valid_on<=phy_valid_active;prev_clock_on<=phy_clock_active;
-      if(phyTrainLfsr || phyTrainLaneid) $fatal(1,"Unexpected VALID training bit selected");
-      if(ackvalid2g_dst && phy_valid_active) $fatal(1,"VALID command acknowledged while pattern enabled");
-      if(ackclock2g_dst && phy_clock_active) $fatal(1,"CLOCK command acknowledged while clock enabled");
-    end
-  end
-  assert property (@(posedge clock) disable iff(!reset_ltsm_n)
-    $onehot0({phy500_active,phy_data_active,phy_valid_active,phy_clock_active}));
+  wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid, digControl, laneID_index;
+  wire [3:0] lane_id_o;
+  wire [LANES-1:0] enable_LFSR, zero_ena, load_seed, load_zero;
+  PhyTxControlTop #(.LANES(LANES)) u_phy (
+    .clock_tx500(clock_tx500), .clock_tx2g(clock_tx2g), .reset_n(reset_n),
+    .seq_req_i(req_dst), .seq_stop_i(stop_dst), .seq_op_i(op_dst), .seq_mask_i(mask_dst),
+    .seq_ack_o(ack_dst), .seq_aborted_o(aborted_dst), .active_ready_o(ready_dst),
+    .lane_id_i(4'h5),
+    .phyDigControl(phyDigControl), .phyTrainLfsr(phyTrainLfsr),
+    .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid),
+    .digControl(digControl), .laneID_index(laneID_index), .lane_id_o(lane_id_o),
+    .enable_LFSR(enable_LFSR), .zero_ena(zero_ena), .load_seed(load_seed),
+    .load_zero(load_zero));
 
-  integer words500=0, units2g=0, fence500=0,fence2g=0,seed_count=0,start2g=0;
-  integer finish_count=0,abort_count=0, cycles500=0,cycles2g=0;
-  integer delay500[2]='{0,0},delay2g[2]='{0,0};
-  integer expected_count=0,expected_kind=0;
-  logic [8:0] expected_done=0;
-  logic [1:0] expected_mask=3;
-  logic check_exact=0,block500=0,block2g=0;
-  logic [8:0] prev_done=0;
-  logic prev_seed=0,prev_start=0;
-  always @(negedge clock_tx500) begin
-    cycles500++;
-    phy500_word_ready = block500 ? 2'b00 : ((cycles500%7)==0 ? 2'b01:2'b11);
+  // ---- Monitors -----------------------------------------------------------------
+  logic [2:0] ops_seen[$];
+  logic [LANES-1:0] masks_seen[$];
+  int finish_count = 0, seed_pulses = 0, abort_count = 0;
+  logic [8:0] last_done = 0;
+  bit saw_clk = 0, saw_val = 0, saw_lfsrv = 0, saw_laneid = 0, saw_data = 0, saw_lfsr = 0,
+      saw_active = 0;
+  time t_seed = 0, t_active = 0;
+  always @(posedge req_src) begin ops_seen.push_back(op_src); masks_seen.push_back(mask_src); end
+  always @(posedge clock) if (reset_ltsm_n) begin
+    if (|done) begin finish_count++; last_done = done; end
+    if (u_ctrl.src_done && u_ctrl.src_aborted) abort_count++;
   end
-  always @(negedge clock_tx2g) begin
-    cycles2g++;
-    // All three2GHz endpoints accept paced8bit pattern words.
-    phy2g_unit_ready = block2g ? 2'b00 :
-      (((cycles2g%4)!=0) ? 2'b11:2'b00);
+  always @(negedge clock_tx2g) if (reset_n) begin
+    saw_clk |= phyDigControl; saw_val |= phyTrainValid; saw_lfsrv |= phyTrainLfsr;
+    saw_laneid |= phyTrainLaneid; saw_data |= digControl;
+    if ((phyTrainLfsr || phyTrainValid || phyTrainLaneid || digControl) && !phyDigControl)
+      $fatal(1, "valid/data without forwarded clock");
   end
-  always @(posedge clock_tx500 or negedge reset_tx500_n) begin
-    if(!reset_tx500_n) begin
-      phy500_retire_toggle<=0; delay500[0]<=0;delay500[1]<=0;prev_seed=0;
-    end else begin
-      for(integer j=0;j<2;j++) begin
-        if(delay500[j]>0) begin
-          delay500[j]<=delay500[j]-1;
-          if(delay500[j]==1) phy500_retire_toggle[j]<=~phy500_retire_toggle[j];
-        end
-        if(phy500_fence_fire && phy500_lane_mask[j]) delay500[j]<=11+17*j;
-      end
-      if(phy500_seed_load) begin
-        seed_count++;
-        if(prev_seed) $fatal(1,"Seed pulse wider than one local cycle");
-        if(check_exact && phy500_lane_mask!==expected_mask) $fatal(1,"Seed before lane mask captured");
-      end
-      prev_seed=phy500_seed_load;
-      if(phy500_word_fire) begin
-        words500++;
-        if(check_exact) begin
-          if(phy500_lane_mask!==expected_mask) $fatal(1,"Wrong500 lane mask");
-          if(words500>expected_count) $fatal(1,"Excess500 words");
-          if(phy500_word_last!==(words500==expected_count)) $fatal(1,"Wrong500 last");
-        end
-      end
-      if(phy500_fence_fire) fence500++;
+  always @(posedge clock_tx500) if (reset_n) begin
+    if (|enable_LFSR) saw_lfsr = 1;
+    if (load_seed !== '0) begin
+      if (load_seed !== '1) $fatal(1, "RESEED not on all lanes");
+      seed_pulses++; t_seed = $time;
+    end
+    if (enable_LFSR === '0 && zero_ena === '0 && load_seed === '0 && load_zero === '0) begin
+      if (!saw_active) t_active = $time;
+      saw_active = 1;
     end
   end
-  always @(posedge clock_tx2g or negedge reset_tx2g_n) begin
-    if(!reset_tx2g_n) begin
-      phy2g_retire_toggle<=0;delay2g[0]<=0;delay2g[1]<=0;prev_start=0;
-    end else begin
-      for(integer j=0;j<2;j++) begin
-        if(delay2g[j]>0) begin
-          delay2g[j]<=delay2g[j]-1;
-          if(delay2g[j]==1) phy2g_retire_toggle[j]<=~phy2g_retire_toggle[j];
-        end
-        if(phy_data_fence_fire && phy_data_lane_mask[j]) delay2g[j]<=13+21*j;
-      end
-      if(phy2g_start) begin
-        start2g++;
-        if(prev_start) $fatal(1,"Start pulse wider than one local cycle");
-        if(check_exact && (phy2g_kind!==2'(expected_kind) || phy2g_lane_mask!==expected_mask))
-          $fatal(1,"Start must accompany newly captured kind and mask");
-      end
-      prev_start=phy2g_start;
-      if(phy2g_unit_fire) begin
-        units2g++;
-        if(check_exact) begin
-          if(phy2g_kind!==2'(expected_kind)) $fatal(1,"Wrong2g kind");
-          if(phy2g_lane_mask!==expected_mask) $fatal(1,"Wrong2g lane mask");
-          if(units2g>expected_count) $fatal(1,"Excess2g units");
-          if(phy2g_unit_last!==(units2g==expected_count)) $fatal(1,"Wrong2g last");
-        end
-      end
-      if(phy2g_fence_fire) fence2g++;
-    end
-  end
-  always @(posedge clock) if(reset_ltsm_n) begin
-    if(|done) begin
-      finish_count++;
-      if(done!==expected_done) $fatal(1,"Wrong requester completed: %b expected%b",done,expected_done);
-      if(|prev_done) $fatal(1,"Completion pulse repeated");
-      if(delay500[0]!=0 || delay500[1]!=0 || delay2g[0]!=0 || delay2g[1]!=0 ||
-         phy_valid_active || phy_clock_active)
-        $fatal(1,"Source done before serializer drain");
-    end
-    if(aborted) abort_count++;
-    prev_done=done;
-  end
+
   task automatic clear_scores;
-    words500=0;units2g=0;fence500=0;fence2g=0;seed_count=0;start2g=0;
-    finish_count=0;abort_count=0;prev_done=0;
+    ops_seen.delete(); masks_seen.delete();
+    finish_count = 0; seed_pulses = 0; abort_count = 0; last_done = 0;
+    saw_clk = 0; saw_val = 0; saw_lfsrv = 0; saw_laneid = 0; saw_data = 0; saw_lfsr = 0;
+    saw_active = 0;
   endtask
+
   task automatic reset_all;
-    @(negedge clock); reset_n=0;req=0;check_exact=0;block500=0;block2g=0;
-    repeat(5) @(negedge clock);
-    reset_n=1;
-    wait(reset_ltsm_n && reset_tx500_n && reset_tx2g_n);
-    repeat(6) @(negedge clock);
+    @(negedge clock); reset_n = 0; req = 0; rst_flags = 0; custom_train_jtag = 0;
+    ltsm_state = 0; ltsm_dbg_mbinitSubstate = 0; ltsm_dbg_mbtrainState = 0;
+    repeat (5) @(negedge clock);
+    reset_n = 1;
+    repeat (12) @(negedge clock);
     clear_scores();
-    if(errors!=0 || busy || (|done)) $fatal(1,"Reset left stale transaction");
+    if (errors != 0 || busy || (|done)) $fatal(1, "Reset left stale transaction");
   endtask
-  task automatic request_pulse(input integer owner);
-    @(negedge clock);req=9'b1<<owner;
-    @(negedge clock);req=0;
-    @(negedge clock);
+
+  // One LTSM route: owner flag, LTSM state/substates, expected op.
+  task automatic run_route(input int owner, input int initstate, input int trainstate,
+                           input logic [2:0] exp_op);
+    wait (!busy);
+    @(negedge clock); clear_scores();
+    ltsm_state = 4'(owner < 4 ? 5 : 6); ltsm_dbg_mbinitSubstate = 3'(initstate);
+    ltsm_dbg_mbtrainState = 4'(trainstate);
+    @(negedge clock); req = 9'b1 << owner;
+    if (owner < 4) begin @(negedge clock); req = 0; end   // MBINIT flags: 1-cycle pulse
+    wait (finish_count == 1);
+    wait (!busy);
+    repeat (20) @(negedge clock);   // a held request must NOT retrigger
+    if (finish_count != 1 || last_done != (9'b1 << owner) || errors != 0)
+      $fatal(1, "owner %0d: Finished %b x%0d errors %b", owner, last_done, finish_count, errors);
+    if (ops_seen.size() != 1 || ops_seen[0] != exp_op || masks_seen[0] != '1)
+      $fatal(1, "owner %0d: wrong link command", owner);
+    case (exp_op)
+      OP_CLK: if (!saw_clk || saw_val || saw_lfsrv || saw_laneid || saw_data || saw_lfsr)
+        $fatal(1, "CLK_TRAIN PHY outputs wrong");
+      OP_VAL: if (!saw_clk || !saw_val || saw_lfsrv || saw_laneid || saw_data || saw_lfsr)
+        $fatal(1, "VAL_TRAIN PHY outputs wrong");
+      OP_ID: if (!saw_clk || saw_val || saw_lfsrv || !saw_laneid || !saw_data || saw_lfsr)
+        $fatal(1, "LANEID PHY outputs wrong");
+      OP_LFSR: if (!saw_clk || saw_val || !saw_lfsrv || saw_laneid || saw_data || !saw_lfsr)
+        $fatal(1, "LFSR PHY outputs wrong");
+      default: $fatal(1, "bad expected op");
+    endcase
+    req = 0;
+    repeat (3) @(negedge clock);
+    $display("PASS LTSM owner %0d init %0d train %0d -> op %0d, Finished once",
+             owner, initstate, trainstate, exp_op);
   endtask
-  task automatic run_route(input integer owner,input integer initstate,input integer trainstate,
-                           input integer k,input integer n,input logic[1:0] m);
-    wait(!busy);
-    @(negedge clock);clear_scores();
-    ltsm_state=4'(owner<4?5:6);ltsm_dbg_mbinitSubstate=3'(initstate);
-    ltsm_dbg_mbtrainState=4'(trainstate);ltsm_data_lane_mask=m;
-    expected_count=n;expected_kind=k;expected_done=9'b1<<owner;
-    expected_mask=(k==0 || k==1)?2'b01:m;check_exact=1;
-    @(negedge clock);req=9'b1<<owner;
-    if(owner<4) begin @(negedge clock);req=0; end
-    wait(finish_count==1);
-    wait(!busy);
-    repeat(20) @(negedge clock); // held requests must NOT retrigger
-    if(finish_count!=1 || abort_count!=0 || errors!=0) $fatal(1,"Route completion/error mismatch");
-    if(k==3) begin
-      if(words500!=n || units2g!=0 || fence500!=1 || fence2g!=0 || seed_count!=1)
-        $fatal(1,"500 route count mismatch");
-    end else if(units2g!=n || words500!=0 || fence2g!=1 || fence500!=0 || start2g!=1)
-      $fatal(1,"2g route count mismatch");
-    req=0;
-    repeat(3) @(negedge clock);
-    $display("PASS LTSM owner%0d init%0d train%0d kind%0d count%0d",owner,initstate,trainstate,k,n);
-  endtask
+
   initial begin
     reset_all();
-    run_route(0,2,0,0,130,3);
-    run_route(1,3,0,1,130,3);
-    run_route(2,4,0,2,256,3);
-    run_route(3,5,0,2,256,1);
-    run_route(4,0,1,1,130,3);
-    run_route(5,0,2,3,128,3);
-    run_route(6,0,6,1,130,3);
-    run_route(4,0,7,1,130,3);
-    run_route(7,0,8,3,128,3);
-    run_route(5,0,9,3,128,1);
-    run_route(8,0,10,3,128,3);
-    run_route(7,0,11,3,128,3);
-    run_route(7,0,12,3,128,3);
+    run_route(0, 2, 0, OP_CLK);
+    run_route(1, 3, 0, OP_VAL);
+    run_route(2, 4, 0, OP_ID);
+    run_route(3, 5, 0, OP_ID);
+    run_route(4, 0, 1, OP_VAL);
+    run_route(5, 0, 2, OP_LFSR);
+    run_route(6, 0, 6, OP_VAL);
+    run_route(4, 0, 7, OP_VAL);
+    run_route(7, 0, 8, OP_LFSR);
+    run_route(5, 0, 9, OP_LFSR);
+    run_route(8, 0, 10, OP_LFSR);
+    run_route(7, 0, 11, OP_LFSR);
+    run_route(7, 0, 12, OP_LFSR);
 
-    // State change aborts the active500 burst; one-cycle MBINIT request is
-    // retained pending until the old source and serializer have fully drained.
-    @(negedge clock);clear_scores();check_exact=0;
-    ltsm_state=6;ltsm_dbg_mbtrainState=2;ltsm_dbg_mbinitSubstate=0;
-    ltsm_data_lane_mask=3;req=9'b1<<5;expected_done=9'b1<<1;
-    wait(words500>=12);
-    @(negedge clock);ltsm_state=5;ltsm_dbg_mbinitSubstate=3;ltsm_dbg_mbtrainState=0;req=9'b1<<1;
-    @(negedge clock);req=0;
-    wait(finish_count==1);wait(!busy);
-    repeat(8) @(negedge clock);
-    if(abort_count!=1 || finish_count!=1 || words500>=128 || units2g!=130 || errors!=0)
-      $fatal(1,"Queued transition lost/duplicated command");
-    $display("PASS state-change abort then pending one-cycle request");
+    // -- Reset-scrambler flag -> RESEED, no Finished ------------------------------
+    @(negedge clock); clear_scores(); ltsm_state = 6; ltsm_dbg_mbtrainState = 2;
+    rst_flags = 5'b00010;
+    wait (busy); wait (!busy);
+    repeat (10) @(negedge clock);
+    if (ops_seen.size() != 1 || ops_seen[0] != OP_RESEED || seed_pulses != 1 ||
+        finish_count != 0 || saw_clk || errors != 0)
+      $fatal(1, "reseed flag did not produce exactly one RESEED");
+    rst_flags = 0;
+    $display("PASS reset-scrambler flag -> RESEED");
 
-    // A held request withdrawn within the same state aborts and does not emit
-    // a normal Finished pulse. Its next rising edge starts a fresh burst.
-    clear_scores();ltsm_state=6;ltsm_dbg_mbtrainState=8;ltsm_dbg_mbinitSubstate=0;
-    req=9'b1<<7;expected_done=9'b1<<7;
-    wait(words500>=10);
-    @(negedge clock);req=0;
-    wait(abort_count==1);wait(!busy);
-    if(finish_count!=0 || words500>=128) $fatal(1,"Held-request abort failed");
-    run_route(7,0,8,3,128,3);
+    // -- Custom JTAG burst --------------------------------------------------------
+    @(negedge clock); clear_scores(); ltsm_state = 0; ltsm_data_lane_mask = 2'b10;
+    custom_train_jtag = 1;
+    wait (busy); wait (!busy);
+    repeat (10) @(negedge clock);
+    if (ops_seen.size() != 1 || ops_seen[0] != OP_LFSR || masks_seen[0] != 2'b10 ||
+        finish_count != 0 || errors != 0 || !saw_lfsr)
+      $fatal(1, "custom JTAG burst wrong");
+    custom_train_jtag = 0; ltsm_data_lane_mask = '1;
+    repeat (6) @(negedge clock);
+    $display("PASS custom JTAG LFSR burst");
 
+    // -- LINKINIT reseed before ACTIVE; ACTIVE exit when state leaves 8 ----------
+    @(negedge clock); clear_scores();
+    ltsm_state = 7; rst_flags = 5'b10000;          // LINKINIT holds its flag
+    @(negedge clock); ltsm_state = 8;              // immediately enter ACTIVE
+    wait (ltsm_active_ready);
+    repeat (20) @(negedge clock);
+    if (ops_seen.size() != 2 || ops_seen[0] != OP_RESEED || ops_seen[1] != OP_ACTIVE)
+      $fatal(1, "LINKINIT reseed not ordered before ACTIVE");
+    if (seed_pulses != 1 || !saw_active || t_seed >= t_active)
+      $fatal(1, "PHY did not reseed before ACTIVE");
+    if (!phyDigControl || phyTrainValid || phyTrainLfsr || phyTrainLaneid || digControl ||
+        enable_LFSR !== '0 || zero_ena !== '0 || load_zero !== '0)
+      $fatal(1, "ACTIVE PHY outputs wrong");
+    if (!busy) $fatal(1, "controller must stay busy in ACTIVE");
+    @(negedge clock); ltsm_state = 5; rst_flags = 0;  // leave ACTIVE (e.g. retrain)
+    wait (!busy);
+    repeat (10) @(negedge clock);
+    if (ltsm_active_ready || phyDigControl || finish_count != 0 || abort_count != 1 || errors != 0)
+      $fatal(1, "ACTIVE exit wrong");
+    if (enable_LFSR !== '0 || zero_ena !== '1 || load_zero !== '1)
+      $fatal(1, "Tx500 not OFF after ACTIVE");
+    $display("PASS LINKINIT reseed -> ACTIVE -> exit on state change");
+
+    // -- Re-entering ACTIVE launches it again ----------------------------------------
+    @(negedge clock); clear_scores(); ltsm_state = 8;
+    wait (ltsm_active_ready);
+    @(negedge clock); ltsm_state = 9;               // TRAIN_ERROR also leaves ACTIVE
+    wait (!busy);
+    repeat (6) @(negedge clock);
+    if (ops_seen.size() != 1 || ops_seen[0] != OP_ACTIVE || abort_count != 1 || errors != 0)
+      $fatal(1, "ACTIVE re-entry wrong");
+    $display("PASS ACTIVE launched once per entry");
+
+    // -- TRAIN_ERROR aborts a running training, discards the queued one ---------
     reset_all();
-    @(negedge clock);ltsm_state=0;ltsm_dbg_mbinitSubstate=2;
-    request_pulse(0);
-    repeat(20) @(negedge clock);
-    if(errors!=3'b010 || busy || words500!=0 || units2g!=0 || finish_count!=0)
-      $fatal(1,"Illegal context was not rejected");
-    $display("PASS wrong-state command rejection");
+    @(negedge clock); clear_scores(); ltsm_state = 6; ltsm_dbg_mbtrainState = 8;
+    req = 9'b1 << 7;                                 // d2cSender LFSR, held
+    wait (|enable_LFSR);
+    @(negedge clock); ltsm_dbg_mbtrainState = 2; req = (9'b1 << 7) | (9'b1 << 5);  // queue dataVref
+    @(negedge clock);
+    if (!u_ctrl.pending_valid) $fatal(1, "second training was not queued");
+    repeat (4) @(negedge clock); ltsm_state = 9;
+    wait (!busy);
+    repeat (20) @(negedge clock);
+    if (finish_count != 0 || abort_count != 1 || errors != 0 || ops_seen.size() != 1 || phyDigControl)
+      $fatal(1, "TRAIN_ERROR abort wrong: fin %0d abort %0d err %b ops %0d",
+             finish_count, abort_count, errors, ops_seen.size());
+    req = 0;
+    $display("PASS TRAIN_ERROR stops the training without Finished, drops the queue");
 
+    // -- Illegal state -> error[1] ----------------------------------------------------
     reset_all();
-    @(negedge clock);ltsm_state=5;ltsm_dbg_mbinitSubstate=2;req=9'b11;
-    @(negedge clock);req=0;
-    repeat(10) @(negedge clock);
-    if(errors!=3'b001 || busy) $fatal(1,"Simultaneous requests not rejected");
-    $display("PASS simultaneous request rejection");
+    @(negedge clock); ltsm_state = 6; ltsm_dbg_mbinitSubstate = 2;
+    @(negedge clock); req = 9'b1; @(negedge clock); req = 0;
+    repeat (20) @(negedge clock);
+    if (errors != 3'b010 || busy || ops_seen.size() != 0 || finish_count != 0)
+      $fatal(1, "illegal state not rejected");
+    $display("PASS illegal state -> error[1]");
 
+    // -- Queue overflow -> error[2] -------------------------------------------------
     reset_all();
-    @(negedge clock);ltsm_state=5;ltsm_dbg_mbinitSubstate=4;ltsm_data_lane_mask=0;
-    request_pulse(2);
-    repeat(10) @(negedge clock);
-    if(errors!=3'b010 || busy) $fatal(1,"Empty mask not rejected");
-    $display("PASS empty mask rejection");
+    @(negedge clock); ltsm_state = 5; ltsm_dbg_mbinitSubstate = 4;
+    @(negedge clock); req = 9'b100; @(negedge clock); req = 0;  // runs
+    wait (digControl);
+    @(negedge clock); req = 9'b100; @(negedge clock); req = 0;  // queued
+    @(negedge clock); req = 9'b100; @(negedge clock); req = 0;  // overflow
+    repeat (4) @(negedge clock);
+    if (errors != 3'b100) $fatal(1, "queue overflow not reported: %b", errors);
+    wait (!busy);
+    if (finish_count != 2) $fatal(1, "queued lane-ID run lost (%0d)", finish_count);
+    $display("PASS queue overflow -> error[2]");
 
-    reset_all();
-    @(negedge clock);ltsm_state=5;ltsm_dbg_mbinitSubstate=4;ltsm_data_lane_mask=3;block2g=1;
-    request_pulse(2);wait(phy2g_active);
-    request_pulse(2);request_pulse(2);
-    repeat(4) @(negedge clock);
-    if(errors!=3'b100) $fatal(1,"Pending queue overflow not reported");
-    $display("PASS pending queue overflow reporting");
-    // Common reset is also tested with an active command and pending request.
-    reset_all();
-    repeat(25) @(negedge clock);
-    if(finish_count!=0 || abort_count!=0 || busy) $fatal(1,"Reset left phantom completion");
-    run_route(2,4,0,2,256,3);
     $display("LTSM_SPECIALIZED_REGRESSION_PASS");
     $finish;
   end
-  initial begin #100000000; $fatal(1,"Top regression timeout"); end
+  initial begin #200000000; $fatal(1, "tb_ltsm_specialized timeout"); end
 endmodule
 `default_nettype wire

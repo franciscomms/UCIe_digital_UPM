@@ -768,7 +768,9 @@ module UcieDigitalTopJtagPhyModeSpec_tb;
     .tdo_fdi(tdo_fdi),
     .tdo_rdi(tdo_rdi),
     .tdo_ltsm(tdo_ltsm),
-    .tdo_phy(tdo_phy)
+    .tdo_phy(tdo_phy),
+    // PHY TX sequencer link: no sequencer in this bench; return idle.
+    .seq_ack_i(1'b0), .seq_aborted_i(1'b0), .seq_active_ready_i(1'b0)
   );
 
   localparam int unsigned PHY_DR_W = ((TO_W > FROM_W) ? TO_W : FROM_W) + 1;

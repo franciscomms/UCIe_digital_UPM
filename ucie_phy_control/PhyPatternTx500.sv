@@ -1,142 +1,109 @@
 `default_nettype none
 // =============================================================================
-// PhyPatternTx500 - 500 MHz data-lane mode control for the PHY
+// PhyPatternTx500 - 500 MHz data-lane mode control for the PHY (one per lane)
 // =============================================================================
 //
-// Simple PHY control: Ctrl800 selects how the data lanes transmit, and this
-// module turns that into four level controls for the PHY. Ctrl800 handles
-// sequencing and error prevention (e.g. never two requests at once), so only
-// minimal protection is done here.
+// Synchronous slave of PhyTxSequencer (same clock_tx500 domain). It turns the
+// sequencer's mode and per-lane enable into four registered level controls
+// for the PHY. No synchronizer, counter or acknowledgment: the sequencer owns
+// all timing (LFSR burst length, seed pulse, ACTIVE entry/exit).
 //
-// Inputs from Ctrl800 (asynchronous, synchronized locally):
-//   lane_mask      0 = lanes off, 1 = lanes in use
-//   req_seed_load  reseed request  (4-phase handshake with cmd_ack_o)
-//   req_train_lfsr LFSR training   (4-phase handshake with cmd_ack_o)
-//   raw_data       level: send data without LFSR
-//   active_mode    level: send data + LFSR
-// Output to Ctrl800:
-//   cmd_ack_o      1 = seed/train done; held until the request goes low
+// Inputs (from PhyTxSequencer, registered there):
+//   mode[2:0]  OFF=0, SEED=1, LFSR=2, ACTIVE=3, RAW=4 (RAW: test only, never
+//              issued by the sequencer). Other codes behave as OFF.
+//   lane_en    0 forces OFF for every mode. The sequencer enables all lanes
+//              for SEED and ACTIVE and the lane mask for LFSR.
 // Outputs to PHY (registered):
 //   enable_LFSR, zero_ena, load_seed, load_zero
 //
-// Priority (highest first):
-//   1. lane_mask = 0      -> OFF. Aborts a running seed/train command and
-//                            clears cmd_ack_o; that command is never acked.
-//   2. req_seed_load = 1  -> load_seed pulse (1 cycle), then ack until req = 0
-//   3. req_train_lfsr = 1 -> LFSR for 128 words x 32 UI = 4096 UI (128 cycles),
-//                            then OFF with ack until req = 0
-//   4. raw_data = 1       -> RAW
-//   5. active_mode = 1    -> ACTIVE
-//   6. otherwise          -> OFF
-// A running seed or train command finishes its handshake before any other
-// request or mode is taken.
+//   Mode        | enable_LFSR zero_ena load_seed load_zero
+//   ------------+------------------------------------------
+//   OFF / idle  |      0          1        0         1
+//   SEED        |      0          1        1         0     exactly 1 cycle,then OFF
+//   LFSR        |      1          1        0         0
+//   ACTIVE      |      0          0        0         0
+//   RAW (test)  |      0          0        0         1
 //
-//   Mode        | enable_LFSR zero_ena load_seed load_zero | cmd_ack_o
-//   ------------+------------------------------------------+----------
-//   OFF         |      0          1        0         1     |    0
-//   SEED pulse  |      0          1        1         0     |    0
-//   SEED ack    |      0          1        0         0     |    1
-//   TRAIN       |      1          1        0         0     |    0
-//   TRAIN ack   |      0          1        0         1     |    1
-//   RAW         |      0          0        0         1     |    0
-//   ACTIVE      |      1          0        0         0     |    0
+// SEED is edge-qualified: if mode stays SEED for more than one cycle only the
+// first cycle pulses load_seed; the rest are OFF.
+//
+// Latency: (1 + START_DELAY) clock_tx500 cycles from the sequencer edge
+// (32 UI with START_DELAY = 0). All lanes see the same sequencer flops, so all
+// lanes switch on the same clock_tx500 edge.
 //
 // Clock: clock_tx500 (500 MHz), one 32-bit word (32 UI) per cycle.
 // Reset: reset_n, asynchronous assert, release synchronized locally.
+// Reset value = OFF (0101).
 // =============================================================================
 module PhyPatternTx500 #(
-  parameter integer TRAIN_WORDS = 128, // training length in 32-UI words
-  parameter integer SYNC_STAGES = 3    // CDC synchronizer depth
+  parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
+  parameter integer START_DELAY = 0   // extra clock_tx500 cycles of fixed latency
 ) (
-  input  wire  clock_tx500,
-  input  wire  reset_n,
-  // From/to Ctrl800
-  input  wire  req_train_lfsr,
-  input  wire  req_seed_load,
-  input  wire  lane_mask,
-  input  wire  active_mode,
-  input  wire  raw_data,
-  output logic cmd_ack_o,
+  input  wire       clock_tx500,
+  input  wire       reset_n,
+  // From PhyTxSequencer
+  input  wire [2:0] mode,
+  input  wire       lane_en,
   // To PHY
-  output logic enable_LFSR,
-  output logic zero_ena,
-  output logic load_seed,
-  output logic load_zero
+  output logic      enable_LFSR,
+  output logic      zero_ena,
+  output logic      load_seed,
+  output logic      load_zero
 );
-  // ---------------------------------------------------------------------------
-  // Reset release and input synchronizers (Ctrl800 runs on another clock)
-  // ---------------------------------------------------------------------------
-  wire rst_n;
-  wire train_s, seed_s, mask_s, active_s, raw_s;
+  localparam logic [2:0] M_OFF=3'd0, M_SEED=3'd1, M_LFSR=3'd2, M_ACTIVE=3'd3, M_RAW=3'd4;
+  localparam logic [3:0] O_OFF=4'b0101, O_SEED=4'b0110, O_LFSR=4'b1100,
+                         O_ACTIVE=4'b0000, O_RAW=4'b0001;
 
+  wire rst_n;
   Phy500CtrlResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx500), .arst_ni(reset_n), .rst_no(rst_n));
-  Phy500CtrlSyncBit #(.STAGES(SYNC_STAGES)) u_train_sync (
-    .clk_i(clock_tx500), .rst_ni(rst_n), .async_i(req_train_lfsr), .sync_o(train_s));
-  Phy500CtrlSyncBit #(.STAGES(SYNC_STAGES)) u_seed_sync (
-    .clk_i(clock_tx500), .rst_ni(rst_n), .async_i(req_seed_load), .sync_o(seed_s));
-  Phy500CtrlSyncBit #(.STAGES(SYNC_STAGES)) u_mask_sync (
-    .clk_i(clock_tx500), .rst_ni(rst_n), .async_i(lane_mask), .sync_o(mask_s));
-  Phy500CtrlSyncBit #(.STAGES(SYNC_STAGES)) u_active_sync (
-    .clk_i(clock_tx500), .rst_ni(rst_n), .async_i(active_mode), .sync_o(active_s));
-  Phy500CtrlSyncBit #(.STAGES(SYNC_STAGES)) u_raw_sync (
-    .clk_i(clock_tx500), .rst_ni(rst_n), .async_i(raw_data), .sync_o(raw_s));
 
-  // ---------------------------------------------------------------------------
-  // Command state: IDLE follows the level modes (OFF/RAW/ACTIVE); the other
-  // states run the seed and train handshakes.
-  // ---------------------------------------------------------------------------
-  typedef enum logic [2:0] {IDLE, SEED, SEED_ACK, TRAIN, TRAIN_ACK} state_t;
-  state_t state_q, state_d;
+  // Fixed latency-trim pipeline (START_DELAY flops) on {mode, lane_en}.
+  wire [3:0] cmd_in = {mode, lane_en};
+  wire [3:0] cmd_d;
+  generate
+    if (START_DELAY == 0) begin : g_no_delay
+      assign cmd_d = cmd_in;
+    end else begin : g_delay
+      logic [3:0] dly_q [START_DELAY];
+      always_ff @(posedge clock_tx500 or negedge rst_n) begin
+        if (!rst_n) begin
+          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= {M_OFF, 1'b0};
+        end else begin
+          dly_q[0] <= cmd_in;
+          for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
+        end
+      end
+      assign cmd_d = dly_q[START_DELAY-1];
+    end
+  endgenerate
+  wire [2:0] mode_d = cmd_d[3:1];
+  wire lane_en_d = cmd_d[0];
 
-  localparam integer CNT_W = (TRAIN_WORDS > 1) ? $clog2(TRAIN_WORDS) : 1;
-  logic [CNT_W-1:0] word_cnt_q;   // words sent in the current training burst
+  logic seed_prev_q;  // effective SEED seen on the previous cycle
+  wire seed_now = lane_en_d && (mode_d == M_SEED);
 
-  always_comb begin
-    state_d = state_q;
-    if (!mask_s) state_d = IDLE;  // lanes off: drop any command (no ack sent)
-    else case (state_q)
-      IDLE:      if (seed_s) state_d = SEED; else if (train_s) state_d = TRAIN;
-      SEED:      state_d = SEED_ACK;                          // 1-cycle pulse
-      SEED_ACK:  if (!seed_s) state_d = IDLE;                 // wait req low
-      TRAIN:     if (word_cnt_q == CNT_W'(TRAIN_WORDS - 1)) state_d = TRAIN_ACK;
-      TRAIN_ACK: if (!train_s) state_d = IDLE;                // wait req low
-      default:   state_d = IDLE;
-    endcase
-  end
-
-  // State, training counter and registered PHY outputs.
   always_ff @(posedge clock_tx500 or negedge rst_n) begin
     if (!rst_n) begin
-      state_q <= IDLE;
-      word_cnt_q <= '0;
-      {cmd_ack_o, enable_LFSR, zero_ena, load_seed, load_zero} <= 5'b0_0101; // OFF
+      seed_prev_q <= 1'b0;
+      {enable_LFSR, zero_ena, load_seed, load_zero} <= O_OFF;
     end else begin
-      state_q <= state_d;
-
-      // Count one word per TRAIN cycle; cleared outside TRAIN.
-      word_cnt_q <= (state_d == TRAIN && state_q == TRAIN) ? word_cnt_q + 1'b1 : '0;
-
-      // Outputs for the next state: {ack, enable_LFSR, zero_ena, load_seed, load_zero}
-      case (state_d)
-        SEED:      {cmd_ack_o, enable_LFSR, zero_ena, load_seed, load_zero} <= 5'b0_0110;
-        SEED_ACK:  {cmd_ack_o, enable_LFSR, zero_ena, load_seed, load_zero} <= 5'b1_0100;
-        TRAIN:     {cmd_ack_o, enable_LFSR, zero_ena, load_seed, load_zero} <= 5'b0_1100;
-        TRAIN_ACK: {cmd_ack_o, enable_LFSR, zero_ena, load_seed, load_zero} <= 5'b1_0101;
-        default: begin // IDLE: level modes
-          if      (mask_s && raw_s)    {cmd_ack_o, enable_LFSR, zero_ena, load_seed, load_zero} <= 5'b0_0001; // RAW
-          else if (mask_s && active_s) {cmd_ack_o, enable_LFSR, zero_ena, load_seed, load_zero} <= 5'b0_1000; // ACTIVE
-          else                         {cmd_ack_o, enable_LFSR, zero_ena, load_seed, load_zero} <= 5'b0_0101; // OFF
-        end
+      seed_prev_q <= seed_now;
+      if (!lane_en_d) {enable_LFSR, zero_ena, load_seed, load_zero} <= O_OFF;
+      else case (mode_d)
+        M_SEED:   {enable_LFSR, zero_ena, load_seed, load_zero} <= seed_prev_q ? O_OFF : O_SEED;
+        M_LFSR:   {enable_LFSR, zero_ena, load_seed, load_zero} <= O_LFSR;
+        M_ACTIVE: {enable_LFSR, zero_ena, load_seed, load_zero} <= O_ACTIVE;
+        M_RAW:    {enable_LFSR, zero_ena, load_seed, load_zero} <= O_RAW;
+        default:  {enable_LFSR, zero_ena, load_seed, load_zero} <= O_OFF;
       endcase
     end
   end
 
 `ifndef SYNTHESIS
-  // Ctrl800 should never select both level modes; raw_data wins if it does.
-  always_ff @(posedge clock_tx500)
-    if (rst_n && raw_s && active_s)
-      $warning("raw_data and active_mode both high; raw_data takes priority");
+  initial assert (START_DELAY >= 0) else $fatal(1, "TX500 START_DELAY must be >= 0");
+  assert property (@(posedge clock_tx500) disable iff (!rst_n) load_seed |=> !load_seed)
+    else $error("TX500: load_seed wider than one cycle");
 `endif
 endmodule
 
@@ -153,22 +120,9 @@ module Phy500CtrlResetSync #(parameter integer STAGES = 3) (
     if (!arst_ni) release_q <= '0;
     else          release_q <= {release_q[STAGES-2:0], 1'b1};
   assign rst_no = release_q[STAGES-1];
-endmodule
-
-// -----------------------------------------------------------------------------
-// Single-bit CDC synchronizer (flip-flop chain).
-// -----------------------------------------------------------------------------
-module Phy500CtrlSyncBit #(parameter integer STAGES = 3) (
-  input  wire clk_i,
-  input  wire rst_ni,
-  input  wire async_i,
-  output wire sync_o
-);
-  (* async_reg = "true", dont_touch = "true" *) logic [STAGES-1:0] sync_q;
-  always_ff @(posedge clk_i or negedge rst_ni)
-    if (!rst_ni) sync_q <= '0;
-    else         sync_q <= {sync_q[STAGES-2:0], async_i};
-  assign sync_o = sync_q[STAGES-1];
+`ifndef SYNTHESIS
+  initial assert (STAGES >= 2) else $fatal(1, "TX500 reset synchronizer needs >=2 stages");
+`endif
 endmodule
 
 `default_nettype wire

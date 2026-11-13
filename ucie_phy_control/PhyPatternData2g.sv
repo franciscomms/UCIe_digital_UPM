@@ -3,51 +3,48 @@
 // PhyPatternData2g - 2 GHz data-lane Lane ID pattern control for the PHY
 // =============================================================================
 //
-// Simple PHY control: when Ctrl800 raises lane_id_ena, this module makes the
-// PHY send the Lane ID pattern ITERATIONS times, then acknowledges.
-// Ctrl800 handles sequencing and error prevention.
+// Synchronous slave of PhyTxSequencer. While id_en is high the PHY sends the
+// Lane ID pattern; PhyTxSequencer owns the burst length (64 clock_tx500
+// cycles = 256 clock_tx2g cycles = 128 iterations x 16 UI).
 //
-// Inputs from digital:
-//   lane_id_ena   1 = send the Lane ID pattern (4-phase handshake;
-//                 asynchronous, synchronized locally)
+// Inputs:
+//   id_en         from PhyTxSequencer (clock_tx500 launched, related clock)
 //   lane_id_i     4-bit Lane ID, passed straight through to the PHY
-// Output to Ctrl800:
-//   cmd_ack_o     1 = all iterations sent; held until lane_id_ena = 0
 // Outputs to PHY:
 //   digControl    1 = PHY sends the Lane ID pattern          (registered)
 //   laneID_index  0 = send Lane ID LSB byte, 1 = MSB byte    (registered)
 //   lane_id_o     = lane_id_i (pass-through, no logic). The value must be
-//                 stable before lane_id_ena rises and while the pattern is sent.
+//                 stable before id_en rises and while the pattern is sent.
 //
-// One clock_tx2g cycle = 8 UI, so one iteration (LSB then MSB) = 2 cycles:
+// One clock_tx2g cycle = 8 UI, so one iteration (LSB then MSB) = 2 cycles.
+// The first cycle of every burst is LSB; laneID_index is 0 when digControl is 0.
+// The burst is an even number of cycles (multiple of 4), so it ends on MSB.
 //
 //   clock_tx2g    _/~\_/~\_/~\_/~\_ ... _/~\_/~\_/~\_
 //   digControl    __/~~~~~~~~~~~~~~ ... ~~~~~~~\_____
 //   laneID_index  ______/~~~\___/~~ ... \___/~~\_____
 //                   LSB MSB LSB MSB      LSB MSB
-//   cmd_ack_o     ________________ ... _______/~~~~~  (until lane_id_ena = 0)
 //
-// ITERATIONS = 130 -> 130 x 16 UI = 2080 UI = 260 cycles.
+// In ACTIVE id_en = 0, so digControl = 0 (functional data path).
 //
-// Sequence:
-//   lane_id_ena = 0 -> digControl = 0, laneID_index = 0, cmd_ack_o = 0
-//   lane_id_ena = 1 -> SEND: 130 iterations, then
-//                      ACK: digControl = 0, laneID_index = 0, cmd_ack_o = 1
-//   lane_id_ena drops during SEND -> stop immediately, outputs low, NO ack.
+// Timing: id_en is captured on the FIRST clock_tx2g edge after the launching
+// clock_tx500 edge (single-cycle synchronous related-clock path). Latency
+// from the sequencer edge to digControl:
+//   (1 + START_DELAY) clock_tx2g cycles = (1 + START_DELAY) x 8 UI.
+// START_DELAY = 3 aligns digControl with PhyPatternTx500 (START_DELAY = 0).
 //
 // Clock: clock_tx2g (2 GHz). Reset: reset_n, asynchronous assert, release
-// synchronized locally.
+// synchronized locally. Reset value = idle (digControl = 0, laneID_index = 0).
 // =============================================================================
 module PhyPatternData2g #(
-  parameter integer ITERATIONS  = 130, // Lane ID pattern repetitions (16 UI each)
-  parameter integer SYNC_STAGES = 3    // CDC synchronizer depth
+  parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
+  parameter integer START_DELAY = 0   // extra clock_tx2g cycles of fixed latency
 ) (
   input  wire  clock_tx2g,
   input  wire  reset_n,
-  // From/to Ctrl800
-  input  wire  lane_id_ena,
+  // From PhyTxSequencer
+  input  wire  id_en,
   input  wire  [3:0] lane_id_i,
-  output logic cmd_ack_o,
   // To PHY
   output logic digControl,
   output logic laneID_index,
@@ -56,66 +53,46 @@ module PhyPatternData2g #(
   // Lane ID value: pass-through from digital to PHY (quasi-static, no sync).
   assign lane_id_o = lane_id_i;
 
-  // ---------------------------------------------------------------------------
-  // Reset release and input synchronizer (Ctrl800 runs on another clock)
-  // ---------------------------------------------------------------------------
   wire rst_n;
-  wire ena_s;
-
   Data2gResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx2g), .arst_ni(reset_n), .rst_no(rst_n));
-  Data2gSyncBit #(.STAGES(SYNC_STAGES)) u_ena_sync (
-    .clk_i(clock_tx2g), .rst_ni(rst_n), .async_i(lane_id_ena), .sync_o(ena_s));
 
-  // ---------------------------------------------------------------------------
-  // State machine: IDLE -> SEND (130 iterations) -> ACK (until ena low)
-  // ---------------------------------------------------------------------------
-  typedef enum logic [1:0] {IDLE, SEND, ACK} state_t;
-  state_t state_q, state_d;
+  // Fixed latency-trim pipeline (START_DELAY flops), then the output flops.
+  wire id_en_d;
+  generate
+    if (START_DELAY == 0) begin : g_no_delay
+      assign id_en_d = id_en;
+    end else begin : g_delay
+      logic dly_q [START_DELAY];
+      always_ff @(posedge clock_tx2g or negedge rst_n) begin
+        if (!rst_n) begin
+          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= 1'b0;
+        end else begin
+          dly_q[0] <= id_en;
+          for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
+        end
+      end
+      assign id_en_d = dly_q[START_DELAY-1];
+    end
+  endgenerate
 
-  localparam integer CNT_W = (ITERATIONS > 1) ? $clog2(ITERATIONS) : 1;
-  logic [CNT_W-1:0] iter_q;   // iterations completed
-  logic             msb_q;    // 0 = LSB half, 1 = MSB half of the iteration
-  wire last_cycle = msb_q && (iter_q == CNT_W'(ITERATIONS - 1));
-
-  always_comb begin
-    state_d = state_q;
-    case (state_q)
-      IDLE: if (ena_s) state_d = SEND;
-      // lane_id_ena dropped before the end: abort, no ack is sent.
-      SEND: if (!ena_s) state_d = IDLE; else if (last_cycle) state_d = ACK;
-      ACK:  if (!ena_s) state_d = IDLE;    // hold ack until ena goes low
-      default: state_d = IDLE;
-    endcase
-  end
-
+  // digControl follows id_en. laneID_index: 0 on the first enabled cycle,
+  // then alternates every cycle; forced to 0 when disabled.
   always_ff @(posedge clock_tx2g or negedge rst_n) begin
     if (!rst_n) begin
-      state_q      <= IDLE;
-      iter_q       <= '0;
-      msb_q        <= 1'b0;
-      cmd_ack_o    <= 1'b0;
       digControl   <= 1'b0;
       laneID_index <= 1'b0;
     end else begin
-      state_q <= state_d;
-
-      // Pattern counters: alternate LSB/MSB each cycle, count after the MSB.
-      // Cleared outside SEND so every burst starts with iteration 0, LSB.
-      if (state_q == SEND && state_d == SEND) begin
-        msb_q <= ~msb_q;
-        if (msb_q) iter_q <= iter_q + 1'b1;
-      end else begin
-        msb_q  <= 1'b0;
-        iter_q <= '0;
-      end
-
-      // Outputs for the next cycle, aligned with state_d and the next half.
-      cmd_ack_o    <= (state_d == ACK);
-      digControl   <= (state_d == SEND);
-      laneID_index <= (state_d == SEND) && (state_q == SEND) && !msb_q;
+      digControl   <= id_en_d;
+      laneID_index <= id_en_d && digControl && !laneID_index;
     end
   end
+
+`ifndef SYNTHESIS
+  initial assert (START_DELAY >= 0) else $fatal(1, "DATA START_DELAY must be >= 0");
+  assert property (@(posedge clock_tx2g) disable iff (!rst_n) laneID_index |-> digControl)
+    else $error("DATA: laneID_index high without digControl");
+`endif
 endmodule
 
 // -----------------------------------------------------------------------------
@@ -131,22 +108,9 @@ module Data2gResetSync #(parameter integer STAGES = 3) (
     if (!arst_ni) release_q <= '0;
     else          release_q <= {release_q[STAGES-2:0], 1'b1};
   assign rst_no = release_q[STAGES-1];
-endmodule
-
-// -----------------------------------------------------------------------------
-// Single-bit CDC synchronizer (flip-flop chain).
-// -----------------------------------------------------------------------------
-module Data2gSyncBit #(parameter integer STAGES = 3) (
-  input  wire clk_i,
-  input  wire rst_ni,
-  input  wire async_i,
-  output wire sync_o
-);
-  (* async_reg = "true", dont_touch = "true" *) logic [STAGES-1:0] sync_q;
-  always_ff @(posedge clk_i or negedge rst_ni)
-    if (!rst_ni) sync_q <= '0;
-    else         sync_q <= {sync_q[STAGES-2:0], async_i};
-  assign sync_o = sync_q[STAGES-1];
+`ifndef SYNTHESIS
+  initial assert (STAGES >= 2) else $fatal(1, "DATA reset synchronizer needs >=2 stages");
+`endif
 endmodule
 
 `default_nettype wire

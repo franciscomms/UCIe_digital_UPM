@@ -1,85 +1,74 @@
-# CDC integration constraints for FIVE separately placed controller regions.
+# CDC / related-clock integration constraints for the TX pattern control.
 # Binding template only: this is not a netlist/STA or timing-closure result.
 # Units: ns. Define the SoC clocks before sourcing this file.
-# Assumed periods: LTSM=1.25 ns, TX500=2.0 ns, DATA2G/VALID2G/CLOCK2G=0.5 ns.
-# Re-derive the bounds if the clocks or handshake RTL change. The target STA
-# tool must support -datapath_only max-delay semantics.
+# Assumed periods: LTSM (CTRL800) = 1.25 ns, clock_tx500 = 2.0 ns,
+# clock_tx2g = 0.5 ns. Re-derive the bounds if the clocks or RTL change. The
+# target STA tool must support -datapath_only max-delay semantics.
 #
-# Before sourcing, bind EVERY named collection below to EXACT register pins
-# in the synthesized netlist; set CTRL_LANES to the elaborated LANES value.
-# Pin names below describe RTL intent, NOT literal get_pins wildcard patterns.
-# Synthesis register names and Q/D pin spellings are technology/tool dependent.
-# Do not substitute broad "all CDC" / "all synchronizer" collections.
+# Instance aliases used below:
+#   CTRL800: LtsmPhyPatternCtrl800 (u_pattern_ctrl in UcieDigitalTopJtag)
+#   SEQ:     PhyTxControlTop/u_seq   (PhyTxSequencer, clock_tx500)
+#   CLOCK2G: PhyTxControlTop/u_clock2g, VALID2G: .../u_valid2g,
+#   DATA2G:  PhyTxControlTop/u_data2g (clock_tx2g)
+#   TX500:   PhyTxControlTop/g_tx500[lane]/u_tx500 (clock_tx500)
 #
-# Instance aliases used in this documentation:
-#   CTRL800: LtsmPhyPatternCtrl800    TX500: PhyPatternTx500
-#   DATA2G:  PhyPatternData2g        VALID2G: PhyPatternValid2g
-#   CLOCK2G: PhyPatternClock2g
-# The three 2 GHz endpoints are separate physical regions. No common parent
-# controller or common destination synchronizer instance is required.
+# ---------------------------------------------------------------------------
+# 1. CLOCK RELATIONSHIPS
+# ---------------------------------------------------------------------------
+# clock_tx2g and clock_tx500 come from the same source and are phase aligned
+# (clock_tx500 = clock_tx2g / 4, rising edges coincide). Define clock_tx500 as
+# a GENERATED clock of clock_tx2g (or of their common source) so STA times the
+# SEQ -> CLOCK2G/VALID2G/DATA2G paths as ordinary SINGLE-CYCLE synchronous
+# paths: launch on a clock_tx500 edge, setup check at the NEXT clock_tx2g edge
+# (0.5 ns later), hold check at the launching (coincident) edge.
+# The 2 GHz endpoints capture on that next edge by design (deterministic
+# latency = 1 clock_tx2g cycle + START_DELAY). Therefore:
+#   - NO multicycle path on clock_tx500 -> clock_tx2g. A multicycle setup of N
+#     would let the capture edge vary with routing delay and break the
+#     deterministic latency.
+#   - NO set_clock_groups -asynchronous / false path between clock_tx500 and
+#     clock_tx2g.
+# Example (adapt names/sources to the SoC clock tree):
+#   create_generated_clock -name clock_tx500 -source [get_pins <div>/CLK] \
+#       -divide_by 4 [get_pins <div>/Q]
 #
-# Held bundle launch Q pins -> local bundle capture D pins:
-#   CTRL_CMD500_SRC:    CTRL800/u_src500/payload_q[*]/Q   (LANES+18 pins)
-#   CTRL_CMD500_DST:    TX500/cmd_payload_q[*]/D         (LANES+18 pins)
-#   CTRL_CMDDATA2G_SRC: CTRL800/u_srcdata2g/payload_q[*]/Q (LANES pins)
-#   CTRL_CMDDATA2G_DST: DATA2G/cmd_lane_mask_q[*]/D       (LANES pins)
-# VALID2G and CLOCK2G carry event-only commands. There are NO payload-route
-# constraints for their unused, constant source payload registers.
-# VALID2G/cmd_sel_async_i[2:0] is currently tied constant at integration; if it
-# is later driven from CTRL800, constrain it as a held bundle like DATA2G's mask.
+# CTRL800 (800 MHz) is asynchronous to both. The only crossings are the five
+# routes below, all bounded by max-delay. No blanket asynchronous clock groups
+# or false paths: they would override these bounds.
 #
-# Held result launch Q -> capture D pins (one pin in every collection):
-#   CTRL_ABORT500_SRC:     TX500/cmd_aborted_o/Q
-#   CTRL_ABORT500_DST:     CTRL800/u_src500/src_aborted_o/D
-#   CTRL_ABORTDATA2G_SRC:  DATA2G/cmd_aborted_o/Q
-#   CTRL_ABORTDATA2G_DST:  CTRL800/u_srcdata2g/src_aborted_o/D
-#   CTRL_ABORTVALID2G_SRC: VALID2G/cmd_aborted_o/Q
-#   CTRL_ABORTVALID2G_DST: CTRL800/u_srcvalid2g/src_aborted_o/D
-#   CTRL_ABORTCLOCK2G_SRC: CLOCK2G/cmd_aborted_o/Q
-#   CTRL_ABORTCLOCK2G_DST: CTRL800/u_srcclock2g/src_aborted_o/D
+# ---------------------------------------------------------------------------
+# 2. BINDINGS (bind EVERY collection to EXACT synthesized pins before sourcing)
+# ---------------------------------------------------------------------------
+# Set CTRL_LANES to the elaborated LANES value. Pin names describe RTL intent,
+# not literal get_pins patterns. Do not substitute broad "all CDC" collections.
 #
-# Request launch Q -> ONLY the destination FIRST synchronizer-stage D pin:
-#   CTRL_REQ500_SRC:     CTRL800/u_src500/req_q/Q
-#   CTRL_REQ500_DST:     TX500/u_req_sync/sync_q[0]/D
-#   CTRL_REQDATA2G_SRC:  CTRL800/u_srcdata2g/req_q/Q
-#   CTRL_REQDATA2G_DST:  DATA2G/u_req_sync/sync_q[0]/D
-#   CTRL_REQVALID2G_SRC: CTRL800/u_srcvalid2g/req_q/Q
-#   CTRL_REQVALID2G_DST: VALID2G/u_req_sync/sync_q[0]/D
-#   CTRL_REQCLOCK2G_SRC: CTRL800/u_srcclock2g/req_q/Q
-#   CTRL_REQCLOCK2G_DST: CLOCK2G/u_req_sync/sync_q[0]/D
+# Level controls, launch Q -> ONLY the first synchronizer-stage D pin:
+#   SEQ_REQ_SRC:    CTRL800/u_src_seq/req_q[0]/Q
+#   SEQ_REQ_DST:    SEQ/u_req_sync/sync_q[0]/D
+#   SEQ_STOP_SRC:   CTRL800/u_src_seq/stop_q/Q
+#   SEQ_STOP_DST:   SEQ/u_stop_sync/sync_q[0]/D
+#   SEQ_ACK_SRC:    SEQ/seq_ack_o/Q
+#   SEQ_ACK_DST:    CTRL800/u_src_seq/g_lane_ack[0].u_ack_sync/sync_q[0]/D
+#   SEQ_READY_SRC:  SEQ/active_ready_o/Q
+#   SEQ_READY_DST:  CTRL800/u_active_ready_sync/sync_q[0]/D
 #
-# Cancellation launch cones -> ONLY first synchronizer-stage D pins:
-#   CTRL_CANCEL500_DST:     TX500/u_cancel_sync/sync_q[0]/D
-#   CTRL_CANCELDATA2G_DST:  DATA2G/u_cancel_sync/sync_q[0]/D
-#   CTRL_CANCELVALID2G_DST: VALID2G/u_cancel_sync/sync_q[0]/D
-#   CTRL_CANCELCLOCK2G_DST: CLOCK2G/u_cancel_sync/sync_q[0]/D
-# Each matching CTRL_CANCEL*_SRC must contain ALL THREE launch Q pins:
-#   CTRL800/cancel_q/Q, CTRL800/active_kind[0]/Q,
-#   CTRL800/active_kind[1]/Q.
-# This covers the complete source decode/gating cone AND inter-region route.
+# Bundled data (held stable around the synchronized control):
+#   SEQ_CMD_SRC:    CTRL800/u_src_seq/payload_q[*]/Q   (3 + LANES pins: {op, mask})
+#   SEQ_CMD_DST:    every SEQ register D pin in the fanout of seq_op_i/seq_mask_i
+#                   (op_q, mask_q, state_q, cnt_q, seq_ack_o, seq_aborted_o and
+#                   the output flops clk_en_o, val_sel_o, id_en_o, tx500_mode_o,
+#                   tx500_lane_en_o, active_ready_o). These are sampled only
+#                   after the request has passed u_req_sync.
+#   SEQ_ABORT_SRC:  SEQ/seq_aborted_o/Q
+#   SEQ_ABORT_DST:  CTRL800/u_src_seq/src_aborted_o/D (sampled when ack is synchronized)
 #
-# Acknowledgment launch Q -> ONLY first source-region synchronizer-stage D:
-#   CTRL_ACK500_SRC:     TX500/cmd_ack_o/Q
-#   CTRL_ACK500_DST:     CTRL800/u_src500/u_ack_sync/sync_q[0]/D
-#   CTRL_ACKDATA2G_SRC:  DATA2G/cmd_ack_o/Q
-#   CTRL_ACKDATA2G_DST:  CTRL800/u_srcdata2g/u_ack_sync/sync_q[0]/D
-#   CTRL_ACKVALID2G_SRC: VALID2G/cmd_ack_o/Q
-#   CTRL_ACKVALID2G_DST: CTRL800/u_srcvalid2g/u_ack_sync/sync_q[0]/D
-#   CTRL_ACKCLOCK2G_SRC: CLOCK2G/cmd_ack_o/Q
-#   CTRL_ACKCLOCK2G_DST: CTRL800/u_srcclock2g/u_ack_sync/sync_q[0]/D
-#
-# Retirement-toggle synchronizers: ONLY their FIRST stage D pins, one for
-# every instantiated lane index 0 through LANES-1:
-#   CTRL_RETIRE500_FIRST_D:
-#     TX500/u_engine/g_retire_sync[lane]/u_retire_sync/sync_q[0]/D
-#   CTRL_RETIREDATA2G_FIRST_D:
-#     DATA2G/g_retire_sync[lane]/u_retire_sync/sync_q[0]/D
-# VALID/CLOCK have no local PHY handshake inputs; their analog control outputs
-# (phyTrain*, phyDigControl) are registered levels and need no false paths.
-#
-# If synthesis removes registers for constant/unused lanes or optimizes the
-# source encoding, use a reviewed design-specific binding variant. Do not
-# silently weaken width checks or bind a later synchronizer stage.
+# Why the bundles are safe: payload_q is launched one LTSM cycle BEFORE req_q
+# and held until the ack has returned low; SEQ samples it only after
+# SYNC_STAGES clock_tx500 edges of synchronized req. seq_aborted_o changes on
+# the same edge as seq_ack_o rises and is sampled by CTRL800 only after
+# SYNC_STAGES LTSM edges of synchronized ack. Each route must therefore settle
+# within one destination period; that is what the max-delay bounds below
+# enforce.
 
 if {![info exists CTRL_LANES]} {
   error "Set CTRL_LANES to the elaborated LANES parameter before sourcing"
@@ -90,20 +79,9 @@ if {![string is integer -strict $CTRL_LANES] || $CTRL_LANES < 1} {
 
 # Validate the entire binding before emitting any exceptions.
 foreach collection_name {
-  CTRL_CMD500_SRC CTRL_CMD500_DST CTRL_CMDDATA2G_SRC CTRL_CMDDATA2G_DST
-  CTRL_ABORT500_SRC CTRL_ABORT500_DST
-  CTRL_ABORTDATA2G_SRC CTRL_ABORTDATA2G_DST
-  CTRL_ABORTVALID2G_SRC CTRL_ABORTVALID2G_DST
-  CTRL_ABORTCLOCK2G_SRC CTRL_ABORTCLOCK2G_DST
-  CTRL_REQ500_SRC CTRL_REQ500_DST CTRL_REQDATA2G_SRC CTRL_REQDATA2G_DST
-  CTRL_REQVALID2G_SRC CTRL_REQVALID2G_DST CTRL_REQCLOCK2G_SRC CTRL_REQCLOCK2G_DST
-  CTRL_CANCEL500_SRC CTRL_CANCEL500_DST
-  CTRL_CANCELDATA2G_SRC CTRL_CANCELDATA2G_DST
-  CTRL_CANCELVALID2G_SRC CTRL_CANCELVALID2G_DST
-  CTRL_CANCELCLOCK2G_SRC CTRL_CANCELCLOCK2G_DST
-  CTRL_ACK500_SRC CTRL_ACK500_DST CTRL_ACKDATA2G_SRC CTRL_ACKDATA2G_DST
-  CTRL_ACKVALID2G_SRC CTRL_ACKVALID2G_DST CTRL_ACKCLOCK2G_SRC CTRL_ACKCLOCK2G_DST
-  CTRL_RETIRE500_FIRST_D CTRL_RETIREDATA2G_FIRST_D
+  SEQ_REQ_SRC SEQ_REQ_DST SEQ_STOP_SRC SEQ_STOP_DST
+  SEQ_ACK_SRC SEQ_ACK_DST SEQ_READY_SRC SEQ_READY_DST
+  SEQ_CMD_SRC SEQ_CMD_DST SEQ_ABORT_SRC SEQ_ABORT_DST
 } {
   if {![info exists $collection_name]} {
     error "Bind $collection_name to concrete synthesized pins before sourcing"
@@ -112,101 +90,53 @@ foreach collection_name {
     error "Empty CDC collection: $collection_name"
   }
 }
-
-foreach collection_name {CTRL_CMD500_SRC CTRL_CMD500_DST} {
-  if {[sizeof_collection [set $collection_name]] != ($CTRL_LANES + 18)} {
-    error "Wrong command bundle width in $collection_name; expected LANES+18 pins"
-  }
+if {[sizeof_collection $SEQ_CMD_SRC] != ($CTRL_LANES + 3)} {
+  error "Wrong command bundle width in SEQ_CMD_SRC; expected LANES+3 pins"
+}
+# The destination cone must at least contain op_q and mask_q (LANES+3 D pins).
+if {[sizeof_collection $SEQ_CMD_DST] < ($CTRL_LANES + 3)} {
+  error "SEQ_CMD_DST must cover op_q, mask_q and the rest of the payload fanout"
 }
 foreach collection_name {
-  CTRL_CMDDATA2G_SRC CTRL_CMDDATA2G_DST
-  CTRL_RETIRE500_FIRST_D CTRL_RETIREDATA2G_FIRST_D
-} {
-  if {[sizeof_collection [set $collection_name]] != $CTRL_LANES} {
-    error "Expected exactly LANES pins in $collection_name"
-  }
-}
-foreach collection_name {
-  CTRL_ABORT500_SRC CTRL_ABORT500_DST
-  CTRL_ABORTDATA2G_SRC CTRL_ABORTDATA2G_DST
-  CTRL_ABORTVALID2G_SRC CTRL_ABORTVALID2G_DST
-  CTRL_ABORTCLOCK2G_SRC CTRL_ABORTCLOCK2G_DST
-  CTRL_REQ500_SRC CTRL_REQ500_DST CTRL_REQDATA2G_SRC CTRL_REQDATA2G_DST
-  CTRL_REQVALID2G_SRC CTRL_REQVALID2G_DST CTRL_REQCLOCK2G_SRC CTRL_REQCLOCK2G_DST
-  CTRL_CANCEL500_DST CTRL_CANCELDATA2G_DST
-  CTRL_CANCELVALID2G_DST CTRL_CANCELCLOCK2G_DST
-  CTRL_ACK500_SRC CTRL_ACK500_DST CTRL_ACKDATA2G_SRC CTRL_ACKDATA2G_DST
-  CTRL_ACKVALID2G_SRC CTRL_ACKVALID2G_DST CTRL_ACKCLOCK2G_SRC CTRL_ACKCLOCK2G_DST
+  SEQ_REQ_SRC SEQ_REQ_DST SEQ_STOP_SRC SEQ_STOP_DST
+  SEQ_ACK_SRC SEQ_ACK_DST SEQ_READY_SRC SEQ_READY_DST
+  SEQ_ABORT_SRC SEQ_ABORT_DST
 } {
   if {[sizeof_collection [set $collection_name]] != 1} {
     error "Expected exactly one pin in $collection_name"
   }
 }
-foreach collection_name {
-  CTRL_CANCEL500_SRC CTRL_CANCELDATA2G_SRC
-  CTRL_CANCELVALID2G_SRC CTRL_CANCELCLOCK2G_SRC
-} {
-  if {[sizeof_collection [set $collection_name]] != 3} {
-    error "Expected cancel_q AND both active_kind Q pins in $collection_name"
-  }
-}
 
-# Each full Q-to-D route is bounded by ONE destination clock period.
-# Synchronized request/ack and local capture sequencing supply settling time;
-# held bundles are not unconstrained asynchronous buses. Meet these limits
-# after routing at the implementation timing corners.
-set_max_delay -datapath_only 2.0  -from $CTRL_CMD500_SRC -to $CTRL_CMD500_DST
-set_max_delay -datapath_only 0.5  -from $CTRL_CMDDATA2G_SRC -to $CTRL_CMDDATA2G_DST
-set_max_delay -datapath_only 1.25 -from $CTRL_ABORT500_SRC -to $CTRL_ABORT500_DST
-set_max_delay -datapath_only 1.25 -from $CTRL_ABORTDATA2G_SRC -to $CTRL_ABORTDATA2G_DST
-set_max_delay -datapath_only 1.25 -from $CTRL_ABORTVALID2G_SRC -to $CTRL_ABORTVALID2G_DST
-set_max_delay -datapath_only 1.25 -from $CTRL_ABORTCLOCK2G_SRC -to $CTRL_ABORTCLOCK2G_DST
-
-# Bound request/cancel/ack propagation as well. In particular, a delayed old
-# cancellation must not survive into a later request. Each endpoint waits for
-# synchronized request AND cancellation low before lowering its ack.
-# These are propagation limits into first-stage metastability-resolution
-# registers, not a synchronous setup relationship between the clocks.
-set_max_delay -datapath_only 2.0  -from $CTRL_REQ500_SRC -to $CTRL_REQ500_DST
-set_max_delay -datapath_only 0.5  -from $CTRL_REQDATA2G_SRC -to $CTRL_REQDATA2G_DST
-set_max_delay -datapath_only 0.5  -from $CTRL_REQVALID2G_SRC -to $CTRL_REQVALID2G_DST
-set_max_delay -datapath_only 0.5  -from $CTRL_REQCLOCK2G_SRC -to $CTRL_REQCLOCK2G_DST
-set_max_delay -datapath_only 2.0  -from $CTRL_CANCEL500_SRC -to $CTRL_CANCEL500_DST
-set_max_delay -datapath_only 0.5  -from $CTRL_CANCELDATA2G_SRC -to $CTRL_CANCELDATA2G_DST
-set_max_delay -datapath_only 0.5  -from $CTRL_CANCELVALID2G_SRC -to $CTRL_CANCELVALID2G_DST
-set_max_delay -datapath_only 0.5  -from $CTRL_CANCELCLOCK2G_SRC -to $CTRL_CANCELCLOCK2G_DST
-set_max_delay -datapath_only 1.25 -from $CTRL_ACK500_SRC -to $CTRL_ACK500_DST
-set_max_delay -datapath_only 1.25 -from $CTRL_ACKDATA2G_SRC -to $CTRL_ACKDATA2G_DST
-set_max_delay -datapath_only 1.25 -from $CTRL_ACKVALID2G_SRC -to $CTRL_ACKVALID2G_DST
-set_max_delay -datapath_only 1.25 -from $CTRL_ACKCLOCK2G_SRC -to $CTRL_ACKCLOCK2G_DST
-# DO NOT false-path these twelve controls: in common STA exception precedence,
-# a false path overrides max delay and removes the required route bound.
-# Use the target flow's asynchronous first-stage min/hold treatment without
-# disabling the max-delay checks; verify the tool's actual semantics.
-
-# Retirement can be delayed without allowing the next transaction to start:
-# the engine waits for all selected retirement toggles. False-path ONLY their
-# first-stage D pins. Keep every later synchronizer-stage path timed and short.
-set_false_path -to $CTRL_RETIRE500_FIRST_D
-set_false_path -to $CTRL_RETIREDATA2G_FIRST_D
-
+# ---------------------------------------------------------------------------
+# 3. CONSTRAINTS: each route bounded by ONE destination clock period.
+# ---------------------------------------------------------------------------
+# Controls into first synchronizer stages: propagation limits so a stale edge
+# cannot survive into the next handshake phase. Not a setup relationship.
+set_max_delay -datapath_only 2.0  -from $SEQ_REQ_SRC   -to $SEQ_REQ_DST
+set_max_delay -datapath_only 2.0  -from $SEQ_STOP_SRC  -to $SEQ_STOP_DST
+set_max_delay -datapath_only 1.25 -from $SEQ_ACK_SRC   -to $SEQ_ACK_DST
+set_max_delay -datapath_only 1.25 -from $SEQ_READY_SRC -to $SEQ_READY_DST
+# Bundled data.
+set_max_delay -datapath_only 2.0  -from $SEQ_CMD_SRC   -to $SEQ_CMD_DST
+set_max_delay -datapath_only 1.25 -from $SEQ_ABORT_SRC -to $SEQ_ABORT_DST
+# DO NOT false-path any of these six routes: in common STA exception
+# precedence a false path overrides max delay and removes the bound. Use the
+# tool's asynchronous first-stage min/hold treatment without disabling the
+# max-delay checks; verify the tool's actual semantics.
+#
+# clock_tx500 -> clock_tx2g (SEQ -> CLOCK2G/VALID2G/DATA2G) and
+# clock_tx500 -> clock_tx500 (SEQ -> TX500): NO exceptions. Timed as normal
+# synchronous paths (see section 1). The 0.5 ns SEQ -> 2 GHz budget is the
+# demanding one: place SEQ so its output flops reach the three 2 GHz
+# endpoints in time, or re-time with the START_DELAY pipelines on the
+# receiving side (they do not relax the first capture).
+#
 # Physical integration requirements (not executable floorplan constraints):
-# - Cluster synchronizer stages tightly in their RECEIVING region. Do not put
-#   first stages at the remote launch region. Long wires terminate locally.
-# - Put 800 MHz command captures beside LTSM, TX500 with its lane bank, DATA2G
-#   with the 2 GHz lane-ID bank, VALID2G beside the valid generator, and CLOCK2G
-#   beside the forwarded-clock generator. Local output paths remain timed.
-# - A 0.5 ns inter-region route can be demanding. Route/buffer/floorplan to
-#   meet it, or redesign and re-prove capture/handshake timing before relaxing
-#   the bound. Do not insert independent payload registers as a timing fix.
-# - Do NOT use blanket asynchronous clock_groups/false paths overriding these
-#   18 max-delay checks. Report effective exceptions in the actual STA tool.
-# - Preserve payload/result hold behavior through the complete return-to-zero
-#   handshake. Check min/hold behavior and CDC assumptions separately.
+# - Cluster each synchronizer chain in its RECEIVING region (req/stop in SEQ,
+#   ack/active_ready in CTRL800).
+# - Preserve hierarchies: CTRL800, SEQ, CLOCK2G, VALID2G, DATA2G, each TX500.
 # - Apply technology-specific synchronizer-cell, placement and MTBF rules;
 #   ASYNC_REG/dont_touch attributes alone do not establish reliability.
-# - Common reset assertion and per-region synchronous release are required.
+# - Common asynchronous reset assertion with per-block synchronized release.
 #   Reset distribution/recovery/removal constraints belong to the SoC flow.
-# - Local ready/fire, CLOCKREPAIR waveform generation, VALID finish handshake,
-#   S3-to-S1 data/fence transport, serializer empty and output pin timing remain
-#   separate PHY timing responsibilities. This template does not sign them off.
+# - Report the effective exceptions in the actual STA tool.

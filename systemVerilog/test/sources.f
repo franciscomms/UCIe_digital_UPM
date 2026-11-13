@@ -13,6 +13,7 @@ timescale.sv
 ../src/UcieDigitalTop.sv
 ../src/tc_sync.sv
 ../src/jtag_tdr_snapshot.sv
+../src/LtsmPhyPatternCtrl800.sv
 ../src/UcieDigitalTopJtag.sv
 ../src/SidebandWrapper.sv
 ../src/LinkManagementController.sv
