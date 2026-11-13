@@ -35,7 +35,7 @@ Checked continuously in every case:
   - ACTIVE: exactly PRE clock-only cycles, then ACTIVE. It is never acked and is left only through reset.
   - No idle gap inside a command. Ack rises only with the clock enable already off.
 - **Fixed latency.** Every edge of every endpoint output must equal the corresponding sequencer edge, delayed by exactly one cycle of the endpoint clock (8 UI at 2 GHz, 32 UI at 500 MHz), with the same value. This covers every Tx500 lane individually, so all lanes start on the same cycle and masked lanes stay OFF. The measured latency is printed as `LATENCY ...` lines.
-- **Data2g.** LSB first, alternating every cycle, `laneID_index` is 0 when disabled, the burst ends on MSB, and a completed burst is 256 cycles.
+- **Data2g.** LSB first, alternating every cycle, `laneID_index` is 0 when disabled, the burst ends on MSB, and a completed burst is 256 cycles. Every lane's Data2g matches lane 0, and lane `l` carries Lane ID `l`.
 - **Cross-checks on the endpoint outputs.**
   - Valid/data/LFSR are never active without the clock.
   - The RESEED word never appears with the clock, and its pulse lasts exactly one cycle.

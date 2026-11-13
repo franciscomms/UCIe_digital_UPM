@@ -221,7 +221,7 @@ module UcieDigitalTopJtag #(
   output var logic [dataLaneCount*rxDeskewCodeWidth-1:0] ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes,
 
   // LTSM MBTRAIN.SPEEDIDLE physical rate controls.
-  output var logic [1:0]           ltsm_flagToAnalog_speedIdle_speedCode,
+  output var logic [1:0]           ltsm_flagToAnalog_speedIdle_speedCode, //directly to MUX (clock select)
   output var logic           ltsm_flagToAnalog_speedIdle_electricalIdle,
 
   // ==========================================================================

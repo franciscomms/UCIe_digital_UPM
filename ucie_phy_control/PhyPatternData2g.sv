@@ -9,12 +9,12 @@
 //
 // Inputs:
 //   id_en         from PhyTxSequencer (clock_tx500 launched, related clock)
-//   lane_id_i     4-bit Lane ID, passed straight through to the PHY
+//   lane_id_i     4-bit Lane ID of this lane (constant from PhyTxSequencer),
+//                 passed straight through to the PHY
 // Outputs to PHY:
 //   digControl    1 = PHY sends the Lane ID pattern          (registered)
 //   laneID_index  0 = send Lane ID LSB byte, 1 = MSB byte    (registered)
-//   lane_id_o     = lane_id_i (pass-through, no logic). The value must be
-//                 stable before id_en rises and while the pattern is sent.
+//   lane_id_o     = lane_id_i (pass-through, no logic).
 //
 // One clock_tx2g cycle = 8 UI, so one iteration (LSB then MSB) = 2 cycles.
 // The first cycle of every burst is LSB; laneID_index is 0 when digControl is 0.
@@ -48,7 +48,7 @@ module PhyPatternData2g #(
   output logic laneID_index,
   output wire  [3:0] lane_id_o
 );
-  // Lane ID value: pass-through from digital to PHY (quasi-static, no sync).
+  // Lane ID value: constant from PhyTxSequencer, passed straight to the PHY.
   assign lane_id_o = lane_id_i;
 
   wire rst_n;

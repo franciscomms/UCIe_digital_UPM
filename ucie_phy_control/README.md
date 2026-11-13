@@ -12,7 +12,7 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
  | 1-deep queue + reseed|    req    |  clk_en --------------> PhyPatternClock2g |-> phyDigControl
  | ACTIVE launch        |---------->|  val_sel[1:0] ---------> PhyPatternValid2g |-> phyTrainValid/Laneid
  |                      |           |  lfsr_val_en ----------> PhyPatternValid500m -> phyTrainLfsr (clock_tx500)
- | Ltsm800CommandSource | op,mask   |  id_en ----------------> PhyPatternData2g  |-> digControl, laneID_index
+ | Ltsm800CommandSource | op,mask   |  id_en, lane_id[i] ----> LANES x Data2g    |-> digControl, laneID_index, lane_id (per lane)
  |                      |<----------|  tx500_mode, lane_en --> LANES x Tx500     |-> enable_LFSR, zero_ena,
  |  ack sync            |    ack    |                           (clock_tx500)    |   load_seed, load_zero
  |  active_ready sync   |<----------|  active_ready_o ---> TX datapath           |
@@ -28,9 +28,9 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
 | `PhyPatternClock2g.sv` | 2 GHz | `phyDigControl <= clk_en` |
 | `PhyPatternValid2g.sv` | 2 GHz | `{phyTrainValid, phyTrainLaneid} <= val_sel` |
 | `PhyPatternValid500m.sv` | 500 MHz | `phyTrainLfsr <= lfsr_en`. The analog front end sends the LFSR valid pattern on the 500 MHz clock |
-| `PhyPatternData2g.sv` | 2 GHz | `digControl <= id_en`, LSB/MSB `laneID_index`, `lane_id` pass-through |
+| `PhyPatternData2g.sv` | 2 GHz | One per data lane: `digControl <= id_en`, LSB/MSB `laneID_index`, `lane_id` pass-through |
 | `PhyPatternTx500.sv` | 500 MHz | One per lane: `mode`, `lane_en` -> the four Tx500 controls |
-| `PhyTxControlTop.sv` | both | Wiring only: sequencer + Clock2g + Valid2g + Valid500m + Data2g + LANES x Tx500 |
+| `PhyTxControlTop.sv` | both | Wiring only: sequencer + Clock2g + Valid2g + Valid500m + LANES data lanes (Data2g + Tx500 each) |
 
 `rtl.f` lists them in compile order. Each file contains its own uniquely named reset-synchronizer helper and elaborates on its own, except the wrapper.
 
@@ -98,7 +98,7 @@ All of them are flops decoded from the next state, so every enable of one comman
 
 **Endpoint details**
 - **Tx500:** `lane_en = 0` forces OFF. SEED is edge-qualified, so `load_seed` is exactly one cycle even if the mode were held. Unknown modes behave as OFF.
-- **Data2g:** `laneID_index` is 0 (LSB) on the first enabled cycle, then alternates every 2 GHz cycle. It is 0 while disabled. A LANEID body is 256 2 GHz cycles, so the burst always ends on MSB. `lane_id_o = lane_id_i` passes straight through and must be stable while `digControl` is high.
+- **Data2g:** `laneID_index` is 0 (LSB) on the first enabled cycle, then alternates every 2 GHz cycle. It is 0 while disabled. A LANEID body is 256 2 GHz cycles, so the burst always ends on MSB. `lane_id_o = lane_id_i` passes straight through. Lane N's `lane_id_i` is `laneidN` from `UcieDigitalTopJtag` (static, 0 to 15 today). It enters `PhyTxControlTop` as the input `laneidN` and passes through the sequencer (`laneidN_i` -> `laneidN_o`) to lane N's Data2g.
 
 ## Lengths
 

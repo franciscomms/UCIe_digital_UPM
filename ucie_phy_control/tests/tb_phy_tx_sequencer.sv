@@ -131,8 +131,11 @@ module tb_seq_case #(
   localparam longint LATTX = 2000;  // 1 clock_tx500 cycle
   wire active_ready;
   wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid;
-  wire digControl, laneID_index;
-  wire [3:0] lane_id_o;
+  wire [LANES-1:0] digControl_v, laneID_index_v;
+  wire [LANES-1:0][3:0] lane_id_o;
+  // Lane 0 is checked in detail; every other lane must match it exactly.
+  wire digControl = digControl_v[0];
+  wire laneID_index = laneID_index_v[0];
   wire [LANES-1:0] enable_LFSR, zero_ena, load_seed, load_zero;
   PhyTxControlTop #(
     .LANES(LANES), .PRE_CYC(PRE), .POST_CYC(POST), .CLK_LEN(CLKLEN)
@@ -140,10 +143,25 @@ module tb_seq_case #(
     .clock_tx500(clk500), .clock_tx2g(clk2g), .reset_n(reset_n),
     .seq_req_i(req), .seq_op_i(op), .seq_mask_i(mask),
     .seq_ack_o(ack), .active_ready_o(active_ready),
-    .lane_id_i(4'hA),
+    .laneid0(4'd0),
+    .laneid1(4'd1),
+    .laneid2(4'd2),
+    .laneid3(4'd3),
+    .laneid4(4'd4),
+    .laneid5(4'd5),
+    .laneid6(4'd6),
+    .laneid7(4'd7),
+    .laneid8(4'd8),
+    .laneid9(4'd9),
+    .laneid10(4'd10),
+    .laneid11(4'd11),
+    .laneid12(4'd12),
+    .laneid13(4'd13),
+    .laneid14(4'd14),
+    .laneid15(4'd15),
     .phyDigControl(phyDigControl), .phyTrainLfsr(phyTrainLfsr),
     .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid),
-    .digControl(digControl), .laneID_index(laneID_index), .lane_id_o(lane_id_o),
+    .digControl(digControl_v), .laneID_index(laneID_index_v), .lane_id_o(lane_id_o),
     .enable_LFSR(enable_LFSR), .zero_ena(zero_ena), .load_seed(load_seed),
     .load_zero(load_zero));
 
@@ -276,7 +294,12 @@ module tb_seq_case #(
         end
       end
       prev_dig = digControl; prev_idx = laneID_index;
-      if (lane_id_o !== 4'hA) $fatal(1, "%s: lane_id pass-through broken", NAME);
+      for (int l = 0; l < LANES; l++) begin
+        if (lane_id_o[l] !== 4'(l)) $fatal(1, "%s: lane %0d Lane ID %0d, expected %0d",
+                                          NAME, l, lane_id_o[l], l);
+        if (digControl_v[l] !== digControl || laneID_index_v[l] !== laneID_index)
+          $fatal(1, "%s: Data2g lane %0d differs from lane 0", NAME, l);
+      end
       // Valid/data/LFSR only under the forwarded clock.
       if ((phyTrainLfsr || phyTrainValid || phyTrainLaneid || digControl) && !phyDigControl)
         $fatal(1, "%s: valid/data active without clock", NAME);

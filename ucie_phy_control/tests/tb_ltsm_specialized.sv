@@ -87,14 +87,30 @@ module tb_ltsm_specialized;
     .seq_ack_i(ack_src),
     .seq_active_ready_i(ready_src));
 
-  wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid, digControl, laneID_index;
-  wire [3:0] lane_id_o;
+  wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid;
+  wire [LANES-1:0] digControl, laneID_index;
+  wire [LANES-1:0][3:0] lane_id_o;
   wire [LANES-1:0] enable_LFSR, zero_ena, load_seed, load_zero;
   PhyTxControlTop #(.LANES(LANES)) u_phy (
     .clock_tx500(clock_tx500), .clock_tx2g(clock_tx2g), .reset_n(reset_n),
     .seq_req_i(req_dst), .seq_op_i(op_dst), .seq_mask_i(mask_dst),
     .seq_ack_o(ack_dst), .active_ready_o(ready_dst),
-    .lane_id_i(4'h5),
+    .laneid0(4'd0),
+    .laneid1(4'd1),
+    .laneid2(4'd2),
+    .laneid3(4'd3),
+    .laneid4(4'd4),
+    .laneid5(4'd5),
+    .laneid6(4'd6),
+    .laneid7(4'd7),
+    .laneid8(4'd8),
+    .laneid9(4'd9),
+    .laneid10(4'd10),
+    .laneid11(4'd11),
+    .laneid12(4'd12),
+    .laneid13(4'd13),
+    .laneid14(4'd14),
+    .laneid15(4'd15),
     .phyDigControl(phyDigControl), .phyTrainLfsr(phyTrainLfsr),
     .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid),
     .digControl(digControl), .laneID_index(laneID_index), .lane_id_o(lane_id_o),
@@ -115,7 +131,7 @@ module tb_ltsm_specialized;
   end
   always @(negedge clock_tx2g) if (reset_n) begin
     saw_clk |= phyDigControl; saw_val |= phyTrainValid; saw_lfsrv |= phyTrainLfsr;
-    saw_laneid |= phyTrainLaneid; saw_data |= digControl;
+    saw_laneid |= phyTrainLaneid; saw_data |= (|digControl);
     if ((phyTrainLfsr || phyTrainValid || phyTrainLaneid || digControl) && !phyDigControl)
       $fatal(1, "valid/data without forwarded clock");
   end
@@ -287,7 +303,7 @@ module tb_ltsm_specialized;
     reset_all();
     @(negedge clock); ltsm_state = 5; ltsm_dbg_mbinitSubstate = 4;
     @(negedge clock); req = 9'b100; @(negedge clock); req = 0;  // runs
-    wait (digControl);
+    wait (|digControl);
     @(negedge clock); req = 9'b100; @(negedge clock); req = 0;  // queued
     @(negedge clock); req = 9'b100; @(negedge clock); req = 0;  // overflow
     repeat (4) @(negedge clock);
