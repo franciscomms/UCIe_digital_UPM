@@ -14,7 +14,7 @@ tclsh constraints/check_template.tcl   # SDC template syntax/binding guards (not
 cd ../systemVerilog && test/run_tests.sh all   # full digital regression
 ```
 
-`run_tests.sh` treats lint warnings as fatal. It lints `LtsmPhyPatternCtrl800`, `PhyTxSequencer`, `PhyPatternTx500`, `PhyPatternData2g`, `PhyPatternValid2g` and `PhyPatternClock2g` each as its own top, then lints `PhyTxControlTop` with its parts.
+`run_tests.sh` treats lint warnings as fatal. It lints `LtsmPhyPatternCtrl800`, `PhyTxSequencer`, `PhyPatternTx500`, `PhyPatternData2g`, `PhyPatternValid2g`, `PhyPatternValid500m` and `PhyPatternClock2g` each as its own top, then lints `PhyTxControlTop` with its parts.
 
 ## Test plan
 

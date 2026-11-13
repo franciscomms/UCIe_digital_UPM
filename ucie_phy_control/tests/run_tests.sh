@@ -27,6 +27,7 @@ phy_sources=(
   "$package_root/PhyPatternTx500.sv"
   "$package_root/PhyPatternData2g.sv"
   "$package_root/PhyPatternValid2g.sv"
+  "$package_root/PhyPatternValid500m.sv"
   "$package_root/PhyPatternClock2g.sv"
 )
 # Every production file elaborates on its own; the wrapper needs its parts.

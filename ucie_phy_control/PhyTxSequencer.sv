@@ -6,9 +6,9 @@
 // The 800 MHz LtsmPhyPatternCtrl800 talks to this block over ONE CDC
 // handshake. This block is the ONLY clock-domain crossing of the TX pattern
 // control and the ONLY place that counts cycles. It drives synchronous level
-// enables to four endpoints (PhyPatternClock2g, PhyPatternValid2g,
-// PhyPatternData2g, LANES x PhyPatternTx500) that contain no synchronizers,
-// no counters and no acknowledgments.
+// enables to five endpoints (PhyPatternClock2g, PhyPatternValid2g,
+// PhyPatternValid500m, PhyPatternData2g, LANES x PhyPatternTx500) that contain
+// no synchronizers, no counters and no acknowledgments.
 //
 // Clocks: clock_tx500 (this block, Tx500) and clock_tx2g (2 GHz endpoints) come
 // from the same source and are phase aligned 4:1. 800 MHz is asynchronous.
@@ -36,12 +36,15 @@
 //   0  | CLK_TRAIN | BODY only             | clk_en                       | CLK_LEN
 //   1  | VAL_TRAIN | PRE + BODY + POST     | clk_en, val_sel=valid        | 32
 //   2  | LANEID    | PRE + BODY + POST     | clk_en, val_sel=laneid, id_en| 64
-//   3  | LFSR      | PRE + BODY + POST     | clk_en, val_sel=lfsr,        | 128
+//   3  | LFSR      | PRE + BODY + POST     | clk_en, lfsr_val_en (500M),  | 128
 //      |           |                       | tx500 LFSR on mask lanes     |
 //   4  | RESEED    | BODY only, no clock   | tx500 SEED on all lanes      | 1
 //   5  | ACTIVE    | PRE + BODY + POST     | clk_en, tx500 ACTIVE on all  | until stop
 //      |           |                       | lanes, active_ready          |
-//   PRE and POST drive clk_en only (val_sel/id_en 0, Tx500 OFF).
+//   PRE and POST drive clk_en only (val_sel/lfsr_val_en/id_en 0, Tx500 OFF).
+//   The LFSR valid bit goes to PhyPatternValid500m (500 MHz), not to
+//   PhyPatternValid2g: the analog front end sends the LFSR valid pattern on
+//   the 500 MHz clock.
 //   Lengths: 128 iterations each: VALTRAIN 128 x 8 UI, lane ID 128 x 16 UI,
 //   LFSR 128 x 32 UI; all divided by 32 UI per 500 MHz cycle.
 //   CLK_LEN default 96 = 128 x 24 UI / 32 (UCIe clock pattern iteration:
@@ -81,7 +84,8 @@ module PhyTxSequencer #(
 
   // ---- Synchronous enables to the endpoints (registered) --------------------
   output logic             clk_en_o,         // -> PhyPatternClock2g
-  output logic [2:0]       val_sel_o,        // {lfsr, valid, laneid} -> PhyPatternValid2g
+  output logic [1:0]       val_sel_o,        // {valid, laneid} -> PhyPatternValid2g
+  output logic             lfsr_val_en_o,    // LFSR valid -> PhyPatternValid500m
   output logic             id_en_o,          // -> PhyPatternData2g
   output logic [2:0]       tx500_mode_o,     // -> every PhyPatternTx500
   output logic [LANES-1:0] tx500_lane_en_o,  // per-lane enable for Tx500
@@ -94,7 +98,7 @@ module PhyTxSequencer #(
                          OP_LFSR=3'd3, OP_RESEED=3'd4, OP_ACTIVE=3'd5;
   localparam logic [2:0] M_OFF=3'd0, M_SEED=3'd1, M_LFSR=3'd2, M_ACTIVE=3'd3;
   // M_RAW=3'd4 is reserved for test; this sequencer never issues it.
-  localparam logic [2:0] SEL_LFSR=3'b100, SEL_VALID=3'b010, SEL_LANEID=3'b001;
+  localparam logic [1:0] SEL_VALID=2'b10, SEL_LANEID=2'b01;
 
   // Fixed BODY lengths (128 iterations each), in 500 MHz cycles.
   localparam integer ITERATIONS = 128;
@@ -240,7 +244,8 @@ module PhyTxSequencer #(
       seq_ack_o <= 1'b0;
       seq_aborted_o <= 1'b0;
       clk_en_o <= 1'b0;
-      val_sel_o <= 3'b000;
+      val_sel_o <= 2'b00;
+      lfsr_val_en_o <= 1'b0;
       id_en_o <= 1'b0;
       tx500_mode_o <= M_OFF;
       tx500_lane_en_o <= '0;
@@ -255,7 +260,8 @@ module PhyTxSequencer #(
 
       // Defaults: Idle row.
       clk_en_o <= 1'b0;
-      val_sel_o <= 3'b000;
+      val_sel_o <= 2'b00;
+      lfsr_val_en_o <= 1'b0;
       id_en_o <= 1'b0;
       tx500_mode_o <= M_OFF;
       tx500_lane_en_o <= '0;
@@ -269,7 +275,7 @@ module PhyTxSequencer #(
             clk_en_o <= 1'b1; val_sel_o <= SEL_LANEID; id_en_o <= 1'b1;
           end
           OP_LFSR: begin
-            clk_en_o <= 1'b1; val_sel_o <= SEL_LFSR;
+            clk_en_o <= 1'b1; lfsr_val_en_o <= 1'b1;
             tx500_mode_o <= M_LFSR; tx500_lane_en_o <= mask_d;
           end
           OP_RESEED: begin
@@ -300,16 +306,19 @@ module PhyTxSequencer #(
   end
   // Valid bits and lane-ID enable only under the clock, never in ACTIVE.
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
-    (val_sel_o != 3'b000 || id_en_o) |-> clk_en_o)
+    (val_sel_o != 2'b00 || lfsr_val_en_o || id_en_o) |-> clk_en_o)
     else $error("SEQ: valid/lane-ID enabled without clock");
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
-    active_ready_o |-> (val_sel_o == 3'b000 && !id_en_o))
+    active_ready_o |-> (val_sel_o == 2'b00 && !lfsr_val_en_o && !id_en_o))
     else $error("SEQ: valid/lane-ID enabled in ACTIVE");
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
     (tx500_mode_o == M_LFSR) |-> clk_en_o)
     else $error("SEQ: Tx500 LFSR without clock");
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
-    $onehot0(val_sel_o))
+    lfsr_val_en_o == (tx500_mode_o == M_LFSR))
+    else $error("SEQ: LFSR valid and Tx500 LFSR mode not on the same edge");
+  assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
+    $onehot0({lfsr_val_en_o, val_sel_o}))
     else $error("SEQ: more than one valid training bit");
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
     !(tx500_mode_o > M_ACTIVE))

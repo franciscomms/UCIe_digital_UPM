@@ -1,6 +1,6 @@
-# UCIe TX pattern control: Ctrl800 + PhyTxSequencer + four PHY endpoints
+# UCIe TX pattern control: Ctrl800 + PhyTxSequencer + five PHY endpoints
 
-The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CDC handshake to `PhyTxSequencer` (500 MHz). The sequencer is the only clock-domain crossing on the PHY side and the only block that counts cycles. It drives synchronous level enables to four simple endpoints. The endpoints have no synchronizers, no counters and no acknowledgments.
+The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CDC handshake to `PhyTxSequencer` (500 MHz). The sequencer is the only clock-domain crossing on the PHY side and the only block that counts cycles. It drives synchronous level enables to five simple endpoints. The endpoints have no synchronizers, no counters and no acknowledgments.
 
 ```
  800 MHz (async)            |  500 MHz / 2 GHz (same source, phase aligned 4:1)
@@ -10,7 +10,8 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
  | flag edge detect     |   |  | PhyTxSequencer (clock_tx500)                  |
  | legality decode      |   |  |  req/stop sync -> IDLE>PRE>BODY>POST>DONE     |
  | 1-deep queue + reseed| req,stop  |  clk_en --------------> PhyPatternClock2g |-> phyDigControl
- | ACTIVE launch / stop |---------->|  val_sel[2:0] ---------> PhyPatternValid2g |-> phyTrainLfsr/Valid/Laneid
+ | ACTIVE launch / stop |---------->|  val_sel[1:0] ---------> PhyPatternValid2g |-> phyTrainValid/Laneid
+ |                      |           |  lfsr_val_en ----------> PhyPatternValid500m -> phyTrainLfsr (clock_tx500)
  | Ltsm800CommandSource | op,mask   |  id_en ----------------> PhyPatternData2g  |-> digControl, laneID_index
  |                      |<----------|  tx500_mode, lane_en --> LANES x Tx500     |-> enable_LFSR, zero_ena,
  |  ack sync            | ack,abort |                           (clock_tx500)    |   load_seed, load_zero
@@ -25,10 +26,11 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
 | `../systemVerilog/src/LtsmPhyPatternCtrl800.sv` | 800 MHz | LTSM flag capture, legality decode, queue, ACTIVE launch/stop, single link source (`Ltsm800CommandSource`) |
 | `PhyTxSequencer.sv` | 500 MHz | The only CDC receiver and the only owner of timing. FSM, lengths, PRE/POST envelope |
 | `PhyPatternClock2g.sv` | 2 GHz | `phyDigControl <= clk_en` |
-| `PhyPatternValid2g.sv` | 2 GHz | `{phyTrainLfsr, phyTrainValid, phyTrainLaneid} <= val_sel` |
+| `PhyPatternValid2g.sv` | 2 GHz | `{phyTrainValid, phyTrainLaneid} <= val_sel` |
+| `PhyPatternValid500m.sv` | 500 MHz | `phyTrainLfsr <= lfsr_en`. The analog front end sends the LFSR valid pattern on the 500 MHz clock |
 | `PhyPatternData2g.sv` | 2 GHz | `digControl <= id_en`, LSB/MSB `laneID_index`, `lane_id` pass-through |
 | `PhyPatternTx500.sv` | 500 MHz | One per lane: `mode`, `lane_en` -> the four Tx500 controls |
-| `PhyTxControlTop.sv` | both | Wiring only: sequencer + Clock2g + Valid2g + Data2g + LANES x Tx500 |
+| `PhyTxControlTop.sv` | both | Wiring only: sequencer + Clock2g + Valid2g + Valid500m + Data2g + LANES x Tx500 |
 
 `rtl.f` lists them in compile order. Each file contains its own uniquely named reset-synchronizer helper and elaborates on its own, except the wrapper.
 
@@ -77,7 +79,7 @@ Parameters: `PRE_CYC = 4` and `POST_CYC = 4` (in 500 MHz cycles, both must be at
 
 ## Endpoint outputs per phase
 
-| Phase | Tx500 {enable_LFSR, zero_ena, load_seed, load_zero} | Valid2g {Lfsr, Valid, Laneid} | Data2g digControl | Clock2g phyDigControl |
+| Phase | Tx500 {enable_LFSR, zero_ena, load_seed, load_zero} | Valid500m Lfsr, Valid2g {Valid, Laneid} | Data2g digControl | Clock2g phyDigControl |
 | --- | --- | --- | --- | --- |
 | Idle / reset | 0101 | 000 | 0 | 0 |
 | PRE / POST (any op) | 0101 | 000 | 0 | 1 |
@@ -92,7 +94,7 @@ Parameters: `PRE_CYC = 4` and `POST_CYC = 4` (in 500 MHz cycles, both must be at
 
 **Sequencer outputs**
 - `clk_en_o`.
-- `val_sel_o[2:0] = {lfsr, valid, laneid}`: at most one bit high, and only in BODY.
+- `val_sel_o[1:0] = {valid, laneid}` (to Valid2g) and `lfsr_val_en_o` (to Valid500m): at most one of the three bits high, and only in BODY. `lfsr_val_en_o` is high exactly when `tx500_mode_o` is LFSR.
 - `id_en_o`.
 - `tx500_mode_o`: OFF=0, SEED=1, LFSR=2, ACTIVE=3, RAW=4.
 - `tx500_lane_en_o`: the mask for LFSR, all ones for SEED and ACTIVE, 0 otherwise.
@@ -126,10 +128,12 @@ Latency is measured from the `clock_tx500` edge on which the sequencer output ch
 | PhyPatternClock2g | (1 + START_DELAY) x 2 GHz cycle | 0.5 ns = 8 UI | 2.0 ns = 32 UI |
 | PhyPatternValid2g | (1 + START_DELAY) x 2 GHz cycle | 0.5 ns = 8 UI | 2.0 ns = 32 UI |
 | PhyPatternData2g | (1 + START_DELAY) x 2 GHz cycle | 0.5 ns = 8 UI | 2.0 ns = 32 UI |
+| PhyPatternValid500m | (1 + START_DELAY) x 500 MHz cycle | 2.0 ns = 32 UI | - |
 | PhyPatternTx500 | (1 + START_DELAY) x 500 MHz cycle | 2.0 ns = 32 UI | - |
 
-- **Default:** with every `START_DELAY = 0`, the three 2 GHz outputs lead the Tx500 data-lane controls by a fixed 24 UI (3 2 GHz cycles).
-- **Aligned:** set `START_DELAY = 3` on the three 2 GHz endpoints (the `START_DELAY_2G` parameter of `PhyTxControlTop`) to make all four outputs react together, 32 UI after the sequencer edge.
+- **Default:** with every `START_DELAY = 0`, the three 2 GHz outputs lead the 500 MHz outputs (Tx500 data-lane controls and `phyTrainLfsr`) by a fixed 24 UI (3 2 GHz cycles).
+- **LFSR valid:** Valid500m takes `START_DELAY_TX`, the same value as the Tx500 lanes, so `phyTrainLfsr` and `enable_LFSR` always switch on the same `clock_tx500` edge.
+- **Aligned:** set `START_DELAY = 3` on the three 2 GHz endpoints (the `START_DELAY_2G` parameter of `PhyTxControlTop`) to make all outputs react together, 32 UI after the sequencer edge.
 - **Further trim:** any extra analog or serializer pipeline difference can be trimmed the same way. `START_DELAY` is a fixed flop pipeline in the endpoint's own clock.
 
 ## Timing diagrams
@@ -140,16 +144,16 @@ LFSR training, defaults (PRE 4, POST 4, all `START_DELAY = 0`). Each column is o
 500 MHz edge        e   e+1 e+2 e+3 e+4 e+5 ...  e+131 e+132 e+133 e+134 e+135 e+136 e+137
 seq state          IDLE|PRE              |BODY (128 cycles)      |POST                   |DONE
 seq clk_en         ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\____
-seq val_sel=100    ____________________/~~~~~~~~~~~~~~~~~~~~~~~~\___________________________
+seq lfsr_val_en    ____________________/~~~~~~~~~~~~~~~~~~~~~~~~\___________________________
 seq tx500_mode=LFSR____________________/~~~~~~~~~~~~~~~~~~~~~~~~\___________________________
 seq_ack            ______________________________________________________________________/~~~ (held until req, stop low)
 phyDigControl      _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\___  (+8 UI)
-phyTrainLfsr       _____________________/~~~~~~~~~~~~~~~~~~~~~~~~\__________________________  (+8 UI)
+phyTrainLfsr       _____________________|~~~~~~~~~~~~~~~~~~~~~~~~~|_________________________  (+32 UI, 500 MHz)
 Tx500 (en lanes)   0101................|1100 (+32 UI) ..............|0101..........................
                     <- PRE 128 UI ->  <------- BODY 4096 UI ------> <- POST 128 UI ->
 ```
 
-So the clock leads valid and data by 4 cycles (128 UI) and trails them by 4 cycles. `phyTrainLfsr` and the Tx500 LFSR mode switch on the same sequencer edge. At the outputs they are 24 UI apart by default, or aligned with `START_DELAY_2G = 3`.
+So the clock leads valid and data by 4 cycles (128 UI) and trails them by 4 cycles. `phyTrainLfsr` and the Tx500 LFSR mode switch on the same sequencer edge and are both produced in the 500 MHz domain, so at the outputs they are aligned (32 UI). The 2 GHz clock leads them by 24 UI by default, or is aligned with `START_DELAY_2G = 3`.
 
 ACTIVE enter and exit (`ltsm_state` 7 -> 8 -> other):
 
@@ -161,7 +165,7 @@ seq clk_en         ______________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 seq tx500_mode     0 |1| 0 ..............0 0 0 0|3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 |0 0 0 0|0
 active_ready_o     ______________________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\___________
 Tx500              0101|0110|0101 .....  0101   |0000 (functional data) ........... |0101 ........
-Valid2g / Data2g   000 / 0 throughout (the functional path drives valid and data in ACTIVE)
+Valid / Data2g     000 / 0 throughout (the functional path drives valid and data in ACTIVE)
 phyDigControl      ______________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_____
 ltsm_active_ready  __________________________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______  (synchronized)
 ```
@@ -199,7 +203,7 @@ The top replaces the old link ports with `seq_req_o`, `seq_stop_o`, `seq_op_o[2:
 
 ## Reset
 
-Reset assertion is common and asynchronous: Ctrl800, the sequencer and every endpoint share `reset_n`. Each block releases with its own reset synchronizer: `Ltsm800ResetSync`, `PhySeqResetSync`, `PhyClock2gCtrlResetSync`, `Valid2gResetSync`, `Data2gResetSync` and `Phy500CtrlResetSync`. Reset values are the Idle row of the endpoint table. Resetting a single region while a command is in flight is not supported.
+Reset assertion is common and asynchronous: Ctrl800, the sequencer and every endpoint share `reset_n`. Each block releases with its own reset synchronizer: `Ltsm800ResetSync`, `PhySeqResetSync`, `PhyClock2gCtrlResetSync`, `Valid2gResetSync`, `Valid500mResetSync`, `Data2gResetSync` and `Phy500CtrlResetSync`. Reset values are the Idle row of the endpoint table. Resetting a single region while a command is in flight is not supported.
 
 ## Timing constraints
 

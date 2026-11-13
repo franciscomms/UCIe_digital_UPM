@@ -9,6 +9,7 @@
 #   CTRL800: LtsmPhyPatternCtrl800 (u_pattern_ctrl in UcieDigitalTopJtag)
 #   SEQ:     PhyTxControlTop/u_seq   (PhyTxSequencer, clock_tx500)
 #   CLOCK2G: PhyTxControlTop/u_clock2g, VALID2G: .../u_valid2g,
+#   VALID500M: PhyTxControlTop/u_valid500m (clock_tx500),
 #   DATA2G:  PhyTxControlTop/u_data2g (clock_tx2g)
 #   TX500:   PhyTxControlTop/g_tx500[lane]/u_tx500 (clock_tx500)
 #
@@ -56,7 +57,7 @@
 #   SEQ_CMD_SRC:    CTRL800/u_src_seq/payload_q[*]/Q   (3 + LANES pins: {op, mask})
 #   SEQ_CMD_DST:    every SEQ register D pin in the fanout of seq_op_i/seq_mask_i
 #                   (op_q, mask_q, state_q, cnt_q, seq_ack_o, seq_aborted_o and
-#                   the output flops clk_en_o, val_sel_o, id_en_o, tx500_mode_o,
+#                   the output flops clk_en_o, val_sel_o, lfsr_val_en_o, id_en_o, tx500_mode_o,
 #                   tx500_lane_en_o, active_ready_o). These are sampled only
 #                   after the request has passed u_req_sync.
 #   SEQ_ABORT_SRC:  SEQ/seq_aborted_o/Q

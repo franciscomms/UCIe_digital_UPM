@@ -4,19 +4,21 @@
 // ============================================================================
 // Synchronous slave of PhyTxSequencer.
 //
-// Analog interface: three registered, glitch-free level bits
-//   phyTrainLfsr, phyTrainValid, phyTrainLaneid
+// Analog interface: two registered, glitch-free level bits
+//   phyTrainValid, phyTrainLaneid
 // While one of them is 1 the analog front end transmits the valid-lane
 // pattern, which is always VALTRAIN (11110000) and is generated in the
 // analog block. Digital only selects which training bit is raised:
-//   LFSR burst      -> phyTrainLfsr
 //   VAL_TRAIN       -> phyTrainValid
 //   lane-ID burst   -> phyTrainLaneid
-// In ACTIVE all three are 0 (the valid lane is driven by the functional path).
+// The LFSR valid bit (phyTrainLfsr) is in the 500 MHz domain, in
+// PhyPatternValid500m, because the analog front end sends the LFSR valid
+// pattern on the 500 MHz clock.
+// In ACTIVE both are 0 (the valid lane is driven by the functional path).
 //
-// {phyTrainLfsr, phyTrainValid, phyTrainLaneid} <= val_sel, delayed by
-// START_DELAY. No synchronizer, counter, cancel or acknowledgment:
-// PhyTxSequencer owns all timing and guarantees val_sel is onehot0.
+// {phyTrainValid, phyTrainLaneid} <= val_sel, delayed by START_DELAY.
+// No synchronizer, counter, cancel or acknowledgment: PhyTxSequencer owns all
+// timing and guarantees val_sel is onehot0.
 //
 // Timing: val_sel is launched by a clock_tx500 flop and captured on the FIRST
 // clock_tx2g edge after the launching edge (related clocks, single-cycle
@@ -25,7 +27,7 @@
 // START_DELAY = 3 aligns these outputs with PhyPatternTx500 (START_DELAY = 0).
 //
 // Reset: common asynchronous assert, local synchronized release.
-// Reset value = idle (0,0,0).
+// Reset value = idle (0,0).
 // ============================================================================
 module PhyPatternValid2g #(
   parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
@@ -37,10 +39,9 @@ module PhyPatternValid2g #(
   output wire       reset_valid2g_n,     // locally synchronized reset (for neighbours)
 
   // ---- From PhyTxSequencer (clock_tx500 launched, related clock) ----------
-  input  wire [2:0] val_sel,             // {lfsr, valid, laneid}, onehot0
+  input  wire [1:0] val_sel,             // {valid, laneid}, onehot0
 
   // ---- Analog front end: valid pattern is sent while one bit is 1 ---------
-  output wire       phyTrainLfsr,        // valid pattern for LFSR training /s3
   output wire       phyTrainValid,       // VALTRAIN pattern /S1
   output wire       phyTrainLaneid       // valid pattern for lane-ID training
 );
@@ -48,15 +49,15 @@ module PhyPatternValid2g #(
     .clk_i(clock_tx2g), .arst_ni(reset_n), .rst_no(reset_valid2g_n));
 
   // Fixed latency-trim pipeline (START_DELAY flops), then the output flops.
-  wire [2:0] val_sel_d;
+  wire [1:0] val_sel_d;
   generate
     if (START_DELAY == 0) begin : g_no_delay
       assign val_sel_d = val_sel;
     end else begin : g_delay
-      logic [2:0] dly_q [START_DELAY];
+      logic [1:0] dly_q [START_DELAY];
       always_ff @(posedge clock_tx2g or negedge reset_valid2g_n) begin
         if (!reset_valid2g_n) begin
-          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= 3'b000;
+          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= 2'b00;
         end else begin
           dly_q[0] <= val_sel;
           for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
@@ -66,11 +67,11 @@ module PhyPatternValid2g #(
     end
   endgenerate
 
-  logic [2:0] train_q;  // registered {lfsr, valid, laneid} to analog
+  logic [1:0] train_q;  // registered {valid, laneid} to analog
   always_ff @(posedge clock_tx2g or negedge reset_valid2g_n)
-    if (!reset_valid2g_n) train_q <= 3'b000;
+    if (!reset_valid2g_n) train_q <= 2'b00;
     else                  train_q <= val_sel_d;
-  assign {phyTrainLfsr, phyTrainValid, phyTrainLaneid} = train_q;
+  assign {phyTrainValid, phyTrainLaneid} = train_q;
 
 `ifndef SYNTHESIS
   initial assert (START_DELAY >= 0) else $fatal(1, "VALID START_DELAY must be >= 0");

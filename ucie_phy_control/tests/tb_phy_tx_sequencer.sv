@@ -151,7 +151,7 @@ module tb_seq_case #(
 
   // Sequencer outputs (inside the wrapper).
   wire s_clk = u_dut.clk_en;
-  wire [2:0] s_val = u_dut.val_sel;
+  wire [2:0] s_val = {u_dut.lfsr_val_en, u_dut.val_sel};  // {lfsr, valid, laneid}
   wire s_id = u_dut.id_en;
   wire [2:0] s_mode = u_dut.tx500_mode;
   wire [LANES-1:0] s_len = u_dut.tx500_lane_en;
@@ -244,9 +244,12 @@ module tb_seq_case #(
   // ---- Fixed-latency checks: every endpoint output vs its sequencer input ----
   tb_lat_chk #(.W(1), .LAT(LAT2G), .NAME({NAME, ".Clock2g"})) u_lat_clk (
     .src_clk(clk500), .dst_clk(clk2g), .rst_n(reset_n), .src(s_clk), .dst(phyDigControl));
-  tb_lat_chk #(.W(3), .LAT(LAT2G), .NAME({NAME, ".Valid2g"})) u_lat_val (
-    .src_clk(clk500), .dst_clk(clk2g), .rst_n(reset_n), .src(s_val),
-    .dst({phyTrainLfsr, phyTrainValid, phyTrainLaneid}));
+  tb_lat_chk #(.W(2), .LAT(LAT2G), .NAME({NAME, ".Valid2g"})) u_lat_val (
+    .src_clk(clk500), .dst_clk(clk2g), .rst_n(reset_n), .src(s_val[1:0]),
+    .dst({phyTrainValid, phyTrainLaneid}));
+  tb_lat_chk #(.W(1), .LAT(LATTX), .DST_HALF(1000), .NAME({NAME, ".Valid500m"})) u_lat_lfsrv (
+    .src_clk(clk500), .dst_clk(clk500), .rst_n(reset_n), .src(s_val[2]),
+    .dst(phyTrainLfsr));
   tb_lat_chk #(.W(1), .LAT(LAT2G), .NAME({NAME, ".Data2g"})) u_lat_id (
     .src_clk(clk500), .dst_clk(clk2g), .rst_n(reset_n), .src(s_id), .dst(digControl));
   for (genvar lane = 0; lane < LANES; lane++) begin : g_lane
