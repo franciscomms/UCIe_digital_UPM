@@ -10,11 +10,13 @@
 // asynchronous). Every other path inside is synchronous to clock_tx500 or
 // to the related clock_tx2g (same source, 4:1, phase aligned).
 //
-// Endpoint latency from the sequencer output edge (START_DELAY_* = 0):
+// Endpoint latency from the sequencer output edge (fixed, one output flop):
 //   Clock2g / Valid2g / Data2g : 1 clock_tx2g cycle  =  8 UI
 //   Valid500m / Tx500          : 1 clock_tx500 cycle = 32 UI
-// Valid500m uses START_DELAY_TX, so phyTrainLfsr always switches with the
-// Tx500 enable_LFSR. Set START_DELAY_2G = 3 to align all outputs at 32 UI.
+// Signals that must match edge for edge are always in one domain (lane ID:
+// Valid2g + Data2g; LFSR: Valid500m + Tx500). The 2 GHz forwarded clock only
+// has to cover the burst, which the PRE/POST envelope guarantees: it leads
+// the 500 MHz outputs by PRE x 32 + 24 UI and trails them by POST x 32 - 24 UI.
 // Preserve each endpoint hierarchy so it can be placed beside its transmitter.
 // =============================================================================
 module PhyTxControlTop #(
@@ -22,9 +24,7 @@ module PhyTxControlTop #(
   parameter integer SYNC_STAGES    = 3,
   parameter integer PRE_CYC        = 4,
   parameter integer POST_CYC       = 4,
-  parameter integer CLK_LEN        = 96,
-  parameter integer START_DELAY_2G = 0,  // Clock2g, Valid2g, Data2g (clock_tx2g cycles)
-  parameter integer START_DELAY_TX = 0   // Valid500m and every Tx500 lane (clock_tx500 cycles)
+  parameter integer CLK_LEN        = 96
 ) (
   input  wire              clock_tx500,
   input  wire              clock_tx2g,
@@ -74,26 +74,26 @@ module PhyTxControlTop #(
     .tx500_mode_o(tx500_mode), .tx500_lane_en_o(tx500_lane_en),
     .active_ready_o(active_ready_o));
 
-  PhyPatternClock2g #(.SYNC_STAGES(SYNC_STAGES), .START_DELAY(START_DELAY_2G)) u_clock2g (
+  PhyPatternClock2g #(.SYNC_STAGES(SYNC_STAGES)) u_clock2g (
     .clock_tx2g(clock_tx2g), .reset_n(reset_n), .reset_clock2g_n(unused_reset_clock2g_n),
     .clk_en(clk_en), .phyDigControl(phyDigControl));
 
-  PhyPatternValid2g #(.SYNC_STAGES(SYNC_STAGES), .START_DELAY(START_DELAY_2G)) u_valid2g (
+  PhyPatternValid2g #(.SYNC_STAGES(SYNC_STAGES)) u_valid2g (
     .clock_tx2g(clock_tx2g), .reset_n(reset_n), .reset_valid2g_n(unused_reset_valid2g_n),
     .val_sel(val_sel),
     .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid));
 
-  PhyPatternValid500m #(.SYNC_STAGES(SYNC_STAGES), .START_DELAY(START_DELAY_TX)) u_valid500m (
+  PhyPatternValid500m #(.SYNC_STAGES(SYNC_STAGES)) u_valid500m (
     .clock_tx500(clock_tx500), .reset_n(reset_n), .reset_valid500m_n(unused_reset_valid500m_n),
     .lfsr_en(lfsr_val_en), .phyTrainLfsr(phyTrainLfsr));
 
-  PhyPatternData2g #(.SYNC_STAGES(SYNC_STAGES), .START_DELAY(START_DELAY_2G)) u_data2g (
+  PhyPatternData2g #(.SYNC_STAGES(SYNC_STAGES)) u_data2g (
     .clock_tx2g(clock_tx2g), .reset_n(reset_n),
     .id_en(id_en), .lane_id_i(lane_id_i),
     .digControl(digControl), .laneID_index(laneID_index), .lane_id_o(lane_id_o));
 
   for (genvar lane = 0; lane < LANES; lane++) begin : g_tx500
-    PhyPatternTx500 #(.SYNC_STAGES(SYNC_STAGES), .START_DELAY(START_DELAY_TX)) u_tx500 (
+    PhyPatternTx500 #(.SYNC_STAGES(SYNC_STAGES)) u_tx500 (
       .clock_tx500(clock_tx500), .reset_n(reset_n),
       .mode(tx500_mode), .lane_en(tx500_lane_en[lane]),
       .enable_LFSR(enable_LFSR[lane]), .zero_ena(zero_ena[lane]),

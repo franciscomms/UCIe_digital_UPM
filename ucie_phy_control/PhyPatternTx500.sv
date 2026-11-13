@@ -27,8 +27,8 @@
 // SEED is edge-qualified: if mode stays SEED for more than one cycle only the
 // first cycle pulses load_seed; the rest are OFF.
 //
-// Latency: (1 + START_DELAY) clock_tx500 cycles from the sequencer edge
-// (32 UI with START_DELAY = 0). All lanes see the same sequencer flops, so all
+// Latency: 1 clock_tx500 cycle (32 UI) from the sequencer edge.
+// All lanes see the same sequencer flops, so all
 // lanes switch on the same clock_tx500 edge.
 //
 // Clock: clock_tx500 (500 MHz), one 32-bit word (32 UI) per cycle.
@@ -36,8 +36,7 @@
 // Reset value = OFF (0101).
 // =============================================================================
 module PhyPatternTx500 #(
-  parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
-  parameter integer START_DELAY = 0   // extra clock_tx500 cycles of fixed latency
+  parameter integer SYNC_STAGES = 3   // reset-release synchronizer depth (>= 2)
 ) (
   input  wire       clock_tx500,
   input  wire       reset_n,
@@ -58,30 +57,8 @@ module PhyPatternTx500 #(
   Phy500CtrlResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx500), .arst_ni(reset_n), .rst_no(rst_n));
 
-  // Fixed latency-trim pipeline (START_DELAY flops) on {mode, lane_en}.
-  wire [3:0] cmd_in = {mode, lane_en};
-  wire [3:0] cmd_d;
-  generate
-    if (START_DELAY == 0) begin : g_no_delay
-      assign cmd_d = cmd_in;
-    end else begin : g_delay
-      logic [3:0] dly_q [START_DELAY];
-      always_ff @(posedge clock_tx500 or negedge rst_n) begin
-        if (!rst_n) begin
-          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= {M_OFF, 1'b0};
-        end else begin
-          dly_q[0] <= cmd_in;
-          for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
-        end
-      end
-      assign cmd_d = dly_q[START_DELAY-1];
-    end
-  endgenerate
-  wire [2:0] mode_d = cmd_d[3:1];
-  wire lane_en_d = cmd_d[0];
-
   logic seed_prev_q;  // effective SEED seen on the previous cycle
-  wire seed_now = lane_en_d && (mode_d == M_SEED);
+  wire seed_now = lane_en && (mode == M_SEED);
 
   always_ff @(posedge clock_tx500 or negedge rst_n) begin
     if (!rst_n) begin
@@ -89,8 +66,8 @@ module PhyPatternTx500 #(
       {enable_LFSR, zero_ena, load_seed, load_zero} <= O_OFF;
     end else begin
       seed_prev_q <= seed_now;
-      if (!lane_en_d) {enable_LFSR, zero_ena, load_seed, load_zero} <= O_OFF;
-      else case (mode_d)
+      if (!lane_en) {enable_LFSR, zero_ena, load_seed, load_zero} <= O_OFF;
+      else case (mode)
         M_SEED:   {enable_LFSR, zero_ena, load_seed, load_zero} <= seed_prev_q ? O_OFF : O_SEED;
         M_LFSR:   {enable_LFSR, zero_ena, load_seed, load_zero} <= O_LFSR;
         M_ACTIVE: {enable_LFSR, zero_ena, load_seed, load_zero} <= O_ACTIVE;
@@ -101,7 +78,6 @@ module PhyPatternTx500 #(
   end
 
 `ifndef SYNTHESIS
-  initial assert (START_DELAY >= 0) else $fatal(1, "TX500 START_DELAY must be >= 0");
   assert property (@(posedge clock_tx500) disable iff (!rst_n) load_seed |=> !load_seed)
     else $error("TX500: load_seed wider than one cycle");
 `endif

@@ -22,11 +22,11 @@ cd ../systemVerilog && test/run_tests.sh all   # full digital regression
 
 Clocks: 2 GHz and 500 MHz phase aligned. 800 MHz runs at a random phase taken from `+SEED`. Link delays are unequal: req 170 ps, stop 390 ps, op/mask 430 ps, ack 220 ps. Three `PhyTxControlTop` configurations run in parallel from one 800 MHz source:
 
-| Case | PRE/POST | CLK_LEN | START_DELAY 2G / Tx500 |
+| Case | PRE/POST | CLK_LEN | Note |
 | --- | --- | --- | --- |
-| c0 default | 4 / 4 | 96 | 0 / 0 |
-| c1 trim | 4 / 4 | 96 | 3 / 0 (all four endpoints aligned) |
-| c2 longpre | 12 / 6 | 32 | 0 / 1 |
+| c0 default | 4 / 4 | 96 | |
+| c1 shortpost | 4 / 1 | 32 | minimum clock trail after the 500 MHz LFSR outputs (8 UI) |
+| c2 longpre | 12 / 6 | 32 | |
 
 Checked continuously in every case:
 - **Legal rows.** Every cycle, the sequencer outputs form exactly one legal row of the endpoint table: Idle, clock-only, VAL, ID, LFSR with lanes = mask, SEED with all lanes, or ACTIVE with all lanes and ready.
@@ -37,7 +37,7 @@ Checked continuously in every case:
     - PRE then POST (stopped in PRE, `POST+1 .. PRE+POST` clock-only cycles);
     - PRE, then a shortened BODY, then exactly POST.
   - No idle gap inside a command. Ack rises only with the clock enable already off.
-- **Fixed latency.** Every edge of every endpoint output must equal the corresponding sequencer edge, delayed by exactly `(1+START_DELAY)` cycles, with the same value. This covers every Tx500 lane individually, so all lanes start on the same cycle and masked lanes stay OFF. The measured latency is printed as `LATENCY ...` lines.
+- **Fixed latency.** Every edge of every endpoint output must equal the corresponding sequencer edge, delayed by exactly one cycle of the endpoint clock (8 UI at 2 GHz, 32 UI at 500 MHz), with the same value. This covers every Tx500 lane individually, so all lanes start on the same cycle and masked lanes stay OFF. The measured latency is printed as `LATENCY ...` lines.
 - **Data2g.** LSB first, alternating every cycle, `laneID_index` is 0 when disabled, the burst ends on MSB, and a completed burst is 256 cycles.
 - **Cross-checks on the endpoint outputs.**
   - Valid/data/LFSR are never active without the clock.

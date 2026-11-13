@@ -23,7 +23,7 @@
 # paths: launch on a clock_tx500 edge, setup check at the NEXT clock_tx2g edge
 # (0.5 ns later), hold check at the launching (coincident) edge.
 # The 2 GHz endpoints capture on that next edge by design (deterministic
-# latency = 1 clock_tx2g cycle + START_DELAY). Therefore:
+# latency = 1 clock_tx2g cycle). Therefore:
 #   - NO multicycle path on clock_tx500 -> clock_tx2g. A multicycle setup of N
 #     would let the capture edge vary with routing delay and break the
 #     deterministic latency.
@@ -129,13 +129,13 @@ set_max_delay -datapath_only 1.25 -from $SEQ_ABORT_SRC -to $SEQ_ABORT_DST
 # clock_tx500 -> clock_tx500 (SEQ -> TX500): NO exceptions. Timed as normal
 # synchronous paths (see section 1). The 0.5 ns SEQ -> 2 GHz budget is the
 # demanding one: place SEQ so its output flops reach the three 2 GHz
-# endpoints in time, or re-time with the START_DELAY pipelines on the
-# receiving side (they do not relax the first capture).
+# endpoints in time.
 #
 # Physical integration requirements (not executable floorplan constraints):
 # - Cluster each synchronizer chain in its RECEIVING region (req/stop in SEQ,
 #   ack/active_ready in CTRL800).
-# - Preserve hierarchies: CTRL800, SEQ, CLOCK2G, VALID2G, DATA2G, each TX500.
+# - Preserve hierarchies: CTRL800, SEQ, CLOCK2G, VALID2G, VALID500M, DATA2G,
+#   each TX500.
 # - Apply technology-specific synchronizer-cell, placement and MTBF rules;
 #   ASYNC_REG/dont_touch attributes alone do not establish reliability.
 # - Common asynchronous reset assertion with per-block synchronized release.

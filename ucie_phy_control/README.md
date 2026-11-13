@@ -123,22 +123,23 @@ All of them are flops decoded from the next state, so every enable of one comman
 
 Latency is measured from the `clock_tx500` edge on which the sequencer output changes to the edge on which the endpoint output changes. It is fixed and identical for every edge.
 
-| Endpoint | Latency | START_DELAY = 0 | START_DELAY = 3 (2 GHz) |
-| --- | --- | --- | --- |
-| PhyPatternClock2g | (1 + START_DELAY) x 2 GHz cycle | 0.5 ns = 8 UI | 2.0 ns = 32 UI |
-| PhyPatternValid2g | (1 + START_DELAY) x 2 GHz cycle | 0.5 ns = 8 UI | 2.0 ns = 32 UI |
-| PhyPatternData2g | (1 + START_DELAY) x 2 GHz cycle | 0.5 ns = 8 UI | 2.0 ns = 32 UI |
-| PhyPatternValid500m | (1 + START_DELAY) x 500 MHz cycle | 2.0 ns = 32 UI | - |
-| PhyPatternTx500 | (1 + START_DELAY) x 500 MHz cycle | 2.0 ns = 32 UI | - |
+| Endpoint | Latency |
+| --- | --- |
+| PhyPatternClock2g | 1 x 2 GHz cycle = 0.5 ns = 8 UI |
+| PhyPatternValid2g | 1 x 2 GHz cycle = 0.5 ns = 8 UI |
+| PhyPatternData2g | 1 x 2 GHz cycle = 0.5 ns = 8 UI |
+| PhyPatternValid500m | 1 x 500 MHz cycle = 2.0 ns = 32 UI |
+| PhyPatternTx500 | 1 x 500 MHz cycle = 2.0 ns = 32 UI |
 
-- **Default:** with every `START_DELAY = 0`, the three 2 GHz outputs lead the 500 MHz outputs (Tx500 data-lane controls and `phyTrainLfsr`) by a fixed 24 UI (3 2 GHz cycles).
-- **LFSR valid:** Valid500m takes `START_DELAY_TX`, the same value as the Tx500 lanes, so `phyTrainLfsr` and `enable_LFSR` always switch on the same `clock_tx500` edge.
-- **Aligned:** set `START_DELAY = 3` on the three 2 GHz endpoints (the `START_DELAY_2G` parameter of `PhyTxControlTop`) to make all outputs react together, 32 UI after the sequencer edge.
-- **Further trim:** any extra analog or serializer pipeline difference can be trimmed the same way. `START_DELAY` is a fixed flop pipeline in the endpoint's own clock.
+There is no latency-trim pipeline: no command needs signals from different domains to line up edge for edge.
+- **Lane ID:** `phyTrainLaneid` and `digControl`/`laneID_index` are all 2 GHz, so they are aligned.
+- **LFSR:** `phyTrainLfsr` and `enable_LFSR` are both 500 MHz and switch on the same `clock_tx500` edge.
+- **Forwarded clock:** at 2 GHz it leads the 500 MHz outputs by 24 UI. It only has to cover the burst, which the PRE/POST envelope guarantees: it leads by `PRE_CYC x 32 + 24` UI and trails by `POST_CYC x 32 - 24` UI (at least 8 UI with `POST_CYC = 1`).
+- Any analog or serializer path difference must be handled in the analog block, or by adding a pipeline back into the endpoint concerned.
 
 ## Timing diagrams
 
-LFSR training, defaults (PRE 4, POST 4, all `START_DELAY = 0`). Each column is one 500 MHz cycle (32 UI). `e` is the sequencer edge on which the synchronized request is first seen.
+LFSR training, defaults (PRE 4, POST 4). Each column is one 500 MHz cycle (32 UI). `e` is the sequencer edge on which the synchronized request is first seen.
 
 ```
 500 MHz edge        e   e+1 e+2 e+3 e+4 e+5 ...  e+131 e+132 e+133 e+134 e+135 e+136 e+137
@@ -153,7 +154,7 @@ Tx500 (en lanes)   0101................|1100 (+32 UI) ..............|0101.......
                     <- PRE 128 UI ->  <------- BODY 4096 UI ------> <- POST 128 UI ->
 ```
 
-So the clock leads valid and data by 4 cycles (128 UI) and trails them by 4 cycles. `phyTrainLfsr` and the Tx500 LFSR mode switch on the same sequencer edge and are both produced in the 500 MHz domain, so at the outputs they are aligned (32 UI). The 2 GHz clock leads them by 24 UI by default, or is aligned with `START_DELAY_2G = 3`.
+So the clock leads valid and data by 4 cycles (128 UI) and trails them by 4 cycles. `phyTrainLfsr` and the Tx500 LFSR mode switch on the same sequencer edge and are both produced in the 500 MHz domain, so at the outputs they are aligned (32 UI). The 2 GHz clock edges are 24 UI earlier, inside the PRE/POST envelope.
 
 ACTIVE enter and exit (`ltsm_state` 7 -> 8 -> other):
 

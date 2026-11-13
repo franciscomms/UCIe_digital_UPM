@@ -30,15 +30,13 @@
 // Timing: id_en is captured on the FIRST clock_tx2g edge after the launching
 // clock_tx500 edge (single-cycle synchronous related-clock path). Latency
 // from the sequencer edge to digControl:
-//   (1 + START_DELAY) clock_tx2g cycles = (1 + START_DELAY) x 8 UI.
-// START_DELAY = 3 aligns digControl with PhyPatternTx500 (START_DELAY = 0).
+//   1 clock_tx2g cycle = 8 UI.
 //
 // Clock: clock_tx2g (2 GHz). Reset: reset_n, asynchronous assert, release
 // synchronized locally. Reset value = idle (digControl = 0, laneID_index = 0).
 // =============================================================================
 module PhyPatternData2g #(
-  parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
-  parameter integer START_DELAY = 0   // extra clock_tx2g cycles of fixed latency
+  parameter integer SYNC_STAGES = 3   // reset-release synchronizer depth (>= 2)
 ) (
   input  wire  clock_tx2g,
   input  wire  reset_n,
@@ -57,25 +55,6 @@ module PhyPatternData2g #(
   Data2gResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx2g), .arst_ni(reset_n), .rst_no(rst_n));
 
-  // Fixed latency-trim pipeline (START_DELAY flops), then the output flops.
-  wire id_en_d;
-  generate
-    if (START_DELAY == 0) begin : g_no_delay
-      assign id_en_d = id_en;
-    end else begin : g_delay
-      logic dly_q [START_DELAY];
-      always_ff @(posedge clock_tx2g or negedge rst_n) begin
-        if (!rst_n) begin
-          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= 1'b0;
-        end else begin
-          dly_q[0] <= id_en;
-          for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
-        end
-      end
-      assign id_en_d = dly_q[START_DELAY-1];
-    end
-  endgenerate
-
   // digControl follows id_en. laneID_index: 0 on the first enabled cycle,
   // then alternates every cycle; forced to 0 when disabled.
   always_ff @(posedge clock_tx2g or negedge rst_n) begin
@@ -83,13 +62,12 @@ module PhyPatternData2g #(
       digControl   <= 1'b0;
       laneID_index <= 1'b0;
     end else begin
-      digControl   <= id_en_d;
-      laneID_index <= id_en_d && digControl && !laneID_index;
+      digControl   <= id_en;
+      laneID_index <= id_en && digControl && !laneID_index;
     end
   end
 
 `ifndef SYNTHESIS
-  initial assert (START_DELAY >= 0) else $fatal(1, "DATA START_DELAY must be >= 0");
   assert property (@(posedge clock_tx2g) disable iff (!rst_n) laneID_index |-> digControl)
     else $error("DATA: laneID_index high without digControl");
 `endif

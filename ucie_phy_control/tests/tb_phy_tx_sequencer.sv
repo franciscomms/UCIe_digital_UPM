@@ -5,10 +5,10 @@
 // =============================================================================
 // An 800 MHz bus-functional source (random phase, +SEED=<n>) drives the seq_*
 // link of THREE PhyTxControlTop configurations in parallel:
-//   c0 "default" : PRE 4,  POST 4, CLK_LEN 96, 2G START_DELAY 0, Tx500 0
-//   c1 "trim2g"  : PRE 4,  POST 4, CLK_LEN 96, 2G START_DELAY 3, Tx500 0
-//                  (all four endpoints aligned at 32 UI)
-//   c2 "longpre" : PRE 12, POST 6, CLK_LEN 32, 2G START_DELAY 0, Tx500 1
+//   c0 "default"   : PRE 4,  POST 4, CLK_LEN 96
+//   c1 "shortpost" : PRE 4,  POST 1, CLK_LEN 32 (minimum clock trail after
+//                    the 500 MHz LFSR valid/data: 32 - 24 = 8 UI)
+//   c2 "longpre"   : PRE 12, POST 6, CLK_LEN 32
 // Clocks: 2 GHz and 500 MHz phase aligned (4:1), 800 MHz asynchronous.
 //
 // Checks (inside every seq_case, every cycle):
@@ -117,8 +117,6 @@ module tb_seq_case #(
   parameter int PRE = 4,
   parameter int POST = 4,
   parameter int CLKLEN = 96,
-  parameter int D2G = 0,
-  parameter int DTX = 0,
   parameter string NAME = "case"
 ) (
   input wire clk500, clk2g, reset_n,
@@ -128,16 +126,15 @@ module tb_seq_case #(
   output wire ack, aborted
 );
   import tb_seq_pkg::*;
-  localparam longint LAT2G = 500 * (1 + D2G);
-  localparam longint LATTX = 2000 * (1 + DTX);
+  localparam longint LAT2G = 500;   // 1 clock_tx2g cycle
+  localparam longint LATTX = 2000;  // 1 clock_tx500 cycle
   wire active_ready;
   wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid;
   wire digControl, laneID_index;
   wire [3:0] lane_id_o;
   wire [LANES-1:0] enable_LFSR, zero_ena, load_seed, load_zero;
   PhyTxControlTop #(
-    .LANES(LANES), .PRE_CYC(PRE), .POST_CYC(POST), .CLK_LEN(CLKLEN),
-    .START_DELAY_2G(D2G), .START_DELAY_TX(DTX)
+    .LANES(LANES), .PRE_CYC(PRE), .POST_CYC(POST), .CLK_LEN(CLKLEN)
   ) u_dut (
     .clock_tx500(clk500), .clock_tx2g(clk2g), .reset_n(reset_n),
     .seq_req_i(req), .seq_stop_i(stop), .seq_op_i(op), .seq_mask_i(mask),
@@ -355,13 +352,13 @@ module tb_phy_tx_sequencer;
   assign #220 ack_all_d = &ack_c;
   assign #220 ack_any_d = |ack_c;
 
-  tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(4), .CLKLEN(96), .D2G(0), .DTX(0), .NAME("c0.default")) c0 (
+  tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(4), .CLKLEN(96), .NAME("c0.default")) c0 (
     .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
     .op(op_dst), .mask(mask_dst), .ack(ack_c[0]), .aborted(ab_c[0]));
-  tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(4), .CLKLEN(96), .D2G(3), .DTX(0), .NAME("c1.trim2g3")) c1 (
+  tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(1), .CLKLEN(32), .NAME("c1.shortpost")) c1 (
     .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
     .op(op_dst), .mask(mask_dst), .ack(ack_c[1]), .aborted(ab_c[1]));
-  tb_seq_case #(.LANES(LANES), .PRE(12), .POST(6), .CLKLEN(32), .D2G(0), .DTX(1), .NAME("c2.longpre")) c2 (
+  tb_seq_case #(.LANES(LANES), .PRE(12), .POST(6), .CLKLEN(32), .NAME("c2.longpre")) c2 (
     .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
     .op(op_dst), .mask(mask_dst), .ack(ack_c[2]), .aborted(ab_c[2]));
 

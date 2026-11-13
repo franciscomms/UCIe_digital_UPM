@@ -8,7 +8,7 @@
 //   phyDigControl = 1 -> the analog front end transmits the forwarded clock.
 //   phyDigControl = 0 -> the analog front end sends zeros (no clock).
 //
-// phyDigControl <= clk_en, delayed by START_DELAY. No synchronizer, counter,
+// phyDigControl <= clk_en (one output flop). No synchronizer, counter,
 // acknowledgment or priority logic: PhyTxSequencer owns all timing.
 //
 // Timing: clk_en is launched by a clock_tx500 flop. clock_tx500 and
@@ -16,16 +16,13 @@
 // normal single-cycle synchronous path: clk_en is captured on the FIRST
 // clock_tx2g edge after the launching clock_tx500 edge (0.5 ns budget).
 // Latency from the sequencer edge to phyDigControl:
-//   (1 + START_DELAY) clock_tx2g cycles = (1 + START_DELAY) x 8 UI.
-// START_DELAY = 3 aligns this output with PhyPatternTx500 (START_DELAY = 0),
-// which reacts one clock_tx500 cycle (32 UI) after the sequencer edge.
+//   1 clock_tx2g cycle = 8 UI.
 //
 // Reset: common asynchronous assert, local synchronized release.
 // Reset value = idle (phyDigControl = 0).
 // ============================================================================
 module PhyPatternClock2g #(
-  parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
-  parameter integer START_DELAY = 0   // extra clock_tx2g cycles of fixed latency
+  parameter integer SYNC_STAGES = 3   // reset-release synchronizer depth (>= 2)
 ) (
   input  wire  clock_tx2g,          // local control clock
   input  wire  reset_n,             // async reset (assert anywhere, release synced)
@@ -40,32 +37,10 @@ module PhyPatternClock2g #(
   PhyClock2gCtrlResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx2g), .arst_ni(reset_n), .rst_no(reset_clock2g_n));
 
-  // Fixed latency-trim pipeline (START_DELAY flops), then the output flop.
-  wire clk_en_d;
-  generate
-    if (START_DELAY == 0) begin : g_no_delay
-      assign clk_en_d = clk_en;
-    end else begin : g_delay
-      logic dly_q [START_DELAY];
-      always_ff @(posedge clock_tx2g or negedge reset_clock2g_n) begin
-        if (!reset_clock2g_n) begin
-          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= 1'b0;
-        end else begin
-          dly_q[0] <= clk_en;
-          for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
-        end
-      end
-      assign clk_en_d = dly_q[START_DELAY-1];
-    end
-  endgenerate
-
   always_ff @(posedge clock_tx2g or negedge reset_clock2g_n)
     if (!reset_clock2g_n) phyDigControl <= 1'b0;
-    else                  phyDigControl <= clk_en_d;
+    else                  phyDigControl <= clk_en;
 
-`ifndef SYNTHESIS
-  initial assert (START_DELAY >= 0) else $fatal(1, "CLOCK START_DELAY must be >= 0");
-`endif
 endmodule
 
 // Reset synchronizer: asserts asynchronously with arst_ni, releases
