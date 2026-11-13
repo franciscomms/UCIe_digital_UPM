@@ -14,14 +14,15 @@
 // Checks (inside every seq_case, every cycle):
 //   - the sequencer outputs always form one legal row of the endpoint table;
 //   - per command, the run-length trace of rows equals the expected envelope:
-//     exact BODY length, PRE before / POST after, or a legal drained abort;
+//     exact BODY length, PRE before / POST after (ACTIVE: PRE then ACTIVE,
+//     never acked);
 //   - every endpoint output reproduces its sequencer input with a fixed,
 //     deterministic latency (each edge, each value, each lane);
 //   - Data2g LSB-first alternation; RESEED one cycle without clock; ACTIVE
 //     outputs; valid/data/LFSR never without the clock.
-// Scenarios (top): every op, stop with req / in PRE / in BODY / in ACTIVE,
-// back-to-back random commands, reset in the middle of a command, and a
-// standalone Tx500 mode check including the test-only RAW row.
+// Scenarios (top): every op, ACTIVE held and left only through reset (there
+// is no stop), back-to-back random commands, reset in the middle of a
+// command, and a standalone Tx500 mode check including the test-only RAW row.
 // =============================================================================
 package tb_seq_pkg;
   localparam int R_IDLE=0, R_CLK=1, R_VAL=2, R_ID=3, R_LFSR=4, R_SEED=5, R_ACT=6, R_BAD=7;
@@ -120,7 +121,7 @@ module tb_seq_case #(
   parameter string NAME = "case"
 ) (
   input wire clk500, clk2g, reset_n,
-  input wire req, stop,
+  input wire req,
   input wire [2:0] op,
   input wire [LANES-1:0] mask,
   output wire ack
@@ -137,7 +138,7 @@ module tb_seq_case #(
     .LANES(LANES), .PRE_CYC(PRE), .POST_CYC(POST), .CLK_LEN(CLKLEN)
   ) u_dut (
     .clock_tx500(clk500), .clock_tx2g(clk2g), .reset_n(reset_n),
-    .seq_req_i(req), .seq_stop_i(stop), .seq_op_i(op), .seq_mask_i(mask),
+    .seq_req_i(req), .seq_op_i(op), .seq_mask_i(mask),
     .seq_ack_o(ack), .active_ready_o(active_ready),
     .lane_id_i(4'hA),
     .phyDigControl(phyDigControl), .phyTrainLfsr(phyTrainLfsr),
@@ -169,7 +170,7 @@ module tb_seq_case #(
   int row = R_IDLE;
   int seg_row[$], seg_len[$];
   bit gap = 0, prev_ack = 0;
-  int ncmd = 0, last_shape = 0, last_body = 0, pre_stops = 0;
+  int ncmd = 0, last_body = 0;
   always @(negedge clk500) begin
     if (!reset_n) begin
       seg_row.delete(); seg_len.delete(); gap = 0; prev_ack = 0; row = R_IDLE;
@@ -185,14 +186,14 @@ module tb_seq_case #(
       end else if (seg_row.size() > 0) gap = 1;
       if (ack && !prev_ack) begin
         if (s_clk) $fatal(1, "%s: ack raised with clock still enabled", NAME);
-        check_command(op, stop);
+        check_command(op);
         seg_row.delete(); seg_len.delete(); gap = 0; ncmd++;
       end
       prev_ack = ack;
     end
   end
 
-  task automatic check_command(input logic [2:0] cop, input logic ab);
+  task automatic check_command(input logic [2:0] cop);
     int n = seg_row.size();
     int br = body_row(cop);
     int bl;
@@ -204,38 +205,31 @@ module tb_seq_case #(
       OP_ID: bl = 64;
       OP_LFSR: bl = 128;
       OP_RESEED: bl = 1;
-      default: bl = -1;  // ACTIVE: until stop
+      default: bl = -1;  // ACTIVE: never acked
     endcase
     for (int i = 0; i < n; i++) trace = {trace, $sformatf(" %s x%0d", row_name(seg_row[i]), seg_len[i])};
     ok = 0;
     last_body = 0;
-    if (!ab) begin
-      if (cop == OP_CLK || cop == OP_RESEED) begin
-        ok = (n == 1 && seg_row[0] == br && seg_len[0] == bl);
-        last_shape = 2; if (ok) last_body = seg_len[0];
-      end else if (cop != OP_ACTIVE) begin
-        ok = (n == 3 && seg_row[0] == R_CLK && seg_len[0] == PRE && seg_row[1] == br &&
-              seg_len[1] == bl && seg_row[2] == R_CLK && seg_len[2] == POST);
-        last_shape = 3; if (ok) last_body = seg_len[1];
-      end
-    end else begin
-      if (n == 0) begin ok = 1; last_shape = 0; end              // stopped before start
-      else if (cop == OP_CLK || cop == OP_RESEED) begin
-        ok = (n == 1 && seg_row[0] == br && seg_len[0] <= bl);
-        last_shape = 2; last_body = seg_len[0];
-      end else if (n == 1) begin                                 // stopped in PRE
-        ok = (seg_row[0] == R_CLK && seg_len[0] >= POST + 1 && seg_len[0] <= PRE + POST);
-        last_shape = 1; pre_stops++;
-      end else begin                                             // stopped in BODY
-        ok = (n == 3 && seg_row[0] == R_CLK && seg_len[0] == PRE && seg_row[1] == br &&
-              seg_len[1] >= 1 && (bl < 0 || seg_len[1] <= bl) &&
-              seg_row[2] == R_CLK && seg_len[2] == POST);
-        last_shape = 3; last_body = seg_len[1];
-      end
+    if (cop == OP_CLK || cop == OP_RESEED) begin
+      ok = (n == 1 && seg_row[0] == br && seg_len[0] == bl);
+      if (ok) last_body = seg_len[0];
+    end else if (cop != OP_ACTIVE) begin
+      ok = (n == 3 && seg_row[0] == R_CLK && seg_len[0] == PRE && seg_row[1] == br &&
+            seg_len[1] == bl && seg_row[2] == R_CLK && seg_len[2] == POST);
+      if (ok) last_body = seg_len[1];
     end
-    if (!ok) $fatal(1, "%s: op %0d stopped=%b wrong envelope:%s", NAME, cop, ab, trace);
-    $display("[%s] op %0d stopped=%b trace:%s%s", NAME, cop, ab, trace,
+    if (!ok) $fatal(1, "%s: op %0d wrong envelope:%s", NAME, cop, trace);
+    $display("[%s] op %0d trace:%s%s", NAME, cop, trace,
              (last_body > 0) ? $sformatf("  (BODY %0d UI)", last_body * 32) : "");
+  endtask
+
+  // ACTIVE running (no ack): exactly PRE clock-only cycles, then ACTIVE.
+  task automatic check_active_trace();
+    if (!(seg_row.size() == 2 && seg_row[0] == R_CLK && seg_len[0] == PRE &&
+          seg_row[1] == R_ACT && seg_len[1] >= 1))
+      $fatal(1, "%s: ACTIVE envelope wrong (%0d segments)", NAME, seg_row.size());
+    $display("[%s] op 5 trace: CLK x%0d ACTIVE x%0d (held, left by reset)",
+             NAME, seg_len[0], seg_len[1]);
   endtask
 
   // ---- Fixed-latency checks: every endpoint output vs its sequencer input ----
@@ -320,7 +314,6 @@ endmodule
 module tb_phy_tx_sequencer;
   import tb_seq_pkg::*;
   localparam int LANES = 4;
-  localparam int STOP_NONE = 0, STOP_WITH_REQ = 1, STOP_PRE = 2, STOP_BODY = 3, STOP_ACTIVE = 4;
 
   logic clk800 = 0, clk500 = 0, clk2g = 0, reset_n = 0;
   int unsigned seed = 1, rng = 1;
@@ -337,14 +330,13 @@ module tb_phy_tx_sequencer;
   initial begin wait (seeded); #(phase800); forever #625 clk800 = ~clk800; end
 
   // ---- Link with unequal inter-region delays -----------------------------------
-  logic req_src = 0, stop_src = 0;
+  logic req_src = 0;
   logic [2:0] op_src = 0;
   logic [LANES-1:0] mask_src = 0;
-  wire req_dst, stop_dst;
+  wire req_dst;
   wire [2:0] op_dst;
   wire [LANES-1:0] mask_dst;
   assign #170 req_dst = req_src;
-  assign #390 stop_dst = stop_src;
   assign #430 op_dst = op_src;
   assign #430 mask_dst = mask_src;
   wire [2:0] ack_c;
@@ -353,13 +345,13 @@ module tb_phy_tx_sequencer;
   assign #220 ack_any_d = |ack_c;
 
   tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(4), .CLKLEN(96), .NAME("c0.default")) c0 (
-    .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
+    .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst),
     .op(op_dst), .mask(mask_dst), .ack(ack_c[0]));
   tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(1), .CLKLEN(32), .NAME("c1.shortpost")) c1 (
-    .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
+    .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst),
     .op(op_dst), .mask(mask_dst), .ack(ack_c[1]));
   tb_seq_case #(.LANES(LANES), .PRE(12), .POST(6), .CLKLEN(32), .NAME("c2.longpre")) c2 (
-    .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
+    .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst),
     .op(op_dst), .mask(mask_dst), .ack(ack_c[2]));
 
   // Source-side ack synchronizers (3 stages, as in Ctrl800).
@@ -372,37 +364,12 @@ module tb_phy_tx_sequencer;
 
   int commands = 0;
 
-  task automatic run_cmd(input logic [2:0] op, input logic [LANES-1:0] mask,
-                         input int stop_mode, input int stop_wait);
+  // One training command (op 0..4): runs its full envelope, then acks.
+  task automatic run_cmd(input logic [2:0] op, input logic [LANES-1:0] mask);
     int n0 = c0.ncmd, n1 = c1.ncmd, n2 = c2.ncmd;
     int seeds0 = c0.seed_pulses[0];
     @(negedge clk800); op_src = op; mask_src = mask;  // payload before req
     @(negedge clk800); req_src = 1;
-    case (stop_mode)
-      STOP_WITH_REQ: stop_src = 1;
-      STOP_PRE: begin repeat (3) @(negedge clk800); stop_src = 1; end
-      STOP_BODY: begin
-        wait (c0.row == body_row(op));
-        repeat (stop_wait) @(negedge clk800);
-        stop_src = 1;
-      end
-      STOP_ACTIVE: begin
-        wait (c0.row == R_ACT);
-        repeat (3) @(negedge clk500);
-        // ACTIVE endpoint outputs: Tx500 0000, Valid 000, Data2g 0, Clock 1.
-        if (c0.enable_LFSR !== '0 || c0.zero_ena !== '0 || c0.load_seed !== '0 ||
-            c0.load_zero !== '0 || c0.phyDigControl !== 1'b1 || c0.digControl !== 1'b0 ||
-            {c0.phyTrainLfsr, c0.phyTrainValid, c0.phyTrainLaneid} !== 3'b000 ||
-            c1.enable_LFSR !== '0 || c1.zero_ena !== '0 || c1.load_zero !== '0 ||
-            c1.phyDigControl !== 1'b1 || c1.digControl !== 1'b0 ||
-            {c1.phyTrainLfsr, c1.phyTrainValid, c1.phyTrainLaneid} !== 3'b000)
-          $fatal(1, "ACTIVE endpoint outputs wrong");
-        if (!c0.active_ready || !c1.active_ready) $fatal(1, "active_ready low in ACTIVE");
-        repeat (stop_wait) @(negedge clk800);
-        stop_src = 1;
-      end
-      default: begin end
-    endcase
     wait (ack_all_s);
     @(negedge clk800);
     // Ack is seen only after every envelope has finished: all clocks off.
@@ -410,28 +377,59 @@ module tb_phy_tx_sequencer;
       $fatal(1, "ack seen while a forwarded clock is still on");
     if (c0.ncmd != n0 + 1 || c1.ncmd != n1 + 1 || c2.ncmd != n2 + 1)
       $fatal(1, "command trace not checked exactly once");
-    // Scenario-specific shape checks.
-    case (stop_mode)
-      STOP_NONE: begin
-        if (op == OP_ID && (c0.last_id_run != 256 || c1.last_id_run != 256 || c2.last_id_run != 256))
-          $fatal(1, "lane-ID burst not 256 x 8 UI (got %0d)", c0.last_id_run);
-        if (op == OP_RESEED) begin
-          for (int l = 0; l < LANES; l++)
-            if (c0.seed_pulses[l] != seeds0 + 1 || c1.seed_pulses[l] != seeds0 + 1)
-              $fatal(1, "RESEED not exactly one pulse on lane %0d", l);
-        end
-      end
-      STOP_PRE: if (c0.last_shape != 1 || c1.last_shape != 1 || c2.last_shape != 1)
-        $fatal(1, "stop was not taken in PRE (shapes %0d %0d %0d)",
-               c0.last_shape, c1.last_shape, c2.last_shape);
-      STOP_BODY, STOP_ACTIVE:
-        if ((op != OP_CLK && (c0.last_shape != 3 || c1.last_shape != 3)) || c0.last_body == 0)
-          $fatal(1, "stop was not taken in BODY");
-      default: begin end
-    endcase
-    req_src = 0; stop_src = 0;
+    if (op == OP_ID && (c0.last_id_run != 256 || c1.last_id_run != 256 || c2.last_id_run != 256))
+      $fatal(1, "lane-ID burst not 256 x 8 UI (got %0d)", c0.last_id_run);
+    if (op == OP_RESEED) begin
+      for (int l = 0; l < LANES; l++)
+        if (c0.seed_pulses[l] != seeds0 + 1 || c1.seed_pulses[l] != seeds0 + 1)
+          $fatal(1, "RESEED not exactly one pulse on lane %0d", l);
+    end
+    req_src = 0;
     wait (!ack_any_s);  // payload held until ack has fallen
     @(negedge clk800);
+    commands++;
+  endtask
+
+  // Asynchronous reset of every region; all outputs must be Idle at once.
+  task automatic reset_all_regions(input string why);
+    reset_n = 0;
+    #1;
+    if (c0.phyDigControl || c1.phyDigControl || c2.phyDigControl ||
+        c0.digControl || c0.laneID_index || c0.phyTrainLfsr || c1.phyTrainLfsr ||
+        c0.active_ready || c1.active_ready || c2.active_ready ||
+        c0.enable_LFSR !== '0 || c0.zero_ena !== '1 || c0.load_seed !== '0 || c0.load_zero !== '1 ||
+        c2.enable_LFSR !== '0 || c2.load_zero !== '1 || ack_c !== 3'b000)
+      $fatal(1, "reset (%s) did not return every endpoint to the Idle row", why);
+    req_src = 0;
+    repeat (8) @(negedge clk800);
+    reset_n = 1;
+    repeat (10) @(negedge clk800);
+  endtask
+
+  // ACTIVE has no end (no stop): it must stay in ACTIVE, never ack, and be
+  // left only through reset.
+  task automatic run_active(input int hold);
+    int n0 = c0.ncmd, n1 = c1.ncmd, n2 = c2.ncmd;
+    @(negedge clk800); op_src = OP_ACTIVE; mask_src = '0;
+    @(negedge clk800); req_src = 1;
+    wait (c0.row == R_ACT && c1.row == R_ACT && c2.row == R_ACT);
+    repeat (3) @(negedge clk500);
+    // ACTIVE endpoint outputs: Tx500 0000, Valid 000, Data2g 0, Clock 1.
+    if (c0.enable_LFSR !== '0 || c0.zero_ena !== '0 || c0.load_seed !== '0 ||
+        c0.load_zero !== '0 || c0.phyDigControl !== 1'b1 || c0.digControl !== 1'b0 ||
+        {c0.phyTrainLfsr, c0.phyTrainValid, c0.phyTrainLaneid} !== 3'b000 ||
+        c1.enable_LFSR !== '0 || c1.zero_ena !== '0 || c1.load_zero !== '0 ||
+        c1.phyDigControl !== 1'b1 || c1.digControl !== 1'b0 ||
+        {c1.phyTrainLfsr, c1.phyTrainValid, c1.phyTrainLaneid} !== 3'b000)
+      $fatal(1, "ACTIVE endpoint outputs wrong");
+    if (!c0.active_ready || !c1.active_ready || !c2.active_ready)
+      $fatal(1, "active_ready low in ACTIVE");
+    repeat (hold) @(negedge clk800);
+    if (c0.row != R_ACT || c1.row != R_ACT || c2.row != R_ACT || ack_c !== 3'b000 ||
+        c0.ncmd != n0 || c1.ncmd != n1 || c2.ncmd != n2)
+      $fatal(1, "ACTIVE ended or acked without reset");
+    c0.check_active_trace(); c1.check_active_trace(); c2.check_active_trace();
+    reset_all_regions("ACTIVE exit");
     commands++;
   endtask
 
@@ -479,40 +477,24 @@ module tb_phy_tx_sequencer;
     $display("PASS standalone Tx500 rows OFF/SEED/LFSR/ACTIVE/RAW/masked");
 
     // -- Every op, normal completion -------------------------------------------
-    run_cmd(OP_CLK, '0, STOP_NONE, 0);
-    run_cmd(OP_VAL, '0, STOP_NONE, 0);
-    run_cmd(OP_ID, '0, STOP_NONE, 0);
-    run_cmd(OP_LFSR, 4'b1111, STOP_NONE, 0);
-    run_cmd(OP_LFSR, 4'b1010, STOP_NONE, 0);  // masked lanes stay OFF
-    run_cmd(OP_RESEED, '0, STOP_NONE, 0);
+    run_cmd(OP_CLK, '0);
+    run_cmd(OP_VAL, '0);
+    run_cmd(OP_ID, '0);
+    run_cmd(OP_LFSR, 4'b1111);
+    run_cmd(OP_LFSR, 4'b1010);  // masked lanes stay OFF
+    run_cmd(OP_RESEED, '0);
     $display("PASS every op: exact BODY lengths and envelopes");
 
-    // -- ACTIVE (LINKINIT order: reseed, then ACTIVE) ---------------------------
-    run_cmd(OP_RESEED, '0, STOP_NONE, 0);
-    run_cmd(OP_ACTIVE, '0, STOP_ACTIVE, 10 + int'(rnd() % 40));
-    $display("PASS ACTIVE entry/exit");
+    // -- ACTIVE (LINKINIT order: reseed, then ACTIVE); left only by reset -------
+    run_cmd(OP_RESEED, '0);
+    run_active(10 + int'(rnd() % 40));
+    $display("PASS ACTIVE entry, held until reset");
 
-    // -- Stops ------------------------------------------------------------------
-    run_cmd(OP_VAL, '0, STOP_PRE, 0);
-    run_cmd(OP_ID, '0, STOP_PRE, 0);
-    run_cmd(OP_LFSR, rand_mask(), STOP_PRE, 0);
-    run_cmd(OP_ACTIVE, '0, STOP_PRE, 0);
-    $display("PASS stop during PRE");
-    run_cmd(OP_CLK, '0, STOP_BODY, int'(rnd() % 20));
-    run_cmd(OP_VAL, '0, STOP_BODY, int'(rnd() % 20));
-    run_cmd(OP_ID, '0, STOP_BODY, int'(rnd() % 20));
-    run_cmd(OP_LFSR, rand_mask(), STOP_BODY, int'(rnd() % 20));
-    $display("PASS stop during BODY");
-    run_cmd(OP_LFSR, rand_mask(), STOP_WITH_REQ, 0);
-    run_cmd(OP_CLK, '0, STOP_WITH_REQ, 0);
-    $display("PASS stop together with request");
-
-    // -- Back-to-back random commands -------------------------------------------
+    // -- Back-to-back random training commands ----------------------------------
     for (int i = 0; i < 16; i++) begin
       logic [2:0] op;
-      op = 3'(rnd() % 6);
-      if (op == OP_ACTIVE) run_cmd(op, '0, STOP_ACTIVE, int'(rnd() % 30));
-      else run_cmd(op, rand_mask(), STOP_NONE, 0);
+      op = 3'(rnd() % 5);  // ACTIVE excluded: it only ends by reset
+      run_cmd(op, rand_mask());
     end
     $display("PASS back-to-back random commands");
 
@@ -521,22 +503,11 @@ module tb_phy_tx_sequencer;
     @(negedge clk800); req_src = 1;
     wait (c0.row == R_LFSR);
     repeat (5 + rnd() % 20) @(negedge clk800);
-    reset_n = 0;
-    #1;
-    if (c0.phyDigControl || c1.phyDigControl || c2.phyDigControl ||
-        c0.digControl || c0.laneID_index || c0.phyTrainLfsr || c1.phyTrainLfsr ||
-        c0.enable_LFSR !== '0 || c0.zero_ena !== '1 || c0.load_seed !== '0 || c0.load_zero !== '1 ||
-        c2.enable_LFSR !== '0 || c2.load_zero !== '1 || ack_c !== 3'b000)
-      $fatal(1, "reset did not return every endpoint to the Idle row");
-    req_src = 0; stop_src = 0;
-    repeat (8) @(negedge clk800);
-    reset_n = 1;
-    repeat (10) @(negedge clk800);
-    run_cmd(OP_LFSR, rand_mask(), STOP_NONE, 0);
-    run_cmd(OP_ACTIVE, '0, STOP_ACTIVE, 5);
+    reset_all_regions("mid-LFSR");
+    run_cmd(OP_LFSR, rand_mask());
+    run_active(5);
     $display("PASS reset in the middle of a command, then recovery");
 
-    if (c1.pre_stops == 0 || c2.pre_stops == 0) $fatal(1, "PRE-stop coverage missing");
     $display("TB_PHY_TX_SEQUENCER_PASS seed=%0d commands=%0d", seed, commands);
     $finish;
   end

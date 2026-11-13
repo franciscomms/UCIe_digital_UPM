@@ -15,21 +15,26 @@
 //   3 LFSR       dataVref_sendPattern, d2cSender_sendLfsrPattern,
 //                rxDeskew_sendLfsrPattern, custom JTAG burst (seq_mask_o)
 //   4 RESEED     any of the five reset-scrambler flags (edge detected)
-//   5 ACTIVE     launched once on each entry into ltsm_state == 8 (ACTIVE),
-//                stopped when ltsm_state != 8. Raises no Finished flag.
+//   5 ACTIVE     launched once on each entry into ltsm_state == 8 (ACTIVE).
+//                Never ends: the PHY stays in ACTIVE until reset. Raises no
+//                Finished flag.
 // Training lengths are fixed in the sequencer (128 iterations).
 //
 // Link protocol (see PhyTxSequencer for the receiving side):
 //   seq_req_o   level; held until the synchronized ack is seen.
-//   seq_stop_o  level; raised to end the running command early, held until
-//               ack. Raised for ACTIVE when ltsm_state leaves 8 and for any
-//               other command when ltsm_state enters 9 (TRAIN_ERROR) or
-//               0 (RESET).
 //   seq_op_o, seq_mask_o  bundled; stable from before req rises until ack
 //               has fallen.
 //   seq_ack_i   synchronized here. Rises after the whole envelope (clock off).
-//   A command for which this controller raised stop counts as aborted and
-//   does not raise its Finished flag (decided locally, nothing returned).
+//
+// NOT IMPLEMENTED - early stop: the link has no stop signal, so a command
+// that has been launched cannot be cut short. ACTIVE and TRAIN_ERROR are
+// terminal in the current LTSM, so this is not needed today:
+//   - ACTIVE is left only through reset;
+//   - on TRAIN_ERROR entry a running training finishes its burst (at most
+//     PRE + 128 + POST 500 MHz cycles, about 272 ns for LFSR) and its
+//     Finished flag is suppressed; a queued training is discarded.
+// Restore a stop signal (and the sequencer drain path) if the LTSM gains
+// ACTIVE exits (L1/L2, RETRAIN, LINKERROR) or needs trainings cut short.
 //
 // Preserve hierarchy and apply the bundled-data timing constraints in
 // ucie_phy_control/constraints/cdc_constraints.sdc.
@@ -78,7 +83,7 @@ module LtsmPhyPatternCtrl800 #(
   output wire ltsm_flagFromAnalog_d2cSender_valTrainPatternSent,
   output wire ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
   output wire ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
-  // High while a command is pending or running (including all of ACTIVE).
+  // High while a command is pending or running (stays high once ACTIVE runs).
   output wire ltsm_pattern_busy,
   // Sticky until common reset: [0] multiple LTSM edges or LTSM/JTAG (or
   // ACTIVE-entry/JTAG) collision, [1] LTSM request/state mismatch or zero
@@ -92,7 +97,6 @@ module LtsmPhyPatternCtrl800 #(
   output wire ltsm_active_ready,
   // ---- Link to PhyTxSequencer (CDC, see protocol above) --------------------
   output wire seq_req_o,
-  output wire seq_stop_o,
   output wire [2:0] seq_op_o,
   output wire [LANES-1:0] seq_mask_o,
   input wire seq_ack_i,
@@ -118,10 +122,10 @@ module LtsmPhyPatternCtrl800 #(
     .clk_i(clock),.rst_ni(reset_ltsm_n),
     .async_i(seq_active_ready_i),.sync_o(ltsm_active_ready));
 
-  // LTSM state events. ACTIVE is entered/left on ltsm_state == 8. Trainings
-  // are stopped, and a queued training discarded, on ENTRY into TRAIN_ERROR
-  // or RESET. Entry (not level) is used so a custom JTAG burst can still be
-  // issued while the LTSM sits in RESET (PHY test mode).
+  // LTSM state events. ACTIVE is entered on ltsm_state == 8. A queued
+  // training is discarded on ENTRY into TRAIN_ERROR or RESET (a running one
+  // finishes, see the header). Entry (not level) is used so a custom JTAG
+  // burst can still be issued while the LTSM sits in RESET (PHY test mode).
   logic [3:0] previous_state;
   wire in_active = (ltsm_state == ST_ACTIVE);
   wire active_entry = in_active && (previous_state != ST_ACTIVE);
@@ -217,9 +221,9 @@ module LtsmPhyPatternCtrl800 #(
   source_state_t source_state;
   logic pending_valid, pending_reset, reset_first;
   logic [LANES-1:0] pending_mask;
-  logic [2:0] pending_op, active_op;
+  logic [2:0] pending_op;
   logic [8:0] pending_owner,active_owner;
-  wire src_ready, src_done, src_aborted;
+  wire src_ready, src_done;
 
   wire pattern_rise = (|rise) || custom_selected;
   wire valid_pattern = pattern_rise && !multiple_rise && decoded_legal;
@@ -240,15 +244,11 @@ module LtsmPhyPatternCtrl800 #(
   wire capture_reset = reset_rise && (!pending_reset || launch_reset);
   wire capture_pattern = new_pattern && pattern_slot_free;
 
-  // Early end of the running command. The source half latches it until ack.
-  wire stop_command = (source_state==WAIT_DONE) &&
-    ((active_op == OP_ACTIVE) ? !in_active : abort_entry);
-
   assign ltsm_pattern_busy=pending_reset || pending_valid || (source_state!=IDLE);
   always_ff @(posedge clock or negedge reset_ltsm_n) begin
     if (!reset_ltsm_n) begin
       source_state<=IDLE; pending_valid<=0; pending_mask<='0; pending_op<=OP_CLK_TRAIN;
-      pending_owner<='0; active_owner<='0; active_op<=OP_CLK_TRAIN;
+      pending_owner<='0; active_owner<='0;
       pending_reset<=0; reset_first<=0; previous_reset_flags<='0;
       previous_request<='0; previous_custom_train<=0; finished<='0;
       previous_state<=ST_RESET;
@@ -264,13 +264,13 @@ module LtsmPhyPatternCtrl800 #(
       if (launch_pattern || drop_pending) pending_valid<=0;
       if (launch_reset || launch_pattern) begin
         active_owner<=launch_reset ? 9'b0 : pending_owner;
-        active_op<=launch_reset ? OP_RESEED : pending_op;
         source_state<=WAIT_DONE;
       end
       if (source_state==WAIT_DONE && src_done) begin
         source_state<=RETURN_ZERO;
-        // An aborted command does not report Finished.
-        finished<=src_aborted ? 9'b0 : active_owner;
+        // No Finished once the LTSM has left for TRAIN_ERROR/RESET: the owning
+        // substate is gone (the burst itself could not be stopped).
+        finished<=in_abort_state ? 9'b0 : active_owner;
       end
       if (source_state==RETURN_ZERO && src_ready) source_state<=IDLE;
       if (capture_reset) begin
@@ -302,13 +302,10 @@ module LtsmPhyPatternCtrl800 #(
     .src_clk_i(clock),.src_rst_ni(reset_ltsm_n),
     .src_valid_i(launch_reset || launch_pattern),
     .src_req_i(1'b1),
-    .src_stop_i(stop_command),
     .src_ready_o(src_ready),
     .src_data_i(launch_reset ? {OP_RESEED, ALL_LANES} : {pending_op, pending_mask}),
     .src_done_o(src_done),
-    .src_aborted_o(src_aborted),
     .link_req_o(seq_req_o),
-    .link_stop_o(seq_stop_o),
     .link_payload_o({seq_op_o, seq_mask_o}),
     .link_ack_async_i(seq_ack_i));
 
@@ -327,9 +324,6 @@ module LtsmPhyPatternCtrl800 #(
   assert property (@(posedge clock) disable iff (!reset_ltsm_n)
     (pending_valid && pending_op==OP_ACTIVE) |-> pending_owner==9'b0)
     else $error("ACTIVE must not own a Finished flag");
-  assert property (@(posedge clock) disable iff (!reset_ltsm_n)
-    seq_stop_o |-> seq_req_o)
-    else $error("stop raised without a request");
 `endif
 endmodule
 `default_nettype wire
@@ -377,10 +371,7 @@ endmodule
 // are explicit; no destination clock or destination flops exist in this module.
 // Payload uses a bundled-data CDC timing contract. Synchronize each ACK bit
 // before checking for unanimous completion or return to idle.
-// Early stop: src_stop_i while a command is outstanding raises link_stop_o,
-// held until the ack is seen (it falls together with link_req_o).
-// src_aborted_o reports, with src_done_o, whether stop was raised for the
-// command. It is decided locally; the destination returns only the ack.
+// No early stop: once launched, a command runs until the destination acks.
 module Ltsm800CommandSource #(
   parameter integer WIDTH=34,
   parameter integer STAGES=3,
@@ -391,13 +382,10 @@ module Ltsm800CommandSource #(
   input wire src_rst_ni,
   input wire src_valid_i,
   input wire [REQ_WIDTH-1:0] src_req_i, // one-hot command, captured at launch
-  input wire src_stop_i,                // end the outstanding command early
   output wire src_ready_o,
   input wire [WIDTH-1:0] src_data_i,
   output logic src_done_o,              // one-cycle completion pulse
-  output logic src_aborted_o,           // stop was raised, valid with src_done_o
   output wire [REQ_WIDTH-1:0] link_req_o,
-  output wire link_stop_o,
   output wire [WIDTH-1:0] link_payload_o,
   input wire [ACK_WIDTH-1:0] link_ack_async_i
 );
@@ -406,7 +394,6 @@ module Ltsm800CommandSource #(
   typedef enum logic [1:0] {SRC_IDLE,SRC_LAUNCH,SRC_WAIT_ACK,SRC_WAIT_LOW} src_state_t;
   src_state_t src_state_q;
   logic [REQ_WIDTH-1:0] req_q, launch_req_q;
-  logic stop_q;
   logic [WIDTH-1:0] payload_q;
   wire [ACK_WIDTH-1:0] ack_sync;
   for (genvar lane = 0; lane < ACK_WIDTH; lane++) begin : g_lane_ack
@@ -418,12 +405,11 @@ module Ltsm800CommandSource #(
   wire all_ack_low = ~|ack_sync;
   assign src_ready_o=(src_state_q==SRC_IDLE) && all_ack_low;
   assign link_req_o=req_q;
-  assign link_stop_o=stop_q;
   assign link_payload_o=payload_q;
   always_ff @(posedge src_clk_i or negedge src_rst_ni) begin
     if (!src_rst_ni) begin
-      src_state_q<=SRC_IDLE; req_q<=0; launch_req_q<=0; stop_q<=0; payload_q<='0;
-      src_done_o<=0; src_aborted_o<=0;
+      src_state_q<=SRC_IDLE; req_q<=0; launch_req_q<=0; payload_q<='0;
+      src_done_o<=0;
     end else begin
       src_done_o<=0;
       case (src_state_q)
@@ -433,16 +419,12 @@ module Ltsm800CommandSource #(
         end
         SRC_LAUNCH: begin
           req_q<=launch_req_q;
-          if (src_stop_i) stop_q<=1;  // stop requested at launch: raise with req
           src_state_q<=SRC_WAIT_ACK;
         end
         SRC_WAIT_ACK: if (all_ack_high) begin
-          // Completion acknowledgment: return req/stop low, report done once.
-          // Aborted = this source raised stop for the command.
-          src_done_o<=1; src_aborted_o<=stop_q;
-          req_q<=0; stop_q<=0; src_state_q<=SRC_WAIT_LOW;
-        end else if (src_stop_i) begin
-          stop_q<=1;
+          // Completion acknowledgment: return req low, report done once.
+          src_done_o<=1;
+          req_q<=0; src_state_q<=SRC_WAIT_LOW;
         end
         SRC_WAIT_LOW: if (all_ack_low) src_state_q<=SRC_IDLE;
         default: src_state_q<=SRC_IDLE;
@@ -455,9 +437,6 @@ module Ltsm800CommandSource #(
   assert property (@(posedge src_clk_i) disable iff (!src_rst_ni)
     (|req_q) && $past(|req_q) |-> $stable({req_q,payload_q}))
     else $error("Source changed held command payload while request active");
-  assert property (@(posedge src_clk_i) disable iff (!src_rst_ni)
-    stop_q |-> (|req_q))
-    else $error("Source stop held without a request");
 `endif
 endmodule
 

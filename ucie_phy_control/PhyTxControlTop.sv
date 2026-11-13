@@ -32,7 +32,6 @@ module PhyTxControlTop #(
 
   // ---- Link from/to LtsmPhyPatternCtrl800 (asynchronous) --------------------
   input  wire              seq_req_i,
-  input  wire              seq_stop_i,
   input  wire [2:0]        seq_op_i,
   input  wire [LANES-1:0]  seq_mask_i,
   output wire              seq_ack_o,
@@ -66,7 +65,7 @@ module PhyTxControlTop #(
     .PRE_CYC(PRE_CYC), .POST_CYC(POST_CYC), .CLK_LEN(CLK_LEN)
   ) u_seq (
     .clock_tx500(clock_tx500), .reset_n(reset_n), .reset_seq_n(unused_reset_seq_n),
-    .seq_req_i(seq_req_i), .seq_stop_i(seq_stop_i),
+    .seq_req_i(seq_req_i),
     .seq_op_i(seq_op_i), .seq_mask_i(seq_mask_i),
     .seq_ack_o(seq_ack_o),
     .clk_en_o(clk_en), .val_sel_o(val_sel), .lfsr_val_en_o(lfsr_val_en), .id_en_o(id_en),

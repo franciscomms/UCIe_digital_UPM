@@ -16,19 +16,19 @@
 //
 // ---- Link protocol (Ctrl800 <-> sequencer) ---------------------------------
 //   seq_req_i   level, synchronized here (u_req_sync).
-//   seq_stop_i  level, synchronized here (u_stop_sync).
 //   seq_op_i, seq_mask_i  bundled data: stable from before req rises until
 //               ack has fallen. Captured ONCE, on the first cycle the
 //               synchronized request is seen in IDLE. Never synchronized
 //               bit by bit (constrain with a bundled max-delay).
 //   seq_ack_o   rises only after the whole envelope has finished (clock off),
-//               held until synchronized req AND stop are both low.
-//   Source rules: req stays high until ack is seen. stop is raised to end a
-//   command early and held until ack. On stop the sequencer drains: valid
-//   bits, Data2g and the Tx500 mode go off at once, clk_en stays on for
-//   POST_CYC cycles, then clk_en goes off and ack rises.
-//   No aborted result is returned: Ctrl800 raised stop itself, so it already
-//   knows the command was ended early.
+//               held until the synchronized req is low.
+//   Source rule: req stays high until ack is seen.
+//   NOT IMPLEMENTED - early stop: there is no stop input. A started command
+//   always runs its full envelope, and ACTIVE (BODY with no end) is left only
+//   through reset_n. This matches the current LTSM, where ACTIVE and
+//   TRAIN_ERROR are terminal states. Add a stop/drain path (and its CDC
+//   synchronizer) if the LTSM gains ACTIVE exits (L1/L2, RETRAIN, LINKERROR)
+//   or if a training must be cut short on TRAIN_ERROR entry.
 //
 // ---- Command set (op) -------------------------------------------------------
 //   op | name      | envelope              | BODY outputs                 | BODY len
@@ -39,7 +39,7 @@
 //   3  | LFSR      | PRE + BODY + POST     | clk_en, lfsr_val_en (500M),  | 128
 //      |           |                       | tx500 LFSR on mask lanes     |
 //   4  | RESEED    | BODY only, no clock   | tx500 SEED on all lanes      | 1
-//   5  | ACTIVE    | PRE + BODY + POST     | clk_en, tx500 ACTIVE on all  | until stop
+//   5  | ACTIVE    | PRE + BODY            | clk_en, tx500 ACTIVE on all  | until reset
 //      |           |                       | lanes, active_ready          |
 //   PRE and POST drive clk_en only (val_sel/lfsr_val_en/id_en 0, Tx500 OFF).
 //   The LFSR valid bit goes to PhyPatternValid500m (500 MHz), not to
@@ -53,10 +53,8 @@
 // ---- FSM ----------------------------------------------------------------------
 //   IDLE -> PRE -> BODY -> POST -> DONE (ack held) -> IDLE
 //   CLK_TRAIN and RESEED: IDLE -> BODY -> DONE.
-//   ACTIVE: BODY never ends by itself; only stop ends it (-> POST).
-//   Stop in PRE or BODY -> POST (CLK_TRAIN/RESEED: -> DONE). Stop in POST is
-//   already draining and changes nothing. A request that is already stopped
-//   when first seen goes straight to DONE with nothing sent.
+//   ACTIVE: stays in BODY until reset_n (no ack is ever returned for it).
+//   An unknown op goes straight to DONE with nothing sent.
 //
 // All outputs are flops decoded from the NEXT state, so every enable of one
 // command changes on the same clock_tx500 edge.
@@ -65,7 +63,7 @@
 // =============================================================================
 module PhyTxSequencer #(
   parameter integer LANES       = 16,
-  parameter integer SYNC_STAGES = 3,   // req/stop synchronizer depth (>= 2)
+  parameter integer SYNC_STAGES = 3,   // req synchronizer depth (>= 2)
   parameter integer PRE_CYC     = 4,   // clock lead before BODY, 500 MHz cycles (>= 1)
   parameter integer POST_CYC    = 2,   // clock trail after BODY, 500 MHz cycles (>= 1)
   parameter integer CLK_LEN     = 96   // CLK_TRAIN BODY, 500 MHz cycles (see header)
@@ -76,7 +74,6 @@ module PhyTxSequencer #(
 
   // ---- Link from Ctrl800 (asynchronous) -------------------------------------
   input  wire              seq_req_i,
-  input  wire              seq_stop_i,
   input  wire [2:0]        seq_op_i,         // bundled with req
   input  wire [LANES-1:0]  seq_mask_i,       // bundled with req (LFSR lanes)
   output logic             seq_ack_o,
@@ -130,15 +127,13 @@ module PhyTxSequencer #(
   endfunction
 
   // ---------------------------------------------------------------------------
-  // Reset release and the only two request synchronizers of the TX control.
+  // Reset release and the only request synchronizer of the TX control.
   // ---------------------------------------------------------------------------
-  wire req_s, stop_s;
+  wire req_s;
   PhySeqResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx500), .arst_ni(reset_n), .rst_no(reset_seq_n));
   PhySeqSyncBit #(.STAGES(SYNC_STAGES)) u_req_sync (
     .clk_i(clock_tx500), .rst_ni(reset_seq_n), .async_i(seq_req_i), .sync_o(req_s));
-  PhySeqSyncBit #(.STAGES(SYNC_STAGES)) u_stop_sync (
-    .clk_i(clock_tx500), .rst_ni(reset_seq_n), .async_i(seq_stop_i), .sync_o(stop_s));
 
   typedef enum logic [2:0] {S_IDLE, S_PRE, S_BODY, S_POST, S_DONE} state_t;
   state_t state_q, state_d;
@@ -161,8 +156,8 @@ module PhyTxSequencer #(
       S_IDLE: if (req_s) begin
         op_d      = seq_op_i;
         mask_d    = seq_mask_i;
-        if (stop_s || !op_legal(seq_op_i)) begin
-          // Already stopped (or unknown op): complete at once, send nothing.
+        if (!op_legal(seq_op_i)) begin
+          // Unknown op: complete at once, send nothing.
           ack_d     = 1'b1;
           state_d   = S_DONE;
         end else if (no_envelope(seq_op_i)) begin
@@ -176,10 +171,7 @@ module PhyTxSequencer #(
 
       // Clock leads valid/data by PRE_CYC cycles.
       S_PRE: begin
-        if (stop_s) begin
-          cnt_d     = CW'(POST_CYC - 1);
-          state_d   = S_POST;
-        end else if (cnt_q == '0) begin
+        if (cnt_q == '0) begin
           cnt_d   = body_last(op_q);
           state_d = S_BODY;
         end else begin
@@ -187,9 +179,9 @@ module PhyTxSequencer #(
         end
       end
 
-      // Pattern body. ACTIVE never ends on its own.
+      // Pattern body. ACTIVE never ends (left only through reset_n).
       S_BODY: begin
-        if (stop_s || (op_q != OP_ACTIVE && cnt_q == '0)) begin
+        if (op_q != OP_ACTIVE && cnt_q == '0) begin
           if (no_envelope(op_q)) begin
             ack_d   = 1'b1;
             state_d = S_DONE;
@@ -202,7 +194,7 @@ module PhyTxSequencer #(
         end
       end
 
-      // Clock trails valid/data by POST_CYC cycles; stop is ignored here.
+      // Clock trails valid/data by POST_CYC cycles.
       S_POST: begin
         if (cnt_q == '0) begin
           ack_d   = 1'b1;
@@ -212,8 +204,8 @@ module PhyTxSequencer #(
         end
       end
 
-      // Envelope finished, clock off. Hold ack until req and stop are low.
-      S_DONE: if (!req_s && !stop_s) begin
+      // Envelope finished, clock off. Hold ack until req is low.
+      S_DONE: if (!req_s) begin
         ack_d   = 1'b0;
         state_d = S_IDLE;
       end
@@ -322,13 +314,13 @@ module PhyTxSequencer #(
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
     (state_q != S_IDLE && req_s) |-> (seq_op_i == op_q && seq_mask_i == mask_q))
     else $error("SEQ: op/mask changed while request held");
-  // Exact BODY length for every training command that was not stopped.
+  // Exact BODY length for every training command.
   integer body_len_q;
   always_ff @(posedge clock_tx500 or negedge reset_seq_n) begin
     if (!reset_seq_n) body_len_q <= 0;
     else if (state_q == S_BODY) begin
       body_len_q <= body_len_q + 1;
-      if (state_d != S_BODY && !stop_s && op_q != OP_ACTIVE)
+      if (state_d != S_BODY && op_q != OP_ACTIVE)
         assert (body_len_q + 1 == int'(body_last(op_q)) + 1)
           else $error("SEQ: op %0d BODY length %0d, expected %0d",
                       op_q, body_len_q + 1, int'(body_last(op_q)) + 1);
@@ -353,7 +345,7 @@ module PhySeqResetSync #(parameter integer STAGES = 3) (
 `endif
 endmodule
 
-// Single-bit level synchronizer for req/stop.
+// Single-bit level synchronizer for req.
 module PhySeqSyncBit #(parameter integer STAGES = 3) (
   input  wire clk_i,
   input  wire rst_ni,

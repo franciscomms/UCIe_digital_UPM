@@ -33,8 +33,8 @@
 #   create_generated_clock -name clock_tx500 -source [get_pins <div>/CLK] \
 #       -divide_by 4 [get_pins <div>/Q]
 #
-# CTRL800 (800 MHz) is asynchronous to both. The only crossings are the five
-# routes below, all bounded by max-delay. No blanket asynchronous clock groups
+# CTRL800 (800 MHz) is asynchronous to both. The only crossings are the four
+# routes below (req, ack, active_ready, {op, mask}), all bounded by max-delay. No blanket asynchronous clock groups
 # or false paths: they would override these bounds.
 #
 # ---------------------------------------------------------------------------
@@ -46,8 +46,6 @@
 # Level controls, launch Q -> ONLY the first synchronizer-stage D pin:
 #   SEQ_REQ_SRC:    CTRL800/u_src_seq/req_q[0]/Q
 #   SEQ_REQ_DST:    SEQ/u_req_sync/sync_q[0]/D
-#   SEQ_STOP_SRC:   CTRL800/u_src_seq/stop_q/Q
-#   SEQ_STOP_DST:   SEQ/u_stop_sync/sync_q[0]/D
 #   SEQ_ACK_SRC:    SEQ/seq_ack_o/Q
 #   SEQ_ACK_DST:    CTRL800/u_src_seq/g_lane_ack[0].u_ack_sync/sync_q[0]/D
 #   SEQ_READY_SRC:  SEQ/active_ready_o/Q
@@ -76,7 +74,7 @@ if {![string is integer -strict $CTRL_LANES] || $CTRL_LANES < 1} {
 
 # Validate the entire binding before emitting any exceptions.
 foreach collection_name {
-  SEQ_REQ_SRC SEQ_REQ_DST SEQ_STOP_SRC SEQ_STOP_DST
+  SEQ_REQ_SRC SEQ_REQ_DST
   SEQ_ACK_SRC SEQ_ACK_DST SEQ_READY_SRC SEQ_READY_DST
   SEQ_CMD_SRC SEQ_CMD_DST
 } {
@@ -95,7 +93,7 @@ if {[sizeof_collection $SEQ_CMD_DST] < ($CTRL_LANES + 3)} {
   error "SEQ_CMD_DST must cover op_q, mask_q and the rest of the payload fanout"
 }
 foreach collection_name {
-  SEQ_REQ_SRC SEQ_REQ_DST SEQ_STOP_SRC SEQ_STOP_DST
+  SEQ_REQ_SRC SEQ_REQ_DST
   SEQ_ACK_SRC SEQ_ACK_DST SEQ_READY_SRC SEQ_READY_DST
 } {
   if {[sizeof_collection [set $collection_name]] != 1} {
@@ -109,12 +107,11 @@ foreach collection_name {
 # Controls into first synchronizer stages: propagation limits so a stale edge
 # cannot survive into the next handshake phase. Not a setup relationship.
 set_max_delay -datapath_only 2.0  -from $SEQ_REQ_SRC   -to $SEQ_REQ_DST
-set_max_delay -datapath_only 2.0  -from $SEQ_STOP_SRC  -to $SEQ_STOP_DST
 set_max_delay -datapath_only 1.25 -from $SEQ_ACK_SRC   -to $SEQ_ACK_DST
 set_max_delay -datapath_only 1.25 -from $SEQ_READY_SRC -to $SEQ_READY_DST
 # Bundled data.
 set_max_delay -datapath_only 2.0  -from $SEQ_CMD_SRC   -to $SEQ_CMD_DST
-# DO NOT false-path any of these five routes: in common STA exception
+# DO NOT false-path any of these four routes: in common STA exception
 # precedence a false path overrides max delay and removes the bound. Use the
 # tool's asynchronous first-stage min/hold treatment without disabling the
 # max-delay checks; verify the tool's actual semantics.
@@ -126,7 +123,7 @@ set_max_delay -datapath_only 2.0  -from $SEQ_CMD_SRC   -to $SEQ_CMD_DST
 # endpoints in time.
 #
 # Physical integration requirements (not executable floorplan constraints):
-# - Cluster each synchronizer chain in its RECEIVING region (req/stop in SEQ,
+# - Cluster each synchronizer chain in its RECEIVING region (req in SEQ,
 #   ack/active_ready in CTRL800).
 # - Preserve hierarchies: CTRL800, SEQ, CLOCK2G, VALID2G, VALID500M, DATA2G,
 #   each TX500.

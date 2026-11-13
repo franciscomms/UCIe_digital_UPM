@@ -11,9 +11,10 @@
 //   - custom JTAG burst: LFSR op with the programmed mask, no Finished flag;
 //   - illegal state -> error[1]; queue overflow -> error[2];
 //   - LINKINIT reseed is sent before ACTIVE; ACTIVE raises ltsm_active_ready
-//     and exits (aborted, no Finished) when the state leaves 8;
-//   - TRAIN_ERROR entry stops a running training without Finished, discards a
-//     queued one, and sets no error bit.
+//     and stays active (busy) until reset, even if the state leaves 8 (there
+//     is no stop); after reset each entry into 8 launches ACTIVE once;
+//   - TRAIN_ERROR entry lets a running training finish without Finished,
+//     discards a queued one, and sets no error bit.
 // =============================================================================
 module tb_ltsm_specialized;
   localparam int LANES = 2;
@@ -35,14 +36,13 @@ module tb_ltsm_specialized;
   wire [2:0] errors;
 
   // ---- Link with unequal inter-region delays ---------------------------------
-  wire req_src, stop_src, ack_dst, ready_dst;
+  wire req_src, ack_dst, ready_dst;
   wire [2:0] op_src;
   wire [LANES-1:0] mask_src;
-  wire req_dst, stop_dst, ack_src, ready_src;
+  wire req_dst, ack_src, ready_src;
   wire [2:0] op_dst;
   wire [LANES-1:0] mask_dst;
   assign #170 req_dst = req_src;
-  assign #390 stop_dst = stop_src;
   assign #430 op_dst = op_src;
   assign #430 mask_dst = mask_src;
   assign #220 ack_src = ack_dst;
@@ -82,7 +82,7 @@ module tb_ltsm_specialized;
     .ltsm_pattern_error(errors),
     .reset_ltsm_n(reset_ltsm_n),
     .ltsm_active_ready(ltsm_active_ready),
-    .seq_req_o(req_src), .seq_stop_o(stop_src),
+    .seq_req_o(req_src),
     .seq_op_o(op_src), .seq_mask_o(mask_src),
     .seq_ack_i(ack_src),
     .seq_active_ready_i(ready_src));
@@ -92,7 +92,7 @@ module tb_ltsm_specialized;
   wire [LANES-1:0] enable_LFSR, zero_ena, load_seed, load_zero;
   PhyTxControlTop #(.LANES(LANES)) u_phy (
     .clock_tx500(clock_tx500), .clock_tx2g(clock_tx2g), .reset_n(reset_n),
-    .seq_req_i(req_dst), .seq_stop_i(stop_dst), .seq_op_i(op_dst), .seq_mask_i(mask_dst),
+    .seq_req_i(req_dst), .seq_op_i(op_dst), .seq_mask_i(mask_dst),
     .seq_ack_o(ack_dst), .active_ready_o(ready_dst),
     .lane_id_i(4'h5),
     .phyDigControl(phyDigControl), .phyTrainLfsr(phyTrainLfsr),
@@ -104,7 +104,7 @@ module tb_ltsm_specialized;
   // ---- Monitors -----------------------------------------------------------------
   logic [2:0] ops_seen[$];
   logic [LANES-1:0] masks_seen[$];
-  int finish_count = 0, seed_pulses = 0, abort_count = 0;
+  int finish_count = 0, seed_pulses = 0;
   logic [8:0] last_done = 0;
   bit saw_clk = 0, saw_val = 0, saw_lfsrv = 0, saw_laneid = 0, saw_data = 0, saw_lfsr = 0,
       saw_active = 0;
@@ -112,7 +112,6 @@ module tb_ltsm_specialized;
   always @(posedge req_src) begin ops_seen.push_back(op_src); masks_seen.push_back(mask_src); end
   always @(posedge clock) if (reset_ltsm_n) begin
     if (|done) begin finish_count++; last_done = done; end
-    if (u_ctrl.src_done && u_ctrl.src_aborted) abort_count++;
   end
   always @(negedge clock_tx2g) if (reset_n) begin
     saw_clk |= phyDigControl; saw_val |= phyTrainValid; saw_lfsrv |= phyTrainLfsr;
@@ -134,7 +133,7 @@ module tb_ltsm_specialized;
 
   task automatic clear_scores;
     ops_seen.delete(); masks_seen.delete();
-    finish_count = 0; seed_pulses = 0; abort_count = 0; last_done = 0;
+    finish_count = 0; seed_pulses = 0; last_done = 0;
     saw_clk = 0; saw_val = 0; saw_lfsrv = 0; saw_laneid = 0; saw_data = 0; saw_lfsr = 0;
     saw_active = 0;
   endtask
@@ -221,7 +220,7 @@ module tb_ltsm_specialized;
     repeat (6) @(negedge clock);
     $display("PASS custom JTAG LFSR burst");
 
-    // -- LINKINIT reseed before ACTIVE; ACTIVE exit when state leaves 8 ----------
+    // -- LINKINIT reseed before ACTIVE; ACTIVE held until reset --------------------
     @(negedge clock); clear_scores();
     ltsm_state = 7; rst_flags = 5'b10000;          // LINKINIT holds its flag
     @(negedge clock); ltsm_state = 8;              // immediately enter ACTIVE
@@ -235,26 +234,28 @@ module tb_ltsm_specialized;
         enable_LFSR !== '0 || zero_ena !== '0 || load_zero !== '0)
       $fatal(1, "ACTIVE PHY outputs wrong");
     if (!busy) $fatal(1, "controller must stay busy in ACTIVE");
-    @(negedge clock); ltsm_state = 5; rst_flags = 0;  // leave ACTIVE (e.g. retrain)
-    wait (!busy);
-    repeat (10) @(negedge clock);
-    if (ltsm_active_ready || phyDigControl || finish_count != 0 || abort_count != 1 || errors != 0)
-      $fatal(1, "ACTIVE exit wrong");
-    if (enable_LFSR !== '0 || zero_ena !== '1 || load_zero !== '1)
-      $fatal(1, "Tx500 not OFF after ACTIVE");
-    $display("PASS LINKINIT reseed -> ACTIVE -> exit on state change");
+    // No stop: leaving state 8 does not end ACTIVE (not reachable in the current
+    // LTSM, where ACTIVE is terminal). Only reset ends it.
+    @(negedge clock); ltsm_state = 5; rst_flags = 0;
+    repeat (200) @(negedge clock);
+    if (!busy || !ltsm_active_ready || !phyDigControl || zero_ena !== '0 ||
+        finish_count != 0 || errors != 0 || ops_seen.size() != 2)
+      $fatal(1, "ACTIVE must hold until reset");
+    reset_all();
+    if (ltsm_active_ready || phyDigControl || enable_LFSR !== '0 || zero_ena !== '1 ||
+        load_zero !== '1)
+      $fatal(1, "reset did not end ACTIVE");
+    $display("PASS LINKINIT reseed -> ACTIVE, held until reset");
 
-    // -- Re-entering ACTIVE launches it again ----------------------------------------
+    // -- After reset, entering ACTIVE launches it again ------------------------------
     @(negedge clock); clear_scores(); ltsm_state = 8;
     wait (ltsm_active_ready);
-    @(negedge clock); ltsm_state = 9;               // TRAIN_ERROR also leaves ACTIVE
-    wait (!busy);
-    repeat (6) @(negedge clock);
-    if (ops_seen.size() != 1 || ops_seen[0] != OP_ACTIVE || abort_count != 1 || errors != 0)
+    repeat (20) @(negedge clock);
+    if (ops_seen.size() != 1 || ops_seen[0] != OP_ACTIVE || errors != 0 || !busy)
       $fatal(1, "ACTIVE re-entry wrong");
     $display("PASS ACTIVE launched once per entry");
 
-    // -- TRAIN_ERROR aborts a running training, discards the queued one ---------
+    // -- TRAIN_ERROR: running training finishes without Finished, queue dropped --
     reset_all();
     @(negedge clock); clear_scores(); ltsm_state = 6; ltsm_dbg_mbtrainState = 8;
     req = 9'b1 << 7;                                 // d2cSender LFSR, held
@@ -263,13 +264,15 @@ module tb_ltsm_specialized;
     @(negedge clock);
     if (!u_ctrl.pending_valid) $fatal(1, "second training was not queued");
     repeat (4) @(negedge clock); ltsm_state = 9;
+    @(negedge clock);
+    if (!(|enable_LFSR)) $fatal(1, "running LFSR burst must not be cut short");
     wait (!busy);
     repeat (20) @(negedge clock);
-    if (finish_count != 0 || abort_count != 1 || errors != 0 || ops_seen.size() != 1 || phyDigControl)
-      $fatal(1, "TRAIN_ERROR abort wrong: fin %0d abort %0d err %b ops %0d",
-             finish_count, abort_count, errors, ops_seen.size());
+    if (finish_count != 0 || errors != 0 || ops_seen.size() != 1 || phyDigControl)
+      $fatal(1, "TRAIN_ERROR handling wrong: fin %0d err %b ops %0d",
+             finish_count, errors, ops_seen.size());
     req = 0;
-    $display("PASS TRAIN_ERROR stops the training without Finished, drops the queue");
+    $display("PASS TRAIN_ERROR: burst completes without Finished, queue dropped");
 
     // -- Illegal state -> error[1] ----------------------------------------------------
     reset_all();

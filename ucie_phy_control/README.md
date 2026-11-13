@@ -8,9 +8,9 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
  LtsmPhyPatternCtrl800      |  PhyTxControlTop
  +----------------------+   |  +-----------------------------------------------+
  | flag edge detect     |   |  | PhyTxSequencer (clock_tx500)                  |
- | legality decode      |   |  |  req/stop sync -> IDLE>PRE>BODY>POST>DONE     |
- | 1-deep queue + reseed| req,stop  |  clk_en --------------> PhyPatternClock2g |-> phyDigControl
- | ACTIVE launch / stop |---------->|  val_sel[1:0] ---------> PhyPatternValid2g |-> phyTrainValid/Laneid
+ | legality decode      |   |  |  req sync -> IDLE>PRE>BODY>POST>DONE          |
+ | 1-deep queue + reseed|    req    |  clk_en --------------> PhyPatternClock2g |-> phyDigControl
+ | ACTIVE launch        |---------->|  val_sel[1:0] ---------> PhyPatternValid2g |-> phyTrainValid/Laneid
  |                      |           |  lfsr_val_en ----------> PhyPatternValid500m -> phyTrainLfsr (clock_tx500)
  | Ltsm800CommandSource | op,mask   |  id_en ----------------> PhyPatternData2g  |-> digControl, laneID_index
  |                      |<----------|  tx500_mode, lane_en --> LANES x Tx500     |-> enable_LFSR, zero_ena,
@@ -23,7 +23,7 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
 
 | File | Clock | Role |
 | --- | --- | --- |
-| `../systemVerilog/src/LtsmPhyPatternCtrl800.sv` | 800 MHz | LTSM flag capture, legality decode, queue, ACTIVE launch/stop, single link source (`Ltsm800CommandSource`) |
+| `../systemVerilog/src/LtsmPhyPatternCtrl800.sv` | 800 MHz | LTSM flag capture, legality decode, queue, ACTIVE launch, single link source (`Ltsm800CommandSource`) |
 | `PhyTxSequencer.sv` | 500 MHz | The only CDC receiver and the only owner of timing. FSM, lengths, PRE/POST envelope |
 | `PhyPatternClock2g.sv` | 2 GHz | `phyDigControl <= clk_en` |
 | `PhyPatternValid2g.sv` | 2 GHz | `{phyTrainValid, phyTrainLaneid} <= val_sel` |
@@ -45,25 +45,18 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
 | Signal | Direction | Kind | Rule |
 | --- | --- | --- | --- |
 | `seq_req` | Ctrl800 -> seq | level | Synchronized at the sequencer. Held high until the synchronized ack is seen. |
-| `seq_stop` | Ctrl800 -> seq | level | Synchronized at the sequencer. Raised to end the running command early; held until ack. Falls together with req. |
 | `seq_op[2:0]`, `seq_mask[LANES-1:0]` | Ctrl800 -> seq | bundled | Driven one 800 MHz cycle **before** req rises; stable until ack has fallen. Captured once, after req synchronization. |
-| `seq_ack` | seq -> Ctrl800 | level | Synchronized in Ctrl800. Rises only after the whole envelope has finished (clock off). Held until synchronized req **and** stop are both low. |
+| `seq_ack` | seq -> Ctrl800 | level | Synchronized in Ctrl800. Rises only after the whole envelope has finished (clock off). Held until the synchronized req is low. ACTIVE is never acked. |
 | `active_ready` | seq -> Ctrl800, TX datapath | level | High in ACTIVE once PRE has finished (clock running). Ctrl800 returns it synchronized as `ltsm_active_ready`. |
 
-**Stop / drain.** When the sequencer sees stop in PRE or BODY:
-1. Valid bits, Data2g and the Tx500 mode go off on the next edge.
-2. `clk_en` stays on for `POST_CYC` cycles.
-3. `clk_en` goes off, and ack rises on the same edge.
+**No stop (not implemented).** The link has no stop signal, so a launched command always runs its full envelope:
+- Training commands (op 0-4) end on their own and ack.
+- ACTIVE (op 5) never ends and is never acked. It is left only through `reset_n`. Ctrl800 stays busy for as long as ACTIVE runs.
+- On **entry** into `ltsm_state` 9 (TRAIN_ERROR) or 0 (RESET), a running training finishes its burst: at most PRE + 128 + POST 500 MHz cycles, about 272 ns for LFSR. Its Finished flag is suppressed, and a queued training is discarded. Neither sets an error bit.
 
-No aborted result is returned. Ctrl800 raised stop itself, so it treats the command as aborted and suppresses its Finished flag.
+This matches the current LTSM, in which ACTIVE and TRAIN_ERROR are terminal. If the LTSM gains ACTIVE exits (L1/L2, RETRAIN, LINKERROR), or a training has to be cut short on TRAIN_ERROR, a stop/drain path must be added back.
 
-CLK_TRAIN and RESEED have no POST, so they go straight to DONE. If stop is already high when the request is first seen, the sequencer completes immediately and sends nothing. Stop during POST changes nothing.
-
-**When Ctrl800 asserts stop:**
-- ACTIVE: whenever `ltsm_state != 8`.
-- Every other command: on **entry** into `ltsm_state` 9 (TRAIN_ERROR) or 0 (RESET). The same entry also discards a queued training. Neither sets an error bit.
-- ACTIVE is launched once on each entry into `ltsm_state == 8`. It goes through the 1-deep queue, so a LINKINIT reseed captured earlier is always sent first.
-- A queued ACTIVE is discarded if the state leaves 8 before it launches.
+**ACTIVE launch.** ACTIVE is launched once on each entry into `ltsm_state == 8`. It goes through the 1-deep queue, so a LINKINIT reseed captured earlier is always sent first. A queued ACTIVE is discarded if the state leaves 8 before it launches.
 
 ## Command set (`op[2:0]`)
 
@@ -74,7 +67,7 @@ CLK_TRAIN and RESEED have no POST, so they go straight to DONE. If stop is alrea
 | 2 | LANEID | ReversalMbSendLaneIDPattern, RepairMbSendLaneIDPattern | PRE+BODY+POST | phyTrainLaneid | Data2g lane ID | 64 (128 x 16 UI) |
 | 3 | LFSR | dataVref_sendPattern, d2cSender_sendLfsrPattern, rxDeskew_sendLfsrPattern, custom JTAG burst | PRE+BODY+POST | phyTrainLfsr | Tx500 LFSR on masked lanes | 128 (4096 UI) |
 | 4 | RESEED | the 5 reset-scrambler flags (edge detected) | 0 | none | Tx500 SEED pulse, all lanes | 1 |
-| 5 | ACTIVE | `ltsm_state == 8` | PRE, continuous, POST | none | Tx500 ACTIVE, all lanes; Data2g off | until stop |
+| 5 | ACTIVE | `ltsm_state == 8` | PRE, continuous, POST | none | Tx500 ACTIVE, all lanes; Data2g off | until reset |
 
 Parameters: `PRE_CYC = 4` and `POST_CYC = 4` (in 500 MHz cycles, both must be at least 1), `CLK_LEN = 96`. All trainings use 128 iterations. Normal training sends all lanes. Only the custom JTAG burst uses `ltsm_data_lane_mask`.
 
@@ -90,7 +83,7 @@ Parameters: `PRE_CYC = 4` and `POST_CYC = 4` (in 500 MHz cycles, both must be at
 | LFSR BODY, enabled lane | 1100 | 100 | 0 | 1 |
 | LFSR BODY, masked-off lane | 0101 | 100 | 0 | 1 |
 | RESEED (1 cycle) | 0110 | 000 | 0 | 0 |
-| ACTIVE (PRE done, until stop) | 0000 | 000 | 0 | 1 |
+| ACTIVE (PRE done, until reset) | 0000 | 000 | 0 | 1 |
 | RAW (test only, never issued) | 0001 | 000 | 0 | 0 |
 
 **Sequencer outputs**
@@ -116,7 +109,7 @@ All of them are flops decoded from the next state, so every enable of one comman
 | LANEID | 64 | 2048 = 128 x 16 | 72 |
 | LFSR | 128 | 4096 = 128 x 32 | 136 |
 | RESEED | 1 | 32 | 0 |
-| ACTIVE | until stop | - | 4 + N + 4 |
+| ACTIVE | until reset | - | 4 + N |
 
 **`CLK_LEN` is an open point.** The default of 96 assumes the analog clock pattern iteration is 24 UI: 16 UI of toggling plus 8 UI low, the UCIe forwarded-clock training pattern, with 128 iterations. If the analog block's clock iteration is 8 UI, use `CLK_LEN = 32`.
 
@@ -148,7 +141,7 @@ seq state          IDLE|PRE              |BODY (128 cycles)      |POST          
 seq clk_en         ____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\____
 seq lfsr_val_en    ____________________/~~~~~~~~~~~~~~~~~~~~~~~~\___________________________
 seq tx500_mode=LFSR____________________/~~~~~~~~~~~~~~~~~~~~~~~~\___________________________
-seq_ack            ______________________________________________________________________/~~~ (held until req, stop low)
+seq_ack            ______________________________________________________________________/~~~ (held until req low)
 phyDigControl      _____/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\___  (+8 UI)
 phyTrainLfsr       _____________________|~~~~~~~~~~~~~~~~~~~~~~~~~|_________________________  (+32 UI, 500 MHz)
 Tx500 (en lanes)   0101................|1100 (+32 UI) ..............|0101..........................
@@ -157,19 +150,19 @@ Tx500 (en lanes)   0101................|1100 (+32 UI) ..............|0101.......
 
 So the clock leads valid and data by 4 cycles (128 UI) and trails them by 4 cycles. `phyTrainLfsr` and the Tx500 LFSR mode switch on the same sequencer edge and are both produced in the 500 MHz domain, so at the outputs they are aligned (32 UI). The 2 GHz clock edges are 24 UI earlier, inside the PRE/POST envelope.
 
-ACTIVE enter and exit (`ltsm_state` 7 -> 8 -> other):
+ACTIVE entry (`ltsm_state` 7 -> 8). ACTIVE is left only through `reset_n`:
 
 ```
-ltsm_state (800)   7 (LINKINIT) |8 (ACTIVE) ...........................................|5/9/0
-Ctrl800 link       RESEED cmd  -> ACTIVE cmd (req held) ...........................stop^ ... ack
-seq state          ..SEED|DONE| IDLE |PRE     |BODY (ACTIVE, no end)                |POST    |DONE
-seq clk_en         ______________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_____
-seq tx500_mode     0 |1| 0 ..............0 0 0 0|3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 |0 0 0 0|0
-active_ready_o     ______________________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\___________
-Tx500              0101|0110|0101 .....  0101   |0000 (functional data) ........... |0101 ........
+ltsm_state (800)   7 (LINKINIT) |8 (ACTIVE) .......................................... (terminal)
+Ctrl800 link       RESEED cmd  -> ACTIVE cmd (req held, never acked) ..................
+seq state          ..SEED|DONE| IDLE |PRE     |BODY (ACTIVE, no end) ......... until reset_n
+seq clk_en         ______________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+seq tx500_mode     0 |1| 0 ..............0 0 0 0|3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+active_ready_o     ______________________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tx500              0101|0110|0101 .....  0101   |0000 (functional data) ...............
 Valid / Data2g     000 / 0 throughout (the functional path drives valid and data in ACTIVE)
-phyDigControl      ______________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_____
-ltsm_active_ready  __________________________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_______  (synchronized)
+phyDigControl      ______________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ltsm_active_ready  __________________________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  (synchronized)
 ```
 
 ## Ctrl800 details
@@ -181,14 +174,14 @@ Unchanged from the previous version:
 - The 1-deep pattern queue plus the reseed slot and its ordering (reseed first for same-cycle edges).
 - The error bits, `ltsm_pattern_busy` and `reset_ltsm_n`.
 
-The K_* kinds became the ops above, and the four links became one `Ltsm800CommandSource` with payload {op, mask} and stop. The aborted result is decided in Ctrl800 from its own stop.
+The K_* kinds became the ops above, and the four links became one `Ltsm800CommandSource` with payload {op, mask}.
 
 | Item | Behavior |
 | --- | --- |
 | `ltsm_pattern_error[0]` | Multiple LTSM edges in one cycle, or a JTAG edge colliding with an LTSM edge or with ACTIVE entry |
 | `ltsm_pattern_error[1]` | LTSM flag in an illegal state/substate, or a zero custom mask |
 | `ltsm_pattern_error[2]` | Queue overflow (pattern slot or reseed slot full) |
-| Finished flags | One pulse on the owner's flag after a command that Ctrl800 did not stop. CLK/VAL/LANEID/LFSR only. RESEED, custom and ACTIVE have no flag |
+| Finished flags | One pulse on the owner's flag when its command completes, unless the LTSM is by then in TRAIN_ERROR/RESET. CLK/VAL/LANEID/LFSR only. RESEED, custom and ACTIVE have no flag |
 | `ltsm_pattern_busy` | Pending or running command, including **all of ACTIVE** |
 | `ltsm_active_ready` | Synchronized `active_ready` from the sequencer |
 
@@ -199,7 +192,7 @@ Removed:
 
 ## Integration (`UcieDigitalTopJtag`)
 
-The top replaces the old link ports with `seq_req_o`, `seq_stop_o`, `seq_op_o[2:0]`, `seq_mask_o[dataLaneCount-1:0]`, `seq_ack_i` and `seq_active_ready_i`, and adds the status output `ltsm_active_ready`. Connect these to `PhyTxControlTop` in the PHY region. The `ltsm_clk_active_req` tie-off is gone.
+The top replaces the old link ports with `seq_req_o`, `seq_op_o[2:0]`, `seq_mask_o[dataLaneCount-1:0]`, `seq_ack_i` and `seq_active_ready_i`, and adds the status output `ltsm_active_ready`. Connect these to `PhyTxControlTop` in the PHY region. The `ltsm_clk_active_req` tie-off is gone.
 
 `ltsm_state` reaches Ctrl800 ungated. Only the training flags are gated by `pattern_normal_enable`. As a result, ACTIVE entry launches the clock in every mode where the LTSM reaches ACTIVE.
 
@@ -210,7 +203,7 @@ Reset assertion is common and asynchronous: Ctrl800, the sequencer and every end
 ## Timing constraints
 
 `constraints/cdc_constraints.sdc` is a binding template:
-- Max-delay of one destination period on the req, stop, ack and active_ready first synchronizer stages, and on the {op, mask} bundle.
+- Max-delay of one destination period on the req, ack and active_ready first synchronizer stages, and on the {op, mask} bundle.
 - No false paths and no blanket clock groups.
 - No multicycle path on 500 MHz -> 2 GHz: define `clock_tx500` as a generated clock of the 2 GHz source so STA times those paths as single-cycle (0.5 ns).
 

@@ -228,12 +228,11 @@ module UcieDigitalTopJtag #(
   // PHY PATTERN ENGINE INTERFACES
   // ==========================================================================
   // Single CDC link to PhyTxSequencer (ucie_phy_control/PhyTxControlTop,
-  // 500 MHz). req/stop are levels synchronized at the sequencer; op/mask are
+  // 500 MHz). req is a level synchronized at the sequencer; op/mask are
   // bundled with req (stable until ack falls); ack is synchronized in the
   // controller. active_ready is a 500 MHz level
   // (ACTIVE, clock running) synchronized in the controller.
   output wire logic seq_req_o,
-  output wire logic seq_stop_o,
   output wire logic [2:0] seq_op_o,
   output wire logic [dataLaneCount-1:0] seq_mask_o,
   input wire logic seq_ack_i,
@@ -715,7 +714,7 @@ module UcieDigitalTopJtag #(
   );
 
   // The source controller owns its reset synchronizer. No destination-domain
-  // flops are inserted here: PhyTxSequencer synchronizes req/stop and owns timing.
+  // flops are inserted here: PhyTxSequencer synchronizes req and owns timing.
   LtsmPhyPatternCtrl800 #(.LANES(dataLaneCount)) u_pattern_ctrl (
     .clock(clock), .reset_n(reset_n),
     .ltsm_state(ltsm_state),
@@ -750,7 +749,7 @@ module UcieDigitalTopJtag #(
     .ltsm_pattern_error(ltsm_pattern_error),
     .reset_ltsm_n(reset_ltsm_n),
     .ltsm_active_ready(ltsm_active_ready),
-    .seq_req_o(seq_req_o), .seq_stop_o(seq_stop_o),
+    .seq_req_o(seq_req_o),
     .seq_op_o(seq_op_o), .seq_mask_o(seq_mask_o),
     .seq_ack_i(seq_ack_i),
     .seq_active_ready_i(seq_active_ready_i)
