@@ -200,14 +200,10 @@ module UcieDigitalTopJtag #(
 
   // VALVREF and VALTRAINVREF share one physical Valid Vref control.
   // The RX controller obtains each point's comparison result from the Valid lane.
-  output var logic           ltsm_flagToAnalog_valVref_applyRxVref,
   output var logic [validVrefCodeWidth-1:0] ltsm_flagToAnalog_valVref_rxVrefCode,
-  input wire logic           ltsm_flagFromAnalog_valVref_rxVrefApplied,
 
   // DATAVREF and DATATRAINVREF share the per-lane Vref code bus.
-  output var logic           ltsm_flagToAnalog_dataVref_applyRxVref,
   output var logic [dataLaneCount*dataVrefCodeWidth-1:0] ltsm_flagToAnalog_dataVref_rxVrefCodes,
-  input wire logic           ltsm_flagFromAnalog_dataVref_rxVrefApplied,
 
   // LTSM MBTRAIN.RXCLKCAL interface.
   output var logic           ltsm_flagToAnalog_rxClkCal_doCalibration,
@@ -217,24 +213,16 @@ module UcieDigitalTopJtag #(
   // LTSM MBTRAIN shared D2C sender/receiver and TX-deskew interface
   // (muxed inside MBTrainFSM between VALTRAINCENTER, DATATRAINCENTER1/2 and LINKSPEED).
 
-  output var logic           ltsm_flagToAnalog_d2cSender_applyTxClockPhase,
   output var logic [d2cPiCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txClockPhaseCode,
-  input wire logic            ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied,
 
-  output var logic           ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew,
   output var logic [64*d2cTxDeskewCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes,
-  input wire logic           ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied,
 
   // RXDESKEW applies one packed set of per-lane delay codes per request.
-  output var logic           ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew,
   output var logic [dataLaneCount*rxDeskewCodeWidth-1:0] ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes,
-  input wire logic           ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied,
 
   // LTSM MBTRAIN.SPEEDIDLE physical rate controls.
   output var logic [1:0]           ltsm_flagToAnalog_speedIdle_speedCode,
-  output var logic           ltsm_flagToAnalog_speedIdle_applySpeed,
   output var logic           ltsm_flagToAnalog_speedIdle_electricalIdle,
-  input wire logic     ltsm_flagFromAnalog_speedIdle_speedApplied,
 
   // ==========================================================================
   // PHY PATTERN ENGINE INTERFACES
@@ -438,6 +426,58 @@ module UcieDigitalTopJtag #(
       fdi_lp_stall_ack <= fdi_pl_stall_req;
     end
   end
+
+  // --------------------------------------------------------------------------
+  // ANALOG APPLY/APPLIED LOOPBACK
+  // Each apply request is acknowledged internally through a 3-register delay:
+  // applied(t) = apply(t-3). The acknowledgement also drops 3 cycles after the
+  // request drops. These are no longer top-level IOs.
+  // --------------------------------------------------------------------------
+  logic ltsm_flagToAnalog_valVref_applyRxVref;
+  logic ltsm_flagFromAnalog_valVref_rxVrefApplied;
+  logic ltsm_flagToAnalog_dataVref_applyRxVref;
+  logic ltsm_flagFromAnalog_dataVref_rxVrefApplied;
+  logic ltsm_flagToAnalog_d2cSender_applyTxClockPhase;
+  logic ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied;
+  logic ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew;
+  logic ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied;
+  logic ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew;
+  logic ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied;
+  logic ltsm_flagToAnalog_speedIdle_applySpeed;
+  logic ltsm_flagFromAnalog_speedIdle_speedApplied;
+
+  // One 3-bit shift register per pair: bit 0 samples apply, bit 2 is applied.
+  logic [2:0] valVref_applyDelay;
+  logic [2:0] dataVref_applyDelay;
+  logic [2:0] txClockPhase_applyDelay;
+  logic [2:0] txLaneDeskew_applyDelay;
+  logic [2:0] rxLaneDeskew_applyDelay;
+  logic [2:0] speed_applyDelay;
+
+  always_ff @(posedge clock or negedge reset_n) begin
+    if (!reset_n) begin
+      valVref_applyDelay      <= 3'b000;
+      dataVref_applyDelay     <= 3'b000;
+      txClockPhase_applyDelay <= 3'b000;
+      txLaneDeskew_applyDelay <= 3'b000;
+      rxLaneDeskew_applyDelay <= 3'b000;
+      speed_applyDelay        <= 3'b000;
+    end else begin
+      valVref_applyDelay      <= {valVref_applyDelay[1:0],      ltsm_flagToAnalog_valVref_applyRxVref};
+      dataVref_applyDelay     <= {dataVref_applyDelay[1:0],     ltsm_flagToAnalog_dataVref_applyRxVref};
+      txClockPhase_applyDelay <= {txClockPhase_applyDelay[1:0], ltsm_flagToAnalog_d2cSender_applyTxClockPhase};
+      txLaneDeskew_applyDelay <= {txLaneDeskew_applyDelay[1:0], ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew};
+      rxLaneDeskew_applyDelay <= {rxLaneDeskew_applyDelay[1:0], ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew};
+      speed_applyDelay        <= {speed_applyDelay[1:0],        ltsm_flagToAnalog_speedIdle_applySpeed};
+    end
+  end
+
+  assign ltsm_flagFromAnalog_valVref_rxVrefApplied         = valVref_applyDelay[2];
+  assign ltsm_flagFromAnalog_dataVref_rxVrefApplied        = dataVref_applyDelay[2];
+  assign ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied = txClockPhase_applyDelay[2];
+  assign ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied = txLaneDeskew_applyDelay[2];
+  assign ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied  = rxLaneDeskew_applyDelay[2];
+  assign ltsm_flagFromAnalog_speedIdle_speedApplied        = speed_applyDelay[2];
 
   // --------------------------------------------------------------------------
   // RESERVED DVSEC STATUS CONNECTIONS
