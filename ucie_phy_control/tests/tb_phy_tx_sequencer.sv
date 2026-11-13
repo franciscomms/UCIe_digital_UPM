@@ -123,7 +123,7 @@ module tb_seq_case #(
   input wire req, stop,
   input wire [2:0] op,
   input wire [LANES-1:0] mask,
-  output wire ack, aborted
+  output wire ack
 );
   import tb_seq_pkg::*;
   localparam longint LAT2G = 500;   // 1 clock_tx2g cycle
@@ -138,7 +138,7 @@ module tb_seq_case #(
   ) u_dut (
     .clock_tx500(clk500), .clock_tx2g(clk2g), .reset_n(reset_n),
     .seq_req_i(req), .seq_stop_i(stop), .seq_op_i(op), .seq_mask_i(mask),
-    .seq_ack_o(ack), .seq_aborted_o(aborted), .active_ready_o(active_ready),
+    .seq_ack_o(ack), .active_ready_o(active_ready),
     .lane_id_i(4'hA),
     .phyDigControl(phyDigControl), .phyTrainLfsr(phyTrainLfsr),
     .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid),
@@ -185,7 +185,7 @@ module tb_seq_case #(
       end else if (seg_row.size() > 0) gap = 1;
       if (ack && !prev_ack) begin
         if (s_clk) $fatal(1, "%s: ack raised with clock still enabled", NAME);
-        check_command(op, aborted);
+        check_command(op, stop);
         seg_row.delete(); seg_len.delete(); gap = 0; ncmd++;
       end
       prev_ack = ack;
@@ -233,8 +233,8 @@ module tb_seq_case #(
         last_shape = 3; last_body = seg_len[1];
       end
     end
-    if (!ok) $fatal(1, "%s: op %0d aborted=%b wrong envelope:%s", NAME, cop, ab, trace);
-    $display("[%s] op %0d aborted=%b trace:%s%s", NAME, cop, ab, trace,
+    if (!ok) $fatal(1, "%s: op %0d stopped=%b wrong envelope:%s", NAME, cop, ab, trace);
+    $display("[%s] op %0d stopped=%b trace:%s%s", NAME, cop, ab, trace,
              (last_body > 0) ? $sformatf("  (BODY %0d UI)", last_body * 32) : "");
   endtask
 
@@ -347,20 +347,20 @@ module tb_phy_tx_sequencer;
   assign #390 stop_dst = stop_src;
   assign #430 op_dst = op_src;
   assign #430 mask_dst = mask_src;
-  wire [2:0] ack_c, ab_c;
+  wire [2:0] ack_c;
   wire ack_all_d, ack_any_d;
   assign #220 ack_all_d = &ack_c;
   assign #220 ack_any_d = |ack_c;
 
   tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(4), .CLKLEN(96), .NAME("c0.default")) c0 (
     .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
-    .op(op_dst), .mask(mask_dst), .ack(ack_c[0]), .aborted(ab_c[0]));
+    .op(op_dst), .mask(mask_dst), .ack(ack_c[0]));
   tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(1), .CLKLEN(32), .NAME("c1.shortpost")) c1 (
     .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
-    .op(op_dst), .mask(mask_dst), .ack(ack_c[1]), .aborted(ab_c[1]));
+    .op(op_dst), .mask(mask_dst), .ack(ack_c[1]));
   tb_seq_case #(.LANES(LANES), .PRE(12), .POST(6), .CLKLEN(32), .NAME("c2.longpre")) c2 (
     .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
-    .op(op_dst), .mask(mask_dst), .ack(ack_c[2]), .aborted(ab_c[2]));
+    .op(op_dst), .mask(mask_dst), .ack(ack_c[2]));
 
   // Source-side ack synchronizers (3 stages, as in Ctrl800).
   logic [2:0] ack_all_q = 0, ack_any_q = 0;
@@ -408,9 +408,6 @@ module tb_phy_tx_sequencer;
     // Ack is seen only after every envelope has finished: all clocks off.
     if (c0.phyDigControl || c1.phyDigControl || c2.phyDigControl)
       $fatal(1, "ack seen while a forwarded clock is still on");
-    if (stop_mode == STOP_NONE) begin
-      if (ab_c !== 3'b000) $fatal(1, "unexpected aborted=%b", ab_c);
-    end else if (ab_c !== 3'b111) $fatal(1, "stopped command not aborted: %b", ab_c);
     if (c0.ncmd != n0 + 1 || c1.ncmd != n1 + 1 || c2.ncmd != n2 + 1)
       $fatal(1, "command trace not checked exactly once");
     // Scenario-specific shape checks.

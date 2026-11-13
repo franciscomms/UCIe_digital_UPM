@@ -32,7 +32,7 @@ Checked continuously in every case:
 - **Legal rows.** Every cycle, the sequencer outputs form exactly one legal row of the endpoint table: Idle, clock-only, VAL, ID, LFSR with lanes = mask, SEED with all lanes, or ACTIVE with all lanes and ready.
 - **Envelope per command.** The run-length trace must be exact:
   - Normal completion: PRE, then BODY for its exact length (32/64/128/`CLK_LEN`/1), then POST.
-  - Aborted command, one of:
+  - Stopped command, one of:
     - stopped before start (nothing sent);
     - PRE then POST (stopped in PRE, `POST+1 .. PRE+POST` clock-only cycles);
     - PRE, then a shortened BODY, then exactly POST.
@@ -48,7 +48,7 @@ Scenarios:
 - Standalone Tx500 rows, including RAW (0001), masked lanes, a held SEED that gives a single pulse, and an unknown mode.
 - Every op completes normally, with LFSR masks 1111 and 1010.
 - RESEED then ACTIVE (LINKINIT order). ACTIVE endpoint outputs are checked explicitly.
-- Stop in PRE for VAL/ID/LFSR/ACTIVE (all cases must take the PRE path), stop in BODY for CLK/VAL/ID/LFSR, stop in ACTIVE, and stop raised together with req. Aborted must be 1 everywhere.
+- Stop in PRE for VAL/ID/LFSR/ACTIVE (all cases must take the PRE path), stop in BODY for CLK/VAL/ID/LFSR, stop in ACTIVE, and stop raised together with req.
 - 16 back-to-back random commands.
 - Asynchronous reset in the middle of an LFSR burst: every output must be in the Idle row immediately, followed by recovery with LFSR and ACTIVE commands.
 
@@ -72,7 +72,7 @@ Scenarios:
 
 Changes in that directory:
 - `sources.f` now lists `../src/LtsmPhyPatternCtrl800.sv`. It was missing although `UcieDigitalTopJtag` instantiates it.
-- The three benches that instantiate `UcieDigitalTopJtag` tie the new `seq_ack_i`, `seq_aborted_i` and `seq_active_ready_i` inputs to 0.
+- The three benches that instantiate `UcieDigitalTopJtag` tie the new `seq_ack_i` and `seq_active_ready_i` inputs to 0.
 
 No bench referenced the removed ports.
 

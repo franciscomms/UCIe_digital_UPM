@@ -35,10 +35,10 @@ module tb_ltsm_specialized;
   wire [2:0] errors;
 
   // ---- Link with unequal inter-region delays ---------------------------------
-  wire req_src, stop_src, ack_dst, aborted_dst, ready_dst;
+  wire req_src, stop_src, ack_dst, ready_dst;
   wire [2:0] op_src;
   wire [LANES-1:0] mask_src;
-  wire req_dst, stop_dst, ack_src, aborted_src, ready_src;
+  wire req_dst, stop_dst, ack_src, ready_src;
   wire [2:0] op_dst;
   wire [LANES-1:0] mask_dst;
   assign #170 req_dst = req_src;
@@ -46,7 +46,6 @@ module tb_ltsm_specialized;
   assign #430 op_dst = op_src;
   assign #430 mask_dst = mask_src;
   assign #220 ack_src = ack_dst;
-  assign #610 aborted_src = aborted_dst;
   assign #300 ready_src = ready_dst;
 
   LtsmPhyPatternCtrl800 #(.LANES(LANES)) u_ctrl (
@@ -85,7 +84,7 @@ module tb_ltsm_specialized;
     .ltsm_active_ready(ltsm_active_ready),
     .seq_req_o(req_src), .seq_stop_o(stop_src),
     .seq_op_o(op_src), .seq_mask_o(mask_src),
-    .seq_ack_i(ack_src), .seq_aborted_i(aborted_src),
+    .seq_ack_i(ack_src),
     .seq_active_ready_i(ready_src));
 
   wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid, digControl, laneID_index;
@@ -94,7 +93,7 @@ module tb_ltsm_specialized;
   PhyTxControlTop #(.LANES(LANES)) u_phy (
     .clock_tx500(clock_tx500), .clock_tx2g(clock_tx2g), .reset_n(reset_n),
     .seq_req_i(req_dst), .seq_stop_i(stop_dst), .seq_op_i(op_dst), .seq_mask_i(mask_dst),
-    .seq_ack_o(ack_dst), .seq_aborted_o(aborted_dst), .active_ready_o(ready_dst),
+    .seq_ack_o(ack_dst), .active_ready_o(ready_dst),
     .lane_id_i(4'h5),
     .phyDigControl(phyDigControl), .phyTrainLfsr(phyTrainLfsr),
     .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid),

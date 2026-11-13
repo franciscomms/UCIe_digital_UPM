@@ -56,18 +56,14 @@
 # Bundled data (held stable around the synchronized control):
 #   SEQ_CMD_SRC:    CTRL800/u_src_seq/payload_q[*]/Q   (3 + LANES pins: {op, mask})
 #   SEQ_CMD_DST:    every SEQ register D pin in the fanout of seq_op_i/seq_mask_i
-#                   (op_q, mask_q, state_q, cnt_q, seq_ack_o, seq_aborted_o and
+#                   (op_q, mask_q, state_q, cnt_q, seq_ack_o and
 #                   the output flops clk_en_o, val_sel_o, lfsr_val_en_o, id_en_o, tx500_mode_o,
 #                   tx500_lane_en_o, active_ready_o). These are sampled only
 #                   after the request has passed u_req_sync.
-#   SEQ_ABORT_SRC:  SEQ/seq_aborted_o/Q
-#   SEQ_ABORT_DST:  CTRL800/u_src_seq/src_aborted_o/D (sampled when ack is synchronized)
 #
-# Why the bundles are safe: payload_q is launched one LTSM cycle BEFORE req_q
+# Why the bundle is safe: payload_q is launched one LTSM cycle BEFORE req_q
 # and held until the ack has returned low; SEQ samples it only after
-# SYNC_STAGES clock_tx500 edges of synchronized req. seq_aborted_o changes on
-# the same edge as seq_ack_o rises and is sampled by CTRL800 only after
-# SYNC_STAGES LTSM edges of synchronized ack. Each route must therefore settle
+# SYNC_STAGES clock_tx500 edges of synchronized req. Each route must therefore settle
 # within one destination period; that is what the max-delay bounds below
 # enforce.
 
@@ -82,7 +78,7 @@ if {![string is integer -strict $CTRL_LANES] || $CTRL_LANES < 1} {
 foreach collection_name {
   SEQ_REQ_SRC SEQ_REQ_DST SEQ_STOP_SRC SEQ_STOP_DST
   SEQ_ACK_SRC SEQ_ACK_DST SEQ_READY_SRC SEQ_READY_DST
-  SEQ_CMD_SRC SEQ_CMD_DST SEQ_ABORT_SRC SEQ_ABORT_DST
+  SEQ_CMD_SRC SEQ_CMD_DST
 } {
   if {![info exists $collection_name]} {
     error "Bind $collection_name to concrete synthesized pins before sourcing"
@@ -101,7 +97,6 @@ if {[sizeof_collection $SEQ_CMD_DST] < ($CTRL_LANES + 3)} {
 foreach collection_name {
   SEQ_REQ_SRC SEQ_REQ_DST SEQ_STOP_SRC SEQ_STOP_DST
   SEQ_ACK_SRC SEQ_ACK_DST SEQ_READY_SRC SEQ_READY_DST
-  SEQ_ABORT_SRC SEQ_ABORT_DST
 } {
   if {[sizeof_collection [set $collection_name]] != 1} {
     error "Expected exactly one pin in $collection_name"
@@ -119,8 +114,7 @@ set_max_delay -datapath_only 1.25 -from $SEQ_ACK_SRC   -to $SEQ_ACK_DST
 set_max_delay -datapath_only 1.25 -from $SEQ_READY_SRC -to $SEQ_READY_DST
 # Bundled data.
 set_max_delay -datapath_only 2.0  -from $SEQ_CMD_SRC   -to $SEQ_CMD_DST
-set_max_delay -datapath_only 1.25 -from $SEQ_ABORT_SRC -to $SEQ_ABORT_DST
-# DO NOT false-path any of these six routes: in common STA exception
+# DO NOT false-path any of these five routes: in common STA exception
 # precedence a false path overrides max delay and removes the bound. Use the
 # tool's asynchronous first-stage min/hold treatment without disabling the
 # max-delay checks; verify the tool's actual semantics.

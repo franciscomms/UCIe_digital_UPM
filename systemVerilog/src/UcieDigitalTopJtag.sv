@@ -230,14 +230,13 @@ module UcieDigitalTopJtag #(
   // Single CDC link to PhyTxSequencer (ucie_phy_control/PhyTxControlTop,
   // 500 MHz). req/stop are levels synchronized at the sequencer; op/mask are
   // bundled with req (stable until ack falls); ack is synchronized in the
-  // controller; aborted is bundled with ack. active_ready is a 500 MHz level
+  // controller. active_ready is a 500 MHz level
   // (ACTIVE, clock running) synchronized in the controller.
   output wire logic seq_req_o,
   output wire logic seq_stop_o,
   output wire logic [2:0] seq_op_o,
   output wire logic [dataLaneCount-1:0] seq_mask_o,
   input wire logic seq_ack_i,
-  input wire logic seq_aborted_i,
   input wire logic seq_active_ready_i,
   // Status: synchronized copy of seq_active_ready_i.
   output wire logic ltsm_active_ready,
@@ -753,7 +752,7 @@ module UcieDigitalTopJtag #(
     .ltsm_active_ready(ltsm_active_ready),
     .seq_req_o(seq_req_o), .seq_stop_o(seq_stop_o),
     .seq_op_o(seq_op_o), .seq_mask_o(seq_mask_o),
-    .seq_ack_i(seq_ack_i), .seq_aborted_i(seq_aborted_i),
+    .seq_ack_i(seq_ack_i),
     .seq_active_ready_i(seq_active_ready_i)
   );
 

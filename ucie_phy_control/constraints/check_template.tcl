@@ -27,20 +27,19 @@ for {set i 0} {$i < 40} {incr i} {lappend SEQ_CMD_DST SEQ_CMD_DST_$i}
 foreach n {
   SEQ_REQ_SRC SEQ_REQ_DST SEQ_STOP_SRC SEQ_STOP_DST
   SEQ_ACK_SRC SEQ_ACK_DST SEQ_READY_SRC SEQ_READY_DST
-  SEQ_ABORT_SRC SEQ_ABORT_DST
 } {set $n ${n}_pin}
 
 set calls {}
 source $template
 set expected {}
 foreach {delay prefix} {
-  2.0 REQ 2.0 STOP 1.25 ACK 1.25 READY 2.0 CMD 1.25 ABORT
+  2.0 REQ 2.0 STOP 1.25 ACK 1.25 READY 2.0 CMD
 } {
   lappend expected [list max -datapath_only $delay \
     -from [set SEQ_${prefix}_SRC] -to [set SEQ_${prefix}_DST]]
 }
 if {$calls ne $expected} {
-  error "Wrong constraint mapping/order/delay: expected 6 exact max-delay routes, no false paths, no multicycle"
+  error "Wrong constraint mapping/order/delay: expected 5 exact max-delay routes, no false paths, no multicycle"
 }
 
 # Exercise every collection's missing, empty and wrong-width guard.
@@ -68,4 +67,4 @@ set CTRL_LANES 16
 set calls {}
 source $template
 if {$calls ne $expected} {error "valid bindings failed after guard tests"}
-puts "CDC_TEMPLATE_SYNTAX_PASS: 6 exact max-delay routes, no false paths, no multicycle; all missing/empty/width guards and invalid LANES rejected; no STA sign-off"
+puts "CDC_TEMPLATE_SYNTAX_PASS: 5 exact max-delay routes, no false paths, no multicycle; all missing/empty/width guards and invalid LANES rejected; no STA sign-off"

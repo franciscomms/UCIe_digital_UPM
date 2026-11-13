@@ -13,7 +13,7 @@ module UcieCodeWidthSpec_tb;
     .sel_rdi(1'b0), .sel_ltsm(1'b0), .sel_phy(1'b0),
     .ltsm_linkSpeed_requestedSpeed(requested_speed),
     .ltsm_flagFromAnalog_linkSpeed_speedApplied(speed_applied),
-    .seq_ack_i(1'b0), .seq_aborted_i(1'b0), .seq_active_ready_i(1'b0)
+    .seq_ack_i(1'b0), .seq_active_ready_i(1'b0)
   );
   // Standalone instances ensure that a parent's explicit parameter forwarding
   // cannot mask stale defaults in either lower-level top module. A reduced

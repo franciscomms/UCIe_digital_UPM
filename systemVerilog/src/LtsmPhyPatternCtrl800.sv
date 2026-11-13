@@ -28,8 +28,8 @@
 //   seq_op_o, seq_mask_o  bundled; stable from before req rises until ack
 //               has fallen.
 //   seq_ack_i   synchronized here. Rises after the whole envelope (clock off).
-//   seq_aborted_i  bundled with ack (stable while ack is high). An aborted
-//               command does not raise its Finished flag.
+//   A command for which this controller raised stop counts as aborted and
+//   does not raise its Finished flag (decided locally, nothing returned).
 //
 // Preserve hierarchy and apply the bundled-data timing constraints in
 // ucie_phy_control/constraints/cdc_constraints.sdc.
@@ -96,7 +96,6 @@ module LtsmPhyPatternCtrl800 #(
   output wire [2:0] seq_op_o,
   output wire [LANES-1:0] seq_mask_o,
   input wire seq_ack_i,
-  input wire seq_aborted_i,
   input wire seq_active_ready_i
 );
   // Command encoding (shared with PhyTxSequencer).
@@ -311,8 +310,7 @@ module LtsmPhyPatternCtrl800 #(
     .link_req_o(seq_req_o),
     .link_stop_o(seq_stop_o),
     .link_payload_o({seq_op_o, seq_mask_o}),
-    .link_ack_async_i(seq_ack_i),
-    .link_aborted_async_i(seq_aborted_i));
+    .link_ack_async_i(seq_ack_i));
 
   assign {ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
     ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
@@ -380,9 +378,9 @@ endmodule
 // Payload uses a bundled-data CDC timing contract. Synchronize each ACK bit
 // before checking for unanimous completion or return to idle.
 // Early stop: src_stop_i while a command is outstanding raises link_stop_o,
-// held until the ack is seen (it falls together with link_req_o). The
-// destination returns link_aborted_async_i bundled with its ack; it is
-// sampled once the synchronized ack is high and reported with src_done_o.
+// held until the ack is seen (it falls together with link_req_o).
+// src_aborted_o reports, with src_done_o, whether stop was raised for the
+// command. It is decided locally; the destination returns only the ack.
 module Ltsm800CommandSource #(
   parameter integer WIDTH=34,
   parameter integer STAGES=3,
@@ -397,12 +395,11 @@ module Ltsm800CommandSource #(
   output wire src_ready_o,
   input wire [WIDTH-1:0] src_data_i,
   output logic src_done_o,              // one-cycle completion pulse
-  output logic src_aborted_o,           // result, valid with src_done_o
+  output logic src_aborted_o,           // stop was raised, valid with src_done_o
   output wire [REQ_WIDTH-1:0] link_req_o,
   output wire link_stop_o,
   output wire [WIDTH-1:0] link_payload_o,
-  input wire [ACK_WIDTH-1:0] link_ack_async_i,
-  input wire link_aborted_async_i       // bundled with ack
+  input wire [ACK_WIDTH-1:0] link_ack_async_i
 );
   // SRC_LAUNCH: payload already driven, request rises on the next edge, so
   // the bundled payload is stable from BEFORE the request rises.
@@ -441,8 +438,8 @@ module Ltsm800CommandSource #(
         end
         SRC_WAIT_ACK: if (all_ack_high) begin
           // Completion acknowledgment: return req/stop low, report done once.
-          // The aborted result is stable while the ack is high.
-          src_done_o<=1; src_aborted_o<=link_aborted_async_i;
+          // Aborted = this source raised stop for the command.
+          src_done_o<=1; src_aborted_o<=stop_q;
           req_q<=0; stop_q<=0; src_state_q<=SRC_WAIT_LOW;
         end else if (src_stop_i) begin
           stop_q<=1;

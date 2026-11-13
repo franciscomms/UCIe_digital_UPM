@@ -23,12 +23,12 @@
 //               bit by bit (constrain with a bundled max-delay).
 //   seq_ack_o   rises only after the whole envelope has finished (clock off),
 //               held until synchronized req AND stop are both low.
-//   seq_aborted_o  bundled with ack: valid and stable while ack is high.
-//               1 = the command was ended early by stop.
 //   Source rules: req stays high until ack is seen. stop is raised to end a
 //   command early and held until ack. On stop the sequencer drains: valid
 //   bits, Data2g and the Tx500 mode go off at once, clk_en stays on for
-//   POST_CYC cycles, then clk_en goes off and ack rises with aborted = 1.
+//   POST_CYC cycles, then clk_en goes off and ack rises.
+//   No aborted result is returned: Ctrl800 raised stop itself, so it already
+//   knows the command was ended early.
 //
 // ---- Command set (op) -------------------------------------------------------
 //   op | name      | envelope              | BODY outputs                 | BODY len
@@ -56,7 +56,7 @@
 //   ACTIVE: BODY never ends by itself; only stop ends it (-> POST).
 //   Stop in PRE or BODY -> POST (CLK_TRAIN/RESEED: -> DONE). Stop in POST is
 //   already draining and changes nothing. A request that is already stopped
-//   when first seen goes straight to DONE, aborted, with nothing sent.
+//   when first seen goes straight to DONE with nothing sent.
 //
 // All outputs are flops decoded from the NEXT state, so every enable of one
 // command changes on the same clock_tx500 edge.
@@ -80,7 +80,6 @@ module PhyTxSequencer #(
   input  wire [2:0]        seq_op_i,         // bundled with req
   input  wire [LANES-1:0]  seq_mask_i,       // bundled with req (LFSR lanes)
   output logic             seq_ack_o,
-  output logic             seq_aborted_o,    // bundled with ack
 
   // ---- Synchronous enables to the endpoints (registered) --------------------
   output logic             clk_en_o,         // -> PhyPatternClock2g
@@ -146,7 +145,7 @@ module PhyTxSequencer #(
   logic [CW-1:0] cnt_q, cnt_d;          // cycles left in the current phase, minus one
   logic [2:0] op_q, op_d;               // captured command
   logic [LANES-1:0] mask_q, mask_d;     // captured LFSR lane mask
-  logic aborted_d, ack_d;
+  logic ack_d;
 
   // ---------------------------------------------------------------------------
   // Next-state logic.
@@ -156,17 +155,14 @@ module PhyTxSequencer #(
     cnt_d     = cnt_q;
     op_d      = op_q;
     mask_d    = mask_q;
-    aborted_d = seq_aborted_o;
     ack_d     = seq_ack_o;
     case (state_q)
       // Capture the bundled payload once, after request synchronization.
       S_IDLE: if (req_s) begin
         op_d      = seq_op_i;
         mask_d    = seq_mask_i;
-        aborted_d = 1'b0;
         if (stop_s || !op_legal(seq_op_i)) begin
           // Already stopped (or unknown op): complete at once, send nothing.
-          aborted_d = 1'b1;
           ack_d     = 1'b1;
           state_d   = S_DONE;
         end else if (no_envelope(seq_op_i)) begin
@@ -181,7 +177,6 @@ module PhyTxSequencer #(
       // Clock leads valid/data by PRE_CYC cycles.
       S_PRE: begin
         if (stop_s) begin
-          aborted_d = 1'b1;
           cnt_d     = CW'(POST_CYC - 1);
           state_d   = S_POST;
         end else if (cnt_q == '0) begin
@@ -195,7 +190,6 @@ module PhyTxSequencer #(
       // Pattern body. ACTIVE never ends on its own.
       S_BODY: begin
         if (stop_s || (op_q != OP_ACTIVE && cnt_q == '0)) begin
-          if (stop_s) aborted_d = 1'b1;
           if (no_envelope(op_q)) begin
             ack_d   = 1'b1;
             state_d = S_DONE;
@@ -242,7 +236,6 @@ module PhyTxSequencer #(
       op_q <= OP_CLK_TRAIN;
       mask_q <= '0;
       seq_ack_o <= 1'b0;
-      seq_aborted_o <= 1'b0;
       clk_en_o <= 1'b0;
       val_sel_o <= 2'b00;
       lfsr_val_en_o <= 1'b0;
@@ -256,7 +249,6 @@ module PhyTxSequencer #(
       op_q <= op_d;
       mask_q <= mask_d;
       seq_ack_o <= ack_d;
-      seq_aborted_o <= aborted_d;
 
       // Defaults: Idle row.
       clk_en_o <= 1'b0;
@@ -330,16 +322,13 @@ module PhyTxSequencer #(
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
     (state_q != S_IDLE && req_s) |-> (seq_op_i == op_q && seq_mask_i == mask_q))
     else $error("SEQ: op/mask changed while request held");
-  assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
-    seq_ack_o && $past(seq_ack_o) |-> $stable(seq_aborted_o))
-    else $error("SEQ: aborted changed while ack held");
-  // Exact BODY length for every completed (not aborted) training command.
+  // Exact BODY length for every training command that was not stopped.
   integer body_len_q;
   always_ff @(posedge clock_tx500 or negedge reset_seq_n) begin
     if (!reset_seq_n) body_len_q <= 0;
     else if (state_q == S_BODY) begin
       body_len_q <= body_len_q + 1;
-      if (state_d != S_BODY && !aborted_d && op_q != OP_ACTIVE)
+      if (state_d != S_BODY && !stop_s && op_q != OP_ACTIVE)
         assert (body_len_q + 1 == int'(body_last(op_q)) + 1)
           else $error("SEQ: op %0d BODY length %0d, expected %0d",
                       op_q, body_len_q + 1, int'(body_last(op_q)) + 1);

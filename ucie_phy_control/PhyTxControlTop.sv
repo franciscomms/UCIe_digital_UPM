@@ -36,7 +36,6 @@ module PhyTxControlTop #(
   input  wire [2:0]        seq_op_i,
   input  wire [LANES-1:0]  seq_mask_i,
   output wire              seq_ack_o,
-  output wire              seq_aborted_o,
   output wire              active_ready_o,   // clock_tx500: for the TX datapath and Ctrl800
 
   // ---- Lane ID (quasi-static) -----------------------------------------------
@@ -69,7 +68,7 @@ module PhyTxControlTop #(
     .clock_tx500(clock_tx500), .reset_n(reset_n), .reset_seq_n(unused_reset_seq_n),
     .seq_req_i(seq_req_i), .seq_stop_i(seq_stop_i),
     .seq_op_i(seq_op_i), .seq_mask_i(seq_mask_i),
-    .seq_ack_o(seq_ack_o), .seq_aborted_o(seq_aborted_o),
+    .seq_ack_o(seq_ack_o),
     .clk_en_o(clk_en), .val_sel_o(val_sel), .lfsr_val_en_o(lfsr_val_en), .id_en_o(id_en),
     .tx500_mode_o(tx500_mode), .tx500_lane_en_o(tx500_lane_en),
     .active_ready_o(active_ready_o));

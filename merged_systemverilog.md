@@ -1,6 +1,6 @@
 # SystemVerilog Project Merge
 
-Total files: **106**
+Total files: **107**
 
 ## File Index
 
@@ -106,10 +106,11 @@ Total files: **106**
 100. #ucie_phy_control-PhyPatternData2g-sv
 101. #ucie_phy_control-PhyPatternTx500-sv
 102. #ucie_phy_control-PhyPatternValid2g-sv
-103. #ucie_phy_control-PhyTxControlTop-sv
-104. #ucie_phy_control-PhyTxSequencer-sv
-105. #ucie_phy_control-tests-tb_ltsm_specialized-sv
-106. #ucie_phy_control-tests-tb_phy_tx_sequencer-sv
+103. #ucie_phy_control-PhyPatternValid500m-sv
+104. #ucie_phy_control-PhyTxControlTop-sv
+105. #ucie_phy_control-PhyTxSequencer-sv
+106. #ucie_phy_control-tests-tb_ltsm_specialized-sv
+107. #ucie_phy_control-tests-tb_phy_tx_sequencer-sv
 
 ---
 
@@ -61014,7 +61015,7 @@ endmodule
 //   phyDigControl = 1 -> the analog front end transmits the forwarded clock.
 //   phyDigControl = 0 -> the analog front end sends zeros (no clock).
 //
-// phyDigControl <= clk_en, delayed by START_DELAY. No synchronizer, counter,
+// phyDigControl <= clk_en (one output flop). No synchronizer, counter,
 // acknowledgment or priority logic: PhyTxSequencer owns all timing.
 //
 // Timing: clk_en is launched by a clock_tx500 flop. clock_tx500 and
@@ -61022,16 +61023,13 @@ endmodule
 // normal single-cycle synchronous path: clk_en is captured on the FIRST
 // clock_tx2g edge after the launching clock_tx500 edge (0.5 ns budget).
 // Latency from the sequencer edge to phyDigControl:
-//   (1 + START_DELAY) clock_tx2g cycles = (1 + START_DELAY) x 8 UI.
-// START_DELAY = 3 aligns this output with PhyPatternTx500 (START_DELAY = 0),
-// which reacts one clock_tx500 cycle (32 UI) after the sequencer edge.
+//   1 clock_tx2g cycle = 8 UI.
 //
 // Reset: common asynchronous assert, local synchronized release.
 // Reset value = idle (phyDigControl = 0).
 // ============================================================================
 module PhyPatternClock2g #(
-  parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
-  parameter integer START_DELAY = 0   // extra clock_tx2g cycles of fixed latency
+  parameter integer SYNC_STAGES = 3   // reset-release synchronizer depth (>= 2)
 ) (
   input  wire  clock_tx2g,          // local control clock
   input  wire  reset_n,             // async reset (assert anywhere, release synced)
@@ -61046,32 +61044,10 @@ module PhyPatternClock2g #(
   PhyClock2gCtrlResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx2g), .arst_ni(reset_n), .rst_no(reset_clock2g_n));
 
-  // Fixed latency-trim pipeline (START_DELAY flops), then the output flop.
-  wire clk_en_d;
-  generate
-    if (START_DELAY == 0) begin : g_no_delay
-      assign clk_en_d = clk_en;
-    end else begin : g_delay
-      logic dly_q [START_DELAY];
-      always_ff @(posedge clock_tx2g or negedge reset_clock2g_n) begin
-        if (!reset_clock2g_n) begin
-          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= 1'b0;
-        end else begin
-          dly_q[0] <= clk_en;
-          for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
-        end
-      end
-      assign clk_en_d = dly_q[START_DELAY-1];
-    end
-  endgenerate
-
   always_ff @(posedge clock_tx2g or negedge reset_clock2g_n)
     if (!reset_clock2g_n) phyDigControl <= 1'b0;
-    else                  phyDigControl <= clk_en_d;
+    else                  phyDigControl <= clk_en;
 
-`ifndef SYNTHESIS
-  initial assert (START_DELAY >= 0) else $fatal(1, "CLOCK START_DELAY must be >= 0");
-`endif
 endmodule
 
 // Reset synchronizer: asserts asynchronously with arst_ni, releases
@@ -61138,15 +61114,13 @@ endmodule
 // Timing: id_en is captured on the FIRST clock_tx2g edge after the launching
 // clock_tx500 edge (single-cycle synchronous related-clock path). Latency
 // from the sequencer edge to digControl:
-//   (1 + START_DELAY) clock_tx2g cycles = (1 + START_DELAY) x 8 UI.
-// START_DELAY = 3 aligns digControl with PhyPatternTx500 (START_DELAY = 0).
+//   1 clock_tx2g cycle = 8 UI.
 //
 // Clock: clock_tx2g (2 GHz). Reset: reset_n, asynchronous assert, release
 // synchronized locally. Reset value = idle (digControl = 0, laneID_index = 0).
 // =============================================================================
 module PhyPatternData2g #(
-  parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
-  parameter integer START_DELAY = 0   // extra clock_tx2g cycles of fixed latency
+  parameter integer SYNC_STAGES = 3   // reset-release synchronizer depth (>= 2)
 ) (
   input  wire  clock_tx2g,
   input  wire  reset_n,
@@ -61165,25 +61139,6 @@ module PhyPatternData2g #(
   Data2gResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx2g), .arst_ni(reset_n), .rst_no(rst_n));
 
-  // Fixed latency-trim pipeline (START_DELAY flops), then the output flops.
-  wire id_en_d;
-  generate
-    if (START_DELAY == 0) begin : g_no_delay
-      assign id_en_d = id_en;
-    end else begin : g_delay
-      logic dly_q [START_DELAY];
-      always_ff @(posedge clock_tx2g or negedge rst_n) begin
-        if (!rst_n) begin
-          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= 1'b0;
-        end else begin
-          dly_q[0] <= id_en;
-          for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
-        end
-      end
-      assign id_en_d = dly_q[START_DELAY-1];
-    end
-  endgenerate
-
   // digControl follows id_en. laneID_index: 0 on the first enabled cycle,
   // then alternates every cycle; forced to 0 when disabled.
   always_ff @(posedge clock_tx2g or negedge rst_n) begin
@@ -61191,13 +61146,12 @@ module PhyPatternData2g #(
       digControl   <= 1'b0;
       laneID_index <= 1'b0;
     end else begin
-      digControl   <= id_en_d;
-      laneID_index <= id_en_d && digControl && !laneID_index;
+      digControl   <= id_en;
+      laneID_index <= id_en && digControl && !laneID_index;
     end
   end
 
 `ifndef SYNTHESIS
-  initial assert (START_DELAY >= 0) else $fatal(1, "DATA START_DELAY must be >= 0");
   assert property (@(posedge clock_tx2g) disable iff (!rst_n) laneID_index |-> digControl)
     else $error("DATA: laneID_index high without digControl");
 `endif
@@ -61262,8 +61216,8 @@ endmodule
 // SEED is edge-qualified: if mode stays SEED for more than one cycle only the
 // first cycle pulses load_seed; the rest are OFF.
 //
-// Latency: (1 + START_DELAY) clock_tx500 cycles from the sequencer edge
-// (32 UI with START_DELAY = 0). All lanes see the same sequencer flops, so all
+// Latency: 1 clock_tx500 cycle (32 UI) from the sequencer edge.
+// All lanes see the same sequencer flops, so all
 // lanes switch on the same clock_tx500 edge.
 //
 // Clock: clock_tx500 (500 MHz), one 32-bit word (32 UI) per cycle.
@@ -61271,8 +61225,7 @@ endmodule
 // Reset value = OFF (0101).
 // =============================================================================
 module PhyPatternTx500 #(
-  parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
-  parameter integer START_DELAY = 0   // extra clock_tx500 cycles of fixed latency
+  parameter integer SYNC_STAGES = 3   // reset-release synchronizer depth (>= 2)
 ) (
   input  wire       clock_tx500,
   input  wire       reset_n,
@@ -61293,30 +61246,8 @@ module PhyPatternTx500 #(
   Phy500CtrlResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx500), .arst_ni(reset_n), .rst_no(rst_n));
 
-  // Fixed latency-trim pipeline (START_DELAY flops) on {mode, lane_en}.
-  wire [3:0] cmd_in = {mode, lane_en};
-  wire [3:0] cmd_d;
-  generate
-    if (START_DELAY == 0) begin : g_no_delay
-      assign cmd_d = cmd_in;
-    end else begin : g_delay
-      logic [3:0] dly_q [START_DELAY];
-      always_ff @(posedge clock_tx500 or negedge rst_n) begin
-        if (!rst_n) begin
-          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= {M_OFF, 1'b0};
-        end else begin
-          dly_q[0] <= cmd_in;
-          for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
-        end
-      end
-      assign cmd_d = dly_q[START_DELAY-1];
-    end
-  endgenerate
-  wire [2:0] mode_d = cmd_d[3:1];
-  wire lane_en_d = cmd_d[0];
-
   logic seed_prev_q;  // effective SEED seen on the previous cycle
-  wire seed_now = lane_en_d && (mode_d == M_SEED);
+  wire seed_now = lane_en && (mode == M_SEED);
 
   always_ff @(posedge clock_tx500 or negedge rst_n) begin
     if (!rst_n) begin
@@ -61324,8 +61255,8 @@ module PhyPatternTx500 #(
       {enable_LFSR, zero_ena, load_seed, load_zero} <= O_OFF;
     end else begin
       seed_prev_q <= seed_now;
-      if (!lane_en_d) {enable_LFSR, zero_ena, load_seed, load_zero} <= O_OFF;
-      else case (mode_d)
+      if (!lane_en) {enable_LFSR, zero_ena, load_seed, load_zero} <= O_OFF;
+      else case (mode)
         M_SEED:   {enable_LFSR, zero_ena, load_seed, load_zero} <= seed_prev_q ? O_OFF : O_SEED;
         M_LFSR:   {enable_LFSR, zero_ena, load_seed, load_zero} <= O_LFSR;
         M_ACTIVE: {enable_LFSR, zero_ena, load_seed, load_zero} <= O_ACTIVE;
@@ -61336,7 +61267,6 @@ module PhyPatternTx500 #(
   end
 
 `ifndef SYNTHESIS
-  initial assert (START_DELAY >= 0) else $fatal(1, "TX500 START_DELAY must be >= 0");
   assert property (@(posedge clock_tx500) disable iff (!rst_n) load_seed |=> !load_seed)
     else $error("TX500: load_seed wider than one cycle");
 `endif
@@ -61378,32 +61308,32 @@ endmodule
 // ============================================================================
 // Synchronous slave of PhyTxSequencer.
 //
-// Analog interface: three registered, glitch-free level bits
-//   phyTrainLfsr, phyTrainValid, phyTrainLaneid
+// Analog interface: two registered, glitch-free level bits
+//   phyTrainValid, phyTrainLaneid
 // While one of them is 1 the analog front end transmits the valid-lane
 // pattern, which is always VALTRAIN (11110000) and is generated in the
 // analog block. Digital only selects which training bit is raised:
-//   LFSR burst      -> phyTrainLfsr
 //   VAL_TRAIN       -> phyTrainValid
 //   lane-ID burst   -> phyTrainLaneid
-// In ACTIVE all three are 0 (the valid lane is driven by the functional path).
+// The LFSR valid bit (phyTrainLfsr) is in the 500 MHz domain, in
+// PhyPatternValid500m, because the analog front end sends the LFSR valid
+// pattern on the 500 MHz clock.
+// In ACTIVE both are 0 (the valid lane is driven by the functional path).
 //
-// {phyTrainLfsr, phyTrainValid, phyTrainLaneid} <= val_sel, delayed by
-// START_DELAY. No synchronizer, counter, cancel or acknowledgment:
-// PhyTxSequencer owns all timing and guarantees val_sel is onehot0.
+// {phyTrainValid, phyTrainLaneid} <= val_sel (one output flop).
+// No synchronizer, counter, cancel or acknowledgment: PhyTxSequencer owns all
+// timing and guarantees val_sel is onehot0.
 //
 // Timing: val_sel is launched by a clock_tx500 flop and captured on the FIRST
 // clock_tx2g edge after the launching edge (related clocks, single-cycle
 // synchronous path). Latency from the sequencer edge to the outputs:
-//   (1 + START_DELAY) clock_tx2g cycles = (1 + START_DELAY) x 8 UI.
-// START_DELAY = 3 aligns these outputs with PhyPatternTx500 (START_DELAY = 0).
+//   1 clock_tx2g cycle = 8 UI.
 //
 // Reset: common asynchronous assert, local synchronized release.
-// Reset value = idle (0,0,0).
+// Reset value = idle (0,0).
 // ============================================================================
 module PhyPatternValid2g #(
-  parameter integer SYNC_STAGES = 3,  // reset-release synchronizer depth (>= 2)
-  parameter integer START_DELAY = 0   // extra clock_tx2g cycles of fixed latency
+  parameter integer SYNC_STAGES = 3   // reset-release synchronizer depth (>= 2)
 ) (
   // ---- Local 2 GHz domain -------------------------------------------------
   input  wire       clock_tx2g,          // local control clock
@@ -61411,43 +61341,22 @@ module PhyPatternValid2g #(
   output wire       reset_valid2g_n,     // locally synchronized reset (for neighbours)
 
   // ---- From PhyTxSequencer (clock_tx500 launched, related clock) ----------
-  input  wire [2:0] val_sel,             // {lfsr, valid, laneid}, onehot0
+  input  wire [1:0] val_sel,             // {valid, laneid}, onehot0
 
   // ---- Analog front end: valid pattern is sent while one bit is 1 ---------
-  output wire       phyTrainLfsr,        // valid pattern for LFSR training /s3
   output wire       phyTrainValid,       // VALTRAIN pattern /S1
   output wire       phyTrainLaneid       // valid pattern for lane-ID training
 );
   Valid2gResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
     .clk_i(clock_tx2g), .arst_ni(reset_n), .rst_no(reset_valid2g_n));
 
-  // Fixed latency-trim pipeline (START_DELAY flops), then the output flops.
-  wire [2:0] val_sel_d;
-  generate
-    if (START_DELAY == 0) begin : g_no_delay
-      assign val_sel_d = val_sel;
-    end else begin : g_delay
-      logic [2:0] dly_q [START_DELAY];
-      always_ff @(posedge clock_tx2g or negedge reset_valid2g_n) begin
-        if (!reset_valid2g_n) begin
-          for (int i = 0; i < START_DELAY; i++) dly_q[i] <= 3'b000;
-        end else begin
-          dly_q[0] <= val_sel;
-          for (int i = 1; i < START_DELAY; i++) dly_q[i] <= dly_q[i-1];
-        end
-      end
-      assign val_sel_d = dly_q[START_DELAY-1];
-    end
-  endgenerate
-
-  logic [2:0] train_q;  // registered {lfsr, valid, laneid} to analog
+  logic [1:0] train_q;  // registered {valid, laneid} to analog
   always_ff @(posedge clock_tx2g or negedge reset_valid2g_n)
-    if (!reset_valid2g_n) train_q <= 3'b000;
-    else                  train_q <= val_sel_d;
-  assign {phyTrainLfsr, phyTrainValid, phyTrainLaneid} = train_q;
+    if (!reset_valid2g_n) train_q <= 2'b00;
+    else                  train_q <= val_sel;
+  assign {phyTrainValid, phyTrainLaneid} = train_q;
 
 `ifndef SYNTHESIS
-  initial assert (START_DELAY >= 0) else $fatal(1, "VALID START_DELAY must be >= 0");
   assert property (@(posedge clock_tx2g) disable iff (!reset_valid2g_n) $onehot0(train_q))
     else $error("VALID: more than one training bit high");
 `endif
@@ -61477,12 +61386,93 @@ endmodule
 
 ```
 
-<a id="ucie_phy_control-PhyTxControlTop-sv"></a>
+<a id="ucie_phy_control-PhyPatternValid500m-sv"></a>
 
-## [103] ucie_phy_control\PhyTxControlTop.sv
+## [103] ucie_phy_control\PhyPatternValid500m.sv
 
 ```systemverilog
 // FILE_INDEX: 103
+// FILE_PATH : ucie_phy_control\PhyPatternValid500m.sv
+
+`default_nettype none
+// ============================================================================
+// PhyPatternValid500m -- VALID-lane LFSR training bit (500 MHz domain)
+// ============================================================================
+// Synchronous slave of PhyTxSequencer (same clock_tx500 domain).
+//
+// Analog interface: one registered, glitch-free level bit, phyTrainLfsr.
+// The analog front end transmits the valid-lane pattern of the LFSR burst
+// in the 500 MHz domain while phyTrainLfsr is 1. The pattern is generated in
+// the analog block. The VALTRAIN and lane-ID valid bits stay in the 2 GHz
+// domain (PhyPatternValid2g).
+//
+// phyTrainLfsr <= lfsr_en (one output flop). There is no synchronizer,
+// counter, cancel or acknowledgment: PhyTxSequencer owns all timing. It raises
+// lfsr_en only in the BODY of the LFSR command (op 3), on the same edge as the
+// Tx500 LFSR mode.
+//
+// Latency from the sequencer edge to the output:
+//   1 clock_tx500 cycle = 32 UI, the same as PhyPatternTx500, so phyTrainLfsr
+// and enable_LFSR switch on the same clock_tx500 edge.
+//
+// Reset: common asynchronous assert, local synchronized release.
+// Reset value = idle (0).
+// ============================================================================
+module PhyPatternValid500m #(
+  parameter integer SYNC_STAGES = 3   // reset-release synchronizer depth (>= 2)
+) (
+  // ---- Local 500 MHz domain -----------------------------------------------
+  input  wire clock_tx500,           // local control clock
+  input  wire reset_n,               // async reset (assert anywhere, release synced)
+  output wire reset_valid500m_n,     // locally synchronized reset (for neighbours)
+
+  // ---- From PhyTxSequencer (same clock_tx500 domain) ----------------------
+  input  wire lfsr_en,               // LFSR BODY
+
+  // ---- Analog front end ---------------------------------------------------
+  output wire phyTrainLfsr           // valid pattern for LFSR training
+);
+  Valid500mResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
+    .clk_i(clock_tx500), .arst_ni(reset_n), .rst_no(reset_valid500m_n));
+
+  logic train_q;  // registered phyTrainLfsr to analog
+  always_ff @(posedge clock_tx500 or negedge reset_valid500m_n)
+    if (!reset_valid500m_n) train_q <= 1'b0;
+    else                    train_q <= lfsr_en;
+  assign phyTrainLfsr = train_q;
+
+endmodule
+
+// Reset synchronizer: asserts asynchronously with arst_ni, releases
+// synchronously to clk_i after STAGES clock edges.
+module Valid500mResetSync #(
+  parameter integer STAGES = 3
+) (
+  input  wire clk_i,
+  input  wire arst_ni,
+  output wire rst_no
+);
+  (* async_reg = "true", dont_touch = "true" *) logic [STAGES-1:0] release_q;
+  always_ff @(posedge clk_i or negedge arst_ni) begin
+    if (!arst_ni) release_q <= '0;
+    else release_q <= {release_q[STAGES-2:0], 1'b1};
+  end
+  assign rst_no = release_q[STAGES-1];
+`ifndef SYNTHESIS
+  initial assert (STAGES >= 2) else $fatal(1, "VALID500M reset synchronizer needs >=2 stages");
+`endif
+endmodule
+
+`default_nettype wire
+
+```
+
+<a id="ucie_phy_control-PhyTxControlTop-sv"></a>
+
+## [104] ucie_phy_control\PhyTxControlTop.sv
+
+```systemverilog
+// FILE_INDEX: 104
 // FILE_PATH : ucie_phy_control\PhyTxControlTop.sv
 
 `default_nettype none
@@ -61490,16 +61480,20 @@ endmodule
 // PhyTxControlTop - integration wrapper for the PHY-side TX pattern control
 // =============================================================================
 // Instantiates PhyTxSequencer, PhyPatternClock2g, PhyPatternValid2g,
-// PhyPatternData2g and LANES x PhyPatternTx500. Wiring only, no extra logic.
+// PhyPatternValid500m, PhyPatternData2g and LANES x PhyPatternTx500.
+// Wiring only, no extra logic.
 //
 // The seq_* link is the ONLY connection to LtsmPhyPatternCtrl800 (800 MHz,
 // asynchronous). Every other path inside is synchronous to clock_tx500 or
 // to the related clock_tx2g (same source, 4:1, phase aligned).
 //
-// Endpoint latency from the sequencer output edge (START_DELAY_* = 0):
+// Endpoint latency from the sequencer output edge (fixed, one output flop):
 //   Clock2g / Valid2g / Data2g : 1 clock_tx2g cycle  =  8 UI
-//   Tx500                      : 1 clock_tx500 cycle = 32 UI
-// Set START_DELAY_2G = 3 to align all four outputs at 32 UI.
+//   Valid500m / Tx500          : 1 clock_tx500 cycle = 32 UI
+// Signals that must match edge for edge are always in one domain (lane ID:
+// Valid2g + Data2g; LFSR: Valid500m + Tx500). The 2 GHz forwarded clock only
+// has to cover the burst, which the PRE/POST envelope guarantees: it leads
+// the 500 MHz outputs by PRE x 32 + 24 UI and trails them by POST x 32 - 24 UI.
 // Preserve each endpoint hierarchy so it can be placed beside its transmitter.
 // =============================================================================
 module PhyTxControlTop #(
@@ -61507,9 +61501,7 @@ module PhyTxControlTop #(
   parameter integer SYNC_STAGES    = 3,
   parameter integer PRE_CYC        = 4,
   parameter integer POST_CYC       = 4,
-  parameter integer CLK_LEN        = 96,
-  parameter integer START_DELAY_2G = 0,  // Clock2g, Valid2g, Data2g (clock_tx2g cycles)
-  parameter integer START_DELAY_TX = 0   // every Tx500 lane (clock_tx500 cycles)
+  parameter integer CLK_LEN        = 96
 ) (
   input  wire              clock_tx500,
   input  wire              clock_tx2g,
@@ -61529,8 +61521,8 @@ module PhyTxControlTop #(
 
   // ---- Analog / PHY controls --------------------------------------------------
   output wire              phyDigControl,     // Clock2g
-  output wire              phyTrainLfsr,      // Valid2g
-  output wire              phyTrainValid,
+  output wire              phyTrainLfsr,      // Valid500m
+  output wire              phyTrainValid,     // Valid2g
   output wire              phyTrainLaneid,
   output wire              digControl,        // Data2g
   output wire              laneID_index,
@@ -61540,10 +61532,12 @@ module PhyTxControlTop #(
   output wire [LANES-1:0]  load_seed,
   output wire [LANES-1:0]  load_zero
 );
-  wire clk_en, id_en;
-  wire [2:0] val_sel, tx500_mode;
+  wire clk_en, id_en, lfsr_val_en;
+  wire [1:0] val_sel;
+  wire [2:0] tx500_mode;
   wire [LANES-1:0] tx500_lane_en;
   wire unused_reset_seq_n, unused_reset_clock2g_n, unused_reset_valid2g_n;
+  wire unused_reset_valid500m_n;
 
   PhyTxSequencer #(
     .LANES(LANES), .SYNC_STAGES(SYNC_STAGES),
@@ -61553,26 +61547,30 @@ module PhyTxControlTop #(
     .seq_req_i(seq_req_i), .seq_stop_i(seq_stop_i),
     .seq_op_i(seq_op_i), .seq_mask_i(seq_mask_i),
     .seq_ack_o(seq_ack_o), .seq_aborted_o(seq_aborted_o),
-    .clk_en_o(clk_en), .val_sel_o(val_sel), .id_en_o(id_en),
+    .clk_en_o(clk_en), .val_sel_o(val_sel), .lfsr_val_en_o(lfsr_val_en), .id_en_o(id_en),
     .tx500_mode_o(tx500_mode), .tx500_lane_en_o(tx500_lane_en),
     .active_ready_o(active_ready_o));
 
-  PhyPatternClock2g #(.SYNC_STAGES(SYNC_STAGES), .START_DELAY(START_DELAY_2G)) u_clock2g (
+  PhyPatternClock2g #(.SYNC_STAGES(SYNC_STAGES)) u_clock2g (
     .clock_tx2g(clock_tx2g), .reset_n(reset_n), .reset_clock2g_n(unused_reset_clock2g_n),
     .clk_en(clk_en), .phyDigControl(phyDigControl));
 
-  PhyPatternValid2g #(.SYNC_STAGES(SYNC_STAGES), .START_DELAY(START_DELAY_2G)) u_valid2g (
+  PhyPatternValid2g #(.SYNC_STAGES(SYNC_STAGES)) u_valid2g (
     .clock_tx2g(clock_tx2g), .reset_n(reset_n), .reset_valid2g_n(unused_reset_valid2g_n),
     .val_sel(val_sel),
-    .phyTrainLfsr(phyTrainLfsr), .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid));
+    .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid));
 
-  PhyPatternData2g #(.SYNC_STAGES(SYNC_STAGES), .START_DELAY(START_DELAY_2G)) u_data2g (
+  PhyPatternValid500m #(.SYNC_STAGES(SYNC_STAGES)) u_valid500m (
+    .clock_tx500(clock_tx500), .reset_n(reset_n), .reset_valid500m_n(unused_reset_valid500m_n),
+    .lfsr_en(lfsr_val_en), .phyTrainLfsr(phyTrainLfsr));
+
+  PhyPatternData2g #(.SYNC_STAGES(SYNC_STAGES)) u_data2g (
     .clock_tx2g(clock_tx2g), .reset_n(reset_n),
     .id_en(id_en), .lane_id_i(lane_id_i),
     .digControl(digControl), .laneID_index(laneID_index), .lane_id_o(lane_id_o));
 
   for (genvar lane = 0; lane < LANES; lane++) begin : g_tx500
-    PhyPatternTx500 #(.SYNC_STAGES(SYNC_STAGES), .START_DELAY(START_DELAY_TX)) u_tx500 (
+    PhyPatternTx500 #(.SYNC_STAGES(SYNC_STAGES)) u_tx500 (
       .clock_tx500(clock_tx500), .reset_n(reset_n),
       .mode(tx500_mode), .lane_en(tx500_lane_en[lane]),
       .enable_LFSR(enable_LFSR[lane]), .zero_ena(zero_ena[lane]),
@@ -61586,10 +61584,10 @@ endmodule
 
 <a id="ucie_phy_control-PhyTxSequencer-sv"></a>
 
-## [104] ucie_phy_control\PhyTxSequencer.sv
+## [105] ucie_phy_control\PhyTxSequencer.sv
 
 ```systemverilog
-// FILE_INDEX: 104
+// FILE_INDEX: 105
 // FILE_PATH : ucie_phy_control\PhyTxSequencer.sv
 
 `default_nettype none
@@ -61600,9 +61598,9 @@ endmodule
 // The 800 MHz LtsmPhyPatternCtrl800 talks to this block over ONE CDC
 // handshake. This block is the ONLY clock-domain crossing of the TX pattern
 // control and the ONLY place that counts cycles. It drives synchronous level
-// enables to four endpoints (PhyPatternClock2g, PhyPatternValid2g,
-// PhyPatternData2g, LANES x PhyPatternTx500) that contain no synchronizers,
-// no counters and no acknowledgments.
+// enables to five endpoints (PhyPatternClock2g, PhyPatternValid2g,
+// PhyPatternValid500m, PhyPatternData2g, LANES x PhyPatternTx500) that contain
+// no synchronizers, no counters and no acknowledgments.
 //
 // Clocks: clock_tx500 (this block, Tx500) and clock_tx2g (2 GHz endpoints) come
 // from the same source and are phase aligned 4:1. 800 MHz is asynchronous.
@@ -61630,12 +61628,15 @@ endmodule
 //   0  | CLK_TRAIN | BODY only             | clk_en                       | CLK_LEN
 //   1  | VAL_TRAIN | PRE + BODY + POST     | clk_en, val_sel=valid        | 32
 //   2  | LANEID    | PRE + BODY + POST     | clk_en, val_sel=laneid, id_en| 64
-//   3  | LFSR      | PRE + BODY + POST     | clk_en, val_sel=lfsr,        | 128
+//   3  | LFSR      | PRE + BODY + POST     | clk_en, lfsr_val_en (500M),  | 128
 //      |           |                       | tx500 LFSR on mask lanes     |
 //   4  | RESEED    | BODY only, no clock   | tx500 SEED on all lanes      | 1
 //   5  | ACTIVE    | PRE + BODY + POST     | clk_en, tx500 ACTIVE on all  | until stop
 //      |           |                       | lanes, active_ready          |
-//   PRE and POST drive clk_en only (val_sel/id_en 0, Tx500 OFF).
+//   PRE and POST drive clk_en only (val_sel/lfsr_val_en/id_en 0, Tx500 OFF).
+//   The LFSR valid bit goes to PhyPatternValid500m (500 MHz), not to
+//   PhyPatternValid2g: the analog front end sends the LFSR valid pattern on
+//   the 500 MHz clock.
 //   Lengths: 128 iterations each: VALTRAIN 128 x 8 UI, lane ID 128 x 16 UI,
 //   LFSR 128 x 32 UI; all divided by 32 UI per 500 MHz cycle.
 //   CLK_LEN default 96 = 128 x 24 UI / 32 (UCIe clock pattern iteration:
@@ -61675,7 +61676,8 @@ module PhyTxSequencer #(
 
   // ---- Synchronous enables to the endpoints (registered) --------------------
   output logic             clk_en_o,         // -> PhyPatternClock2g
-  output logic [2:0]       val_sel_o,        // {lfsr, valid, laneid} -> PhyPatternValid2g
+  output logic [1:0]       val_sel_o,        // {valid, laneid} -> PhyPatternValid2g
+  output logic             lfsr_val_en_o,    // LFSR valid -> PhyPatternValid500m
   output logic             id_en_o,          // -> PhyPatternData2g
   output logic [2:0]       tx500_mode_o,     // -> every PhyPatternTx500
   output logic [LANES-1:0] tx500_lane_en_o,  // per-lane enable for Tx500
@@ -61688,7 +61690,7 @@ module PhyTxSequencer #(
                          OP_LFSR=3'd3, OP_RESEED=3'd4, OP_ACTIVE=3'd5;
   localparam logic [2:0] M_OFF=3'd0, M_SEED=3'd1, M_LFSR=3'd2, M_ACTIVE=3'd3;
   // M_RAW=3'd4 is reserved for test; this sequencer never issues it.
-  localparam logic [2:0] SEL_LFSR=3'b100, SEL_VALID=3'b010, SEL_LANEID=3'b001;
+  localparam logic [1:0] SEL_VALID=2'b10, SEL_LANEID=2'b01;
 
   // Fixed BODY lengths (128 iterations each), in 500 MHz cycles.
   localparam integer ITERATIONS = 128;
@@ -61834,7 +61836,8 @@ module PhyTxSequencer #(
       seq_ack_o <= 1'b0;
       seq_aborted_o <= 1'b0;
       clk_en_o <= 1'b0;
-      val_sel_o <= 3'b000;
+      val_sel_o <= 2'b00;
+      lfsr_val_en_o <= 1'b0;
       id_en_o <= 1'b0;
       tx500_mode_o <= M_OFF;
       tx500_lane_en_o <= '0;
@@ -61849,7 +61852,8 @@ module PhyTxSequencer #(
 
       // Defaults: Idle row.
       clk_en_o <= 1'b0;
-      val_sel_o <= 3'b000;
+      val_sel_o <= 2'b00;
+      lfsr_val_en_o <= 1'b0;
       id_en_o <= 1'b0;
       tx500_mode_o <= M_OFF;
       tx500_lane_en_o <= '0;
@@ -61863,7 +61867,7 @@ module PhyTxSequencer #(
             clk_en_o <= 1'b1; val_sel_o <= SEL_LANEID; id_en_o <= 1'b1;
           end
           OP_LFSR: begin
-            clk_en_o <= 1'b1; val_sel_o <= SEL_LFSR;
+            clk_en_o <= 1'b1; lfsr_val_en_o <= 1'b1;
             tx500_mode_o <= M_LFSR; tx500_lane_en_o <= mask_d;
           end
           OP_RESEED: begin
@@ -61894,16 +61898,19 @@ module PhyTxSequencer #(
   end
   // Valid bits and lane-ID enable only under the clock, never in ACTIVE.
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
-    (val_sel_o != 3'b000 || id_en_o) |-> clk_en_o)
+    (val_sel_o != 2'b00 || lfsr_val_en_o || id_en_o) |-> clk_en_o)
     else $error("SEQ: valid/lane-ID enabled without clock");
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
-    active_ready_o |-> (val_sel_o == 3'b000 && !id_en_o))
+    active_ready_o |-> (val_sel_o == 2'b00 && !lfsr_val_en_o && !id_en_o))
     else $error("SEQ: valid/lane-ID enabled in ACTIVE");
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
     (tx500_mode_o == M_LFSR) |-> clk_en_o)
     else $error("SEQ: Tx500 LFSR without clock");
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
-    $onehot0(val_sel_o))
+    lfsr_val_en_o == (tx500_mode_o == M_LFSR))
+    else $error("SEQ: LFSR valid and Tx500 LFSR mode not on the same edge");
+  assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
+    $onehot0({lfsr_val_en_o, val_sel_o}))
     else $error("SEQ: more than one valid training bit");
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
     !(tx500_mode_o > M_ACTIVE))
@@ -61972,10 +61979,10 @@ endmodule
 
 <a id="ucie_phy_control-tests-tb_ltsm_specialized-sv"></a>
 
-## [105] ucie_phy_control\tests\tb_ltsm_specialized.sv
+## [106] ucie_phy_control\tests\tb_ltsm_specialized.sv
 
 ```systemverilog
-// FILE_INDEX: 105
+// FILE_INDEX: 106
 // FILE_PATH : ucie_phy_control\tests\tb_ltsm_specialized.sv
 
 `timescale 1ps/1ps
@@ -62285,10 +62292,10 @@ endmodule
 
 <a id="ucie_phy_control-tests-tb_phy_tx_sequencer-sv"></a>
 
-## [106] ucie_phy_control\tests\tb_phy_tx_sequencer.sv
+## [107] ucie_phy_control\tests\tb_phy_tx_sequencer.sv
 
 ```systemverilog
-// FILE_INDEX: 106
+// FILE_INDEX: 107
 // FILE_PATH : ucie_phy_control\tests\tb_phy_tx_sequencer.sv
 
 `timescale 1ps/1ps
@@ -62298,10 +62305,10 @@ endmodule
 // =============================================================================
 // An 800 MHz bus-functional source (random phase, +SEED=<n>) drives the seq_*
 // link of THREE PhyTxControlTop configurations in parallel:
-//   c0 "default" : PRE 4,  POST 4, CLK_LEN 96, 2G START_DELAY 0, Tx500 0
-//   c1 "trim2g"  : PRE 4,  POST 4, CLK_LEN 96, 2G START_DELAY 3, Tx500 0
-//                  (all four endpoints aligned at 32 UI)
-//   c2 "longpre" : PRE 12, POST 6, CLK_LEN 32, 2G START_DELAY 0, Tx500 1
+//   c0 "default"   : PRE 4,  POST 4, CLK_LEN 96
+//   c1 "shortpost" : PRE 4,  POST 1, CLK_LEN 32 (minimum clock trail after
+//                    the 500 MHz LFSR valid/data: 32 - 24 = 8 UI)
+//   c2 "longpre"   : PRE 12, POST 6, CLK_LEN 32
 // Clocks: 2 GHz and 500 MHz phase aligned (4:1), 800 MHz asynchronous.
 //
 // Checks (inside every seq_case, every cycle):
@@ -62410,8 +62417,6 @@ module tb_seq_case #(
   parameter int PRE = 4,
   parameter int POST = 4,
   parameter int CLKLEN = 96,
-  parameter int D2G = 0,
-  parameter int DTX = 0,
   parameter string NAME = "case"
 ) (
   input wire clk500, clk2g, reset_n,
@@ -62421,16 +62426,15 @@ module tb_seq_case #(
   output wire ack, aborted
 );
   import tb_seq_pkg::*;
-  localparam longint LAT2G = 500 * (1 + D2G);
-  localparam longint LATTX = 2000 * (1 + DTX);
+  localparam longint LAT2G = 500;   // 1 clock_tx2g cycle
+  localparam longint LATTX = 2000;  // 1 clock_tx500 cycle
   wire active_ready;
   wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid;
   wire digControl, laneID_index;
   wire [3:0] lane_id_o;
   wire [LANES-1:0] enable_LFSR, zero_ena, load_seed, load_zero;
   PhyTxControlTop #(
-    .LANES(LANES), .PRE_CYC(PRE), .POST_CYC(POST), .CLK_LEN(CLKLEN),
-    .START_DELAY_2G(D2G), .START_DELAY_TX(DTX)
+    .LANES(LANES), .PRE_CYC(PRE), .POST_CYC(POST), .CLK_LEN(CLKLEN)
   ) u_dut (
     .clock_tx500(clk500), .clock_tx2g(clk2g), .reset_n(reset_n),
     .seq_req_i(req), .seq_stop_i(stop), .seq_op_i(op), .seq_mask_i(mask),
@@ -62444,7 +62448,7 @@ module tb_seq_case #(
 
   // Sequencer outputs (inside the wrapper).
   wire s_clk = u_dut.clk_en;
-  wire [2:0] s_val = u_dut.val_sel;
+  wire [2:0] s_val = {u_dut.lfsr_val_en, u_dut.val_sel};  // {lfsr, valid, laneid}
   wire s_id = u_dut.id_en;
   wire [2:0] s_mode = u_dut.tx500_mode;
   wire [LANES-1:0] s_len = u_dut.tx500_lane_en;
@@ -62537,9 +62541,12 @@ module tb_seq_case #(
   // ---- Fixed-latency checks: every endpoint output vs its sequencer input ----
   tb_lat_chk #(.W(1), .LAT(LAT2G), .NAME({NAME, ".Clock2g"})) u_lat_clk (
     .src_clk(clk500), .dst_clk(clk2g), .rst_n(reset_n), .src(s_clk), .dst(phyDigControl));
-  tb_lat_chk #(.W(3), .LAT(LAT2G), .NAME({NAME, ".Valid2g"})) u_lat_val (
-    .src_clk(clk500), .dst_clk(clk2g), .rst_n(reset_n), .src(s_val),
-    .dst({phyTrainLfsr, phyTrainValid, phyTrainLaneid}));
+  tb_lat_chk #(.W(2), .LAT(LAT2G), .NAME({NAME, ".Valid2g"})) u_lat_val (
+    .src_clk(clk500), .dst_clk(clk2g), .rst_n(reset_n), .src(s_val[1:0]),
+    .dst({phyTrainValid, phyTrainLaneid}));
+  tb_lat_chk #(.W(1), .LAT(LATTX), .DST_HALF(1000), .NAME({NAME, ".Valid500m"})) u_lat_lfsrv (
+    .src_clk(clk500), .dst_clk(clk500), .rst_n(reset_n), .src(s_val[2]),
+    .dst(phyTrainLfsr));
   tb_lat_chk #(.W(1), .LAT(LAT2G), .NAME({NAME, ".Data2g"})) u_lat_id (
     .src_clk(clk500), .dst_clk(clk2g), .rst_n(reset_n), .src(s_id), .dst(digControl));
   for (genvar lane = 0; lane < LANES; lane++) begin : g_lane
@@ -62645,13 +62652,13 @@ module tb_phy_tx_sequencer;
   assign #220 ack_all_d = &ack_c;
   assign #220 ack_any_d = |ack_c;
 
-  tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(4), .CLKLEN(96), .D2G(0), .DTX(0), .NAME("c0.default")) c0 (
+  tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(4), .CLKLEN(96), .NAME("c0.default")) c0 (
     .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
     .op(op_dst), .mask(mask_dst), .ack(ack_c[0]), .aborted(ab_c[0]));
-  tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(4), .CLKLEN(96), .D2G(3), .DTX(0), .NAME("c1.trim2g3")) c1 (
+  tb_seq_case #(.LANES(LANES), .PRE(4),  .POST(1), .CLKLEN(32), .NAME("c1.shortpost")) c1 (
     .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
     .op(op_dst), .mask(mask_dst), .ack(ack_c[1]), .aborted(ab_c[1]));
-  tb_seq_case #(.LANES(LANES), .PRE(12), .POST(6), .CLKLEN(32), .D2G(0), .DTX(1), .NAME("c2.longpre")) c2 (
+  tb_seq_case #(.LANES(LANES), .PRE(12), .POST(6), .CLKLEN(32), .NAME("c2.longpre")) c2 (
     .clk500(clk500), .clk2g(clk2g), .reset_n(reset_n), .req(req_dst), .stop(stop_dst),
     .op(op_dst), .mask(mask_dst), .ack(ack_c[2]), .aborted(ab_c[2]));
 

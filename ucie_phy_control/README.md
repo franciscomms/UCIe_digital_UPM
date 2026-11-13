@@ -14,7 +14,7 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
  |                      |           |  lfsr_val_en ----------> PhyPatternValid500m -> phyTrainLfsr (clock_tx500)
  | Ltsm800CommandSource | op,mask   |  id_en ----------------> PhyPatternData2g  |-> digControl, laneID_index
  |                      |<----------|  tx500_mode, lane_en --> LANES x Tx500     |-> enable_LFSR, zero_ena,
- |  ack sync            | ack,abort |                           (clock_tx500)    |   load_seed, load_zero
+ |  ack sync            |    ack    |                           (clock_tx500)    |   load_seed, load_zero
  |  active_ready sync   |<----------|  active_ready_o ---> TX datapath           |
  +----------------------+ active_rdy  +-----------------------------------------------+
 ```
@@ -48,15 +48,16 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
 | `seq_stop` | Ctrl800 -> seq | level | Synchronized at the sequencer. Raised to end the running command early; held until ack. Falls together with req. |
 | `seq_op[2:0]`, `seq_mask[LANES-1:0]` | Ctrl800 -> seq | bundled | Driven one 800 MHz cycle **before** req rises; stable until ack has fallen. Captured once, after req synchronization. |
 | `seq_ack` | seq -> Ctrl800 | level | Synchronized in Ctrl800. Rises only after the whole envelope has finished (clock off). Held until synchronized req **and** stop are both low. |
-| `seq_aborted` | seq -> Ctrl800 | bundled | Stable while ack is high. 1 = ended by stop. Ctrl800 suppresses the Finished flag. |
 | `active_ready` | seq -> Ctrl800, TX datapath | level | High in ACTIVE once PRE has finished (clock running). Ctrl800 returns it synchronized as `ltsm_active_ready`. |
 
 **Stop / drain.** When the sequencer sees stop in PRE or BODY:
 1. Valid bits, Data2g and the Tx500 mode go off on the next edge.
 2. `clk_en` stays on for `POST_CYC` cycles.
-3. `clk_en` goes off, and ack rises with aborted = 1 on the same edge.
+3. `clk_en` goes off, and ack rises on the same edge.
 
-CLK_TRAIN and RESEED have no POST, so they go straight to DONE. If stop is already high when the request is first seen, the sequencer completes immediately with aborted = 1 and sends nothing. Stop during POST changes nothing.
+No aborted result is returned. Ctrl800 raised stop itself, so it treats the command as aborted and suppresses its Finished flag.
+
+CLK_TRAIN and RESEED have no POST, so they go straight to DONE. If stop is already high when the request is first seen, the sequencer completes immediately and sends nothing. Stop during POST changes nothing.
 
 **When Ctrl800 asserts stop:**
 - ACTIVE: whenever `ltsm_state != 8`.
@@ -160,7 +161,7 @@ ACTIVE enter and exit (`ltsm_state` 7 -> 8 -> other):
 
 ```
 ltsm_state (800)   7 (LINKINIT) |8 (ACTIVE) ...........................................|5/9/0
-Ctrl800 link       RESEED cmd  -> ACTIVE cmd (req held) ...........................stop^ ... ack(aborted)
+Ctrl800 link       RESEED cmd  -> ACTIVE cmd (req held) ...........................stop^ ... ack
 seq state          ..SEED|DONE| IDLE |PRE     |BODY (ACTIVE, no end)                |POST    |DONE
 seq clk_en         ______________________/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\_____
 seq tx500_mode     0 |1| 0 ..............0 0 0 0|3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 |0 0 0 0|0
@@ -180,14 +181,14 @@ Unchanged from the previous version:
 - The 1-deep pattern queue plus the reseed slot and its ordering (reseed first for same-cycle edges).
 - The error bits, `ltsm_pattern_busy` and `reset_ltsm_n`.
 
-The K_* kinds became the ops above, and the four links became one `Ltsm800CommandSource` with payload {op, mask}, stop and the aborted return.
+The K_* kinds became the ops above, and the four links became one `Ltsm800CommandSource` with payload {op, mask} and stop. The aborted result is decided in Ctrl800 from its own stop.
 
 | Item | Behavior |
 | --- | --- |
 | `ltsm_pattern_error[0]` | Multiple LTSM edges in one cycle, or a JTAG edge colliding with an LTSM edge or with ACTIVE entry |
 | `ltsm_pattern_error[1]` | LTSM flag in an illegal state/substate, or a zero custom mask |
 | `ltsm_pattern_error[2]` | Queue overflow (pattern slot or reseed slot full) |
-| Finished flags | One pulse on the owner's flag after a non-aborted command. CLK/VAL/LANEID/LFSR only. RESEED, custom and ACTIVE have no flag |
+| Finished flags | One pulse on the owner's flag after a command that Ctrl800 did not stop. CLK/VAL/LANEID/LFSR only. RESEED, custom and ACTIVE have no flag |
 | `ltsm_pattern_busy` | Pending or running command, including **all of ACTIVE** |
 | `ltsm_active_ready` | Synchronized `active_ready` from the sequencer |
 
@@ -198,7 +199,7 @@ Removed:
 
 ## Integration (`UcieDigitalTopJtag`)
 
-The top replaces the old link ports with `seq_req_o`, `seq_stop_o`, `seq_op_o[2:0]`, `seq_mask_o[dataLaneCount-1:0]`, `seq_ack_i`, `seq_aborted_i` and `seq_active_ready_i`, and adds the status output `ltsm_active_ready`. Connect these to `PhyTxControlTop` in the PHY region. The `ltsm_clk_active_req` tie-off is gone.
+The top replaces the old link ports with `seq_req_o`, `seq_stop_o`, `seq_op_o[2:0]`, `seq_mask_o[dataLaneCount-1:0]`, `seq_ack_i` and `seq_active_ready_i`, and adds the status output `ltsm_active_ready`. Connect these to `PhyTxControlTop` in the PHY region. The `ltsm_clk_active_req` tie-off is gone.
 
 `ltsm_state` reaches Ctrl800 ungated. Only the training flags are gated by `pattern_normal_enable`. As a result, ACTIVE entry launches the clock in every mode where the LTSM reaches ACTIVE.
 
@@ -209,7 +210,7 @@ Reset assertion is common and asynchronous: Ctrl800, the sequencer and every end
 ## Timing constraints
 
 `constraints/cdc_constraints.sdc` is a binding template:
-- Max-delay of one destination period on the req, stop, ack and active_ready first synchronizer stages, and on the {op, mask} and aborted bundles.
+- Max-delay of one destination period on the req, stop, ack and active_ready first synchronizer stages, and on the {op, mask} bundle.
 - No false paths and no blanket clock groups.
 - No multicycle path on 500 MHz -> 2 GHz: define `clock_tx500` as a generated clock of the 2 GHz source so STA times those paths as single-cycle (0.5 ns).
 
