@@ -59,7 +59,9 @@
 //            so the clock muxes in UcieDigitalTop never switch between
 //            different sources.
 //   reset_n  functional reset of the core and IP-side reset of the TDRs.
-//            Asserting it returns ctrl to functional mode.
+//            Asserting it returns ctrl to functional mode. Asserts
+//            asynchronously; deassertion is synchronized to clock (2 edges)
+//            by u_reset_sync, so clock must run for the core to leave reset.
 //   jtag_nRst  clears both mailbox domains; committed controls are retained.
 //   tdr_rst    clears serial shift state; accepted transactions finish once.
 //
@@ -285,6 +287,28 @@ module UcieDigitalTopJtag #(
   output wire logic val_mode_o
 );
 
+  // --------------------------------------------------------------------------
+  // Reset synchronizer: asynchronous assertion, synchronous deassertion.
+  // reset_n low forces reset_n_sync low immediately (no clock needed), so the
+  // core and the PHY-facing outputs reach their reset values even without a
+  // running clock. On release, reset_n_sync rises 2 clock edges later, aligned
+  // to clock, so every flop in this domain leaves reset on the same edge.
+  // reset_n_sync replaces the raw pin for everything in this wrapper. The
+  // sideband RX domain (sb_rx_clk) also takes it via u_top and keeps its own
+  // asynchronous reset there (see SideBandModule).
+  // --------------------------------------------------------------------------
+  logic reset_n_sync;
+
+  tc_sync #(
+    .Stages     (2),
+    .ResetValue (1'b0)
+  ) u_reset_sync (
+    .clk_i    (clock),
+    .rst_ni   (reset_n),
+    .serial_i (1'b1),
+    .serial_o (reset_n_sync)
+  );
+
   // Functional controls and results shared by the LTSM and RX controller.
   wire ltsm_flagFromAnalog_valVref_detectedValPattern;
   wire ltsm_valVref_pointArmed;
@@ -407,8 +431,8 @@ module UcieDigitalTopJtag #(
   assign fdi_lp_linkerror = 1'b0;
   assign fdi_lp_wake_req = 1'b0;
 
-  always_ff @(posedge clock or negedge reset_n) begin
-    if (!reset_n) begin
+  always_ff @(posedge clock or negedge reset_n_sync) begin
+    if (!reset_n_sync) begin
       fdi_lp_state_req <= UcieUPM_interfaces_pkg::PhyStateReq_nop; // 4'b0000
       fdi_lp_rx_active_sts <= 1'b0;
       fdi_lp_clk_ack <= 1'b0;
@@ -452,8 +476,8 @@ module UcieDigitalTopJtag #(
   logic [2:0] rxLaneDeskew_applyDelay;
   logic [2:0] speed_applyDelay;
 
-  always_ff @(posedge clock or negedge reset_n) begin
-    if (!reset_n) begin
+  always_ff @(posedge clock or negedge reset_n_sync) begin
+    if (!reset_n_sync) begin
       valVref_applyDelay      <= 3'b000;
       dataVref_applyDelay     <= 3'b000;
       txClockPhase_applyDelay <= 3'b000;
@@ -536,7 +560,7 @@ module UcieDigitalTopJtag #(
 
   assign ctrl_mode    = ctrl_q[2:0];
   assign ctrl_sys_rst = ctrl_q[3];
-  assign test_reset_n = reset_n & ~ctrl_sys_rst;
+  assign test_reset_n = reset_n_sync & ~ctrl_sys_rst;  // ctrl_sys_rst is already on clock
   assign custom_train_jtag = ctrl_q[8];
   assign ltsm_data_lane_mask = ctrl_q[CTRL_W-1:9];
   // The snapshot mailbox transfers the mask and held trigger atomically into
@@ -567,7 +591,7 @@ module UcieDigitalTopJtag #(
     .sel           (sel_ctrl),
     .tdo           (tdo_ctrl),
     .clk           (clock),
-    .nRst          (reset_n),
+    .nRst          (reset_n_sync),
     .data_in       (ctrl_readback),
     .data_out      (ctrl_q),
     .data_out_valid()
@@ -638,7 +662,8 @@ module UcieDigitalTopJtag #(
     .rxDeskewMaximumComparisonErrorThreshold(rxDeskewMaximumComparisonErrorThreshold)
   ) u_rx_ctrl (
     .clock(clock),
-    .reset_n(reset_n),
+    // Already synchronized; its internal rst800_n stage only adds latency.
+    .reset_n(reset_n_sync),
     .ltsm_state(pattern_normal_enable ? ltsm_state : 4'd0),
     .ltsm_dbg_mbinitSubstate(ltsm_dbg_mbinitSubstate),
     .jtagLtsm_dbg_mbinitReversalMbReceiverState(ltsm_dbg_mbinitReversalMbReceiverState),
@@ -716,7 +741,7 @@ module UcieDigitalTopJtag #(
   // The source controller owns its reset synchronizer. No destination-domain
   // flops are inserted here: PhyTxSequencer synchronizes req and owns timing.
   LtsmPhyPatternCtrl800 #(.LANES(dataLaneCount)) u_pattern_ctrl (
-    .clock(clock), .reset_n(reset_n),
+    .clock(clock), .reset_n(reset_n_sync),
     .ltsm_state(ltsm_state),
     .ltsm_dbg_mbinitSubstate(ltsm_dbg_mbinitSubstate),
     .ltsm_dbg_mbtrainState(ltsm_dbg_mbtrainState),
@@ -983,7 +1008,7 @@ module UcieDigitalTopJtag #(
     .sel           (sel_dig),
     .tdo           (tdo_dig),
     .clk           (clock),
-    .nRst          (reset_n),
+    .nRst          (reset_n_sync),
     .data_in       (dig_data_in),
     .data_out      (dig_data_out),
     .data_out_valid()
@@ -1055,7 +1080,7 @@ module UcieDigitalTopJtag #(
     .sel           (sel_fdi),
     .tdo           (tdo_fdi),
     .clk           (clock),
-    .nRst          (reset_n),
+    .nRst          (reset_n_sync),
     .data_in       (fdi_data_in),
     .data_out      (fdi_data_out),
     .data_out_valid()
@@ -1119,7 +1144,7 @@ module UcieDigitalTopJtag #(
     .sel           (sel_rdi),
     .tdo           (tdo_rdi),
     .clk           (clock),
-    .nRst          (reset_n),
+    .nRst          (reset_n_sync),
     .data_in       (rdi_data_in),
     .data_out      (rdi_data_out),
     .data_out_valid()
@@ -1382,7 +1407,7 @@ module UcieDigitalTopJtag #(
     .sel           (sel_ltsm),
     .tdo           (tdo_ltsm),
     .clk           (clock),
-    .nRst          (reset_n),
+    .nRst          (reset_n_sync),
     .data_in       (ltsm_data_in),
     .data_out      (ltsm_data_out),
     .data_out_valid()
@@ -1537,7 +1562,7 @@ module UcieDigitalTopJtag #(
     .sel           (sel_phy),
     .tdo           (tdo_phy),
     .clk           (clock),
-    .nRst          (reset_n),
+    .nRst          (reset_n_sync),
     .data_in       (phy_data_in),
     .data_out      (phy_data_out),
     .data_out_valid()
@@ -1610,7 +1635,7 @@ module UcieDigitalTopJtag #(
     .testModeLtsm((ctrl_mode == MODE_LTSM)),
     .testModePhy((ctrl_mode == MODE_PHY)),
     .clock(clock),
-    .reset_n(reset_n),
+    .reset_n(reset_n_sync),
     .fdi_lp_state_req(fdi_lp_state_req),
     .fdi_lp_linkerror(fdi_lp_linkerror),
     .fdi_lp_rx_active_sts(fdi_lp_rx_active_sts),

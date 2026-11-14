@@ -27474,7 +27474,7 @@ module UcieDigitalTopJtag #(
   output var logic [dataLaneCount*rxDeskewCodeWidth-1:0] ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes,
 
   // LTSM MBTRAIN.SPEEDIDLE physical rate controls.
-  output var logic [1:0]           ltsm_flagToAnalog_speedIdle_speedCode,
+  output var logic [1:0]           ltsm_flagToAnalog_speedIdle_speedCode, //directly to MUX (clock select)
   output var logic           ltsm_flagToAnalog_speedIdle_electricalIdle,
 
   // ==========================================================================
@@ -61067,12 +61067,12 @@ endmodule
 //
 // Inputs:
 //   id_en         from PhyTxSequencer (clock_tx500 launched, related clock)
-//   lane_id_i     4-bit Lane ID, passed straight through to the PHY
+//   lane_id_i     4-bit Lane ID of this lane (constant from PhyTxSequencer),
+//                 passed straight through to the PHY
 // Outputs to PHY:
 //   digControl    1 = PHY sends the Lane ID pattern          (registered)
 //   laneID_index  0 = send Lane ID LSB byte, 1 = MSB byte    (registered)
-//   lane_id_o     = lane_id_i (pass-through, no logic). The value must be
-//                 stable before id_en rises and while the pattern is sent.
+//   lane_id_o     = lane_id_i (pass-through, no logic).
 //
 // One clock_tx2g cycle = 8 UI, so one iteration (LSB then MSB) = 2 cycles.
 // The first cycle of every burst is LSB; laneID_index is 0 when digControl is 0.
@@ -61106,7 +61106,7 @@ module PhyPatternData2g #(
   output logic laneID_index,
   output wire  [3:0] lane_id_o
 );
-  // Lane ID value: pass-through from digital to PHY (quasi-static, no sync).
+  // Lane ID value: constant from PhyTxSequencer, passed straight to the PHY.
   assign lane_id_o = lane_id_i;
 
   wire rst_n;
@@ -61454,7 +61454,8 @@ endmodule
 // PhyTxControlTop - integration wrapper for the PHY-side TX pattern control
 // =============================================================================
 // Instantiates PhyTxSequencer, PhyPatternClock2g, PhyPatternValid2g,
-// PhyPatternValid500m, PhyPatternData2g and LANES x PhyPatternTx500.
+// PhyPatternValid500m and LANES data lanes (PhyPatternData2g + PhyPatternTx500
+// each, Lane ID i from the sequencer).
 // Wiring only, no extra logic.
 //
 // The seq_* link is the ONLY connection to LtsmPhyPatternCtrl800 (800 MHz,
@@ -61488,17 +61489,33 @@ module PhyTxControlTop #(
   output wire              seq_ack_o,
   output wire              active_ready_o,   // clock_tx500: for the TX datapath and Ctrl800
 
-  // ---- Lane ID (quasi-static) -----------------------------------------------
-  input  wire [3:0]        lane_id_i,
+  // ---- Static Lane IDs (from UcieDigitalTopJtag laneid0..laneid15) ----------
+  // Data lane N sends laneidN. Lanes >= LANES are unused.
+  input  wire [3:0]        laneid0,
+  input  wire [3:0]        laneid1,
+  input  wire [3:0]        laneid2,
+  input  wire [3:0]        laneid3,
+  input  wire [3:0]        laneid4,
+  input  wire [3:0]        laneid5,
+  input  wire [3:0]        laneid6,
+  input  wire [3:0]        laneid7,
+  input  wire [3:0]        laneid8,
+  input  wire [3:0]        laneid9,
+  input  wire [3:0]        laneid10,
+  input  wire [3:0]        laneid11,
+  input  wire [3:0]        laneid12,
+  input  wire [3:0]        laneid13,
+  input  wire [3:0]        laneid14,
+  input  wire [3:0]        laneid15,
 
   // ---- Analog / PHY controls --------------------------------------------------
   output wire              phyDigControl,     // Clock2g
   output wire              phyTrainLfsr,      // Valid500m
   output wire              phyTrainValid,     // Valid2g
   output wire              phyTrainLaneid,
-  output wire              digControl,        // Data2g
-  output wire              laneID_index,
-  output wire [3:0]        lane_id_o,
+  output wire [LANES-1:0]  digControl,        // Data2g, one per data lane
+  output wire [LANES-1:0]  laneID_index,
+  output wire [LANES-1:0][3:0] lane_id_o,    // Lane ID sent by each lane (= laneidN)
   output wire [LANES-1:0]  enable_LFSR,       // Tx500, one bit per lane
   output wire [LANES-1:0]  zero_ena,
   output wire [LANES-1:0]  load_seed,
@@ -61508,6 +61525,23 @@ module PhyTxControlTop #(
   wire [1:0] val_sel;
   wire [2:0] tx500_mode;
   wire [LANES-1:0] tx500_lane_en;
+  // Lane IDs from the sequencer, one wire per data lane.
+  wire [3:0] lane_id0;
+  wire [3:0] lane_id1;
+  wire [3:0] lane_id2;
+  wire [3:0] lane_id3;
+  wire [3:0] lane_id4;
+  wire [3:0] lane_id5;
+  wire [3:0] lane_id6;
+  wire [3:0] lane_id7;
+  wire [3:0] lane_id8;
+  wire [3:0] lane_id9;
+  wire [3:0] lane_id10;
+  wire [3:0] lane_id11;
+  wire [3:0] lane_id12;
+  wire [3:0] lane_id13;
+  wire [3:0] lane_id14;
+  wire [3:0] lane_id15;
   wire unused_reset_seq_n, unused_reset_clock2g_n, unused_reset_valid2g_n;
   wire unused_reset_valid500m_n;
 
@@ -61521,7 +61555,40 @@ module PhyTxControlTop #(
     .seq_ack_o(seq_ack_o),
     .clk_en_o(clk_en), .val_sel_o(val_sel), .lfsr_val_en_o(lfsr_val_en), .id_en_o(id_en),
     .tx500_mode_o(tx500_mode), .tx500_lane_en_o(tx500_lane_en),
-    .active_ready_o(active_ready_o));
+    .active_ready_o(active_ready_o),
+    .laneid0_i(laneid0),
+    .laneid1_i(laneid1),
+    .laneid2_i(laneid2),
+    .laneid3_i(laneid3),
+    .laneid4_i(laneid4),
+    .laneid5_i(laneid5),
+    .laneid6_i(laneid6),
+    .laneid7_i(laneid7),
+    .laneid8_i(laneid8),
+    .laneid9_i(laneid9),
+    .laneid10_i(laneid10),
+    .laneid11_i(laneid11),
+    .laneid12_i(laneid12),
+    .laneid13_i(laneid13),
+    .laneid14_i(laneid14),
+    .laneid15_i(laneid15),
+    .laneid0_o(lane_id0),
+    .laneid1_o(lane_id1),
+    .laneid2_o(lane_id2),
+    .laneid3_o(lane_id3),
+    .laneid4_o(lane_id4),
+    .laneid5_o(lane_id5),
+    .laneid6_o(lane_id6),
+    .laneid7_o(lane_id7),
+    .laneid8_o(lane_id8),
+    .laneid9_o(lane_id9),
+    .laneid10_o(lane_id10),
+    .laneid11_o(lane_id11),
+    .laneid12_o(lane_id12),
+    .laneid13_o(lane_id13),
+    .laneid14_o(lane_id14),
+    .laneid15_o(lane_id15));
+
 
   PhyPatternClock2g #(.SYNC_STAGES(SYNC_STAGES)) u_clock2g (
     .clock_tx2g(clock_tx2g), .reset_n(reset_n), .reset_clock2g_n(unused_reset_clock2g_n),
@@ -61536,8 +61603,8 @@ module PhyTxControlTop #(
     .clock_tx500(clock_tx500), .reset_n(reset_n), .reset_valid500m_n(unused_reset_valid500m_n),
     .lfsr_en(lfsr_val_en), .phyTrainLfsr(phyTrainLfsr));
 
-  PhyPatternData2g #(.SYNC_STAGES(SYNC_STAGES)) u_data2g (
-    .clock_tx2g(clock_tx2g), .reset_n(reset_n),
+    PhyPatternData2g #(.SYNC_STAGES(SYNC_STAGES)) u_data2g (
+      .clock_tx2g(clock_tx2g), .reset_n(reset_n),
     .id_en(id_en), .lane_id_i(lane_id_i),
     .digControl(digControl), .laneID_index(laneID_index), .lane_id_o(lane_id_o));
 
@@ -61622,6 +61689,10 @@ endmodule
 //
 // All outputs are flops decoded from the NEXT state, so every enable of one
 // command changes on the same clock_tx500 edge.
+// laneid0_o .. laneid15_o are the exception: straight pass-through of the
+// static Lane IDs laneid0_i .. laneid15_i (driven by UcieDigitalTopJtag
+// laneid0 .. laneid15), one per data lane, to that lane's PhyPatternData2g.
+// They are constants, so no synchronizer or flop is needed.
 // Reset: reset_n asserts asynchronously (common with Ctrl800 and endpoints);
 // release is synchronized locally. Reset values = Idle row (all off).
 // =============================================================================
@@ -61649,7 +61720,43 @@ module PhyTxSequencer #(
   output logic             id_en_o,          // -> PhyPatternData2g
   output logic [2:0]       tx500_mode_o,     // -> every PhyPatternTx500
   output logic [LANES-1:0] tx500_lane_en_o,  // per-lane enable for Tx500
-  output logic             active_ready_o    // ACTIVE, PRE done: functional TX allowed
+  output logic             active_ready_o,   // ACTIVE, PRE done: functional TX allowed
+
+  // ---- Static Lane IDs (from UcieDigitalTopJtag laneid0..15) ----------------
+  input  wire [3:0]        laneid0_i,
+  input  wire [3:0]        laneid1_i,
+  input  wire [3:0]        laneid2_i,
+  input  wire [3:0]        laneid3_i,
+  input  wire [3:0]        laneid4_i,
+  input  wire [3:0]        laneid5_i,
+  input  wire [3:0]        laneid6_i,
+  input  wire [3:0]        laneid7_i,
+  input  wire [3:0]        laneid8_i,
+  input  wire [3:0]        laneid9_i,
+  input  wire [3:0]        laneid10_i,
+  input  wire [3:0]        laneid11_i,
+  input  wire [3:0]        laneid12_i,
+  input  wire [3:0]        laneid13_i,
+  input  wire [3:0]        laneid14_i,
+  input  wire [3:0]        laneid15_i,
+
+  // ---- Lane IDs to the data lanes (PhyPatternData2g of lane N) --------------
+  output wire [3:0]        laneid0_o,
+  output wire [3:0]        laneid1_o,
+  output wire [3:0]        laneid2_o,
+  output wire [3:0]        laneid3_o,
+  output wire [3:0]        laneid4_o,
+  output wire [3:0]        laneid5_o,
+  output wire [3:0]        laneid6_o,
+  output wire [3:0]        laneid7_o,
+  output wire [3:0]        laneid8_o,
+  output wire [3:0]        laneid9_o,
+  output wire [3:0]        laneid10_o,
+  output wire [3:0]        laneid11_o,
+  output wire [3:0]        laneid12_o,
+  output wire [3:0]        laneid13_o,
+  output wire [3:0]        laneid14_o,
+  output wire [3:0]        laneid15_o
 );
   // ---------------------------------------------------------------------------
   // Command and Tx500 mode encodings (shared with Ctrl800 / PhyPatternTx500).
@@ -61689,6 +61796,27 @@ module PhyTxSequencer #(
   function automatic logic op_legal(input logic [2:0] op);
     op_legal = (op <= OP_ACTIVE);
   endfunction
+
+  // ---------------------------------------------------------------------------
+  // Lane IDs: static values from UcieDigitalTopJtag, passed straight through
+  // to the data lanes (lane N sends laneidN). No flops, no synchronizer.
+  // ---------------------------------------------------------------------------
+  assign laneid0_o = laneid0_i;
+  assign laneid1_o = laneid1_i;
+  assign laneid2_o = laneid2_i;
+  assign laneid3_o = laneid3_i;
+  assign laneid4_o = laneid4_i;
+  assign laneid5_o = laneid5_i;
+  assign laneid6_o = laneid6_i;
+  assign laneid7_o = laneid7_i;
+  assign laneid8_o = laneid8_i;
+  assign laneid9_o = laneid9_i;
+  assign laneid10_o = laneid10_i;
+  assign laneid11_o = laneid11_i;
+  assign laneid12_o = laneid12_i;
+  assign laneid13_o = laneid13_i;
+  assign laneid14_o = laneid14_i;
+  assign laneid15_o = laneid15_i;
 
   // ---------------------------------------------------------------------------
   // Reset release and the only request synchronizer of the TX control.
@@ -61848,7 +61976,7 @@ module PhyTxSequencer #(
   // ---------------------------------------------------------------------------
 `ifndef SYNTHESIS
   initial begin
-    assert (LANES >= 1) else $fatal(1, "LANES must be positive");
+    assert (LANES >= 1 && LANES <= 16) else $fatal(1, "LANES must be 1..16 (4-bit Lane ID)");
     assert (PRE_CYC >= 1 && POST_CYC >= 1) else $fatal(1, "PRE_CYC/POST_CYC must be >= 1");
     assert (CLK_LEN >= 1) else $fatal(1, "CLK_LEN must be >= 1");
   end
@@ -62027,14 +62155,30 @@ module tb_ltsm_specialized;
     .seq_ack_i(ack_src),
     .seq_active_ready_i(ready_src));
 
-  wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid, digControl, laneID_index;
-  wire [3:0] lane_id_o;
+  wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid;
+  wire [LANES-1:0] digControl, laneID_index;
+  wire [LANES-1:0][3:0] lane_id_o;
   wire [LANES-1:0] enable_LFSR, zero_ena, load_seed, load_zero;
   PhyTxControlTop #(.LANES(LANES)) u_phy (
     .clock_tx500(clock_tx500), .clock_tx2g(clock_tx2g), .reset_n(reset_n),
     .seq_req_i(req_dst), .seq_op_i(op_dst), .seq_mask_i(mask_dst),
     .seq_ack_o(ack_dst), .active_ready_o(ready_dst),
-    .lane_id_i(4'h5),
+    .laneid0(4'd0),
+    .laneid1(4'd1),
+    .laneid2(4'd2),
+    .laneid3(4'd3),
+    .laneid4(4'd4),
+    .laneid5(4'd5),
+    .laneid6(4'd6),
+    .laneid7(4'd7),
+    .laneid8(4'd8),
+    .laneid9(4'd9),
+    .laneid10(4'd10),
+    .laneid11(4'd11),
+    .laneid12(4'd12),
+    .laneid13(4'd13),
+    .laneid14(4'd14),
+    .laneid15(4'd15),
     .phyDigControl(phyDigControl), .phyTrainLfsr(phyTrainLfsr),
     .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid),
     .digControl(digControl), .laneID_index(laneID_index), .lane_id_o(lane_id_o),
@@ -62055,7 +62199,7 @@ module tb_ltsm_specialized;
   end
   always @(negedge clock_tx2g) if (reset_n) begin
     saw_clk |= phyDigControl; saw_val |= phyTrainValid; saw_lfsrv |= phyTrainLfsr;
-    saw_laneid |= phyTrainLaneid; saw_data |= digControl;
+    saw_laneid |= phyTrainLaneid; saw_data |= (|digControl);
     if ((phyTrainLfsr || phyTrainValid || phyTrainLaneid || digControl) && !phyDigControl)
       $fatal(1, "valid/data without forwarded clock");
   end
@@ -62227,7 +62371,7 @@ module tb_ltsm_specialized;
     reset_all();
     @(negedge clock); ltsm_state = 5; ltsm_dbg_mbinitSubstate = 4;
     @(negedge clock); req = 9'b100; @(negedge clock); req = 0;  // runs
-    wait (digControl);
+    wait (|digControl);
     @(negedge clock); req = 9'b100; @(negedge clock); req = 0;  // queued
     @(negedge clock); req = 9'b100; @(negedge clock); req = 0;  // overflow
     repeat (4) @(negedge clock);
@@ -62386,8 +62530,11 @@ module tb_seq_case #(
   localparam longint LATTX = 2000;  // 1 clock_tx500 cycle
   wire active_ready;
   wire phyDigControl, phyTrainLfsr, phyTrainValid, phyTrainLaneid;
-  wire digControl, laneID_index;
-  wire [3:0] lane_id_o;
+  wire [LANES-1:0] digControl_v, laneID_index_v;
+  wire [LANES-1:0][3:0] lane_id_o;
+  // Lane 0 is checked in detail; every other lane must match it exactly.
+  wire digControl = digControl_v[0];
+  wire laneID_index = laneID_index_v[0];
   wire [LANES-1:0] enable_LFSR, zero_ena, load_seed, load_zero;
   PhyTxControlTop #(
     .LANES(LANES), .PRE_CYC(PRE), .POST_CYC(POST), .CLK_LEN(CLKLEN)
@@ -62395,10 +62542,25 @@ module tb_seq_case #(
     .clock_tx500(clk500), .clock_tx2g(clk2g), .reset_n(reset_n),
     .seq_req_i(req), .seq_op_i(op), .seq_mask_i(mask),
     .seq_ack_o(ack), .active_ready_o(active_ready),
-    .lane_id_i(4'hA),
+    .laneid0(4'd0),
+    .laneid1(4'd1),
+    .laneid2(4'd2),
+    .laneid3(4'd3),
+    .laneid4(4'd4),
+    .laneid5(4'd5),
+    .laneid6(4'd6),
+    .laneid7(4'd7),
+    .laneid8(4'd8),
+    .laneid9(4'd9),
+    .laneid10(4'd10),
+    .laneid11(4'd11),
+    .laneid12(4'd12),
+    .laneid13(4'd13),
+    .laneid14(4'd14),
+    .laneid15(4'd15),
     .phyDigControl(phyDigControl), .phyTrainLfsr(phyTrainLfsr),
     .phyTrainValid(phyTrainValid), .phyTrainLaneid(phyTrainLaneid),
-    .digControl(digControl), .laneID_index(laneID_index), .lane_id_o(lane_id_o),
+    .digControl(digControl_v), .laneID_index(laneID_index_v), .lane_id_o(lane_id_o),
     .enable_LFSR(enable_LFSR), .zero_ena(zero_ena), .load_seed(load_seed),
     .load_zero(load_zero));
 
@@ -62531,7 +62693,12 @@ module tb_seq_case #(
         end
       end
       prev_dig = digControl; prev_idx = laneID_index;
-      if (lane_id_o !== 4'hA) $fatal(1, "%s: lane_id pass-through broken", NAME);
+      for (int l = 0; l < LANES; l++) begin
+        if (lane_id_o[l] !== 4'(l)) $fatal(1, "%s: lane %0d Lane ID %0d, expected %0d",
+                                          NAME, l, lane_id_o[l], l);
+        if (digControl_v[l] !== digControl || laneID_index_v[l] !== laneID_index)
+          $fatal(1, "%s: Data2g lane %0d differs from lane 0", NAME, l);
+      end
       // Valid/data/LFSR only under the forwarded clock.
       if ((phyTrainLfsr || phyTrainValid || phyTrainLaneid || digControl) && !phyDigControl)
         $fatal(1, "%s: valid/data active without clock", NAME);
