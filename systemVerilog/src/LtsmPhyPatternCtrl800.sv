@@ -18,15 +18,22 @@
 //   5 ACTIVE     launched once on each entry into ltsm_state == 8 (ACTIVE).
 //                Never ends: the PHY stays in ACTIVE until reset. Raises no
 //                Finished flag.
+//   6 CLK_TRACK  rxClkCal_sendClockTrack (MBTRAIN.RXCLKCAL, partner side).
+//                Held command: the forwarded clock runs while the flag is
+//                high. Released when the flag falls or the LTSM leaves
+//                MBTRAIN.RXCLKCAL. Raises no Finished flag.
 // Training lengths are fixed in the sequencer (128 iterations).
 //
 // Link protocol (see PhyTxSequencer for the receiving side):
-//   seq_req_o   level; held until the synchronized ack is seen.
+//   seq_req_o   level; held until the synchronized ack is seen. For
+//               CLK_TRACK it is held further, until the command is released.
 //   seq_op_o, seq_mask_o  bundled; stable from before req rises until ack
 //               has fallen.
 //   seq_ack_i   synchronized here. Rises after the whole envelope (clock off).
+//               For CLK_TRACK it rises once the clock is on and falls after
+//               req has fallen and the clock is off again.
 //
-// NOT IMPLEMENTED - early stop: the link has no stop signal, so a command
+// NOT IMPLEMENTED - early stop: apart from the held CLK_TRACK, a command
 // that has been launched cannot be cut short. ACTIVE and TRAIN_ERROR are
 // terminal in the current LTSM, so this is not needed today:
 //   - ACTIVE is left only through reset;
@@ -74,6 +81,8 @@ module LtsmPhyPatternCtrl800 #(
   input wire ltsm_flagToAnalog_d2cSender_sendValTrainPattern,
   input wire ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
   input wire ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
+  // MBTRAIN.RXCLKCAL partner side: forwarded clock on while this is high.
+  input wire ltsm_flagToAnalog_rxClkCal_sendClockTrack,
   output wire ltsm_flagFromAnalog_FinishedClkPatterns,
   output wire ltsm_flagFromAnalog_FinishedValTrainPattern,
   output wire ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern,
@@ -104,8 +113,11 @@ module LtsmPhyPatternCtrl800 #(
 );
   // Command encoding (shared with PhyTxSequencer).
   localparam logic [2:0] OP_CLK_TRAIN=3'd0, OP_VAL_TRAIN=3'd1, OP_LANEID=3'd2,
-                         OP_LFSR=3'd3, OP_RESEED=3'd4, OP_ACTIVE=3'd5;
-  localparam logic [3:0] ST_RESET=4'd0, ST_ACTIVE=4'd8, ST_TRAIN_ERROR=4'd9;
+                         OP_LFSR=3'd3, OP_RESEED=3'd4, OP_ACTIVE=3'd5,
+                         OP_CLK_TRACK=3'd6;
+  localparam logic [3:0] ST_RESET=4'd0, ST_MBTRAIN=4'd6, ST_ACTIVE=4'd8,
+                         ST_TRAIN_ERROR=4'd9;
+  localparam logic [3:0] MBTRAIN_RXCLKCAL=4'd5;
   localparam logic [LANES-1:0] ALL_LANES={LANES{1'b1}};
 
   Ltsm800ResetSync #(.STAGES(SYNC_STAGES)) u_rst_ltsm
@@ -133,7 +145,16 @@ module LtsmPhyPatternCtrl800 #(
   wire was_abort_state = (previous_state == ST_TRAIN_ERROR) || (previous_state == ST_RESET);
   wire abort_entry = in_abort_state && !was_abort_state;
 
-  wire [8:0] request={ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
+  // CLK_TRACK is held only while its flag is high AND the LTSM is still in
+  // MBTRAIN.RXCLKCAL. The state check covers RXCLKCAL being left without the
+  // FSM clearing its flag (timeout, TRAIN_ERROR, RESET).
+  wire in_rxclkcal = (ltsm_state == ST_MBTRAIN) &&
+                     (ltsm_dbg_mbtrainState == MBTRAIN_RXCLKCAL);
+  wire track_hold = ltsm_flagToAnalog_rxClkCal_sendClockTrack && in_rxclkcal;
+
+  // Bit 9 (CLK_TRACK) has no Finished flag: owners/finished stay 9 bits.
+  wire [9:0] request={ltsm_flagToAnalog_rxClkCal_sendClockTrack,
+    ltsm_flagToAnalog_rxDeskew_sendLfsrPattern,
     ltsm_flagToAnalog_d2cSender_sendLfsrPattern,
     ltsm_flagToAnalog_d2cSender_sendValTrainPattern,
     ltsm_flagToAnalog_dataVref_sendPattern,
@@ -152,53 +173,58 @@ module LtsmPhyPatternCtrl800 #(
     ltsm_flagToAnalog_valVref_resetLocalTxScrambler};
   logic [4:0] previous_reset_flags;
   wire reset_rise = |(reset_flags & ~previous_reset_flags);
-  logic [8:0] previous_request, finished;
-  wire [8:0] rise=request & ~previous_request;
+  logic [9:0] previous_request;
+  logic [8:0] finished;
+  wire [9:0] rise=request & ~previous_request;
   // ACTIVE entry and LTSM flags have priority over a JTAG edge.
   wire custom_selected=custom_rise && !(|rise) && !active_entry;
   wire custom_collision=custom_rise && ((|rise) || active_entry);
   logic [2:0] decoded_op;
   logic [LANES-1:0] decoded_mask;
   logic decoded_legal;
-  wire multiple_rise=(rise != 0) && ((rise & (rise-9'd1)) != 0);
+  wire multiple_rise=(rise != 0) && ((rise & (rise-10'd1)) != 0);
   // Legality decode: MBINIT/MBTRAIN substate numbers unchanged.
   always_comb begin
     decoded_op=OP_CLK_TRAIN;
     decoded_mask=ALL_LANES;
     decoded_legal=1'b0;
     case (rise)
-      9'b000000001: decoded_legal=(ltsm_state==5 && ltsm_dbg_mbinitSubstate==2);
-      9'b000000010: begin
+      10'b0000000001: decoded_legal=(ltsm_state==5 && ltsm_dbg_mbinitSubstate==2);
+      10'b0000000010: begin
         decoded_op=OP_VAL_TRAIN;
         decoded_legal=(ltsm_state==5 && ltsm_dbg_mbinitSubstate==3);
       end
-      9'b000000100,9'b000001000: begin
+      10'b0000000100,10'b0000001000: begin
         decoded_op=OP_LANEID;
         decoded_legal=(ltsm_state==5 &&
           ((rise[2] && ltsm_dbg_mbinitSubstate==4) ||
            (rise[3] && ltsm_dbg_mbinitSubstate==5)));
       end
-      9'b000010000: begin
+      10'b0000010000: begin
         decoded_op=OP_VAL_TRAIN;
         decoded_legal=(ltsm_state==6 && (ltsm_dbg_mbtrainState==1 || ltsm_dbg_mbtrainState==7));
       end
-      9'b000100000: begin
+      10'b0000100000: begin
         decoded_op=OP_LFSR;
         decoded_legal=(ltsm_state==6 &&
           (ltsm_dbg_mbtrainState==2 || ltsm_dbg_mbtrainState==9));
       end
-      9'b001000000: begin
+      10'b0001000000: begin
         decoded_op=OP_VAL_TRAIN;
         decoded_legal=(ltsm_state==6 && ltsm_dbg_mbtrainState==6);
       end
-      9'b010000000: begin
+      10'b0010000000: begin
         decoded_op=OP_LFSR;
         decoded_legal=(ltsm_state==6 &&
           (ltsm_dbg_mbtrainState==8 || ltsm_dbg_mbtrainState==11 || ltsm_dbg_mbtrainState==12));
       end
-      9'b100000000: begin
+      10'b0100000000: begin
         decoded_op=OP_LFSR;
         decoded_legal=(ltsm_state==6 && ltsm_dbg_mbtrainState==10);
+      end
+      10'b1000000000: begin
+        decoded_op=OP_CLK_TRACK;
+        decoded_legal=(ltsm_state==6 && ltsm_dbg_mbtrainState==5);
       end
       default: begin end
     endcase
@@ -209,14 +235,15 @@ module LtsmPhyPatternCtrl800 #(
     end
   end
 
-  // Source-domain capture is necessary: synchronizing the nine raw requests
+  // Source-domain capture is necessary: synchronizing the ten raw requests
   // independently would lose short pulses and detach them from their state.
   // Keep one pending pattern and one pending reseed while a handshake runs.
   // Dispatch in capture order, with reset first for edges on the same cycle.
   // State and mask legality are checked at capture. ACTIVE uses the same
   // pattern slot, so a LINKINIT reseed captured earlier is sent before it.
   // A queued ACTIVE is discarded if the state leaves 8 before it launches; a
-  // queued training is discarded on TRAIN_ERROR/RESET entry.
+  // queued training is discarded on TRAIN_ERROR/RESET entry. A queued
+  // CLK_TRACK is discarded once track_hold is low (nothing left to send).
   typedef enum logic [1:0] {IDLE,WAIT_DONE,RETURN_ZERO} source_state_t;
   source_state_t source_state;
   logic pending_valid, pending_reset, reset_first;
@@ -232,10 +259,12 @@ module LtsmPhyPatternCtrl800 #(
   wire new_pattern = valid_pattern || active_entry;
   wire [2:0] new_op = active_entry ? OP_ACTIVE : decoded_op;
   wire [LANES-1:0] new_mask = active_entry ? ALL_LANES : decoded_mask;
-  wire [8:0] new_owner = active_entry ? 9'b0 : rise; // custom/ACTIVE: no owner
+  // custom/ACTIVE/CLK_TRACK: no owner (CLK_TRACK is rise[9], dropped here).
+  wire [8:0] new_owner = active_entry ? 9'b0 : rise[8:0];
 
   wire drop_pending = pending_valid &&
-    ((pending_op == OP_ACTIVE) ? !in_active : abort_entry);
+    ((pending_op == OP_ACTIVE)    ? !in_active :
+     (pending_op == OP_CLK_TRACK) ? !track_hold : abort_entry);
   wire select_reset = pending_reset && (!pending_valid || reset_first);
   wire launch_reset = (source_state==IDLE) && select_reset && src_ready;
   wire launch_pattern = (source_state==IDLE) && !select_reset && pending_valid &&
@@ -243,6 +272,13 @@ module LtsmPhyPatternCtrl800 #(
   wire pattern_slot_free = !pending_valid || launch_pattern || drop_pending;
   wire capture_reset = reset_rise && (!pending_reset || launch_reset);
   wire capture_pattern = new_pattern && pattern_slot_free;
+
+  // Release of a held CLK_TRACK. Sticky from the first cycle track_hold is
+  // seen low after launch, so a later re-assertion of the flag cannot extend
+  // the running command (it is captured as a new CLK_TRACK instead).
+  logic track_release_q;
+  wire launch_track = launch_pattern && (pending_op == OP_CLK_TRACK);
+  wire src_release = track_release_q || !track_hold;
 
   assign ltsm_pattern_busy=pending_reset || pending_valid || (source_state!=IDLE);
   always_ff @(posedge clock or negedge reset_ltsm_n) begin
@@ -253,12 +289,15 @@ module LtsmPhyPatternCtrl800 #(
       previous_request<='0; previous_custom_train<=0; finished<='0;
       previous_state<=ST_RESET;
       ltsm_pattern_error<='0;
+      track_release_q<=0;
     end else begin
       previous_request<=request;
       previous_reset_flags<=reset_flags;
       previous_custom_train<=custom_train_sync;
       previous_state<=ltsm_state;
       finished<='0;
+      if (launch_reset || launch_pattern) track_release_q<=0;
+      else if (!track_hold) track_release_q<=1;
       if (custom_collision) ltsm_pattern_error[0]<=1;
       if (launch_reset) pending_reset<=0;
       if (launch_pattern || drop_pending) pending_valid<=0;
@@ -302,6 +341,8 @@ module LtsmPhyPatternCtrl800 #(
     .src_clk_i(clock),.src_rst_ni(reset_ltsm_n),
     .src_valid_i(launch_reset || launch_pattern),
     .src_req_i(1'b1),
+    .src_hold_i(launch_track),
+    .src_release_i(src_release),
     .src_ready_o(src_ready),
     .src_data_i(launch_reset ? {OP_RESEED, ALL_LANES} : {pending_op, pending_mask}),
     .src_done_o(src_done),
@@ -324,6 +365,9 @@ module LtsmPhyPatternCtrl800 #(
   assert property (@(posedge clock) disable iff (!reset_ltsm_n)
     (pending_valid && pending_op==OP_ACTIVE) |-> pending_owner==9'b0)
     else $error("ACTIVE must not own a Finished flag");
+  assert property (@(posedge clock) disable iff (!reset_ltsm_n)
+    (pending_valid && pending_op==OP_CLK_TRACK) |-> pending_owner==9'b0)
+    else $error("CLK_TRACK must not own a Finished flag");
 `endif
 endmodule
 `default_nettype wire
@@ -371,7 +415,9 @@ endmodule
 // are explicit; no destination clock or destination flops exist in this module.
 // Payload uses a bundled-data CDC timing contract. Synchronize each ACK bit
 // before checking for unanimous completion or return to idle.
-// No early stop: once launched, a command runs until the destination acks.
+// A command launched with src_hold_i=1 is held: after the ack rises, req stays
+// high until src_release_i (a level) is seen, then the normal return to zero
+// follows. Without src_hold_i a command runs until the destination acks.
 module Ltsm800CommandSource #(
   parameter integer WIDTH=34,
   parameter integer STAGES=3,
@@ -382,6 +428,8 @@ module Ltsm800CommandSource #(
   input wire src_rst_ni,
   input wire src_valid_i,
   input wire [REQ_WIDTH-1:0] src_req_i, // one-hot command, captured at launch
+  input wire src_hold_i,                // held command, captured at launch
+  input wire src_release_i,             // level: end a held command
   output wire src_ready_o,
   input wire [WIDTH-1:0] src_data_i,
   output logic src_done_o,              // one-cycle completion pulse
@@ -391,8 +439,9 @@ module Ltsm800CommandSource #(
 );
   // SRC_LAUNCH: payload already driven, request rises on the next edge, so
   // the bundled payload is stable from BEFORE the request rises.
-  typedef enum logic [1:0] {SRC_IDLE,SRC_LAUNCH,SRC_WAIT_ACK,SRC_WAIT_LOW} src_state_t;
+  typedef enum logic [2:0] {SRC_IDLE,SRC_LAUNCH,SRC_WAIT_ACK,SRC_HOLD,SRC_WAIT_LOW} src_state_t;
   src_state_t src_state_q;
+  logic hold_q;
   logic [REQ_WIDTH-1:0] req_q, launch_req_q;
   logic [WIDTH-1:0] payload_q;
   wire [ACK_WIDTH-1:0] ack_sync;
@@ -409,12 +458,13 @@ module Ltsm800CommandSource #(
   always_ff @(posedge src_clk_i or negedge src_rst_ni) begin
     if (!src_rst_ni) begin
       src_state_q<=SRC_IDLE; req_q<=0; launch_req_q<=0; payload_q<='0;
-      src_done_o<=0;
+      hold_q<=0; src_done_o<=0;
     end else begin
       src_done_o<=0;
       case (src_state_q)
         SRC_IDLE: if (src_valid_i && src_ready_o) begin
           payload_q<=src_data_i; launch_req_q<=src_req_i;
+          hold_q<=src_hold_i;
           src_state_q<=SRC_LAUNCH;
         end
         SRC_LAUNCH: begin
@@ -422,7 +472,16 @@ module Ltsm800CommandSource #(
           src_state_q<=SRC_WAIT_ACK;
         end
         SRC_WAIT_ACK: if (all_ack_high) begin
-          // Completion acknowledgment: return req low, report done once.
+          if (hold_q && !src_release_i) begin
+            // Held command started: keep req high until released.
+            src_state_q<=SRC_HOLD;
+          end else begin
+            // Completion acknowledgment: return req low, report done once.
+            src_done_o<=1;
+            req_q<=0; src_state_q<=SRC_WAIT_LOW;
+          end
+        end
+        SRC_HOLD: if (src_release_i) begin
           src_done_o<=1;
           req_q<=0; src_state_q<=SRC_WAIT_LOW;
         end

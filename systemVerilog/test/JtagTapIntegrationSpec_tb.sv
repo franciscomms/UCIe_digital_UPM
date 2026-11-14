@@ -136,7 +136,6 @@ module JtagTapIntegrationSpec_tb;
     .ltsm_flagFromAnalog_valVref_finishedPattern('0),
     .ltsm_flagFromAnalog_dataVref_detectedDataPattern('0),
     .ltsm_flagFromAnalog_dataVref_finishedPattern('0),
-    .ltsm_flagFromAnalog_rxClkCal_done('0),
     .ltsm_flagFromAnalog_d2cSender_valTrainPatternSent('0),
     .ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo('0),
     .ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload('0),

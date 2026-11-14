@@ -22,9 +22,14 @@
 //               bit by bit (constrain with a bundled max-delay).
 //   seq_ack_o   rises only after the whole envelope has finished (clock off),
 //               held until the synchronized req is low.
-//   Source rule: req stays high until ack is seen.
-//   NOT IMPLEMENTED - early stop: there is no stop input. A started command
-//   always runs its full envelope, and ACTIVE (BODY with no end) is left only
+//               CLK_TRACK is the exception: ack rises as soon as the clock is
+//               on (BODY entered), the clock runs while req is high, and ack
+//               falls together with the clock once req is seen low.
+//   Source rule: req stays high until ack is seen (CLK_TRACK: until the
+//               source releases it).
+//   NOT IMPLEMENTED - early stop: there is no stop input. Apart from the held
+//   CLK_TRACK, a started command always runs its full envelope, and ACTIVE
+//   (BODY with no end) is left only
 //   through reset_n. This matches the current LTSM, where ACTIVE and
 //   TRAIN_ERROR are terminal states. Add a stop/drain path (and its CDC
 //   synchronizer) if the LTSM gains ACTIVE exits (L1/L2, RETRAIN, LINKERROR)
@@ -41,6 +46,8 @@
 //   4  | RESEED    | BODY only, no clock   | tx500 SEED on all lanes      | 1
 //   5  | ACTIVE    | PRE + BODY            | clk_en, tx500 ACTIVE on all  | until reset
 //      |           |                       | lanes, active_ready          |
+//   6  | CLK_TRACK | BODY only             | clk_en (MBTRAIN.RXCLKCAL     | while req
+//      |           |                       | forwarded clock to partner)  |
 //   PRE and POST drive clk_en only (val_sel/lfsr_val_en/id_en 0, Tx500 OFF).
 //   The LFSR valid bit goes to PhyPatternValid500m (500 MHz), not to
 //   PhyPatternValid2g: the analog front end sends the LFSR valid pattern on
@@ -54,6 +61,7 @@
 //   IDLE -> PRE -> BODY -> POST -> DONE (ack held) -> IDLE
 //   CLK_TRAIN and RESEED: IDLE -> BODY -> DONE.
 //   ACTIVE: stays in BODY until reset_n (no ack is ever returned for it).
+//   CLK_TRACK: IDLE -> BODY (ack high) -> IDLE (ack low) when req is low.
 //   An unknown op goes straight to DONE with nothing sent.
 //
 // All outputs are flops decoded from the NEXT state, so every enable of one
@@ -131,7 +139,8 @@ module PhyTxSequencer #(
   // Command and Tx500 mode encodings (shared with Ctrl800 / PhyPatternTx500).
   // ---------------------------------------------------------------------------
   localparam logic [2:0] OP_CLK_TRAIN=3'd0, OP_VAL_TRAIN=3'd1, OP_LANEID=3'd2,
-                         OP_LFSR=3'd3, OP_RESEED=3'd4, OP_ACTIVE=3'd5;
+                         OP_LFSR=3'd3, OP_RESEED=3'd4, OP_ACTIVE=3'd5,
+                         OP_CLK_TRACK=3'd6;
   localparam logic [2:0] M_OFF=3'd0, M_SEED=3'd1, M_LFSR=3'd2, M_ACTIVE=3'd3;
   // M_RAW=3'd4 is reserved for test; this sequencer never issues it.
   localparam logic [1:0] SEL_VALID=2'b10, SEL_LANEID=2'b01;
@@ -155,7 +164,7 @@ module PhyTxSequencer #(
       OP_VAL_TRAIN: body_last = CW'(VAL_LEN - 1);
       OP_LANEID:    body_last = CW'(ID_LEN - 1);
       OP_LFSR:      body_last = CW'(LFSR_LEN - 1);
-      default:      body_last = CW'(RESEED_LEN - 1);  // RESEED; ACTIVE ignores it
+      default:      body_last = CW'(RESEED_LEN - 1);  // RESEED; ACTIVE/CLK_TRACK ignore it
     endcase
   endfunction
   // Commands without a PRE/POST clock envelope.
@@ -163,7 +172,7 @@ module PhyTxSequencer #(
     no_envelope = (op == OP_CLK_TRAIN) || (op == OP_RESEED);
   endfunction
   function automatic logic op_legal(input logic [2:0] op);
-    op_legal = (op <= OP_ACTIVE);
+    op_legal = (op <= OP_CLK_TRACK);
   endfunction
 
   // ---------------------------------------------------------------------------
@@ -221,6 +230,10 @@ module PhyTxSequencer #(
           // Unknown op: complete at once, send nothing.
           ack_d     = 1'b1;
           state_d   = S_DONE;
+        end else if (seq_op_i == OP_CLK_TRACK) begin
+          // Held clock: ack = clock running, on the same edge as clk_en.
+          ack_d   = 1'b1;
+          state_d = S_BODY;
         end else if (no_envelope(seq_op_i)) begin
           cnt_d   = body_last(seq_op_i);
           state_d = S_BODY;
@@ -241,8 +254,15 @@ module PhyTxSequencer #(
       end
 
       // Pattern body. ACTIVE never ends (left only through reset_n).
+      // CLK_TRACK ends when the source drops req: clock and ack go low on
+      // the same edge (the source then sees ack low and returns to idle).
       S_BODY: begin
-        if (op_q != OP_ACTIVE && cnt_q == '0) begin
+        if (op_q == OP_CLK_TRACK) begin
+          if (!req_s) begin
+            ack_d   = 1'b0;
+            state_d = S_IDLE;
+          end
+        end else if (op_q != OP_ACTIVE && cnt_q == '0) begin
           if (no_envelope(op_q)) begin
             ack_d   = 1'b1;
             state_d = S_DONE;
@@ -314,7 +334,7 @@ module PhyTxSequencer #(
       case (state_d)
         S_PRE, S_POST: clk_en_o <= 1'b1;   // clock only; Tx500 OFF, valid 0
         S_BODY: case (op_d)
-          OP_CLK_TRAIN: clk_en_o <= 1'b1;
+          OP_CLK_TRAIN, OP_CLK_TRACK: clk_en_o <= 1'b1;
           OP_VAL_TRAIN: begin clk_en_o <= 1'b1; val_sel_o <= SEL_VALID; end
           OP_LANEID: begin
             clk_en_o <= 1'b1; val_sel_o <= SEL_LANEID; id_en_o <= 1'b1;
@@ -368,6 +388,12 @@ module PhyTxSequencer #(
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
     !(tx500_mode_o > M_ACTIVE))
     else $error("SEQ: reserved Tx500 mode issued");
+  // CLK_TRACK drives the forwarded clock only, and ack tracks it.
+  assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
+    (state_q == S_BODY && op_q == OP_CLK_TRACK) |->
+      (clk_en_o && seq_ack_o && val_sel_o == 2'b00 && !lfsr_val_en_o &&
+       !id_en_o && tx500_mode_o == M_OFF && !active_ready_o))
+    else $error("SEQ: CLK_TRACK drives more than the clock");
   assert property (@(posedge clock_tx500) disable iff (!reset_seq_n)
     (tx500_mode_o == M_SEED) |-> !clk_en_o)
     else $error("SEQ: RESEED with clock");
@@ -381,7 +407,7 @@ module PhyTxSequencer #(
     if (!reset_seq_n) body_len_q <= 0;
     else if (state_q == S_BODY) begin
       body_len_q <= body_len_q + 1;
-      if (state_d != S_BODY && op_q != OP_ACTIVE)
+      if (state_d != S_BODY && op_q != OP_ACTIVE && op_q != OP_CLK_TRACK)
         assert (body_len_q + 1 == int'(body_last(op_q)) + 1)
           else $error("SEQ: op %0d BODY length %0d, expected %0d",
                       op_q, body_len_q + 1, int'(body_last(op_q)) + 1);

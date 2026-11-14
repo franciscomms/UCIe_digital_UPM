@@ -14,11 +14,16 @@
 //     and stays active (busy) until reset, even if the state leaves 8 (there
 //     is no stop); after reset each entry into 8 launches ACTIVE once;
 //   - TRAIN_ERROR entry lets a running training finish without Finished,
-//     discards a queued one, and sets no error bit.
+//     discards a queued one, and sets no error bit;
+//   - RXCLKCAL sendClockTrack -> CLK_TRACK: clock only, held while the flag is
+//     high, released when the flag falls, MBTRAIN leaves RXCLKCAL or the LTSM
+//     enters TRAIN_ERROR; a one-cycle flag leaves no clock running; outside
+//     RXCLKCAL -> error[1].
 // =============================================================================
 module tb_ltsm_specialized;
   localparam int LANES = 2;
-  localparam logic [2:0] OP_CLK=0, OP_VAL=1, OP_ID=2, OP_LFSR=3, OP_RESEED=4, OP_ACTIVE=5;
+  localparam logic [2:0] OP_CLK=0, OP_VAL=1, OP_ID=2, OP_LFSR=3, OP_RESEED=4, OP_ACTIVE=5,
+                         OP_TRACK=6;
 
   logic clock = 0, clock_tx500 = 0, clock_tx2g = 0, reset_n = 0;
   always #625 clock = ~clock;
@@ -29,6 +34,7 @@ module tb_ltsm_specialized;
   logic [2:0] ltsm_dbg_mbinitSubstate = 0;
   logic [LANES-1:0] ltsm_data_lane_mask = '1;
   logic custom_train_jtag = 0;
+  logic clk_track = 0;  // rxClkCal_sendClockTrack
   logic [8:0] req = 0;
   logic [4:0] rst_flags = 0;  // {linkInit, rxDeskew, d2cSender, dataVref, valVref}
   wire [8:0] done;
@@ -69,6 +75,7 @@ module tb_ltsm_specialized;
     .ltsm_flagToAnalog_d2cSender_sendValTrainPattern(req[6]),
     .ltsm_flagToAnalog_d2cSender_sendLfsrPattern(req[7]),
     .ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(req[8]),
+    .ltsm_flagToAnalog_rxClkCal_sendClockTrack(clk_track),
     .ltsm_flagFromAnalog_FinishedClkPatterns(done[0]),
     .ltsm_flagFromAnalog_FinishedValTrainPattern(done[1]),
     .ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(done[2]),
@@ -156,6 +163,7 @@ module tb_ltsm_specialized;
 
   task automatic reset_all;
     @(negedge clock); reset_n = 0; req = 0; rst_flags = 0; custom_train_jtag = 0;
+    clk_track = 0;
     ltsm_state = 0; ltsm_dbg_mbinitSubstate = 0; ltsm_dbg_mbtrainState = 0;
     repeat (5) @(negedge clock);
     reset_n = 1;
@@ -311,6 +319,75 @@ module tb_ltsm_specialized;
     wait (!busy);
     if (finish_count != 2) $fatal(1, "queued lane-ID run lost (%0d)", finish_count);
     $display("PASS queue overflow -> error[2]");
+
+    // -- RXCLKCAL: CLK_TRACK held while sendClockTrack is high -------------------
+    reset_all();
+    @(negedge clock); ltsm_state = 6; ltsm_dbg_mbtrainState = 5;
+    @(negedge clock); clk_track = 1;
+    wait (phyDigControl);
+    repeat (300) begin
+      @(negedge clock);
+      if (!phyDigControl || !busy) $fatal(1, "CLK_TRACK clock not held while flag high");
+    end
+    clk_track = 0;
+    wait (!busy);
+    repeat (20) @(negedge clock);
+    if (phyDigControl || ops_seen.size() != 1 || ops_seen[0] != OP_TRACK ||
+        finish_count != 0 || errors != 0 || saw_val || saw_lfsrv || saw_laneid ||
+        saw_data || saw_lfsr || seed_pulses != 0)
+      $fatal(1, "CLK_TRACK wrong: clk %b ops %0d fin %0d err %b",
+             phyDigControl, ops_seen.size(), finish_count, errors);
+    $display("PASS RXCLKCAL CLK_TRACK: clock only, held while flag high");
+
+    // -- Leaving RXCLKCAL with the flag still high releases the clock ------------
+    @(negedge clock); clear_scores(); clk_track = 1;
+    wait (phyDigControl);
+    repeat (50) @(negedge clock);
+    ltsm_dbg_mbtrainState = 6;                       // RXCLKCAL left, flag stuck high
+    wait (!busy);
+    repeat (20) @(negedge clock);
+    if (phyDigControl || ops_seen.size() != 1 || errors != 0 || finish_count != 0)
+      $fatal(1, "CLK_TRACK not released on leaving RXCLKCAL");
+    clk_track = 0;
+    $display("PASS CLK_TRACK released on leaving RXCLKCAL");
+
+    // -- TRAIN_ERROR entry with the flag still high releases the clock -----------
+    @(negedge clock); clear_scores(); ltsm_dbg_mbtrainState = 5;
+    @(negedge clock); clk_track = 1;
+    wait (phyDigControl);
+    repeat (30) @(negedge clock); ltsm_state = 9;
+    wait (!busy);
+    repeat (20) @(negedge clock);
+    if (phyDigControl || errors != 0 || finish_count != 0)
+      $fatal(1, "CLK_TRACK not released on TRAIN_ERROR");
+    clk_track = 0;
+    $display("PASS CLK_TRACK released on TRAIN_ERROR");
+
+    // -- One-cycle flag: nothing left running, no error --------------------------
+    reset_all();
+    @(negedge clock); ltsm_state = 6; ltsm_dbg_mbtrainState = 5;
+    @(negedge clock); clk_track = 1; @(negedge clock); clk_track = 0;
+    wait (!busy);
+    repeat (40) @(negedge clock);
+    if (phyDigControl || errors != 0 || busy) $fatal(1, "short CLK_TRACK flag left state");
+    // ...and a normal one still works afterwards.
+    @(negedge clock); clk_track = 1;
+    wait (phyDigControl);
+    repeat (10) @(negedge clock); clk_track = 0;
+    wait (!busy);
+    repeat (20) @(negedge clock);
+    if (phyDigControl || errors != 0) $fatal(1, "CLK_TRACK after short flag wrong");
+    $display("PASS one-cycle CLK_TRACK flag");
+
+    // -- sendClockTrack outside RXCLKCAL -> error[1] -----------------------------
+    reset_all();
+    @(negedge clock); ltsm_state = 6; ltsm_dbg_mbtrainState = 2;
+    @(negedge clock); clk_track = 1;
+    repeat (40) @(negedge clock);
+    if (errors != 3'b010 || busy || ops_seen.size() != 0 || phyDigControl)
+      $fatal(1, "CLK_TRACK outside RXCLKCAL not rejected");
+    clk_track = 0;
+    $display("PASS CLK_TRACK outside RXCLKCAL -> error[1]");
 
     $display("LTSM_SPECIALIZED_REGRESSION_PASS");
     $finish;

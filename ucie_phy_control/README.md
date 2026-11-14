@@ -44,17 +44,20 @@ The LTSM-side controller `LtsmPhyPatternCtrl800` (800 MHz) talks over **one** CD
 
 | Signal | Direction | Kind | Rule |
 | --- | --- | --- | --- |
-| `seq_req` | Ctrl800 -> seq | level | Synchronized at the sequencer. Held high until the synchronized ack is seen. |
+| `seq_req` | Ctrl800 -> seq | level | Synchronized at the sequencer. Held high until the synchronized ack is seen. CLK_TRACK: held further, until Ctrl800 releases it. |
 | `seq_op[2:0]`, `seq_mask[LANES-1:0]` | Ctrl800 -> seq | bundled | Driven one 800 MHz cycle **before** req rises; stable until ack has fallen. Captured once, after req synchronization. |
-| `seq_ack` | seq -> Ctrl800 | level | Synchronized in Ctrl800. Rises only after the whole envelope has finished (clock off). Held until the synchronized req is low. ACTIVE is never acked. |
+| `seq_ack` | seq -> Ctrl800 | level | Synchronized in Ctrl800. Rises only after the whole envelope has finished (clock off). Held until the synchronized req is low. ACTIVE is never acked. CLK_TRACK: rises once the clock is on, falls with the clock after req is seen low. |
 | `active_ready` | seq -> Ctrl800, TX datapath | level | High in ACTIVE once PRE has finished (clock running). Ctrl800 returns it synchronized as `ltsm_active_ready`. |
 
 **No stop (not implemented).** The link has no stop signal, so a launched command always runs its full envelope:
 - Training commands (op 0-4) end on their own and ack.
 - ACTIVE (op 5) never ends and is never acked. It is left only through `reset_n`. Ctrl800 stays busy for as long as ACTIVE runs.
+- CLK_TRACK (op 6) is the one held command. It uses the same 4-phase handshake with a different meaning of ack ("clock running"): req high -> clock on + ack high; req low -> clock off + ack low.
 - On **entry** into `ltsm_state` 9 (TRAIN_ERROR) or 0 (RESET), a running training finishes its burst: at most PRE + 128 + POST 500 MHz cycles, about 272 ns for LFSR. Its Finished flag is suppressed, and a queued training is discarded. Neither sets an error bit.
 
 This matches the current LTSM, in which ACTIVE and TRAIN_ERROR are terminal. If the LTSM gains ACTIVE exits (L1/L2, RETRAIN, LINKERROR), or a training has to be cut short on TRAIN_ERROR, a stop/drain path must be added back.
+
+**CLK_TRACK (MBTRAIN.RXCLKCAL).** On the partner side of RXCLKCAL the LTSM raises `rxClkCal_sendClockTrack`. Its rising edge is accepted only in MBTRAIN.RXCLKCAL (`ltsm_state == 6`, `mbtrainState == 5`) and launches CLK_TRACK through the 1-deep queue. Ctrl800 releases it (req low) when the flag falls or the LTSM leaves MBTRAIN.RXCLKCAL (including TRAIN_ERROR/RESET). A queued CLK_TRACK is discarded under the same condition. It has no Finished flag.
 
 **ACTIVE launch.** ACTIVE is launched once on each entry into `ltsm_state == 8`. It goes through the 1-deep queue, so a LINKINIT reseed captured earlier is always sent first. A queued ACTIVE is discarded if the state leaves 8 before it launches.
 
@@ -68,6 +71,7 @@ This matches the current LTSM, in which ACTIVE and TRAIN_ERROR are terminal. If 
 | 3 | LFSR | dataVref_sendPattern, d2cSender_sendLfsrPattern, rxDeskew_sendLfsrPattern, custom JTAG burst | PRE+BODY+POST | phyTrainLfsr | Tx500 LFSR on masked lanes | 128 (4096 UI) |
 | 4 | RESEED | the 5 reset-scrambler flags (edge detected) | 0 | none | Tx500 SEED pulse, all lanes | 1 |
 | 5 | ACTIVE | `ltsm_state == 8` | PRE, continuous, POST | none | Tx500 ACTIVE, all lanes; Data2g off | until reset |
+| 6 | CLK_TRACK | rxClkCal_sendClockTrack (MBTRAIN.RXCLKCAL) | BODY only, no PRE/POST | none | off | while req is high |
 
 Parameters: `PRE_CYC = 4` and `POST_CYC = 4` (in 500 MHz cycles, both must be at least 1), `CLK_LEN = 96`. All trainings use 128 iterations. Normal training sends all lanes. Only the custom JTAG burst uses `ltsm_data_lane_mask`.
 
@@ -84,6 +88,7 @@ Parameters: `PRE_CYC = 4` and `POST_CYC = 4` (in 500 MHz cycles, both must be at
 | LFSR BODY, masked-off lane | 0101 | 100 | 0 | 1 |
 | RESEED (1 cycle) | 0110 | 000 | 0 | 0 |
 | ACTIVE (PRE done, until reset) | 0000 | 000 | 0 | 1 |
+| CLK_TRACK BODY (while req) | 0101 | 000 | 0 | 1 |
 | RAW (test only, never issued) | 0001 | 000 | 0 | 0 |
 
 **Sequencer outputs**
@@ -110,6 +115,7 @@ All of them are flops decoded from the next state, so every enable of one comman
 | LFSR | 128 | 4096 = 128 x 32 | 136 |
 | RESEED | 1 | 32 | 0 |
 | ACTIVE | until reset | - | 4 + N |
+| CLK_TRACK | while req is high | - | N |
 
 **`CLK_LEN` is an open point.** The default of 96 assumes the analog clock pattern iteration is 24 UI: 16 UI of toggling plus 8 UI low, the UCIe forwarded-clock training pattern, with 128 iterations. If the analog block's clock iteration is 8 UI, use `CLK_LEN = 32`.
 
@@ -181,7 +187,7 @@ The K_* kinds became the ops above, and the four links became one `Ltsm800Comman
 | `ltsm_pattern_error[0]` | Multiple LTSM edges in one cycle, or a JTAG edge colliding with an LTSM edge or with ACTIVE entry |
 | `ltsm_pattern_error[1]` | LTSM flag in an illegal state/substate, or a zero custom mask |
 | `ltsm_pattern_error[2]` | Queue overflow (pattern slot or reseed slot full) |
-| Finished flags | One pulse on the owner's flag when its command completes, unless the LTSM is by then in TRAIN_ERROR/RESET. CLK/VAL/LANEID/LFSR only. RESEED, custom and ACTIVE have no flag |
+| Finished flags | One pulse on the owner's flag when its command completes, unless the LTSM is by then in TRAIN_ERROR/RESET. CLK/VAL/LANEID/LFSR only. RESEED, custom, ACTIVE and CLK_TRACK have no flag |
 | `ltsm_pattern_busy` | Pending or running command, including **all of ACTIVE** |
 | `ltsm_active_ready` | Synchronized `active_ready` from the sequencer |
 

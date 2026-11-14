@@ -19,15 +19,18 @@
 //   - every endpoint output reproduces its sequencer input with a fixed,
 //     deterministic latency (each edge, each value, each lane);
 //   - Data2g LSB-first alternation; RESEED one cycle without clock; ACTIVE
-//     outputs; valid/data/LFSR never without the clock.
+//     outputs; valid/data/LFSR never without the clock;
+//   - CLK_TRACK: ack rises on the same edge as the clock (clock-only row),
+//     the clock runs while req is held, and clock and ack fall together.
 // Scenarios (top): every op, ACTIVE held and left only through reset (there
-// is no stop), back-to-back random commands, reset in the middle of a
-// command, and a standalone Tx500 mode check including the test-only RAW row.
+// is no stop), CLK_TRACK held for random lengths, back-to-back random
+// commands, reset in the middle of a command (including CLK_TRACK), and a
+// standalone Tx500 mode check including the test-only RAW row.
 // =============================================================================
 package tb_seq_pkg;
   localparam int R_IDLE=0, R_CLK=1, R_VAL=2, R_ID=3, R_LFSR=4, R_SEED=5, R_ACT=6, R_BAD=7;
   localparam logic [2:0] OP_CLK=3'd0, OP_VAL=3'd1, OP_ID=3'd2, OP_LFSR=3'd3,
-                         OP_RESEED=3'd4, OP_ACTIVE=3'd5;
+                         OP_RESEED=3'd4, OP_ACTIVE=3'd5, OP_TRACK=3'd6;
   localparam logic [3:0] W_OFF=4'b0101, W_SEED=4'b0110, W_LFSR=4'b1100,
                          W_ACTIVE=4'b0000, W_RAW=4'b0001;
   function automatic logic [3:0] tx_word(input logic [2:0] mode, input logic lane_en);
@@ -47,6 +50,7 @@ package tb_seq_pkg;
       OP_ID: return R_ID;
       OP_LFSR: return R_LFSR;
       OP_RESEED: return R_SEED;
+      OP_TRACK: return R_CLK;
       default: return R_ACT;
     endcase
   endfunction
@@ -187,11 +191,12 @@ module tb_seq_case #(
   // ---- Row trace per command -------------------------------------------------
   int row = R_IDLE;
   int seg_row[$], seg_len[$];
-  bit gap = 0, prev_ack = 0;
-  int ncmd = 0, last_body = 0;
+  bit gap = 0, prev_ack = 0, track_on = 0;
+  int ncmd = 0, last_body = 0, last_track = 0;
   always @(negedge clk500) begin
     if (!reset_n) begin
       seg_row.delete(); seg_len.delete(); gap = 0; prev_ack = 0; row = R_IDLE;
+      track_on = 0;
     end else begin
       row = classify();
       if (row == R_BAD)
@@ -202,10 +207,25 @@ module tb_seq_case #(
         if (seg_row.size() > 0 && seg_row[$] == row) seg_len[$] = seg_len[$] + 1;
         else begin seg_row.push_back(row); seg_len.push_back(1); end
       end else if (seg_row.size() > 0) gap = 1;
-      if (ack && !prev_ack) begin
+      if (ack && !prev_ack && op == OP_TRACK) begin
+        // CLK_TRACK: ack = clock running, raised on the clock's first edge.
+        if (!(seg_row.size() == 1 && seg_row[0] == R_CLK && seg_len[0] == 1))
+          $fatal(1, "%s: CLK_TRACK ack not raised together with the clock", NAME);
+        track_on = 1;
+      end else if (ack && !prev_ack) begin
         if (s_clk) $fatal(1, "%s: ack raised with clock still enabled", NAME);
         check_command(op);
         seg_row.delete(); seg_len.delete(); gap = 0; ncmd++;
+      end
+      if (track_on && !ack && prev_ack) begin
+        // Released: clock and ack fall on the same edge, clock-only throughout.
+        if (s_clk || row != R_IDLE)
+          $fatal(1, "%s: CLK_TRACK clock still on after ack fell", NAME);
+        if (!(seg_row.size() == 1 && seg_row[0] == R_CLK && seg_len[0] >= 1))
+          $fatal(1, "%s: CLK_TRACK drove more than the clock", NAME);
+        last_track = seg_len[0];
+        $display("[%s] op 6 trace: CLK x%0d (held while req)", NAME, last_track);
+        seg_row.delete(); seg_len.delete(); gap = 0; ncmd++; track_on = 0;
       end
       prev_ack = ack;
     end
@@ -456,6 +476,32 @@ module tb_phy_tx_sequencer;
     commands++;
   endtask
 
+  // CLK_TRACK: clock only, on while req is held, off with ack once req falls.
+  task automatic run_track(input int hold);
+    int n0 = c0.ncmd, n1 = c1.ncmd, n2 = c2.ncmd;
+    @(negedge clk800); op_src = OP_TRACK; mask_src = '0;
+    @(negedge clk800); req_src = 1;
+    wait (ack_all_s);
+    repeat (hold) begin
+      @(negedge clk500);
+      if (!c0.phyDigControl || !c1.phyDigControl || !c2.phyDigControl ||
+          c0.row != R_CLK || c1.row != R_CLK || c2.row != R_CLK || ack_c !== 3'b111)
+        $fatal(1, "CLK_TRACK clock/ack not held while req is high");
+    end
+    if (c0.ncmd != n0 || c1.ncmd != n1 || c2.ncmd != n2)
+      $fatal(1, "CLK_TRACK completed while req was held");
+    @(negedge clk800); req_src = 0;
+    wait (!ack_any_s);
+    @(negedge clk800);
+    if (c0.phyDigControl || c1.phyDigControl || c2.phyDigControl)
+      $fatal(1, "CLK_TRACK clock still on after ack fell");
+    if (c0.ncmd != n0 + 1 || c1.ncmd != n1 + 1 || c2.ncmd != n2 + 1)
+      $fatal(1, "CLK_TRACK trace not checked exactly once");
+    if (c0.last_track < hold || c1.last_track < hold || c2.last_track < hold)
+      $fatal(1, "CLK_TRACK clock shorter than the hold (%0d < %0d)", c0.last_track, hold);
+    commands++;
+  endtask
+
   function automatic logic [LANES-1:0] rand_mask();
     logic [LANES-1:0] m;
     do m = LANES'(rnd()); while (m == '0);
@@ -508,6 +554,14 @@ module tb_phy_tx_sequencer;
     run_cmd(OP_RESEED, '0);
     $display("PASS every op: exact BODY lengths and envelopes");
 
+    // -- CLK_TRACK held for random lengths, then normal commands again ----------
+    run_track(1);
+    run_track(20 + int'(rnd() % 200));
+    run_cmd(OP_VAL, '0);
+    run_track(5 + int'(rnd() % 50));
+    run_cmd(OP_CLK, '0);
+    $display("PASS CLK_TRACK: clock held while req, released with ack");
+
     // -- ACTIVE (LINKINIT order: reseed, then ACTIVE); left only by reset -------
     run_cmd(OP_RESEED, '0);
     run_active(10 + int'(rnd() % 40));
@@ -516,8 +570,9 @@ module tb_phy_tx_sequencer;
     // -- Back-to-back random training commands ----------------------------------
     for (int i = 0; i < 16; i++) begin
       logic [2:0] op;
-      op = 3'(rnd() % 5);  // ACTIVE excluded: it only ends by reset
-      run_cmd(op, rand_mask());
+      op = 3'(rnd() % 6);  // ACTIVE excluded (only ends by reset); 5 -> CLK_TRACK
+      if (op == 3'd5) run_track(1 + int'(rnd() % 30));
+      else run_cmd(op, rand_mask());
     end
     $display("PASS back-to-back random commands");
 
@@ -529,6 +584,13 @@ module tb_phy_tx_sequencer;
     reset_all_regions("mid-LFSR");
     run_cmd(OP_LFSR, rand_mask());
     run_active(5);
+    // Reset while CLK_TRACK is held.
+    @(negedge clk800); op_src = OP_TRACK; mask_src = '0;
+    @(negedge clk800); req_src = 1;
+    wait (ack_all_s);
+    repeat (5 + rnd() % 20) @(negedge clk800);
+    reset_all_regions("mid-CLK_TRACK");
+    run_track(10);
     $display("PASS reset in the middle of a command, then recovery");
 
     $display("TB_PHY_TX_SEQUENCER_PASS seed=%0d commands=%0d", seed, commands);

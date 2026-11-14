@@ -79,6 +79,8 @@ module UcieDigitalTopJtagPhyModeSpec_tb;
   logic [dataLaneCount-1:0] ltsm_flagFromAnalog_dataVref_detectedDataPattern;
   logic ltsm_flagFromAnalog_dataVref_finishedPattern;
   logic ltsm_flagFromAnalog_dataVref_rxVrefApplied;
+  // RXCLKCAL done is generated inside UcieDigitalTopJtag (no pin): this tb
+  // copy is not connected to the DUT.
   logic ltsm_flagFromAnalog_rxClkCal_done;
   logic ltsm_flagFromAnalog_d2cSender_valTrainPatternSent;
   logic ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied;
@@ -130,8 +132,9 @@ module UcieDigitalTopJtagPhyModeSpec_tb;
   wire [2:0] ltsm_flagToAnalog_dataVref_dataPattern;
   wire ltsm_flagToAnalog_dataVref_clearComparisonErrors;
   wire ltsm_flagToAnalog_dataVref_resetLocalTxScrambler;
-  wire ltsm_flagToAnalog_rxClkCal_doCalibration;
-  wire ltsm_flagToAnalog_rxClkCal_sendClockTrack;
+  // RXCLKCAL flags are internal to UcieDigitalTopJtag (no pins).
+  wire ltsm_flagToAnalog_rxClkCal_doCalibration = dut.ltsm_flagToAnalog_rxClkCal_doCalibration;
+  wire ltsm_flagToAnalog_rxClkCal_sendClockTrack = dut.ltsm_flagToAnalog_rxClkCal_sendClockTrack;
   wire ltsm_flagToAnalog_d2cSender_sendValTrainPattern;
   wire ltsm_flagToAnalog_d2cSender_resetLocalScrambler;
   wire ltsm_flagToAnalog_d2cSender_applyTxClockPhase;
@@ -671,7 +674,6 @@ module UcieDigitalTopJtagPhyModeSpec_tb;
     .ltsm_flagFromAnalog_dataVref_detectedDataPattern(ltsm_flagFromAnalog_dataVref_detectedDataPattern),
     .ltsm_flagFromAnalog_dataVref_finishedPattern(ltsm_flagFromAnalog_dataVref_finishedPattern),
     .ltsm_flagFromAnalog_dataVref_rxVrefApplied(ltsm_flagFromAnalog_dataVref_rxVrefApplied),
-    .ltsm_flagFromAnalog_rxClkCal_done(ltsm_flagFromAnalog_rxClkCal_done),
     .ltsm_flagFromAnalog_d2cSender_valTrainPatternSent(ltsm_flagFromAnalog_d2cSender_valTrainPatternSent),
     .ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied(ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied),
     .ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo),
@@ -725,8 +727,6 @@ module UcieDigitalTopJtagPhyModeSpec_tb;
     .ltsm_flagToAnalog_dataVref_dataPattern(ltsm_flagToAnalog_dataVref_dataPattern),
     .ltsm_flagToAnalog_dataVref_clearComparisonErrors(ltsm_flagToAnalog_dataVref_clearComparisonErrors),
     .ltsm_flagToAnalog_dataVref_resetLocalTxScrambler(ltsm_flagToAnalog_dataVref_resetLocalTxScrambler),
-    .ltsm_flagToAnalog_rxClkCal_doCalibration(ltsm_flagToAnalog_rxClkCal_doCalibration),
-    .ltsm_flagToAnalog_rxClkCal_sendClockTrack(ltsm_flagToAnalog_rxClkCal_sendClockTrack),
     .ltsm_flagToAnalog_d2cSender_sendValTrainPattern(ltsm_flagToAnalog_d2cSender_sendValTrainPattern),
     .ltsm_flagToAnalog_d2cSender_resetLocalScrambler(ltsm_flagToAnalog_d2cSender_resetLocalScrambler),
     .ltsm_flagToAnalog_d2cSender_applyTxClockPhase(ltsm_flagToAnalog_d2cSender_applyTxClockPhase),

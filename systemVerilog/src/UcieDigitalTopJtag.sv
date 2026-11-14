@@ -207,10 +207,9 @@ module UcieDigitalTopJtag #(
   // DATAVREF and DATATRAINVREF share the per-lane Vref code bus.
   output var logic [dataLaneCount*dataVrefCodeWidth-1:0] ltsm_flagToAnalog_dataVref_rxVrefCodes,
 
-  // LTSM MBTRAIN.RXCLKCAL interface.
-  output var logic           ltsm_flagToAnalog_rxClkCal_doCalibration,
-  input wire logic           ltsm_flagFromAnalog_rxClkCal_done,
-  output var logic           ltsm_flagToAnalog_rxClkCal_sendClockTrack,
+  // LTSM MBTRAIN.RXCLKCAL is internal: the calibration "done" is generated
+  // below (no RX clock calibration is performed) and the clock-track request
+  // goes to PhyTxSequencer through u_pattern_ctrl (CLK_TRACK).
 
   // LTSM MBTRAIN shared D2C sender/receiver and TX-deskew interface
   // (muxed inside MBTrainFSM between VALTRAINCENTER, DATATRAINCENTER1/2 and LINKSPEED).
@@ -406,6 +405,37 @@ module UcieDigitalTopJtag #(
   assign laneid13 = 4'd13;
   assign laneid14 = 4'd14;
   assign laneid15 = 4'd15;
+
+  // --------------------------------------------------------------------------
+  // MBTRAIN.RXCLKCAL (internal, no top-level pins)
+  // Calibrating side: no RX clock calibration is performed. RXCLKCAL_DONE_DELAY
+  // clock cycles after doCalibration rises, done is raised and held until
+  // doCalibration falls; it then clears, ready for the next run.
+  // Partner side: sendClockTrack is the CLK_TRACK request of u_pattern_ctrl
+  // (forwarded clock on while it is high).
+  // --------------------------------------------------------------------------
+  localparam int RXCLKCAL_DONE_DELAY = 5;
+  localparam int RXCLKCAL_CNT_W = $clog2(RXCLKCAL_DONE_DELAY);
+
+  logic ltsm_flagToAnalog_rxClkCal_doCalibration;
+  logic ltsm_flagFromAnalog_rxClkCal_done;
+  logic ltsm_flagToAnalog_rxClkCal_sendClockTrack;
+  logic [RXCLKCAL_CNT_W-1:0] rxClkCal_doneCnt;
+
+  always_ff @(posedge clock or negedge reset_n_sync) begin
+    if (!reset_n_sync) begin
+      rxClkCal_doneCnt <= '0;
+      ltsm_flagFromAnalog_rxClkCal_done <= 1'b0;
+    end else if (!ltsm_flagToAnalog_rxClkCal_doCalibration) begin
+      rxClkCal_doneCnt <= '0;
+      ltsm_flagFromAnalog_rxClkCal_done <= 1'b0;
+    end else if (!ltsm_flagFromAnalog_rxClkCal_done) begin
+      if (rxClkCal_doneCnt == RXCLKCAL_CNT_W'(RXCLKCAL_DONE_DELAY - 1))
+        ltsm_flagFromAnalog_rxClkCal_done <= 1'b1;
+      else
+        rxClkCal_doneCnt <= rxClkCal_doneCnt + 1'b1;
+    end
+  end
 
   // --------------------------------------------------------------------------
   // LOCAL FUNCTIONAL FDI TERMINATION
@@ -761,6 +791,7 @@ module UcieDigitalTopJtag #(
     .ltsm_flagToAnalog_d2cSender_sendValTrainPattern(pattern_normal_enable && ltsm_flagToAnalog_d2cSender_sendValTrainPattern),
     .ltsm_flagToAnalog_d2cSender_sendLfsrPattern(pattern_normal_enable && ltsm_flagToAnalog_d2cSender_sendLfsrPattern),
     .ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(pattern_normal_enable && ltsm_flagToAnalog_rxDeskew_sendLfsrPattern),
+    .ltsm_flagToAnalog_rxClkCal_sendClockTrack(pattern_normal_enable && ltsm_flagToAnalog_rxClkCal_sendClockTrack),
     .ltsm_flagFromAnalog_FinishedClkPatterns(ltsm_flagFromAnalog_FinishedClkPatterns),
     .ltsm_flagFromAnalog_FinishedValTrainPattern(ltsm_flagFromAnalog_FinishedValTrainPattern),
     .ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern),
