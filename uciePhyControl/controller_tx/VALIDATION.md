@@ -7,7 +7,7 @@
 ## How to run
 
 ```
-cd ucie_phy_control
+cd uciePhyControl/controller_tx
 tests/run_tests.sh                     # lint + tb_phy_tx_sequencer (8 seeds) + tb_ltsm_specialized
 SEEDS="1 2 3 4 5 6 7 8 9 10" tests/run_tests.sh
 tclsh constraints/check_template.tcl   # SDC template syntax/binding guards (not STA)

@@ -3,7 +3,7 @@
 // Place this hierarchy near UCIe digital. Its only clock is the LTSM clock.
 //
 // This controller talks over ONE CDC handshake (the seq_* link) to
-// PhyTxSequencer (ucie_phy_control/, 500 MHz). The sequencer is the only CDC
+// PhyTxSequencer (uciePhyControl/controller_tx/, 500 MHz). The sequencer is the only CDC
 // point on the PHY side and the only owner of TX pattern timing; it drives
 // the clock, valid, data lane-ID and 500 MHz LFSR endpoints together.
 //
@@ -44,7 +44,7 @@
 // ACTIVE exits (L1/L2, RETRAIN, LINKERROR) or needs trainings cut short.
 //
 // Preserve hierarchy and apply the bundled-data timing constraints in
-// ucie_phy_control/constraints/cdc_constraints.sdc.
+// uciePhyControl/controller_tx/constraints/cdc_constraints.sdc.
 module LtsmPhyPatternCtrl800 #(
   parameter integer LANES=16,
   parameter integer SYNC_STAGES=3

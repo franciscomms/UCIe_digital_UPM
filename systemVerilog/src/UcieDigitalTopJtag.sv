@@ -228,7 +228,7 @@ module UcieDigitalTopJtag #(
   // ==========================================================================
   // PHY PATTERN ENGINE INTERFACES
   // ==========================================================================
-  // Single CDC link to PhyTxSequencer (ucie_phy_control/PhyTxControlTop,
+  // Single CDC link to PhyTxSequencer (uciePhyControl/controller_tx/PhyTxControlTop,
   // 500 MHz). req is a level synchronized at the sequencer; op/mask are
   // bundled with req (stable until ack falls); ack is synchronized in the
   // controller. active_ready is a 500 MHz level
