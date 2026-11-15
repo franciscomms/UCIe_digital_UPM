@@ -5,7 +5,7 @@
 // The <reg>_in_t / <reg>_out_t structs and the u_top connections follow the
 // jtag*_* port list of UcieDigitalTop; update them if those ports change.
 //
-// UcieDigitalTop with its test pins (testMode*, jtag*_*) connected to six
+// UcieDigitalTop with its test pins (testMode*, jtag*_*) connected to seven
 // jtag_tdr_snapshot Test Data Registers. The TAP is external: it drives the
 // shared TDR bus (tdr_*) and one sel_<reg> per register, and muxes tdo_<reg>.
 //
@@ -15,7 +15,8 @@
 //   fdi       max(in, out) of jtagFdi_* testModeFdi pins
 //   rdi       max(in, out) of jtagRdi_* testModeRdi pins
 //   ltsm      max(in, out) of jtagLtsm_* testModeLtsm pins
-//   phy       max(in, out) of jtagPhy_* testModePhy pins
+//   phyctrl   max(in, out)             digital-to-PHY-controller boundary
+//   phy       max(in, out)             direct exposed PHY pin boundary
 //
 // Every register uses the jtag_tdr_snapshot protocol (see that file):
 //   DR bit 0      we (TDI) / busy (TDO)
@@ -23,10 +24,12 @@
 //
 // Control register (ctrl; readback overlays live pattern status in [7:4]):
 //   [2:0]  mode     0 = functional, 1 = digital, 2 = fdi, 3 = rdi, 4 = ltsm,
-//                   5 = phy (6..7 = functional). At most one testMode* is driven.
+//                   5 = phyctrl, 6 = phy, 7 = reserved/isolated.
+//                   Modes 5/6/7 hold UcieDigitalTop in reset.
 //   [3]    sys_rst  1 = core held in reset while in a test mode
 //                   (drives every jtag<Blk>_reset_n). Reset value 1.
-//                   No effect in phy mode: the core is always held in reset.
+//                   In modes 5/6 it clamps PHY commands; mode 5 also resets
+//                   the TX/RX 800 MHz controllers. It does not reset external PHY.
 //   [4]    read-only pattern busy (writes ignored by consumers)
 //   [7:5]  read-only sticky pattern errors (writes ignored by consumers)
 //   [8]    custom_train_jtag: held level, rising edge requests one LFSR burst
@@ -36,17 +39,19 @@
 //   Keep the mask stable until pattern busy has asserted and returned low;
 //   clear the trigger for >=4 core clocks before requesting another burst.
 //   Recommended sequence: write {sys_rst=1, mode=X}, then {sys_rst=0, mode=X}.
-//   Change mode only with sys_rst=1.
+//   Change mode only with sys_rst=1 and external PHY quiescent. A running
+//   ACTIVE sequencer needs the common external PHY reset before mode changes.
 //
-// I/O registers (dig, fdi, rdi, ltsm, phy):
+// I/O registers (dig, fdi, rdi, ltsm, phyctrl, phy):
 //   data_out = <reg>_in  packed struct of the block inputs  (jtag<Blk>_* inputs)
 //   data_in  = <reg>_out packed struct of the block outputs (jtag<Blk>_* outputs)
 //   Both are zero-extended to DATA_W. The first port of the group is the MSB
 //   field of the struct; DR bit = data bit + 1.
-//   For phy, phy_in is what the TDR drives toward the PHY (flagToAnalog_*)
-//   and phy_out is what the PHY reports (flagFromAnalog_*, stable_clk,
-//   pll_locked, stable_supply). Field names drop the ltsm_ pin prefix.
-//   Reserved PHY input bits retain the scan offsets of retired point-test pins.
+//   PHYCTRL emulates UcieDigitalTop flags/state tags into the real 800 MHz
+//   controllers and analog outputs. Its legacy flag names drop the ltsm_ prefix.
+//   PHY directly drives/samples every currently exposed PHY-boundary pin; its
+//   fields have the exact public pin names. It does not bypass PhyTxSequencer.
+//   Reserved PHYCTRL bits retain the previous upstream flag field positions.
 //   jtag<Blk>_clock and jtag<Blk>_reset_n are not in the registers: the clock
 //   is the wrapper clock and the reset comes from ctrl.sys_rst.
 //   Inputs change together, one clock cycle after the Update-DR is
@@ -55,7 +60,7 @@
 //
 // Clocks and resets:
 //   clock    core clock (internal or external, selected outside this wrapper).
-//            Also the IP-side clock of the six TDRs and every jtag<Blk>_clock,
+//            Also the IP-side clock of the seven TDRs and every jtag<Blk>_clock,
 //            so the clock muxes in UcieDigitalTop never switch between
 //            different sources.
 //   reset_n  functional reset of the core and IP-side reset of the TDRs.
@@ -153,12 +158,14 @@ module UcieDigitalTopJtag #(
   input  wire logic sel_fdi,
   input  wire logic sel_rdi,
   input  wire logic sel_ltsm,
+  input  wire logic sel_phyctrl,
   input  wire logic sel_phy,
   output var  logic tdo_ctrl,
   output var  logic tdo_dig,
   output var  logic tdo_fdi,
   output var  logic tdo_rdi,
   output var  logic tdo_ltsm,
+  output var  logic tdo_phyctrl,
   output var  logic tdo_phy,
 
   // ##########################################################################
@@ -195,8 +202,6 @@ module UcieDigitalTopJtag #(
   // are tied high at u_top. Their DIG/LTSM scan controls remain available.
   input wire logic           ltsm_pll_locked,
 
-  input wire logic           ltsm_flagFromAnalog_clkPatternReceivedRTRK_L,
-  input wire logic           ltsm_flagFromAnalog_clkPatternReceivedRCKN_L,
   input wire logic           ltsm_flagFromAnalog_clkPatternReceivedRCKP_L,
   output var logic           ltsm_flagToAnalog_RepairClkState,
 
@@ -228,7 +233,7 @@ module UcieDigitalTopJtag #(
   // ==========================================================================
   // PHY PATTERN ENGINE INTERFACES
   // ==========================================================================
-  // Single CDC link to PhyTxSequencer (uciePhyControl/controller_tx/PhyTxControlTop,
+  // Single CDC link to PhyTxSequencer (ucie_phy_control/PhyTxControlTop,
   // 500 MHz). req is a level synchronized at the sequencer; op/mask are
   // bundled with req (stable until ack falls); ack is synchronized in the
   // controller. active_ready is a 500 MHz level
@@ -285,6 +290,53 @@ module UcieDigitalTopJtag #(
   // 0 selects repair. 1 selects a full training point (Vref or centering).
   output wire logic val_mode_o
 );
+
+  // State tags from the digital top, before functional/PHYCTRL selection.
+  wire [3:0] top_ltsm_state;
+  wire [2:0] top_ltsm_dbg_mbinitSubstate;
+  wire [2:0] top_ltsm_dbg_mbinitReversalMbReceiverState;
+  wire [3:0] top_ltsm_dbg_mbtrainState;
+  wire [11:0] top_ltsm_dbg_mbtrainActiveSubstate;
+
+  // Before the final PHY boundary mux (functional / PHYCTRL / direct PHY).
+  wire phy_core_seq_req_o;
+  wire [2:0] phy_core_seq_op_o;
+  wire [dataLaneCount-1:0] phy_core_seq_mask_o;
+  wire phy_core_ltsm_active_ready;
+  wire [3:0] phy_core_laneid0;
+  wire [3:0] phy_core_laneid1;
+  wire [3:0] phy_core_laneid2;
+  wire [3:0] phy_core_laneid3;
+  wire [3:0] phy_core_laneid4;
+  wire [3:0] phy_core_laneid5;
+  wire [3:0] phy_core_laneid6;
+  wire [3:0] phy_core_laneid7;
+  wire [3:0] phy_core_laneid8;
+  wire [3:0] phy_core_laneid9;
+  wire [3:0] phy_core_laneid10;
+  wire [3:0] phy_core_laneid11;
+  wire [3:0] phy_core_laneid12;
+  wire [3:0] phy_core_laneid13;
+  wire [3:0] phy_core_laneid14;
+  wire [3:0] phy_core_laneid15;
+  wire [15:0] phy_core_lane_req_o;
+  wire [15:0] phy_core_lane_req_rst_o;
+  wire [15:0] phy_core_lane_req_laneid_o;
+  wire phy_core_lane_reverse_o;
+  wire [15:0] phy_core_lane_active_o;
+  wire phy_core_val_req_o;
+  wire phy_core_val_finish_o;
+  wire phy_core_val_mode_o;
+  wire phy_core_ltsm_flagToAnalog_RepairClkState;
+  wire [validVrefCodeWidth-1:0] phy_core_ltsm_flagToAnalog_valVref_rxVrefCode;
+  wire [dataLaneCount*dataVrefCodeWidth-1:0] phy_core_ltsm_flagToAnalog_dataVref_rxVrefCodes;
+  wire [d2cPiCodeWidth-1:0] phy_core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode;
+  wire [64*d2cTxDeskewCodeWidth-1:0] phy_core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
+  wire [dataLaneCount*rxDeskewCodeWidth-1:0] phy_core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes;
+  wire [1:0] phy_core_ltsm_flagToAnalog_speedIdle_speedCode;
+  wire phy_core_ltsm_flagToAnalog_speedIdle_electricalIdle;
+  wire phy_core_sb_tx_dout;
+  wire phy_core_sb_tx_clk;
 
   // --------------------------------------------------------------------------
   // Reset synchronizer: asynchronous assertion, synchronous deassertion.
@@ -389,22 +441,22 @@ module UcieDigitalTopJtag #(
   logic [dataLaneCount-1:0] ltsm_data_lane_mask;
   logic pattern_normal_enable;
 
-  assign laneid0 = 4'd0;
-  assign laneid1 = 4'd1;
-  assign laneid2 = 4'd2;
-  assign laneid3 = 4'd3;
-  assign laneid4 = 4'd4;
-  assign laneid5 = 4'd5;
-  assign laneid6 = 4'd6;
-  assign laneid7 = 4'd7;
-  assign laneid8 = 4'd8;
-  assign laneid9 = 4'd9;
-  assign laneid10 = 4'd10;
-  assign laneid11 = 4'd11;
-  assign laneid12 = 4'd12;
-  assign laneid13 = 4'd13;
-  assign laneid14 = 4'd14;
-  assign laneid15 = 4'd15;
+  assign phy_core_laneid0 = 4'd0;
+  assign phy_core_laneid1 = 4'd1;
+  assign phy_core_laneid2 = 4'd2;
+  assign phy_core_laneid3 = 4'd3;
+  assign phy_core_laneid4 = 4'd4;
+  assign phy_core_laneid5 = 4'd5;
+  assign phy_core_laneid6 = 4'd6;
+  assign phy_core_laneid7 = 4'd7;
+  assign phy_core_laneid8 = 4'd8;
+  assign phy_core_laneid9 = 4'd9;
+  assign phy_core_laneid10 = 4'd10;
+  assign phy_core_laneid11 = 4'd11;
+  assign phy_core_laneid12 = 4'd12;
+  assign phy_core_laneid13 = 4'd13;
+  assign phy_core_laneid14 = 4'd14;
+  assign phy_core_laneid15 = 4'd15;
 
   // --------------------------------------------------------------------------
   // MBTRAIN.RXCLKCAL (internal, no top-level pins)
@@ -580,7 +632,9 @@ module UcieDigitalTopJtag #(
   localparam logic [2:0] MODE_FDI = 3'd2;
   localparam logic [2:0] MODE_RDI = 3'd3;
   localparam logic [2:0] MODE_LTSM = 3'd4;
-  localparam logic [2:0] MODE_PHY = 3'd5;
+  localparam logic [2:0] MODE_PHYCTRL = 3'd5;
+  localparam logic [2:0] MODE_PHY = 3'd6;
+  localparam logic [2:0] MODE_RESERVED = 3'd7;
 
   logic [CTRL_W-1:0] ctrl_q;
   logic [CTRL_W-1:0] ctrl_readback;
@@ -600,12 +654,14 @@ module UcieDigitalTopJtag #(
     ctrl_readback[4] = ltsm_pattern_busy;
     ctrl_readback[7:5] = ltsm_pattern_error;
   end
-  // Block/digital isolation keeps its existing synthetic pattern handshakes.
-  // PHY-isolation raw pattern fields have no valid LTSM state tag; use the
-  // custom trigger for PHY LFSR bursts instead of treating those fields as
-  // normal training commands. Modes 6/7 remain functional, as before.
+  // Modes 1..4 isolate the digital block under test. PHYCTRL keeps the two
+  // real 800 MHz PHY controllers alive; direct PHY and reserved mode reset them.
+  // Functional mode deliberately ignores CTRL.sys_rst's reset-default value.
   assign pattern_normal_enable = (ctrl_mode == MODE_FUNCTIONAL) ||
-                                 (ctrl_mode > MODE_PHY);
+                                 ((ctrl_mode == MODE_PHYCTRL) && !ctrl_sys_rst);
+  wire phy_controllers_reset_n = reset_n_sync && pattern_normal_enable;
+  wire phyctrl_enabled = reset_n_sync && (ctrl_mode == MODE_PHYCTRL) && !ctrl_sys_rst;
+  wire direct_phy_enabled = reset_n_sync && (ctrl_mode == MODE_PHY) && !ctrl_sys_rst;
 
   jtag_tdr_snapshot #(
     .DATA_W      (CTRL_W),
@@ -693,7 +749,7 @@ module UcieDigitalTopJtag #(
   ) u_rx_ctrl (
     .clock(clock),
     // Already synchronized; its internal rst800_n stage only adds latency.
-    .reset_n(reset_n_sync),
+    .reset_n(phy_controllers_reset_n),
     .ltsm_state(pattern_normal_enable ? ltsm_state : 4'd0),
     .ltsm_dbg_mbinitSubstate(ltsm_dbg_mbinitSubstate),
     .jtagLtsm_dbg_mbinitReversalMbReceiverState(ltsm_dbg_mbinitReversalMbReceiverState),
@@ -752,17 +808,17 @@ module UcieDigitalTopJtag #(
     .center_result_ready_o(center_result_ready),
     .center_valid_pass_o(center_valid_pass),
     .center_lane_pass_o(center_lane_pass),
-    .lane_req_o(lane_req_o),
-    .lane_req_rst_o(lane_req_rst_o),
-    .lane_req_laneid_o(lane_req_laneid_o),
-    .lane_reverse_o(lane_reverse_o),
-    .lane_active_o(lane_active_o),
+    .lane_req_o(phy_core_lane_req_o),
+    .lane_req_rst_o(phy_core_lane_req_rst_o),
+    .lane_req_laneid_o(phy_core_lane_req_laneid_o),
+    .lane_reverse_o(phy_core_lane_reverse_o),
+    .lane_active_o(phy_core_lane_active_o),
     .lane_ack_i(lane_ack_i),
     .lane_armed_i(lane_armed_i),
     .lane_pass_i(lane_pass_i),
-    .val_req_o(val_req_o),
-    .val_mode_o(val_mode_o),
-    .val_finish_o(val_finish_o),
+    .val_req_o(phy_core_val_req_o),
+    .val_mode_o(phy_core_val_mode_o),
+    .val_finish_o(phy_core_val_finish_o),
     .val_ack_i(val_ack_i),
     .val_armed_i(val_armed_i),
     .val_pass_i(val_pass_i)
@@ -771,12 +827,12 @@ module UcieDigitalTopJtag #(
   // The source controller owns its reset synchronizer. No destination-domain
   // flops are inserted here: PhyTxSequencer synchronizes req and owns timing.
   LtsmPhyPatternCtrl800 #(.LANES(dataLaneCount)) u_pattern_ctrl (
-    .clock(clock), .reset_n(reset_n_sync),
+    .clock(clock), .reset_n(phy_controllers_reset_n),
     .ltsm_state(ltsm_state),
     .ltsm_dbg_mbinitSubstate(ltsm_dbg_mbinitSubstate),
     .ltsm_dbg_mbtrainState(ltsm_dbg_mbtrainState),
     .ltsm_data_lane_mask(ltsm_data_lane_mask),
-    .custom_train_jtag(custom_train_jtag),
+    .custom_train_jtag(custom_train_jtag && pattern_normal_enable),
     .ltsm_flagToAnalog_linkInit_resetLfsrScrambler(ltsm_flagToAnalog_linkInit_resetLfsrScrambler),
     .ltsm_flagToAnalog_valVref_resetLocalTxScrambler(ltsm_flagToAnalog_valVref_resetLocalTxScrambler),
     .ltsm_flagToAnalog_dataVref_resetLocalTxScrambler(ltsm_flagToAnalog_dataVref_resetLocalTxScrambler),
@@ -804,9 +860,9 @@ module UcieDigitalTopJtag #(
     .ltsm_pattern_busy(ltsm_pattern_busy),
     .ltsm_pattern_error(ltsm_pattern_error),
     .reset_ltsm_n(reset_ltsm_n),
-    .ltsm_active_ready(ltsm_active_ready),
-    .seq_req_o(seq_req_o),
-    .seq_op_o(seq_op_o), .seq_mask_o(seq_mask_o),
+    .ltsm_active_ready(phy_core_ltsm_active_ready),
+    .seq_req_o(phy_core_seq_req_o),
+    .seq_op_o(phy_core_seq_op_o), .seq_mask_o(phy_core_seq_mask_o),
     .seq_ack_i(seq_ack_i),
     .seq_active_ready_i(seq_active_ready_i)
   );
@@ -815,6 +871,13 @@ module UcieDigitalTopJtag #(
   // DIG TDR (jtag_* pins, testModeDigital)
   // --------------------------------------------------------------------------
   typedef struct packed {
+    logic ltsm_valVref_pointArmed;
+    logic ltsm_valVref_pointResultReady;
+    logic ltsm_d2cCenter_pointArmed;
+    logic ltsm_d2cCenter_resultReady;
+    logic ltsm_linkSpeed_pointArmed;
+    logic ltsm_linkSpeed_resultReady;
+
     UcieUPM_interfaces_pkg::PhyStateReq_t fdi_lp_state_req;
     logic fdi_lp_linkerror;
     logic fdi_lp_rx_active_sts;
@@ -893,6 +956,8 @@ module UcieDigitalTopJtag #(
   } dig_in_t;
 
   typedef struct packed {
+    logic [2:0] ltsm_dbg_mbinitReversalMbReceiverState;
+
     UcieUPM_interfaces_pkg::PhyState_t fdi_pl_state_sts;
     logic fdi_pl_rx_active_req;
     logic fdi_pl_inband_pres;
@@ -1445,9 +1510,18 @@ module UcieDigitalTopJtag #(
   );
 
   // --------------------------------------------------------------------------
-  // PHY TDR (jtagPhy_* pins, testModePhy)
+  // PHYCTRL TDR: emulated UcieDigitalTop boundary, real TX/RX controllers
   // --------------------------------------------------------------------------
   typedef struct packed {
+    logic [3:0] ltsm_state;
+    logic [2:0] ltsm_dbg_mbinitSubstate;
+    logic [2:0] jtagLtsm_dbg_mbinitReversalMbReceiverState;
+    logic [3:0] ltsm_dbg_mbtrainState;
+    logic [11:0] ltsm_dbg_mbtrainActiveSubstate;
+    logic sb_tx_dout;
+    logic sb_tx_clk;
+    logic clear_status;
+
     logic flagToAnalog_RepairClkState;
     logic flagToAnalog_SendClkPatterns;
     logic flagToAnalog_RepairValState;
@@ -1499,9 +1573,71 @@ module UcieDigitalTopJtag #(
     logic [1:0] flagToAnalog_speedIdle_speedCode;
     logic flagToAnalog_speedIdle_applySpeed;
     logic flagToAnalog_speedIdle_electricalIdle;
-  } phy_in_t;
+  } phyctrl_in_t;
 
   typedef struct packed {
+    logic ltsm_valVref_pointArmed;
+    logic ltsm_valVref_pointResultReady;
+    logic ltsm_d2cCenter_pointArmed;
+    logic ltsm_d2cCenter_resultReady;
+    logic ltsm_linkSpeed_pointArmed;
+    logic ltsm_linkSpeed_resultReady;
+    logic [31:0] tx_completion_count;
+    logic [2:0] tx_last_op;
+    logic [8:0] tx_completed_flags;
+    logic seq_req_o;
+    logic [2:0] seq_op_o;
+    logic [dataLaneCount-1:0] seq_mask_o;
+    logic ltsm_active_ready;
+    logic [3:0] laneid0;
+    logic [3:0] laneid1;
+    logic [3:0] laneid2;
+    logic [3:0] laneid3;
+    logic [3:0] laneid4;
+    logic [3:0] laneid5;
+    logic [3:0] laneid6;
+    logic [3:0] laneid7;
+    logic [3:0] laneid8;
+    logic [3:0] laneid9;
+    logic [3:0] laneid10;
+    logic [3:0] laneid11;
+    logic [3:0] laneid12;
+    logic [3:0] laneid13;
+    logic [3:0] laneid14;
+    logic [3:0] laneid15;
+    logic [15:0] lane_req_o;
+    logic [15:0] lane_req_rst_o;
+    logic [15:0] lane_req_laneid_o;
+    logic lane_reverse_o;
+    logic [15:0] lane_active_o;
+    logic val_req_o;
+    logic val_finish_o;
+    logic val_mode_o;
+    logic ltsm_flagToAnalog_RepairClkState;
+    logic [validVrefCodeWidth-1:0] ltsm_flagToAnalog_valVref_rxVrefCode;
+    logic [dataLaneCount*dataVrefCodeWidth-1:0] ltsm_flagToAnalog_dataVref_rxVrefCodes;
+    logic [d2cPiCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txClockPhaseCode;
+    logic [64*d2cTxDeskewCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
+    logic [dataLaneCount*rxDeskewCodeWidth-1:0] ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes;
+    logic [1:0] ltsm_flagToAnalog_speedIdle_speedCode;
+    logic ltsm_flagToAnalog_speedIdle_electricalIdle;
+    logic sb_tx_dout;
+    logic sb_tx_clk;
+    logic ltsm_pll_locked;
+    logic ltsm_flagFromAnalog_clkPatternReceivedRTRK_L;
+    logic ltsm_flagFromAnalog_clkPatternReceivedRCKN_L;
+    logic ltsm_flagFromAnalog_clkPatternReceivedRCKP_L;
+    logic seq_ack_i;
+    logic seq_active_ready_i;
+    logic [15:0] lane_ack_i;
+    logic [15:0] lane_armed_i;
+    logic [15:0] lane_pass_i;
+    logic val_ack_i;
+    logic val_armed_i;
+    logic val_pass_i;
+    logic sb_rx_din;
+    logic sb_rx_clk;
+
     logic stable_clk;
     logic pll_locked;
     logic stable_supply;
@@ -1564,25 +1700,38 @@ module UcieDigitalTopJtag #(
     logic [dataLaneCount-1:0] flagFromAnalog_rxDeskew_detectedDataPattern;
     logic [15:0] flagFromAnalog_d2cReceiver_laneComparisonSuccessful;
     logic flagFromAnalog_speedIdle_speedApplied;
-  } phy_out_t;
+  } phyctrl_out_t;
 
-  localparam int unsigned PHY_IN_W  = $bits(phy_in_t);
-  localparam int unsigned PHY_OUT_W = $bits(phy_out_t);
-  localparam int unsigned PHY_W     = (PHY_IN_W > PHY_OUT_W) ? PHY_IN_W : PHY_OUT_W;
+  localparam int unsigned PHYCTRL_IN_W  = $bits(phyctrl_in_t);
+  localparam int unsigned PHYCTRL_OUT_W = $bits(phyctrl_out_t);
+  localparam int unsigned PHYCTRL_W     = (PHYCTRL_IN_W > PHYCTRL_OUT_W) ? PHYCTRL_IN_W : PHYCTRL_OUT_W;
 
-  phy_in_t        phy_in;
-  phy_out_t       phy_out;
+  phyctrl_in_t        phyctrl_in;
+  phyctrl_out_t       phyctrl_out;
   wire [dataLaneCount-1:0] phyD2cLaneResults;
-  logic [PHY_W-1:0] phy_data_out;
-  logic [PHY_W-1:0] phy_data_in;
+  logic [PHYCTRL_W-1:0] phyctrl_data_out;
+  logic [PHYCTRL_W-1:0] phyctrl_data_in;
 
-  assign phy_out.d2cLaneResultsScanSlot = 64'(phyD2cLaneResults);
-  assign phy_in      = phy_data_out[PHY_IN_W-1:0];
-  assign phy_data_in = PHY_W'(phy_out);
+  assign phyctrl_out.d2cLaneResultsScanSlot = 64'(phyD2cLaneResults);
+  assign phyctrl_in      = phyctrl_enabled ? phyctrl_data_out[PHYCTRL_IN_W-1:0] : '0;
+  assign phyctrl_data_in = (ctrl_mode == MODE_PHYCTRL) ? PHYCTRL_W'(phyctrl_out) : '0;
+
+  // Effective source tags: actual digital top in mode 0, JTAG in PHYCTRL.
+  // Keep these assignments after all signal, mode and PHYCTRL declarations.
+  assign ltsm_state = phyctrl_enabled ? phyctrl_in.ltsm_state :
+    ((ctrl_mode == MODE_FUNCTIONAL) ? top_ltsm_state : '0);
+  assign ltsm_dbg_mbinitSubstate = phyctrl_enabled ? phyctrl_in.ltsm_dbg_mbinitSubstate :
+    ((ctrl_mode == MODE_FUNCTIONAL) ? top_ltsm_dbg_mbinitSubstate : '0);
+  assign ltsm_dbg_mbinitReversalMbReceiverState = phyctrl_enabled ? phyctrl_in.jtagLtsm_dbg_mbinitReversalMbReceiverState :
+    ((ctrl_mode == MODE_FUNCTIONAL) ? top_ltsm_dbg_mbinitReversalMbReceiverState : '0);
+  assign ltsm_dbg_mbtrainState = phyctrl_enabled ? phyctrl_in.ltsm_dbg_mbtrainState :
+    ((ctrl_mode == MODE_FUNCTIONAL) ? top_ltsm_dbg_mbtrainState : '0);
+  assign ltsm_dbg_mbtrainActiveSubstate = phyctrl_enabled ? phyctrl_in.ltsm_dbg_mbtrainActiveSubstate :
+    ((ctrl_mode == MODE_FUNCTIONAL) ? top_ltsm_dbg_mbtrainActiveSubstate : '0);
 
   jtag_tdr_snapshot #(
-    .DATA_W (PHY_W)
-  ) u_tdr_phy (
+    .DATA_W (PHYCTRL_W)
+  ) u_tdr_phyctrl (
     .jtag_nRst     (jtag_nRst),
     .tdr_rst       (tdr_rst),
     .tdr_tck       (tdr_tck),
@@ -1590,14 +1739,292 @@ module UcieDigitalTopJtag #(
     .tdr_capture   (tdr_capture),
     .tdr_shift     (tdr_shift),
     .tdr_update    (tdr_update),
-    .sel           (sel_phy),
-    .tdo           (tdo_phy),
+    .sel           (sel_phyctrl),
+    .tdo           (tdo_phyctrl),
     .clk           (clock),
     .nRst          (reset_n_sync),
-    .data_in       (phy_data_in),
-    .data_out      (phy_data_out),
+    .data_in       (phyctrl_data_in),
+    .data_out      (phyctrl_data_out),
     .data_out_valid()
   );
+
+
+  // --------------------------------------------------------------------------
+  // Direct PHY TDR: the exact externally exposed PHY boundary. This bypasses
+  // both 800 MHz controllers; external PHY modules retain their own clocks and
+  // common reset. CTRL.sys_rst clamps drives but does not reset external PHY.
+  // --------------------------------------------------------------------------
+  typedef struct packed {
+    logic seq_req_o;
+    logic [2:0] seq_op_o;
+    logic [dataLaneCount-1:0] seq_mask_o;
+    logic ltsm_active_ready;
+    logic [3:0] laneid0;
+    logic [3:0] laneid1;
+    logic [3:0] laneid2;
+    logic [3:0] laneid3;
+    logic [3:0] laneid4;
+    logic [3:0] laneid5;
+    logic [3:0] laneid6;
+    logic [3:0] laneid7;
+    logic [3:0] laneid8;
+    logic [3:0] laneid9;
+    logic [3:0] laneid10;
+    logic [3:0] laneid11;
+    logic [3:0] laneid12;
+    logic [3:0] laneid13;
+    logic [3:0] laneid14;
+    logic [3:0] laneid15;
+    logic [15:0] lane_req_o;
+    logic [15:0] lane_req_rst_o;
+    logic [15:0] lane_req_laneid_o;
+    logic lane_reverse_o;
+    logic [15:0] lane_active_o;
+    logic val_req_o;
+    logic val_finish_o;
+    logic val_mode_o;
+    logic ltsm_flagToAnalog_RepairClkState;
+    logic [validVrefCodeWidth-1:0] ltsm_flagToAnalog_valVref_rxVrefCode;
+    logic [dataLaneCount*dataVrefCodeWidth-1:0] ltsm_flagToAnalog_dataVref_rxVrefCodes;
+    logic [d2cPiCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txClockPhaseCode;
+    logic [64*d2cTxDeskewCodeWidth-1:0] ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
+    logic [dataLaneCount*rxDeskewCodeWidth-1:0] ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes;
+    logic [1:0] ltsm_flagToAnalog_speedIdle_speedCode;
+    logic ltsm_flagToAnalog_speedIdle_electricalIdle;
+    logic sb_tx_dout;
+    logic sb_tx_clk;
+  } phy_in_t;
+
+  typedef struct packed {
+    logic ltsm_pll_locked;
+    logic ltsm_flagFromAnalog_clkPatternReceivedRTRK_L;
+    logic ltsm_flagFromAnalog_clkPatternReceivedRCKN_L;
+    logic ltsm_flagFromAnalog_clkPatternReceivedRCKP_L;
+    logic seq_ack_i;
+    logic seq_active_ready_i;
+    logic [15:0] lane_ack_i;
+    logic [15:0] lane_armed_i;
+    logic [15:0] lane_pass_i;
+    logic val_ack_i;
+    logic val_armed_i;
+    logic val_pass_i;
+    logic sb_rx_din;
+    logic sb_rx_clk;
+  } phy_out_t;
+  localparam int unsigned PHY_IN_W=$bits(phy_in_t);
+  localparam int unsigned PHY_OUT_W=$bits(phy_out_t);
+  localparam int unsigned PHY_W=(PHY_IN_W>PHY_OUT_W)?PHY_IN_W:PHY_OUT_W;
+  phy_in_t phy_in;
+  phy_out_t phy_out;
+  logic [PHY_W-1:0] phy_data_out,phy_data_in;
+  assign phy_in=direct_phy_enabled ? phy_data_out[PHY_IN_W-1:0] : '0;
+  assign phy_data_in=(ctrl_mode==MODE_PHY) ? PHY_W'(phy_out) : '0;
+  jtag_tdr_snapshot #(.DATA_W(PHY_W)) u_tdr_phy (
+    .jtag_nRst(jtag_nRst),.tdr_rst(tdr_rst),.tdr_tck(tdr_tck),.tdr_tdi(tdr_tdi),
+    .tdr_capture(tdr_capture),.tdr_shift(tdr_shift),.tdr_update(tdr_update),
+    .sel(sel_phy),.tdo(tdo_phy),.clk(clock),.nRst(reset_n_sync),
+    .data_in(phy_data_in),.data_out(phy_data_out),.data_out_valid()
+  );
+  assign phy_out.ltsm_pll_locked=ltsm_pll_locked;
+  assign phyctrl_out.ltsm_pll_locked=ltsm_pll_locked;
+  assign phy_out.ltsm_flagFromAnalog_clkPatternReceivedRTRK_L=1'b1; 
+  assign phyctrl_out.ltsm_flagFromAnalog_clkPatternReceivedRTRK_L=1'b1; 
+  assign phy_out.ltsm_flagFromAnalog_clkPatternReceivedRCKN_L=1'b1; 
+  assign phyctrl_out.ltsm_flagFromAnalog_clkPatternReceivedRCKN_L=1'b1; 
+  assign phy_out.ltsm_flagFromAnalog_clkPatternReceivedRCKP_L=ltsm_flagFromAnalog_clkPatternReceivedRCKP_L;
+  assign phyctrl_out.ltsm_flagFromAnalog_clkPatternReceivedRCKP_L=ltsm_flagFromAnalog_clkPatternReceivedRCKP_L;
+  assign phy_out.seq_ack_i=seq_ack_i;
+  assign phyctrl_out.seq_ack_i=seq_ack_i;
+  assign phy_out.seq_active_ready_i=seq_active_ready_i;
+  assign phyctrl_out.seq_active_ready_i=seq_active_ready_i;
+  assign phy_out.lane_ack_i=lane_ack_i;
+  assign phyctrl_out.lane_ack_i=lane_ack_i;
+  assign phy_out.lane_armed_i=lane_armed_i;
+  assign phyctrl_out.lane_armed_i=lane_armed_i;
+  assign phy_out.lane_pass_i=lane_pass_i;
+  assign phyctrl_out.lane_pass_i=lane_pass_i;
+  assign phy_out.val_ack_i=val_ack_i;
+  assign phyctrl_out.val_ack_i=val_ack_i;
+  assign phy_out.val_armed_i=val_armed_i;
+  assign phyctrl_out.val_armed_i=val_armed_i;
+  assign phy_out.val_pass_i=val_pass_i;
+  assign phyctrl_out.val_pass_i=val_pass_i;
+  assign phy_out.sb_rx_din=sb_rx_din;
+  assign phyctrl_out.sb_rx_din=sb_rx_din;
+  assign phy_out.sb_rx_clk=sb_rx_clk;
+  assign phyctrl_out.sb_rx_clk=sb_rx_clk;
+  assign seq_req_o=direct_phy_enabled ? phy_in.seq_req_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_seq_req_o : '0);
+  assign phyctrl_out.seq_req_o=seq_req_o;
+  assign seq_op_o=direct_phy_enabled ? phy_in.seq_op_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_seq_op_o : '0);
+  assign phyctrl_out.seq_op_o=seq_op_o;
+  assign seq_mask_o=direct_phy_enabled ? phy_in.seq_mask_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_seq_mask_o : '0);
+  assign phyctrl_out.seq_mask_o=seq_mask_o;
+  assign ltsm_active_ready=direct_phy_enabled ? phy_in.ltsm_active_ready :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_active_ready : '0);
+  assign phyctrl_out.ltsm_active_ready=ltsm_active_ready;
+  assign laneid0=direct_phy_enabled ? phy_in.laneid0 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid0 : '0);
+  assign phyctrl_out.laneid0=laneid0;
+  assign laneid1=direct_phy_enabled ? phy_in.laneid1 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid1 : '0);
+  assign phyctrl_out.laneid1=laneid1;
+  assign laneid2=direct_phy_enabled ? phy_in.laneid2 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid2 : '0);
+  assign phyctrl_out.laneid2=laneid2;
+  assign laneid3=direct_phy_enabled ? phy_in.laneid3 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid3 : '0);
+  assign phyctrl_out.laneid3=laneid3;
+  assign laneid4=direct_phy_enabled ? phy_in.laneid4 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid4 : '0);
+  assign phyctrl_out.laneid4=laneid4;
+  assign laneid5=direct_phy_enabled ? phy_in.laneid5 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid5 : '0);
+  assign phyctrl_out.laneid5=laneid5;
+  assign laneid6=direct_phy_enabled ? phy_in.laneid6 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid6 : '0);
+  assign phyctrl_out.laneid6=laneid6;
+  assign laneid7=direct_phy_enabled ? phy_in.laneid7 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid7 : '0);
+  assign phyctrl_out.laneid7=laneid7;
+  assign laneid8=direct_phy_enabled ? phy_in.laneid8 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid8 : '0);
+  assign phyctrl_out.laneid8=laneid8;
+  assign laneid9=direct_phy_enabled ? phy_in.laneid9 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid9 : '0);
+  assign phyctrl_out.laneid9=laneid9;
+  assign laneid10=direct_phy_enabled ? phy_in.laneid10 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid10 : '0);
+  assign phyctrl_out.laneid10=laneid10;
+  assign laneid11=direct_phy_enabled ? phy_in.laneid11 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid11 : '0);
+  assign phyctrl_out.laneid11=laneid11;
+  assign laneid12=direct_phy_enabled ? phy_in.laneid12 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid12 : '0);
+  assign phyctrl_out.laneid12=laneid12;
+  assign laneid13=direct_phy_enabled ? phy_in.laneid13 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid13 : '0);
+  assign phyctrl_out.laneid13=laneid13;
+  assign laneid14=direct_phy_enabled ? phy_in.laneid14 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid14 : '0);
+  assign phyctrl_out.laneid14=laneid14;
+  assign laneid15=direct_phy_enabled ? phy_in.laneid15 :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid15 : '0);
+  assign phyctrl_out.laneid15=laneid15;
+  assign lane_req_o=direct_phy_enabled ? phy_in.lane_req_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_lane_req_o : '0);
+  assign phyctrl_out.lane_req_o=lane_req_o;
+  assign lane_req_rst_o=direct_phy_enabled ? phy_in.lane_req_rst_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_lane_req_rst_o : '0);
+  assign phyctrl_out.lane_req_rst_o=lane_req_rst_o;
+  assign lane_req_laneid_o=direct_phy_enabled ? phy_in.lane_req_laneid_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_lane_req_laneid_o : '0);
+  assign phyctrl_out.lane_req_laneid_o=lane_req_laneid_o;
+  assign lane_reverse_o=direct_phy_enabled ? phy_in.lane_reverse_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_lane_reverse_o : '0);
+  assign phyctrl_out.lane_reverse_o=lane_reverse_o;
+  assign lane_active_o=direct_phy_enabled ? phy_in.lane_active_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_lane_active_o : '0);
+  assign phyctrl_out.lane_active_o=lane_active_o;
+  assign val_req_o=direct_phy_enabled ? phy_in.val_req_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_val_req_o : '0);
+  assign phyctrl_out.val_req_o=val_req_o;
+  assign val_finish_o=direct_phy_enabled ? phy_in.val_finish_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_val_finish_o : '0);
+  assign phyctrl_out.val_finish_o=val_finish_o;
+  assign val_mode_o=direct_phy_enabled ? phy_in.val_mode_o :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_val_mode_o : '0);
+  assign phyctrl_out.val_mode_o=val_mode_o;
+  assign ltsm_flagToAnalog_RepairClkState=direct_phy_enabled ? phy_in.ltsm_flagToAnalog_RepairClkState :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_flagToAnalog_RepairClkState : '0);
+  assign phyctrl_out.ltsm_flagToAnalog_RepairClkState=ltsm_flagToAnalog_RepairClkState;
+  assign ltsm_flagToAnalog_valVref_rxVrefCode=direct_phy_enabled ? phy_in.ltsm_flagToAnalog_valVref_rxVrefCode :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_flagToAnalog_valVref_rxVrefCode : '0);
+  assign phyctrl_out.ltsm_flagToAnalog_valVref_rxVrefCode=ltsm_flagToAnalog_valVref_rxVrefCode;
+  assign ltsm_flagToAnalog_dataVref_rxVrefCodes=direct_phy_enabled ? phy_in.ltsm_flagToAnalog_dataVref_rxVrefCodes :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_flagToAnalog_dataVref_rxVrefCodes : '0);
+  assign phyctrl_out.ltsm_flagToAnalog_dataVref_rxVrefCodes=ltsm_flagToAnalog_dataVref_rxVrefCodes;
+  assign ltsm_flagToAnalog_d2cSender_txClockPhaseCode=direct_phy_enabled ? phy_in.ltsm_flagToAnalog_d2cSender_txClockPhaseCode :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode : '0);
+  assign phyctrl_out.ltsm_flagToAnalog_d2cSender_txClockPhaseCode=ltsm_flagToAnalog_d2cSender_txClockPhaseCode;
+  assign ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes=direct_phy_enabled ? phy_in.ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes : '0);
+  assign phyctrl_out.ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes=ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes;
+  assign ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes=direct_phy_enabled ? phy_in.ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes : '0);
+  assign phyctrl_out.ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes=ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes;
+  assign ltsm_flagToAnalog_speedIdle_speedCode=direct_phy_enabled ? phy_in.ltsm_flagToAnalog_speedIdle_speedCode :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_flagToAnalog_speedIdle_speedCode : '0);
+  assign phyctrl_out.ltsm_flagToAnalog_speedIdle_speedCode=ltsm_flagToAnalog_speedIdle_speedCode;
+  assign ltsm_flagToAnalog_speedIdle_electricalIdle=direct_phy_enabled ? phy_in.ltsm_flagToAnalog_speedIdle_electricalIdle :
+    ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_flagToAnalog_speedIdle_electricalIdle : '0);
+  assign phyctrl_out.ltsm_flagToAnalog_speedIdle_electricalIdle=ltsm_flagToAnalog_speedIdle_electricalIdle;
+  assign sb_tx_dout=direct_phy_enabled ? phy_in.sb_tx_dout :
+    ((reset_n_sync && pattern_normal_enable) ? (phyctrl_enabled ? phyctrl_in.sb_tx_dout : phy_core_sb_tx_dout) : '0);
+  assign phyctrl_out.sb_tx_dout=sb_tx_dout;
+  assign sb_tx_clk=direct_phy_enabled ? phy_in.sb_tx_clk :
+    ((reset_n_sync && pattern_normal_enable) ? (phyctrl_enabled ? phyctrl_in.sb_tx_clk : phy_core_sb_tx_clk) : '0);
+  assign phyctrl_out.sb_tx_clk=sb_tx_clk;
+
+  // These are the same effective readiness/result levels delivered to u_top.
+  assign phyctrl_out.ltsm_valVref_pointArmed = ltsm_valVref_pointArmed;
+  assign phyctrl_out.ltsm_valVref_pointResultReady = ltsm_valVref_pointResultReady;
+  assign phyctrl_out.ltsm_d2cCenter_pointArmed = center_point_armed;
+  assign phyctrl_out.ltsm_d2cCenter_resultReady = center_result_ready;
+  assign phyctrl_out.ltsm_linkSpeed_pointArmed = !rx_speed_point_supported || rx_speed_point_armed;
+  assign phyctrl_out.ltsm_linkSpeed_resultReady = !rx_speed_point_supported || rx_speed_result_ready;
+
+  // A scan can take much longer than a Finished pulse. Retain TX acknowledgments
+  // until clear_status or mode/reset exit; include custom LFSR/reseed operations.
+  // CLK_TRACK ACK means clock started/accepted, not that held clocking finished.
+  // Bits [8:0] retain the Finished pulses for RX deskew, centering DATA,
+  // centering Valid, Vref DATA, Vref Valid, repair Lane-ID, reversal Lane-ID,
+  // repair Valid, and clock respectively. Clear only while commands are quiet.
+  (* ASYNC_REG = "TRUE" *) logic [1:0] phyctrl_ack_sync;
+  logic phyctrl_ack_seen;
+  logic [31:0] phyctrl_tx_completion_count;
+  logic [2:0] phyctrl_tx_last_op;
+  logic [8:0] phyctrl_tx_completed_flags;
+  wire [8:0] phyctrl_finished_flags = {
+    ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent,
+    ltsm_flagFromAnalog_d2cSender_lfsrPatternSent,
+    ltsm_flagFromAnalog_d2cSender_valTrainPatternSent,
+    ltsm_flagFromAnalog_dataVref_finishedPattern,
+    ltsm_flagFromAnalog_valVref_finishedPattern,
+    ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern,
+    ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern,
+    ltsm_flagFromAnalog_FinishedValTrainPattern,
+    ltsm_flagFromAnalog_FinishedClkPatterns};
+  always_ff @(posedge clock or negedge reset_n_sync) begin
+    if (!reset_n_sync) begin
+      phyctrl_ack_sync <= '0;
+      phyctrl_ack_seen <= 1'b0;
+      phyctrl_tx_completion_count <= '0;
+      phyctrl_tx_last_op <= '0;
+      phyctrl_tx_completed_flags <= '0;
+    end else begin
+      // Keep ACK history across a software clear so a held ACK is never counted
+      // a second time when clear_status is released.
+      phyctrl_ack_sync <= {phyctrl_ack_sync[0], seq_ack_i};
+      phyctrl_ack_seen <= phyctrl_ack_sync[1];
+      if (!phyctrl_enabled || phyctrl_in.clear_status) begin
+        phyctrl_tx_completion_count <= '0;
+        phyctrl_tx_last_op <= '0;
+        phyctrl_tx_completed_flags <= '0;
+      end else begin
+        phyctrl_tx_completed_flags <= phyctrl_tx_completed_flags | phyctrl_finished_flags;
+        if (phyctrl_ack_sync[1] && !phyctrl_ack_seen && phy_core_seq_req_o) begin
+          phyctrl_tx_completion_count <= phyctrl_tx_completion_count + 1'b1;
+          phyctrl_tx_last_op <= phy_core_seq_op_o;
+        end
+      end
+    end
+  end
+  assign phyctrl_out.tx_completion_count = phyctrl_tx_completion_count;
+  assign phyctrl_out.tx_last_op = phyctrl_tx_last_op;
+  assign phyctrl_out.tx_completed_flags = phyctrl_tx_completed_flags;
 
   // --------------------------------------------------------------------------
   // UcieDigitalTop
@@ -1664,7 +2091,7 @@ module UcieDigitalTopJtag #(
     .testModeFdi((ctrl_mode == MODE_FDI)),
     .testModeRdi((ctrl_mode == MODE_RDI)),
     .testModeLtsm((ctrl_mode == MODE_LTSM)),
-    .testModePhy((ctrl_mode == MODE_PHY)),
+    .testModePhy((ctrl_mode >= MODE_PHYCTRL)),
     .clock(clock),
     .reset_n(reset_n_sync),
     .fdi_lp_state_req(fdi_lp_state_req),
@@ -1691,8 +2118,8 @@ module UcieDigitalTopJtag #(
     .ltsm_flagFromAnalog_FinishedValTrainPattern(ltsm_flagFromAnalog_FinishedValTrainPattern),
     .ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern),
     .ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern(ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern),
-    .ltsm_flagFromAnalog_clkPatternReceivedRTRK_L(ltsm_flagFromAnalog_clkPatternReceivedRTRK_L),
-    .ltsm_flagFromAnalog_clkPatternReceivedRCKN_L(ltsm_flagFromAnalog_clkPatternReceivedRCKN_L),
+    .ltsm_flagFromAnalog_clkPatternReceivedRTRK_L(1'b1), 
+    .ltsm_flagFromAnalog_clkPatternReceivedRCKN_L(1'b1), 
     .ltsm_flagFromAnalog_clkPatternReceivedRCKP_L(ltsm_flagFromAnalog_clkPatternReceivedRCKP_L),
     .ltsm_flagFromAnalog_ValTrainPatternReceived(ltsm_flagFromAnalog_ValTrainPatternReceived),
     .ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0(ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0),
@@ -1727,7 +2154,7 @@ module UcieDigitalTopJtag #(
     .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13(ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13),
     .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14(ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14),
     .ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15(ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15),
-    .ltsm_flagToAnalog_RepairClkState(ltsm_flagToAnalog_RepairClkState),
+    .ltsm_flagToAnalog_RepairClkState(phy_core_ltsm_flagToAnalog_RepairClkState),
     .ltsm_flagToAnalog_SendClkPatterns(ltsm_flagToAnalog_SendClkPatterns),
     .ltsm_flagToAnalog_RepairValState(ltsm_flagToAnalog_RepairValState),
     .ltsm_flagToAnalog_SendValTrainPattern(ltsm_flagToAnalog_SendValTrainPattern),
@@ -1737,28 +2164,28 @@ module UcieDigitalTopJtag #(
     // Legacy sender retry status is available in the DIG and LTSM scan banks.
     .ltsm_flagToAnalog_LaneReversalApplied(),
     .ltsm_flagToAnalog_linkInit_resetLfsrScrambler(ltsm_flagToAnalog_linkInit_resetLfsrScrambler),
-    .ltsm_state(ltsm_state),
+    .ltsm_state(top_ltsm_state),
     .ltsm_dbg_flagSbinitFirstClkPatternSeen(ltsm_dbg_flagSbinitFirstClkPatternSeen),
     .ltsm_dbg_rxValidRisingEdge(ltsm_dbg_rxValidRisingEdge),
     .ltsm_dbg_sbinitSendCount(ltsm_dbg_sbinitSendCount),
     .ltsm_dbg_sbTxValid(ltsm_dbg_sbTxValid),
     .ltsm_dbg_sbTxDin(ltsm_dbg_sbTxDin),
     .ltsm_dbg_flagTrainError(ltsm_dbg_flagTrainError),
-    .ltsm_dbg_mbinitSubstate(ltsm_dbg_mbinitSubstate),
-    .ltsm_dbg_mbinitReversalMbReceiverState(ltsm_dbg_mbinitReversalMbReceiverState),
+    .ltsm_dbg_mbinitSubstate(top_ltsm_dbg_mbinitSubstate),
+    .ltsm_dbg_mbinitReversalMbReceiverState(top_ltsm_dbg_mbinitReversalMbReceiverState),
     .ltsm_dbg_mbinitReversalMbReceivedSuccessCount(ltsm_dbg_mbinitReversalMbReceivedSuccessCount),
     .ltsm_flagToAnalog_valVref_sendPattern(ltsm_flagToAnalog_valVref_sendPattern),
     .ltsm_flagFromAnalog_valVref_detectedValPattern(ltsm_flagFromAnalog_valVref_detectedValPattern),
     .ltsm_flagFromAnalog_valVref_finishedPattern(ltsm_flagFromAnalog_valVref_finishedPattern),
     .ltsm_flagToAnalog_valVref_applyRxVref(ltsm_flagToAnalog_valVref_applyRxVref),
-    .ltsm_flagToAnalog_valVref_rxVrefCode(ltsm_flagToAnalog_valVref_rxVrefCode),
+    .ltsm_flagToAnalog_valVref_rxVrefCode(phy_core_ltsm_flagToAnalog_valVref_rxVrefCode),
     .ltsm_flagFromAnalog_valVref_rxVrefApplied(ltsm_flagFromAnalog_valVref_rxVrefApplied),
     .ltsm_flagToAnalog_valVref_resetLocalTxScrambler(ltsm_flagToAnalog_valVref_resetLocalTxScrambler),
     .ltsm_flagToAnalog_dataVref_sendPattern(ltsm_flagToAnalog_dataVref_sendPattern),
     .ltsm_flagFromAnalog_dataVref_detectedDataPattern(ltsm_flagFromAnalog_dataVref_detectedDataPattern),
     .ltsm_flagFromAnalog_dataVref_finishedPattern(ltsm_flagFromAnalog_dataVref_finishedPattern),
     .ltsm_flagToAnalog_dataVref_applyRxVref(ltsm_flagToAnalog_dataVref_applyRxVref),
-    .ltsm_flagToAnalog_dataVref_rxVrefCodes(ltsm_flagToAnalog_dataVref_rxVrefCodes),
+    .ltsm_flagToAnalog_dataVref_rxVrefCodes(phy_core_ltsm_flagToAnalog_dataVref_rxVrefCodes),
     .ltsm_flagFromAnalog_dataVref_rxVrefApplied(ltsm_flagFromAnalog_dataVref_rxVrefApplied),
     .ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest(ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest),
     .ltsm_flagToAnalog_dataVref_clearComparisonErrors(ltsm_flagToAnalog_dataVref_clearComparisonErrors),
@@ -1770,7 +2197,7 @@ module UcieDigitalTopJtag #(
     .ltsm_flagFromAnalog_d2cSender_valTrainPatternSent(ltsm_flagFromAnalog_d2cSender_valTrainPatternSent),
     .ltsm_flagToAnalog_d2cSender_resetLocalScrambler(ltsm_flagToAnalog_d2cSender_resetLocalScrambler),
     .ltsm_flagToAnalog_d2cSender_applyTxClockPhase(ltsm_flagToAnalog_d2cSender_applyTxClockPhase),
-    .ltsm_flagToAnalog_d2cSender_txClockPhaseCode(ltsm_flagToAnalog_d2cSender_txClockPhaseCode),
+    .ltsm_flagToAnalog_d2cSender_txClockPhaseCode(phy_core_ltsm_flagToAnalog_d2cSender_txClockPhaseCode),
     .ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied(ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied),
     .ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(),
     .ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold),
@@ -1788,28 +2215,28 @@ module UcieDigitalTopJtag #(
     .ltsm_flagToAnalog_d2cSender_sendLfsrPattern(ltsm_flagToAnalog_d2cSender_sendLfsrPattern),
     .ltsm_flagFromAnalog_d2cSender_lfsrPatternSent(ltsm_flagFromAnalog_d2cSender_lfsrPatternSent),
     .ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew(ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew),
-    .ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes(ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes),
+    .ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes(phy_core_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes),
     .ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied(ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied),
     .ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(ltsm_flagToAnalog_rxDeskew_sendLfsrPattern),
     .ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent(ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent),
     .ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler(ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler),
     .ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew(ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew),
-    .ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes(ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes),
+    .ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes(phy_core_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes),
     .ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied(ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied),
     .ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest(ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest),
     .ltsm_flagToAnalog_rxDeskew_clearComparisonErrors(ltsm_flagToAnalog_rxDeskew_clearComparisonErrors),
     .ltsm_flagFromAnalog_rxDeskew_detectedDataPattern(ltsm_flagFromAnalog_rxDeskew_detectedDataPattern),
-    .ltsm_flagToAnalog_speedIdle_speedCode(ltsm_flagToAnalog_speedIdle_speedCode),
+    .ltsm_flagToAnalog_speedIdle_speedCode(phy_core_ltsm_flagToAnalog_speedIdle_speedCode),
     .ltsm_flagToAnalog_speedIdle_applySpeed(ltsm_flagToAnalog_speedIdle_applySpeed),
-    .ltsm_flagToAnalog_speedIdle_electricalIdle(ltsm_flagToAnalog_speedIdle_electricalIdle),
+    .ltsm_flagToAnalog_speedIdle_electricalIdle(phy_core_ltsm_flagToAnalog_speedIdle_electricalIdle),
     .ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful(ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
     .ltsm_flagFromAnalog_speedIdle_speedApplied(ltsm_flagFromAnalog_speedIdle_speedApplied),
-    .ltsm_dbg_mbtrainState(ltsm_dbg_mbtrainState),
-    .ltsm_dbg_mbtrainActiveSubstate(ltsm_dbg_mbtrainActiveSubstate),
+    .ltsm_dbg_mbtrainState(top_ltsm_dbg_mbtrainState),
+    .ltsm_dbg_mbtrainActiveSubstate(top_ltsm_dbg_mbtrainActiveSubstate),
     .ltsm_dbg_mbtrainLastErrorCount(ltsm_dbg_mbtrainLastErrorCount),
     .ltsm_dbg_mbtrainRetryCount(ltsm_dbg_mbtrainRetryCount),
-    .sb_tx_dout(sb_tx_dout),
-    .sb_tx_clk(sb_tx_clk),
+    .sb_tx_dout(phy_core_sb_tx_dout),
+    .sb_tx_clk(phy_core_sb_tx_clk),
     .sb_rx_din(sb_rx_din),
     .sb_rx_clk(sb_rx_clk),
     .debug_sb_rx_overflow(debug_sb_rx_overflow),
@@ -1830,6 +2257,13 @@ module UcieDigitalTopJtag #(
     .debug_rx_route_rdi(debug_rx_route_rdi),
     .debug_rx_drop_unknown(debug_rx_drop_unknown),
     .debug_rx_fire(debug_rx_fire),
+    .jtag_ltsm_valVref_pointArmed(dig_in.ltsm_valVref_pointArmed),
+    .jtag_ltsm_valVref_pointResultReady(dig_in.ltsm_valVref_pointResultReady),
+    .jtag_ltsm_d2cCenter_pointArmed(dig_in.ltsm_d2cCenter_pointArmed),
+    .jtag_ltsm_d2cCenter_resultReady(dig_in.ltsm_d2cCenter_resultReady),
+    .jtag_ltsm_linkSpeed_pointArmed(dig_in.ltsm_linkSpeed_pointArmed),
+    .jtag_ltsm_linkSpeed_resultReady(dig_in.ltsm_linkSpeed_resultReady),
+    .jtag_ltsm_dbg_mbinitReversalMbReceiverState(dig_out.ltsm_dbg_mbinitReversalMbReceiverState),
     .jtag_clock(clock),
     .jtag_reset_n(test_reset_n),
     .jtag_fdi_lp_state_req(dig_in.fdi_lp_state_req),
@@ -2304,117 +2738,117 @@ module UcieDigitalTopJtag #(
     .jtagLtsm_dbg_mbtrainLinkSpeedD2cReceiverState(ltsm_out.dbg_mbtrainLinkSpeedD2cReceiverState),
     .jtagLtsm_dbg_mbtrainLastErrorCount(ltsm_out.dbg_mbtrainLastErrorCount),
     .jtagLtsm_dbg_mbtrainRetryCount(ltsm_out.dbg_mbtrainRetryCount),
-    .jtagPhy_ltsm_flagToAnalog_RepairClkState(phy_in.flagToAnalog_RepairClkState),
-    .jtagPhy_ltsm_flagToAnalog_SendClkPatterns(phy_in.flagToAnalog_SendClkPatterns),
-    .jtagPhy_ltsm_flagToAnalog_RepairValState(phy_in.flagToAnalog_RepairValState),
-    .jtagPhy_ltsm_flagToAnalog_SendValTrainPattern(phy_in.flagToAnalog_SendValTrainPattern),
-    .jtagPhy_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern(phy_in.flagToAnalog_ReversalMbSendLaneIDPattern),
-    .jtagPhy_ltsm_flagToAnalog_RepairMbSendLaneIDPattern(phy_in.flagToAnalog_RepairMbSendLaneIDPattern),
-    .jtagPhy_ltsm_flagToAnalog_RepairMbSetReceiver(phy_in.flagToAnalog_RepairMbSetReceiver),
+    .jtagPhy_ltsm_flagToAnalog_RepairClkState(phyctrl_in.flagToAnalog_RepairClkState),
+    .jtagPhy_ltsm_flagToAnalog_SendClkPatterns(phyctrl_in.flagToAnalog_SendClkPatterns),
+    .jtagPhy_ltsm_flagToAnalog_RepairValState(phyctrl_in.flagToAnalog_RepairValState),
+    .jtagPhy_ltsm_flagToAnalog_SendValTrainPattern(phyctrl_in.flagToAnalog_SendValTrainPattern),
+    .jtagPhy_ltsm_flagToAnalog_ReversalMbSendLaneIDPattern(phyctrl_in.flagToAnalog_ReversalMbSendLaneIDPattern),
+    .jtagPhy_ltsm_flagToAnalog_RepairMbSendLaneIDPattern(phyctrl_in.flagToAnalog_RepairMbSendLaneIDPattern),
+    .jtagPhy_ltsm_flagToAnalog_RepairMbSetReceiver(phyctrl_in.flagToAnalog_RepairMbSetReceiver),
     // Reserved PHY scan bit. Only the receiver selects lane reversal.
     .jtagPhy_ltsm_flagToAnalog_LaneReversalApplied(1'b0),
-    .jtagPhy_ltsm_flagToAnalog_linkInit_resetLfsrScrambler(phy_in.flagToAnalog_linkInit_resetLfsrScrambler),
-    .jtagPhy_ltsm_flagToAnalog_valVref_sendPattern(phy_in.flagToAnalog_valVref_sendPattern),
-    .jtagPhy_ltsm_flagToAnalog_valVref_applyRxVref(phy_in.flagToAnalog_valVref_applyRxVref),
-    .jtagPhy_ltsm_flagToAnalog_valVref_rxVrefCode(phy_in.flagToAnalog_valVref_rxVrefCode),
-    .jtagPhy_ltsm_flagToAnalog_valVref_resetLocalTxScrambler(phy_in.flagToAnalog_valVref_resetLocalTxScrambler),
-    .jtagPhy_ltsm_flagToAnalog_dataVref_sendPattern(phy_in.flagToAnalog_dataVref_sendPattern),
-    .jtagPhy_ltsm_flagToAnalog_dataVref_applyRxVref(phy_in.flagToAnalog_dataVref_applyRxVref),
-    .jtagPhy_ltsm_flagToAnalog_dataVref_rxVrefCodes(phy_in.flagToAnalog_dataVref_rxVrefCodes),
-    .jtagPhy_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest(phy_in.flagToAnalog_dataVref_configureRxInitD2CPointTest),
-    .jtagPhy_ltsm_flagToAnalog_dataVref_clearComparisonErrors(phy_in.flagToAnalog_dataVref_clearComparisonErrors),
-    .jtagPhy_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler(phy_in.flagToAnalog_dataVref_resetLocalTxScrambler),
-    .jtagPhy_ltsm_flagToAnalog_rxClkCal_doCalibration(phy_in.flagToAnalog_rxClkCal_doCalibration),
-    .jtagPhy_ltsm_flagToAnalog_rxClkCal_sendClockTrack(phy_in.flagToAnalog_rxClkCal_sendClockTrack),
-    .jtagPhy_ltsm_flagToAnalog_d2cSender_sendValTrainPattern(phy_in.flagToAnalog_d2cSender_sendValTrainPattern),
-    .jtagPhy_ltsm_flagToAnalog_d2cSender_resetLocalScrambler(phy_in.flagToAnalog_d2cSender_resetLocalScrambler),
-    .jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxClockPhase(phy_in.flagToAnalog_d2cSender_applyTxClockPhase),
-    .jtagPhy_ltsm_flagToAnalog_d2cSender_txClockPhaseCode(phy_in.flagToAnalog_d2cSender_txClockPhaseCode),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(phy_in.flagToAnalog_d2cReceiver_configureTxInitD2CPointTest),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(phy_in.flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_comparisonMode(phy_in.flagToAnalog_d2cReceiver_comparisonMode),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings(phy_in.flagToAnalog_d2cReceiver_iterationCountSettings),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_idleCountSettings(phy_in.flagToAnalog_d2cReceiver_idleCountSettings),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_burstCountSettings(phy_in.flagToAnalog_d2cReceiver_burstCountSettings),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_patternMode(phy_in.flagToAnalog_d2cReceiver_patternMode),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl(phy_in.flagToAnalog_d2cReceiver_clockPhaseControl),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_validPattern(phy_in.flagToAnalog_d2cReceiver_validPattern),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_dataPattern(phy_in.flagToAnalog_d2cReceiver_dataPattern),
-    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler(phy_in.flagToAnalog_d2cReceiver_resetLocalRxScrambler),
-    .jtagPhy_ltsm_flagToAnalog_d2cSender_sendLfsrPattern(phy_in.flagToAnalog_d2cSender_sendLfsrPattern),
-    .jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew(phy_in.flagToAnalog_d2cSender_applyTxLaneDeskew),
-    .jtagPhy_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes(phy_in.flagToAnalog_d2cSender_txLaneDeskewCodes),
-    .jtagPhy_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(phy_in.flagToAnalog_rxDeskew_sendLfsrPattern),
-    .jtagPhy_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler(phy_in.flagToAnalog_rxDeskew_resetLocalTxScrambler),
-    .jtagPhy_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew(phy_in.flagToAnalog_rxDeskew_applyRxLaneDeskew),
-    .jtagPhy_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes(phy_in.flagToAnalog_rxDeskew_rxLaneDeskewCodes),
-    .jtagPhy_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest(phy_in.flagToAnalog_rxDeskew_configureRxInitD2CPointTest),
-    .jtagPhy_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors(phy_in.flagToAnalog_rxDeskew_clearComparisonErrors),
-    .jtagPhy_ltsm_flagToAnalog_speedIdle_speedCode(phy_in.flagToAnalog_speedIdle_speedCode),
-    .jtagPhy_ltsm_flagToAnalog_speedIdle_applySpeed(phy_in.flagToAnalog_speedIdle_applySpeed),
-    .jtagPhy_ltsm_flagToAnalog_speedIdle_electricalIdle(phy_in.flagToAnalog_speedIdle_electricalIdle),
-    .jtagPhy_ltsm_stable_clk(phy_out.stable_clk),
-    .jtagPhy_ltsm_pll_locked(phy_out.pll_locked),
-    .jtagPhy_ltsm_stable_supply(phy_out.stable_supply),
-    .jtagPhy_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns(phy_out.flagFromAnalog_ReadyToExchangeClkPatterns),
-    .jtagPhy_ltsm_flagFromAnalog_FinishedClkPatterns(phy_out.flagFromAnalog_FinishedClkPatterns),
-    .jtagPhy_ltsm_flagFromAnalog_FinishedValTrainPattern(phy_out.flagFromAnalog_FinishedValTrainPattern),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(phy_out.flagFromAnalog_ReversalMbFinishedLaneIDPattern),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern(phy_out.flagFromAnalog_RepairMbFinishedLaneIDPattern),
-    .jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L(phy_out.flagFromAnalog_clkPatternReceivedRTRK_L),
-    .jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L(phy_out.flagFromAnalog_clkPatternReceivedRCKN_L),
-    .jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L(phy_out.flagFromAnalog_clkPatternReceivedRCKP_L),
-    .jtagPhy_ltsm_flagFromAnalog_ValTrainPatternReceived(phy_out.flagFromAnalog_ValTrainPatternReceived),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived0),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived1),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived2),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived3),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived4),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived5),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived6),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived7),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived8),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived9),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived10),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived11),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived12),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived13),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived14),
-    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15(phy_out.flagFromAnalog_ReversalMbTrainPatternReceived15),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern0),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern1),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern2),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern3),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern4),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern5),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern6),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern7),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern8),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern9),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern10),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern11),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern12),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern13),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern14),
-    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15(phy_out.flagFromAnalog_RepairMbDetectedLaneIDPattern15),
-    .jtagPhy_ltsm_flagFromAnalog_valVref_detectedValPattern(phy_out.flagFromAnalog_valVref_detectedValPattern),
-    .jtagPhy_ltsm_flagFromAnalog_valVref_finishedPattern(phy_out.flagFromAnalog_valVref_finishedPattern),
-    .jtagPhy_ltsm_flagFromAnalog_valVref_rxVrefApplied(phy_out.flagFromAnalog_valVref_rxVrefApplied),
-    .jtagPhy_ltsm_flagFromAnalog_dataVref_detectedDataPattern(phy_out.flagFromAnalog_dataVref_detectedDataPattern),
-    .jtagPhy_ltsm_flagFromAnalog_dataVref_finishedPattern(phy_out.flagFromAnalog_dataVref_finishedPattern),
-    .jtagPhy_ltsm_flagFromAnalog_dataVref_rxVrefApplied(phy_out.flagFromAnalog_dataVref_rxVrefApplied),
-    .jtagPhy_ltsm_flagFromAnalog_rxClkCal_done(phy_out.flagFromAnalog_rxClkCal_done),
-    .jtagPhy_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent(phy_out.flagFromAnalog_d2cSender_valTrainPatternSent),
-    .jtagPhy_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied(phy_out.flagFromAnalog_d2cSender_txClockPhaseApplied),
-    .jtagPhy_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(phy_out.flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo),
+    .jtagPhy_ltsm_flagToAnalog_linkInit_resetLfsrScrambler(phyctrl_in.flagToAnalog_linkInit_resetLfsrScrambler),
+    .jtagPhy_ltsm_flagToAnalog_valVref_sendPattern(phyctrl_in.flagToAnalog_valVref_sendPattern),
+    .jtagPhy_ltsm_flagToAnalog_valVref_applyRxVref(phyctrl_in.flagToAnalog_valVref_applyRxVref),
+    .jtagPhy_ltsm_flagToAnalog_valVref_rxVrefCode(phyctrl_in.flagToAnalog_valVref_rxVrefCode),
+    .jtagPhy_ltsm_flagToAnalog_valVref_resetLocalTxScrambler(phyctrl_in.flagToAnalog_valVref_resetLocalTxScrambler),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_sendPattern(phyctrl_in.flagToAnalog_dataVref_sendPattern),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_applyRxVref(phyctrl_in.flagToAnalog_dataVref_applyRxVref),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_rxVrefCodes(phyctrl_in.flagToAnalog_dataVref_rxVrefCodes),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_configureRxInitD2CPointTest(phyctrl_in.flagToAnalog_dataVref_configureRxInitD2CPointTest),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_clearComparisonErrors(phyctrl_in.flagToAnalog_dataVref_clearComparisonErrors),
+    .jtagPhy_ltsm_flagToAnalog_dataVref_resetLocalTxScrambler(phyctrl_in.flagToAnalog_dataVref_resetLocalTxScrambler),
+    .jtagPhy_ltsm_flagToAnalog_rxClkCal_doCalibration(phyctrl_in.flagToAnalog_rxClkCal_doCalibration),
+    .jtagPhy_ltsm_flagToAnalog_rxClkCal_sendClockTrack(phyctrl_in.flagToAnalog_rxClkCal_sendClockTrack),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_sendValTrainPattern(phyctrl_in.flagToAnalog_d2cSender_sendValTrainPattern),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_resetLocalScrambler(phyctrl_in.flagToAnalog_d2cSender_resetLocalScrambler),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxClockPhase(phyctrl_in.flagToAnalog_d2cSender_applyTxClockPhase),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_txClockPhaseCode(phyctrl_in.flagToAnalog_d2cSender_txClockPhaseCode),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_configureTxInitD2CPointTest(phyctrl_in.flagToAnalog_d2cReceiver_configureTxInitD2CPointTest),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold(phyctrl_in.flagToAnalog_d2cReceiver_maximumComparisonErrorThreshold),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_comparisonMode(phyctrl_in.flagToAnalog_d2cReceiver_comparisonMode),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_iterationCountSettings(phyctrl_in.flagToAnalog_d2cReceiver_iterationCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_idleCountSettings(phyctrl_in.flagToAnalog_d2cReceiver_idleCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_burstCountSettings(phyctrl_in.flagToAnalog_d2cReceiver_burstCountSettings),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_patternMode(phyctrl_in.flagToAnalog_d2cReceiver_patternMode),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_clockPhaseControl(phyctrl_in.flagToAnalog_d2cReceiver_clockPhaseControl),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_validPattern(phyctrl_in.flagToAnalog_d2cReceiver_validPattern),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_dataPattern(phyctrl_in.flagToAnalog_d2cReceiver_dataPattern),
+    .jtagPhy_ltsm_flagToAnalog_d2cReceiver_resetLocalRxScrambler(phyctrl_in.flagToAnalog_d2cReceiver_resetLocalRxScrambler),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_sendLfsrPattern(phyctrl_in.flagToAnalog_d2cSender_sendLfsrPattern),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_applyTxLaneDeskew(phyctrl_in.flagToAnalog_d2cSender_applyTxLaneDeskew),
+    .jtagPhy_ltsm_flagToAnalog_d2cSender_txLaneDeskewCodes(phyctrl_in.flagToAnalog_d2cSender_txLaneDeskewCodes),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_sendLfsrPattern(phyctrl_in.flagToAnalog_rxDeskew_sendLfsrPattern),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_resetLocalTxScrambler(phyctrl_in.flagToAnalog_rxDeskew_resetLocalTxScrambler),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_applyRxLaneDeskew(phyctrl_in.flagToAnalog_rxDeskew_applyRxLaneDeskew),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_rxLaneDeskewCodes(phyctrl_in.flagToAnalog_rxDeskew_rxLaneDeskewCodes),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_configureRxInitD2CPointTest(phyctrl_in.flagToAnalog_rxDeskew_configureRxInitD2CPointTest),
+    .jtagPhy_ltsm_flagToAnalog_rxDeskew_clearComparisonErrors(phyctrl_in.flagToAnalog_rxDeskew_clearComparisonErrors),
+    .jtagPhy_ltsm_flagToAnalog_speedIdle_speedCode(phyctrl_in.flagToAnalog_speedIdle_speedCode),
+    .jtagPhy_ltsm_flagToAnalog_speedIdle_applySpeed(phyctrl_in.flagToAnalog_speedIdle_applySpeed),
+    .jtagPhy_ltsm_flagToAnalog_speedIdle_electricalIdle(phyctrl_in.flagToAnalog_speedIdle_electricalIdle),
+    .jtagPhy_ltsm_stable_clk(phyctrl_out.stable_clk),
+    .jtagPhy_ltsm_pll_locked(phyctrl_out.pll_locked),
+    .jtagPhy_ltsm_stable_supply(phyctrl_out.stable_supply),
+    .jtagPhy_ltsm_flagFromAnalog_ReadyToExchangeClkPatterns(phyctrl_out.flagFromAnalog_ReadyToExchangeClkPatterns),
+    .jtagPhy_ltsm_flagFromAnalog_FinishedClkPatterns(phyctrl_out.flagFromAnalog_FinishedClkPatterns),
+    .jtagPhy_ltsm_flagFromAnalog_FinishedValTrainPattern(phyctrl_out.flagFromAnalog_FinishedValTrainPattern),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbFinishedLaneIDPattern(phyctrl_out.flagFromAnalog_ReversalMbFinishedLaneIDPattern),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbFinishedLaneIDPattern(phyctrl_out.flagFromAnalog_RepairMbFinishedLaneIDPattern),
+    .jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRTRK_L(phyctrl_out.flagFromAnalog_clkPatternReceivedRTRK_L),
+    .jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKN_L(phyctrl_out.flagFromAnalog_clkPatternReceivedRCKN_L),
+    .jtagPhy_ltsm_flagFromAnalog_clkPatternReceivedRCKP_L(phyctrl_out.flagFromAnalog_clkPatternReceivedRCKP_L),
+    .jtagPhy_ltsm_flagFromAnalog_ValTrainPatternReceived(phyctrl_out.flagFromAnalog_ValTrainPatternReceived),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived0(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived0),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived1(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived1),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived2(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived2),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived3(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived3),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived4(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived4),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived5(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived5),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived6(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived6),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived7(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived7),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived8(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived8),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived9(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived9),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived10(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived10),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived11(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived11),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived12(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived12),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived13(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived13),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived14(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived14),
+    .jtagPhy_ltsm_flagFromAnalog_ReversalMbTrainPatternReceived15(phyctrl_out.flagFromAnalog_ReversalMbTrainPatternReceived15),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern0(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern0),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern1(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern1),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern2(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern2),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern3(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern3),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern4(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern4),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern5(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern5),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern6(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern6),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern7(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern7),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern8(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern8),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern9(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern9),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern10(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern10),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern11(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern11),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern12(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern12),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern13(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern13),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern14(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern14),
+    .jtagPhy_ltsm_flagFromAnalog_RepairMbDetectedLaneIDPattern15(phyctrl_out.flagFromAnalog_RepairMbDetectedLaneIDPattern15),
+    .jtagPhy_ltsm_flagFromAnalog_valVref_detectedValPattern(phyctrl_out.flagFromAnalog_valVref_detectedValPattern),
+    .jtagPhy_ltsm_flagFromAnalog_valVref_finishedPattern(phyctrl_out.flagFromAnalog_valVref_finishedPattern),
+    .jtagPhy_ltsm_flagFromAnalog_valVref_rxVrefApplied(phyctrl_out.flagFromAnalog_valVref_rxVrefApplied),
+    .jtagPhy_ltsm_flagFromAnalog_dataVref_detectedDataPattern(phyctrl_out.flagFromAnalog_dataVref_detectedDataPattern),
+    .jtagPhy_ltsm_flagFromAnalog_dataVref_finishedPattern(phyctrl_out.flagFromAnalog_dataVref_finishedPattern),
+    .jtagPhy_ltsm_flagFromAnalog_dataVref_rxVrefApplied(phyctrl_out.flagFromAnalog_dataVref_rxVrefApplied),
+    .jtagPhy_ltsm_flagFromAnalog_rxClkCal_done(phyctrl_out.flagFromAnalog_rxClkCal_done),
+    .jtagPhy_ltsm_flagFromAnalog_d2cSender_valTrainPatternSent(phyctrl_out.flagFromAnalog_d2cSender_valTrainPatternSent),
+    .jtagPhy_ltsm_flagFromAnalog_d2cSender_txClockPhaseApplied(phyctrl_out.flagFromAnalog_d2cSender_txClockPhaseApplied),
+    .jtagPhy_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo(phyctrl_out.flagFromAnalog_d2cReceiver_txInitD2CResultsMsgInfo),
     .jtagPhy_ltsm_flagFromAnalog_d2cReceiver_txInitD2CResultsPayload(phyD2cLaneResults),
-    .jtagPhy_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent(phy_out.flagFromAnalog_d2cSender_lfsrPatternSent),
-    .jtagPhy_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied(phy_out.flagFromAnalog_d2cSender_txLaneDeskewApplied),
-    .jtagPhy_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent(phy_out.flagFromAnalog_rxDeskew_lfsrPatternSent),
-    .jtagPhy_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied(phy_out.flagFromAnalog_rxDeskew_rxLaneDeskewApplied),
-    .jtagPhy_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern(phy_out.flagFromAnalog_rxDeskew_detectedDataPattern),
-    .jtagPhy_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful(phy_out.flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
-    .jtagPhy_ltsm_flagFromAnalog_speedIdle_speedApplied(phy_out.flagFromAnalog_speedIdle_speedApplied)
+    .jtagPhy_ltsm_flagFromAnalog_d2cSender_lfsrPatternSent(phyctrl_out.flagFromAnalog_d2cSender_lfsrPatternSent),
+    .jtagPhy_ltsm_flagFromAnalog_d2cSender_txLaneDeskewApplied(phyctrl_out.flagFromAnalog_d2cSender_txLaneDeskewApplied),
+    .jtagPhy_ltsm_flagFromAnalog_rxDeskew_lfsrPatternSent(phyctrl_out.flagFromAnalog_rxDeskew_lfsrPatternSent),
+    .jtagPhy_ltsm_flagFromAnalog_rxDeskew_rxLaneDeskewApplied(phyctrl_out.flagFromAnalog_rxDeskew_rxLaneDeskewApplied),
+    .jtagPhy_ltsm_flagFromAnalog_rxDeskew_detectedDataPattern(phyctrl_out.flagFromAnalog_rxDeskew_detectedDataPattern),
+    .jtagPhy_ltsm_flagFromAnalog_d2cReceiver_laneComparisonSuccessful(phyctrl_out.flagFromAnalog_d2cReceiver_laneComparisonSuccessful),
+    .jtagPhy_ltsm_flagFromAnalog_speedIdle_speedApplied(phyctrl_out.flagFromAnalog_speedIdle_speedApplied)
   );
 
 endmodule

@@ -91,8 +91,16 @@ module PhyTxControlTop #(
   wire [3:0] lane_id13;
   wire [3:0] lane_id14;
   wire [3:0] lane_id15;
+  wire [15:0][3:0] lane_ids_from_seq;
   wire unused_reset_seq_n, unused_reset_clock2g_n, unused_reset_valid2g_n;
   wire unused_reset_valid500m_n;
+
+  assign lane_ids_from_seq = {
+    lane_id15, lane_id14, lane_id13, lane_id12,
+    lane_id11, lane_id10, lane_id9, lane_id8,
+    lane_id7, lane_id6, lane_id5, lane_id4,
+    lane_id3, lane_id2, lane_id1, lane_id0
+  };
 
   PhyTxSequencer #(
     .LANES(LANES), .SYNC_STAGES(SYNC_STAGES),
@@ -152,10 +160,13 @@ module PhyTxControlTop #(
     .clock_tx500(clock_tx500), .reset_n(reset_n), .reset_valid500m_n(unused_reset_valid500m_n),
     .lfsr_en(lfsr_val_en), .phyTrainLfsr(phyTrainLfsr));
 
+  for (genvar lane = 0; lane < LANES; lane++) begin : g_data2g
     PhyPatternData2g #(.SYNC_STAGES(SYNC_STAGES)) u_data2g (
       .clock_tx2g(clock_tx2g), .reset_n(reset_n),
-    .id_en(id_en), .lane_id_i(lane_id_i),
-    .digControl(digControl), .laneID_index(laneID_index), .lane_id_o(lane_id_o));
+      .id_en(id_en), .lane_id_i(lane_ids_from_seq[lane]),
+      .digControl(digControl[lane]), .laneID_index(laneID_index[lane]),
+      .lane_id_o(lane_id_o[lane]));
+  end
 
   for (genvar lane = 0; lane < LANES; lane++) begin : g_tx500
     PhyPatternTx500 #(.SYNC_STAGES(SYNC_STAGES)) u_tx500 (

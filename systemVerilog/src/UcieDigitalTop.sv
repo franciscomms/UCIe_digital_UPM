@@ -456,6 +456,7 @@ module UcieDigitalTop #(
   output var logic [127:0]   jtag_ltsm_dbg_sbTxDin,
   output var logic           jtag_ltsm_dbg_flagTrainError,
   output var logic [2:0]     jtag_ltsm_dbg_mbinitSubstate,
+  output var logic [2:0]     jtag_ltsm_dbg_mbinitReversalMbReceiverState,
   output var logic [4:0]     jtag_ltsm_dbg_mbinitReversalMbReceivedSuccessCount,
 
   // LTSM MBTRAIN.VALVREF interface.
@@ -1036,7 +1037,17 @@ module UcieDigitalTop #(
   input wire logic ltsm_d2cCenter_pointArmed,
   input wire logic ltsm_d2cCenter_resultReady,
   input wire logic ltsm_linkSpeed_pointArmed,
-  input wire logic ltsm_linkSpeed_resultReady
+  input wire logic ltsm_linkSpeed_resultReady,
+
+  // DIG isolation exposes the complete functional point-test handshake.
+  // The scan host controls readiness and result availability independently
+  // of the comparison result, exactly as the physical RX controller does.
+  input wire logic jtag_ltsm_valVref_pointArmed,
+  input wire logic jtag_ltsm_valVref_pointResultReady,
+  input wire logic jtag_ltsm_d2cCenter_pointArmed,
+  input wire logic jtag_ltsm_d2cCenter_resultReady,
+  input wire logic jtag_ltsm_linkSpeed_pointArmed,
+  input wire logic jtag_ltsm_linkSpeed_resultReady
 );
 
   // --------------------------------------------------------------------------
@@ -1383,6 +1394,7 @@ module UcieDigitalTop #(
   assign jtag_ltsm_dbg_flagTrainError = testModeDigital ? core_ltsm_dbg_flagTrainError : '0;
   assign ltsm_dbg_mbinitSubstate = testModeDigital ? '0 : core_ltsm_dbg_mbinitSubstate;
   assign ltsm_dbg_mbinitReversalMbReceiverState = testModeDigital ? '0 : core_ltsm_dbg_mbinitReversalMbReceiverState;
+  assign jtag_ltsm_dbg_mbinitReversalMbReceiverState = testModeDigital ? core_ltsm_dbg_mbinitReversalMbReceiverState : '0;
   assign jtag_ltsm_dbg_mbinitSubstate = testModeDigital ? core_ltsm_dbg_mbinitSubstate : '0;
   assign ltsm_dbg_mbinitReversalMbReceivedSuccessCount = testModeDigital ? '0 : core_ltsm_dbg_mbinitReversalMbReceivedSuccessCount;
   assign jtag_ltsm_dbg_mbinitReversalMbReceivedSuccessCount = testModeDigital ? core_ltsm_dbg_mbinitReversalMbReceivedSuccessCount : '0;
@@ -1746,13 +1758,15 @@ module UcieDigitalTop #(
     .ltsm_dbg_mbinitReversalMbReceivedSuccessCount                                  (core_ltsm_dbg_mbinitReversalMbReceivedSuccessCount),
     .ltsm_flagToAnalog_valVref_sendPattern                                          (core_ltsm_flagToAnalog_valVref_sendPattern),
     .ltsm_flagFromAnalog_valVref_detectedValPattern                                 (core_ltsm_flagFromAnalog_valVref_detectedValPattern),
-    // Isolation tests inject the existing pass bit directly.
-    .ltsm_valVref_pointArmed(testModeDigital || ltsm_valVref_pointArmed),
-    .ltsm_d2cCenter_pointArmed(testModeDigital || ltsm_d2cCenter_pointArmed),
-    .ltsm_d2cCenter_resultReady(testModeDigital || ltsm_d2cCenter_resultReady),
-    .ltsm_linkSpeed_pointArmed(testModeDigital || ltsm_linkSpeed_pointArmed),
-    .ltsm_linkSpeed_resultReady(testModeDigital || ltsm_linkSpeed_resultReady),
-    .ltsm_valVref_pointResultReady(testModeDigital || ltsm_valVref_pointResultReady),
+    // DIG tests drive all six handshake inputs; readiness is not fabricated.
+    // The independent LTSM isolation mode retains its existing behavior inside
+    // UcieDigitalCore.
+    .ltsm_valVref_pointArmed(testModeDigital ? jtag_ltsm_valVref_pointArmed : ltsm_valVref_pointArmed),
+    .ltsm_d2cCenter_pointArmed(testModeDigital ? jtag_ltsm_d2cCenter_pointArmed : ltsm_d2cCenter_pointArmed),
+    .ltsm_d2cCenter_resultReady(testModeDigital ? jtag_ltsm_d2cCenter_resultReady : ltsm_d2cCenter_resultReady),
+    .ltsm_linkSpeed_pointArmed(testModeDigital ? jtag_ltsm_linkSpeed_pointArmed : ltsm_linkSpeed_pointArmed),
+    .ltsm_linkSpeed_resultReady(testModeDigital ? jtag_ltsm_linkSpeed_resultReady : ltsm_linkSpeed_resultReady),
+    .ltsm_valVref_pointResultReady(testModeDigital ? jtag_ltsm_valVref_pointResultReady : ltsm_valVref_pointResultReady),
     .ltsm_flagFromAnalog_valVref_finishedPattern                                    (core_ltsm_flagFromAnalog_valVref_finishedPattern),
     .ltsm_flagToAnalog_valVref_applyRxVref                                          (core_ltsm_flagToAnalog_valVref_applyRxVref),
     .ltsm_flagToAnalog_valVref_rxVrefCode                                           (core_ltsm_flagToAnalog_valVref_rxVrefCode),
