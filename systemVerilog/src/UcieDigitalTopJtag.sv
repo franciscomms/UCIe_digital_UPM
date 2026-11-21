@@ -10,7 +10,7 @@
 // shared TDR bus (tdr_*) and one sel_<reg> per register, and muxes tdo_<reg>.
 //
 //   register  DATA_W                    function
-//   ctrl      dataLaneCount + 9         mode, reset and PHY pattern configuration
+//   ctrl      dataLaneCount + 13        mode, reset, PHY pattern configuration, obi_check
 //   dig       max(in, out) of jtag_*    testModeDigital pins
 //   fdi       max(in, out) of jtagFdi_* testModeFdi pins
 //   rdi       max(in, out) of jtagRdi_* testModeRdi pins
@@ -34,8 +34,10 @@
 //   [7:5]  read-only sticky pattern errors (writes ignored by consumers)
 //   [8]    custom_train_jtag: held level, rising edge requests one LFSR burst
 //   [dataLaneCount+8:9] custom-test lane mask; reset value all ones
+//   [dataLaneCount+12:dataLaneCount+9] read-only obi_check[3:0] input pins
+//                   (writes ignored; reset value 0)
 //   custom_train_jtag resets to 0. Normal training always uses all lanes.
-//   CTRL DR length is dataLaneCount+10 bits including we/busy (26 at 16 lanes).
+//   CTRL DR length is dataLaneCount+14 bits including we/busy (30 at 16 lanes).
 //   Keep the mask stable until pattern busy has asserted and returned low;
 //   clear the trigger for >=4 core clocks before requesting another burst.
 //   Recommended sequence: write {sys_rst=1, mode=X}, then {sys_rst=0, mode=X}.
@@ -168,6 +170,9 @@ module UcieDigitalTopJtag #(
   output var  logic tdo_phyctrl,
   output var  logic tdo_phy,
 
+  // Read-only status sampled into CTRL readback [dataLaneCount+12:dataLaneCount+9].
+  input  wire logic [3:0] obi_check,
+
   // ##########################################################################
   // FUNCTIONAL PINS (testModeDigital = 0)
   // ##########################################################################
@@ -177,6 +182,7 @@ module UcieDigitalTopJtag #(
   // ==========================================================================
   input wire logic clock,
   input wire logic reset_n,
+  output var logic phy_reset_n,
 
   // ==========================================================================
   // FDI INTERFACE
@@ -246,24 +252,7 @@ module UcieDigitalTopJtag #(
   // Status: synchronized copy of seq_active_ready_i.
   output wire logic ltsm_active_ready,
 
-  // Static physical IDs for the sixteen x16 data lanes; reversal uses lane_reverse_o.
-  output wire logic [3:0] laneid0,
-  output wire logic [3:0] laneid1,
-  output wire logic [3:0] laneid2,
-  output wire logic [3:0] laneid3,
-  output wire logic [3:0] laneid4,
-  output wire logic [3:0] laneid5,
-  output wire logic [3:0] laneid6,
-  output wire logic [3:0] laneid7,
-  output wire logic [3:0] laneid8,
-  output wire logic [3:0] laneid9,
-  output wire logic [3:0] laneid10,
-  output wire logic [3:0] laneid11,
-  output wire logic [3:0] laneid12,
-  output wire logic [3:0] laneid13,
-  output wire logic [3:0] laneid14,
-  output wire logic [3:0] laneid15,
-
+ 
   // RX PHY interface: sixteen data adapters and one shared valid endpoint.
   // Hold ACK/ARMED and the qualified PASS result until the request drops.
   output wire logic [15:0] lane_req_o,
@@ -303,22 +292,7 @@ module UcieDigitalTopJtag #(
   wire [2:0] phy_core_seq_op_o;
   wire [dataLaneCount-1:0] phy_core_seq_mask_o;
   wire phy_core_ltsm_active_ready;
-  wire [3:0] phy_core_laneid0;
-  wire [3:0] phy_core_laneid1;
-  wire [3:0] phy_core_laneid2;
-  wire [3:0] phy_core_laneid3;
-  wire [3:0] phy_core_laneid4;
-  wire [3:0] phy_core_laneid5;
-  wire [3:0] phy_core_laneid6;
-  wire [3:0] phy_core_laneid7;
-  wire [3:0] phy_core_laneid8;
-  wire [3:0] phy_core_laneid9;
-  wire [3:0] phy_core_laneid10;
-  wire [3:0] phy_core_laneid11;
-  wire [3:0] phy_core_laneid12;
-  wire [3:0] phy_core_laneid13;
-  wire [3:0] phy_core_laneid14;
-  wire [3:0] phy_core_laneid15;
+  
   wire [15:0] phy_core_lane_req_o;
   wire [15:0] phy_core_lane_req_rst_o;
   wire [15:0] phy_core_lane_req_laneid_o;
@@ -337,6 +311,7 @@ module UcieDigitalTopJtag #(
   wire phy_core_ltsm_flagToAnalog_speedIdle_electricalIdle;
   wire phy_core_sb_tx_dout;
   wire phy_core_sb_tx_clk;
+ 
 
   // --------------------------------------------------------------------------
   // Reset synchronizer: asynchronous assertion, synchronous deassertion.
@@ -441,22 +416,7 @@ module UcieDigitalTopJtag #(
   logic [dataLaneCount-1:0] ltsm_data_lane_mask;
   logic pattern_normal_enable;
 
-  assign phy_core_laneid0 = 4'd0;
-  assign phy_core_laneid1 = 4'd1;
-  assign phy_core_laneid2 = 4'd2;
-  assign phy_core_laneid3 = 4'd3;
-  assign phy_core_laneid4 = 4'd4;
-  assign phy_core_laneid5 = 4'd5;
-  assign phy_core_laneid6 = 4'd6;
-  assign phy_core_laneid7 = 4'd7;
-  assign phy_core_laneid8 = 4'd8;
-  assign phy_core_laneid9 = 4'd9;
-  assign phy_core_laneid10 = 4'd10;
-  assign phy_core_laneid11 = 4'd11;
-  assign phy_core_laneid12 = 4'd12;
-  assign phy_core_laneid13 = 4'd13;
-  assign phy_core_laneid14 = 4'd14;
-  assign phy_core_laneid15 = 4'd15;
+
 
   // --------------------------------------------------------------------------
   // MBTRAIN.RXCLKCAL (internal, no top-level pins)
@@ -624,9 +584,10 @@ module UcieDigitalTopJtag #(
   // CONTROL REGISTER
   // --------------------------------------------------------------------------
   // Existing low control bits keep their positions. CTRL grows with LANES.
-  localparam int unsigned CTRL_W = dataLaneCount + 9;
+  // obi_check[3:0] occupies the 4 MSBs (read-only).
+  localparam int unsigned CTRL_W = dataLaneCount + 13;
   localparam logic [CTRL_W-1:0] CTRL_RESET_VALUE =
-    {{dataLaneCount{1'b1}}, 1'b0, 8'h08};
+    {4'b0000, {dataLaneCount{1'b1}}, 1'b0, 8'h08};
   localparam logic [2:0] MODE_FUNCTIONAL = 3'd0;
   localparam logic [2:0] MODE_DIG = 3'd1;
   localparam logic [2:0] MODE_FDI = 3'd2;
@@ -642,17 +603,21 @@ module UcieDigitalTopJtag #(
   logic              ctrl_sys_rst;
   logic              test_reset_n;
 
+
   assign ctrl_mode    = ctrl_q[2:0];
   assign ctrl_sys_rst = ctrl_q[3];
   assign test_reset_n = reset_n_sync & ~ctrl_sys_rst;  // ctrl_sys_rst is already on clock
   assign custom_train_jtag = ctrl_q[8];
-  assign ltsm_data_lane_mask = ctrl_q[CTRL_W-1:9];
+  assign ltsm_data_lane_mask = ctrl_q[dataLaneCount+8:9];
+
+   assign phy_test_reset_n = (ctrl_mode == MODE_FUNCTIONAL) || !ctrl_sys_rst;
   // The snapshot mailbox transfers the mask and held trigger atomically into
   // clock. The controller separately synchronizes/edge-detects the trigger.
   always_comb begin
     ctrl_readback = ctrl_q;
     ctrl_readback[4] = ltsm_pattern_busy;
     ctrl_readback[7:5] = ltsm_pattern_error;
+    ctrl_readback[CTRL_W-1 -: 4] = obi_check;
   end
   // Modes 1..4 isolate the digital block under test. PHYCTRL keeps the two
   // real 800 MHz PHY controllers alive; direct PHY and reserved mode reset them.
@@ -1589,22 +1554,6 @@ module UcieDigitalTopJtag #(
     logic [2:0] seq_op_o;
     logic [dataLaneCount-1:0] seq_mask_o;
     logic ltsm_active_ready;
-    logic [3:0] laneid0;
-    logic [3:0] laneid1;
-    logic [3:0] laneid2;
-    logic [3:0] laneid3;
-    logic [3:0] laneid4;
-    logic [3:0] laneid5;
-    logic [3:0] laneid6;
-    logic [3:0] laneid7;
-    logic [3:0] laneid8;
-    logic [3:0] laneid9;
-    logic [3:0] laneid10;
-    logic [3:0] laneid11;
-    logic [3:0] laneid12;
-    logic [3:0] laneid13;
-    logic [3:0] laneid14;
-    logic [3:0] laneid15;
     logic [15:0] lane_req_o;
     logic [15:0] lane_req_rst_o;
     logic [15:0] lane_req_laneid_o;
@@ -1759,22 +1708,6 @@ module UcieDigitalTopJtag #(
     logic [2:0] seq_op_o;
     logic [dataLaneCount-1:0] seq_mask_o;
     logic ltsm_active_ready;
-    logic [3:0] laneid0;
-    logic [3:0] laneid1;
-    logic [3:0] laneid2;
-    logic [3:0] laneid3;
-    logic [3:0] laneid4;
-    logic [3:0] laneid5;
-    logic [3:0] laneid6;
-    logic [3:0] laneid7;
-    logic [3:0] laneid8;
-    logic [3:0] laneid9;
-    logic [3:0] laneid10;
-    logic [3:0] laneid11;
-    logic [3:0] laneid12;
-    logic [3:0] laneid13;
-    logic [3:0] laneid14;
-    logic [3:0] laneid15;
     logic [15:0] lane_req_o;
     logic [15:0] lane_req_rst_o;
     logic [15:0] lane_req_laneid_o;
@@ -1865,54 +1798,6 @@ module UcieDigitalTopJtag #(
   assign ltsm_active_ready=direct_phy_enabled ? phy_in.ltsm_active_ready :
     ((reset_n_sync && pattern_normal_enable) ? phy_core_ltsm_active_ready : '0);
   assign phyctrl_out.ltsm_active_ready=ltsm_active_ready;
-  assign laneid0=direct_phy_enabled ? phy_in.laneid0 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid0 : '0);
-  assign phyctrl_out.laneid0=laneid0;
-  assign laneid1=direct_phy_enabled ? phy_in.laneid1 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid1 : '0);
-  assign phyctrl_out.laneid1=laneid1;
-  assign laneid2=direct_phy_enabled ? phy_in.laneid2 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid2 : '0);
-  assign phyctrl_out.laneid2=laneid2;
-  assign laneid3=direct_phy_enabled ? phy_in.laneid3 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid3 : '0);
-  assign phyctrl_out.laneid3=laneid3;
-  assign laneid4=direct_phy_enabled ? phy_in.laneid4 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid4 : '0);
-  assign phyctrl_out.laneid4=laneid4;
-  assign laneid5=direct_phy_enabled ? phy_in.laneid5 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid5 : '0);
-  assign phyctrl_out.laneid5=laneid5;
-  assign laneid6=direct_phy_enabled ? phy_in.laneid6 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid6 : '0);
-  assign phyctrl_out.laneid6=laneid6;
-  assign laneid7=direct_phy_enabled ? phy_in.laneid7 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid7 : '0);
-  assign phyctrl_out.laneid7=laneid7;
-  assign laneid8=direct_phy_enabled ? phy_in.laneid8 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid8 : '0);
-  assign phyctrl_out.laneid8=laneid8;
-  assign laneid9=direct_phy_enabled ? phy_in.laneid9 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid9 : '0);
-  assign phyctrl_out.laneid9=laneid9;
-  assign laneid10=direct_phy_enabled ? phy_in.laneid10 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid10 : '0);
-  assign phyctrl_out.laneid10=laneid10;
-  assign laneid11=direct_phy_enabled ? phy_in.laneid11 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid11 : '0);
-  assign phyctrl_out.laneid11=laneid11;
-  assign laneid12=direct_phy_enabled ? phy_in.laneid12 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid12 : '0);
-  assign phyctrl_out.laneid12=laneid12;
-  assign laneid13=direct_phy_enabled ? phy_in.laneid13 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid13 : '0);
-  assign phyctrl_out.laneid13=laneid13;
-  assign laneid14=direct_phy_enabled ? phy_in.laneid14 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid14 : '0);
-  assign phyctrl_out.laneid14=laneid14;
-  assign laneid15=direct_phy_enabled ? phy_in.laneid15 :
-    ((reset_n_sync && pattern_normal_enable) ? phy_core_laneid15 : '0);
-  assign phyctrl_out.laneid15=laneid15;
   assign lane_req_o=direct_phy_enabled ? phy_in.lane_req_o :
     ((reset_n_sync && pattern_normal_enable) ? phy_core_lane_req_o : '0);
   assign phyctrl_out.lane_req_o=lane_req_o;
