@@ -66,9 +66,6 @@
 //
 // All outputs are flops decoded from the NEXT state, so every enable of one
 // command changes on the same clock_tx500 edge.
-// laneid0_o .. laneid15_o are the exception: straight pass-through of the
-// static Lane IDs laneid0_i .. laneid15_i (driven by UcieDigitalTopJtag
-// laneid0 .. laneid15), one per data lane, to that lane's PhyPatternData2g.
 // They are constants, so no synchronizer or flop is needed.
 // Reset: reset_n asserts asynchronously (common with Ctrl800 and endpoints);
 // release is synchronized locally. Reset values = Idle row (all off).
@@ -82,6 +79,7 @@ module PhyTxSequencer #(
 ) (
   input  wire              clock_tx500,
   input  wire              reset_n,          // async assert, local synchronized release
+  input  wire              reset_jtag_n,
   output wire              reset_seq_n,      // locally synchronized reset (for neighbours)
 
   // ---- Link from Ctrl800 (asynchronous) -------------------------------------
@@ -97,43 +95,9 @@ module PhyTxSequencer #(
   output logic             id_en_o,          // -> PhyPatternData2g
   output logic [2:0]       tx500_mode_o,     // -> every PhyPatternTx500
   output logic [LANES-1:0] tx500_lane_en_o,  // per-lane enable for Tx500
-  output logic             active_ready_o,   // ACTIVE, PRE done: functional TX allowed
+  output logic             active_ready_o   // ACTIVE, PRE done: functional TX allowed
 
-  // ---- Static Lane IDs (from UcieDigitalTopJtag laneid0..15) ----------------
-  input  wire [3:0]        laneid0_i,
-  input  wire [3:0]        laneid1_i,
-  input  wire [3:0]        laneid2_i,
-  input  wire [3:0]        laneid3_i,
-  input  wire [3:0]        laneid4_i,
-  input  wire [3:0]        laneid5_i,
-  input  wire [3:0]        laneid6_i,
-  input  wire [3:0]        laneid7_i,
-  input  wire [3:0]        laneid8_i,
-  input  wire [3:0]        laneid9_i,
-  input  wire [3:0]        laneid10_i,
-  input  wire [3:0]        laneid11_i,
-  input  wire [3:0]        laneid12_i,
-  input  wire [3:0]        laneid13_i,
-  input  wire [3:0]        laneid14_i,
-  input  wire [3:0]        laneid15_i,
-
-  // ---- Lane IDs to the data lanes (PhyPatternData2g of lane N) --------------
-  output wire [3:0]        laneid0_o,
-  output wire [3:0]        laneid1_o,
-  output wire [3:0]        laneid2_o,
-  output wire [3:0]        laneid3_o,
-  output wire [3:0]        laneid4_o,
-  output wire [3:0]        laneid5_o,
-  output wire [3:0]        laneid6_o,
-  output wire [3:0]        laneid7_o,
-  output wire [3:0]        laneid8_o,
-  output wire [3:0]        laneid9_o,
-  output wire [3:0]        laneid10_o,
-  output wire [3:0]        laneid11_o,
-  output wire [3:0]        laneid12_o,
-  output wire [3:0]        laneid13_o,
-  output wire [3:0]        laneid14_o,
-  output wire [3:0]        laneid15_o
+ 
 );
   // ---------------------------------------------------------------------------
   // Command and Tx500 mode encodings (shared with Ctrl800 / PhyPatternTx500).
@@ -175,33 +139,13 @@ module PhyTxSequencer #(
     op_legal = (op <= OP_CLK_TRACK);
   endfunction
 
-  // ---------------------------------------------------------------------------
-  // Lane IDs: static values from UcieDigitalTopJtag, passed straight through
-  // to the data lanes (lane N sends laneidN). No flops, no synchronizer.
-  // ---------------------------------------------------------------------------
-  assign laneid0_o = laneid0_i;
-  assign laneid1_o = laneid1_i;
-  assign laneid2_o = laneid2_i;
-  assign laneid3_o = laneid3_i;
-  assign laneid4_o = laneid4_i;
-  assign laneid5_o = laneid5_i;
-  assign laneid6_o = laneid6_i;
-  assign laneid7_o = laneid7_i;
-  assign laneid8_o = laneid8_i;
-  assign laneid9_o = laneid9_i;
-  assign laneid10_o = laneid10_i;
-  assign laneid11_o = laneid11_i;
-  assign laneid12_o = laneid12_i;
-  assign laneid13_o = laneid13_i;
-  assign laneid14_o = laneid14_i;
-  assign laneid15_o = laneid15_i;
-
+  wire reset_joint_n = reset_n && reset_jtag_n;
   // ---------------------------------------------------------------------------
   // Reset release and the only request synchronizer of the TX control.
   // ---------------------------------------------------------------------------
   wire req_s;
   PhySeqResetSync #(.STAGES(SYNC_STAGES)) u_reset_sync (
-    .clk_i(clock_tx500), .arst_ni(reset_n), .rst_no(reset_seq_n));
+    .clk_i(clock_tx500), .arst_ni(reset_joint_n), .rst_no(reset_seq_n));
   PhySeqSyncBit #(.STAGES(SYNC_STAGES)) u_req_sync (
     .clk_i(clock_tx500), .rst_ni(reset_seq_n), .async_i(seq_req_i), .sync_o(req_s));
 
